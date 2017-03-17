@@ -40,7 +40,7 @@
       </testResource>
     </testResources>
     <directory>./target</directory>
-    <finalName>origami-0.0.1</finalName>
+    <finalName>origami-${project.version}</finalName>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -227,6 +227,31 @@
             </reportPlugin>
           </reportPlugins>
         </configuration>
+      </plugin>
+      <plugin>
+      	<artifactId>maven-assembly-plugin</artifactId>
+      	<version>2.2</version>
+      	<executions>
+      		<execution>
+      			<id>make-assembly</id>
+      			<phase>package</phase>
+      			<goals>
+      				<goal>single</goal>
+      			</goals>
+      		</execution>
+      	</executions>
+      	<configuration>
+      		<descriptorRefs>
+      			<descriptorRef>jar-with-dependencies</descriptorRef>
+      		</descriptorRefs>
+      		<archive>
+      			<manifest>
+      				<mainClass>origami.main.OCommand</mainClass>
+      			</manifest>
+      		</archive>
+          <finalName>origami-${project.version}-run</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+      	</configuration>
       </plugin>
     </plugins>
   </build>
