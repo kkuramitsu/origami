@@ -27,8 +27,6 @@ import origami.nez.ast.CommonTree;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourceObject;
 import origami.nez.ast.Tree;
-import origami.nez.ast.TreeConnector;
-import origami.nez.ast.TreeConstructor;
 import origami.nez.parser.ParserCode.StaticMemoization;
 import origami.nez.parser.pass.DispatchPass;
 import origami.nez.parser.pass.InlinePass;

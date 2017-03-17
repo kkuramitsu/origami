@@ -14,8 +14,10 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.nez.ast;
+package origami.nez.parser;
 
-public interface TreeConstructor<T> {
-	public T newTree(Symbol tag, Source source, long pos, int len, int objectSize, Object value);
+import origami.nez.ast.Symbol;
+
+public interface TreeConnector<T> {
+	public void link(T parent, int index, Symbol label, T child);
 }

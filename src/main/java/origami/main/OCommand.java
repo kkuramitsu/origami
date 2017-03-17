@@ -57,7 +57,7 @@ public abstract class OCommand extends OConsole {
 
 	private static OCommand newCommand(String[] args, ParserFactory fac) {
 		try {
-			String className = args[0];
+			String className = args.length == 0 ? "drun" : args[0];
 			if (className.indexOf('.') == -1) {
 				className = "origami.main.O" + className;
 			}
@@ -121,27 +121,27 @@ public abstract class OCommand extends OConsole {
 		p(Blue, OVersion.Copyright);
 	}
 
-	protected void displayVersion(String progName, String version) {
-		p(bold(progName + "-" + version + " (" + System.getenv("USER") + ") on Nez-" + OVersion.Version));
-	}
+//	protected void displayVersion(String progName, String version) {
+//		p(bold(progName + "-" + version + " (" + System.getenv("USER") + ") on Nez-" + OVersion.Version));
+//	}
 
 	protected static void usage(String msg) {
 		displayVersion();
-		p(bold("Usage: nez <command> options inputs"));
+		p(bold("Usage: origami <command> options inputs"));
 		p("  -g | --grammar <file>      Specify a grammar file");
-		p("  -f | --format <string>     Specify an output format");
+		//p("  -f | --format <string>     Specify an output format");
 		// p(" -e <text> Specify a Nez parsing expression");
 		// p(" -a <file> Specify a Nez auxiliary grammar
 		// files");
 		p("  -s | --start <NAME>        Specify a starting production");
-		p("  -d | --dir <dirname>       Specify an output dir");
+		//p("  -d | --dir <dirname>       Specify an output dir");
 		p("Example:");
-		p("  nez parse -g js.nez jquery.js --format json");
-		p("  nez match -g js.nez *.js");
-		p("  nez parser -g math.nez --format c");
+		p("  origami run -g iroha.nez sample.iroha");
+		p("  origami example -g js.nez");
+		p("  origami parse -g js.nez jquery.js");
 		p("");
 
-		p(bold("The most commonly used nez commands are:"));
+		p(bold("The most commonly used origami commands are:"));
 		p("  parse      parse inputs and construct ASTs");
 		p("  match      match inputs without ASTs");
 		p("  inez       an interactive parser");

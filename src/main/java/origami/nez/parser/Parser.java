@@ -21,8 +21,6 @@ import java.io.IOException;
 import origami.nez.ast.CommonTree;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.ast.TreeConnector;
-import origami.nez.ast.TreeConstructor;
 import origami.nez.peg.OGrammar;
 import origami.nez.peg.OProduction;
 

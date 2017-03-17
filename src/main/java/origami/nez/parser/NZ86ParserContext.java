@@ -18,8 +18,6 @@ package origami.nez.parser;
 
 import origami.nez.ast.Source;
 import origami.nez.ast.Symbol;
-import origami.nez.ast.TreeConnector;
-import origami.nez.ast.TreeConstructor;
 
 public final class NZ86ParserContext<T> extends ParserContext<T> {
 
