@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>origami</groupId>
   <artifactId>origami</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <name>Origami</name>
   <description>ORIGAMI: A Language Engineering Framework</description>
   <dependencies>
@@ -40,7 +40,7 @@
       </testResource>
     </testResources>
     <directory>./target</directory>
-    <finalName>origami-0.0.1-SNAPSHOT</finalName>
+    <finalName>origami-0.0.1</finalName>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -230,5 +230,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
