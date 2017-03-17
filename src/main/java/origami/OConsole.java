@@ -16,7 +16,7 @@
 
 package origami;
 
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class OConsole {
 
@@ -25,18 +25,13 @@ public class OConsole {
 		System.exit(status);
 	}
 
-	static boolean isColored = (System.getenv("CLICOLOR") != null);
-	// static {
-	// if (System.getenv("CLICOLOR") != null) {
-	// isColored = true;
-	// }
-	// }
+	//static boolean isColored = (System.getenv("CLICOLOR") != null);
+	static boolean isColored = (System.getenv("TERM") != null);
 
 	// 31 :red 32 green, 34 blue, 37 gray
 	public final static int Red = 31;
 	public final static int Green = 32;
-	public final static int Yellow = 32;
-	public final static int Blue_ = 33;
+	public final static int Yellow = 33;
 	public final static int Blue = 34;
 	public final static int Magenta = 35;
 	public final static int Cyan = 36;
@@ -63,15 +58,27 @@ public class OConsole {
 		return text;
 	}
 
-	public static void begin(int c) {
+	public static void beginColor(int c) {
 		if (isColored) {
 			System.out.print("\u001b[00;" + c + "m");
 		}
 	}
 
-	public static void end() {
+	public static void endColor() {
 		if (isColored) {
 			System.out.print("\u001b[00m");
+		}
+	}
+
+	public static void beginColor(StringBuilder sb, int c) {
+		if (isColored) {
+			sb.append("\u001b[00;" + c + "m");
+		}
+	}
+
+	public static void endColor(StringBuilder sb) {
+		if (isColored) {
+			sb.append("\u001b[00m");
 		}
 	}
 
@@ -84,11 +91,11 @@ public class OConsole {
 	}
 
 	public static void println(String format, Object... args) {
-		System.out.println(OStringOut.format(format, args));
+		System.out.println(OStringBuilder.format(format, args));
 	}
 
 	public static void print(String format, Object... args) {
-		System.out.print(OStringOut.format(format, args));
+		System.out.print(OStringBuilder.format(format, args));
 	}
 
 	public static void dump(String tab, Object o) {

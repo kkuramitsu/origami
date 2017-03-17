@@ -25,7 +25,7 @@ import origami.ffi.OrigamiObject;
 import origami.ffi.OrigamiPrimitiveGenerics;
 import origami.ffi.SequenceExtractable;
 import origami.rule.OrigamiIterator;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.type.OParamType;
 import origami.type.OType;
 
@@ -38,7 +38,7 @@ public class OrigamiList implements OrigamiObject {
 		return OParamType.of(OList.class, ctype);
 	}
 
-	static abstract class AList<T> implements OStringOut, OrigamiObject, SequenceExtractable<T> {
+	static abstract class AList<T> implements OStringBuilder, OrigamiObject, SequenceExtractable<T> {
 		protected int start;
 		protected int length;
 
@@ -90,14 +90,14 @@ public class OrigamiList implements OrigamiObject {
 				if (i > 0) {
 					sb.append(",");
 				}
-				OStringOut.appendQuoted(sb, this.get(i));
+				OStringBuilder.appendQuoted(sb, this.get(i));
 			}
 			sb.append("]");
 		}
 
 		@Override
 		public String toString() {
-			return OStringOut.stringfy(this);
+			return OStringBuilder.stringfy(this);
 		}
 
 	}

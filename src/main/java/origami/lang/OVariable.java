@@ -20,10 +20,10 @@ import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.rule.OFmt;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.type.OType;
 
-public abstract class OVariable implements ONameEntity, OTypeName, OStringOut {
+public abstract class OVariable implements ONameEntity, OTypeName, OStringBuilder {
 	private final boolean isReadOnly;
 	private final String name;
 	private final OType type;

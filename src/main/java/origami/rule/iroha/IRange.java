@@ -22,9 +22,9 @@ import java.util.Objects;
 import origami.ffi.Immutable;
 import origami.ffi.OrigamiObject;
 import origami.rule.OrigamiIterator.IRangeIterator;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public class IRange<T extends Number> implements Iterable<Integer>, OStringOut, OrigamiObject, Immutable {
+public class IRange<T extends Number> implements Iterable<Integer>, OStringBuilder, OrigamiObject, Immutable {
 	final T start;
 	final T until;
 	final boolean inclusive;
@@ -83,18 +83,18 @@ public class IRange<T extends Number> implements Iterable<Integer>, OStringOut, 
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("(");
-		OStringOut.append(sb, this.start);
+		OStringBuilder.append(sb, this.start);
 		sb.append(" to ");
 		if (!inclusive) {
 			sb.append("<");
 		}
-		OStringOut.append(sb, this.until);
+		OStringBuilder.append(sb, this.until);
 		sb.append(")");
 	}
 
 	@Override
 	public final String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 }

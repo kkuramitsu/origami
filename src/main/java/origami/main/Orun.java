@@ -47,9 +47,9 @@ public class Orun extends origami.main.OCommand {
 			}
 		}
 		if (files.length == 0 || isDebug()) {
-			displayVersion("Iroha on ORIGAMI", "0.1");
-			p(Note, "Enter an input string to parse and run.");
-			p(Note, "Tips: Start with an empty line for multiple lines.");
+			displayVersion();
+			p(Yellow, "Enter an input string to parse and run.");
+			p(Yellow, "Tips: Start with an empty line for multiple lines.");
 			p("");
 
 			int startline = linenum;

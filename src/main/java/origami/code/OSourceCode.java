@@ -2,10 +2,10 @@ package origami.code;
 
 import origami.nez.ast.Tree;
 import origami.trait.Handled;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.type.OType;
 
-public abstract class OSourceCode<T> implements OCode, Handled<T>, OStringOut {
+public abstract class OSourceCode<T> implements OCode, Handled<T>, OStringBuilder {
 	private T handled;
 	private OType rtype;
 
@@ -57,7 +57,7 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, OStringOut {
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override
@@ -66,11 +66,11 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, OStringOut {
 		sb.append(this.getCodeName());
 		sb.append("[");
 		// strOutInner(sb);
-		OStringOut.append(sb, this.getHandled());
+		OStringBuilder.append(sb, this.getHandled());
 		sb.append("]");
 		for (OCode c : this.getParams()) {
 			sb.append(" ");
-			OStringOut.append(sb, c);
+			OStringBuilder.append(sb, c);
 		}
 		sb.append("):");
 		sb.append(this.getType());

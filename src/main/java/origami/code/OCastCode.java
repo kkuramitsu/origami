@@ -23,7 +23,7 @@ import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.type.OType;
 
 public class OCastCode extends OMethodCode {
@@ -97,6 +97,6 @@ public class OCastCode extends OMethodCode {
 
 	@Override
 	protected void strOutInner(StringBuilder sb) {
-		sb.append(OStringOut.format(" %s=>%s %s", this.getFromType(), this.getType(), this.getHandled()));
+		sb.append(OStringBuilder.format(" %s=>%s %s", this.getFromType(), this.getType(), this.getHandled()));
 	}
 }

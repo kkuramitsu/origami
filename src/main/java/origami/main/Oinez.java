@@ -34,9 +34,9 @@ public class Oinez extends OCommand {
 	@Override
 	public void exec(ParserFactory fac) throws IOException {
 		OCommand.displayVersion();
-		p(Note, "Enter an input string to match (or a grammar if you want to update).");
-		p(Note, "Tips: Start with an empty line for multiple lines.");
-		p(Note, " Entering two empty lines diplays the current grammar.");
+		p(Yellow, "Enter an input string to match (or a grammar if you want to update).");
+		p(Yellow, "Tips: Start with an empty line for multiple lines.");
+		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
 		Parser nezParser = OGrammar.NezParser;
 		nezParser.setPrintingException(false);
@@ -60,7 +60,7 @@ public class Oinez extends OCommand {
 					pegParser = parser(fac);
 					prompt = prompt(fac);
 					addHistory(input);
-					p(Note, "Grammar is successfully loaded!");
+					p(Yellow, "Grammar is successfully loaded!");
 					continue;
 				}
 			} catch (Exception e) {

@@ -18,7 +18,7 @@ package origami.ffi;
 
 import origami.OLog;
 import origami.nez.ast.Tree;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 @SuppressWarnings("serial")
 public class OrigamiException extends RuntimeException {
@@ -32,11 +32,11 @@ public class OrigamiException extends RuntimeException {
 	}
 
 	public OrigamiException(Throwable e, String fmt, Object... args) {
-		this(OStringOut.format(fmt, args) + " by " + e);
+		this(OStringBuilder.format(fmt, args) + " by " + e);
 	}
 
 	static final String message(String fmt, Object... args) {
-		return OStringOut.format(fmt, args);
+		return OStringBuilder.format(fmt, args);
 	}
 
 	private static String format(Tree<?> s, String name) {

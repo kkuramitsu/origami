@@ -16,9 +16,9 @@
 
 package origami.nez.peg;
 
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public class OProduction implements OStringOut {
+public class OProduction implements OStringBuilder {
 	private final OGrammar grammar;
 	private final String name;
 	private final Expression body;
@@ -57,7 +57,7 @@ public class OProduction implements OStringOut {
 
 	@Override
 	public final String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override

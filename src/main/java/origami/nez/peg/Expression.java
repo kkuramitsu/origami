@@ -22,16 +22,16 @@ import java.util.List;
 
 import origami.nez.ast.SourceObject;
 import origami.nez.ast.Symbol;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.trait.OStringUtils;
 
-public abstract class Expression extends AbstractList<Expression> implements OStringOut {
+public abstract class Expression extends AbstractList<Expression> implements OStringBuilder {
 
 	public abstract <VAL, ARG> VAL visit(ExpressionVisitor<VAL, ARG> v, ARG a);
 
 	@Override
 	public final String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	public Expression desugar() {

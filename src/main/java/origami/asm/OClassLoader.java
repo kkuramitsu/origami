@@ -171,7 +171,7 @@ public class OClassLoader extends ClassLoader {
 				if (dumpDirectory == null) {
 					new File(classFileName).deleteOnExit();
 				}
-				OConsole.begin(OConsole.Cyan);
+				OConsole.beginColor(OConsole.Cyan);
 				OConsole.println("[Generated] " + classFileName + " size=" + byteCode.length);
 				ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-l", "-p", "-s",
 						/*
@@ -181,7 +181,7 @@ public class OClassLoader extends ClassLoader {
 				Process p = pb.start();
 				p.waitFor();
 				p.destroy();
-				OConsole.end();
+				OConsole.endColor();
 			} catch (IOException e) {
 				ODebug.trace("cannot dump " + classFileName + " caused by " + e);
 			} catch (InterruptedException e) {

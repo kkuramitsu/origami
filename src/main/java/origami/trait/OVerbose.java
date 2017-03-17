@@ -10,9 +10,9 @@ public class OVerbose {
 
 	public final static void println(String s) {
 		if (enabled) {
-			OConsole.begin(34);
+			OConsole.beginColor(34);
 			OConsole.println(s);
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 
@@ -24,9 +24,9 @@ public class OVerbose {
 
 	public final static void print(String s) {
 		if (enabled) {
-			OConsole.begin(34);
+			OConsole.beginColor(34);
 			OConsole.print(s);
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 
@@ -44,9 +44,9 @@ public class OVerbose {
 			}
 		}
 		if (enabled) {
-			OConsole.begin(OConsole.Red);
+			OConsole.beginColor(OConsole.Red);
 			e.printStackTrace();
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 

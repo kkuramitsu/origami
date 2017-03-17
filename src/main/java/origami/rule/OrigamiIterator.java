@@ -22,7 +22,7 @@ import java.util.Iterator;
 import origami.OEnv;
 import origami.code.OCode;
 import origami.ffi.OrigamiPrimitiveGenerics;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.type.OType;
 
 public class OrigamiIterator {
@@ -113,7 +113,7 @@ public class OrigamiIterator {
 		}
 	}
 
-	public static abstract class ARangeIterator<T> implements Iterator<T>, OStringOut {
+	public static abstract class ARangeIterator<T> implements Iterator<T>, OStringBuilder {
 		int cur;
 		int until;
 
@@ -138,7 +138,7 @@ public class OrigamiIterator {
 
 		@Override
 		public String toString() {
-			return OStringOut.stringfy(this);
+			return OStringBuilder.stringfy(this);
 		}
 	}
 

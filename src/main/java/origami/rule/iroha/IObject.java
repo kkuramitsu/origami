@@ -22,9 +22,9 @@ import origami.ffi.OMutable;
 import origami.ffi.ONullable;
 import origami.ffi.OrigamiObject;
 import origami.nez.ast.Symbol;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public class IObject implements OStringOut, OrigamiObject, Cloneable {
+public class IObject implements OStringBuilder, OrigamiObject, Cloneable {
 	private final static int Unused = 0;
 	private int[] ids;
 	private Object[] values;
@@ -126,7 +126,7 @@ public class IObject implements OStringOut, OrigamiObject, Cloneable {
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
 		sb.append("{");
-		cnt = OStringOut.appendField(sb, this, Object.class, cnt);
+		cnt = OStringBuilder.appendField(sb, this, Object.class, cnt);
 		for (int i = 0; i < values.length; i++) {
 			if (ids[i] != Unused) {
 				if (cnt > 0) {
@@ -134,7 +134,7 @@ public class IObject implements OStringOut, OrigamiObject, Cloneable {
 				}
 				sb.append(Symbol.tag(ids[i]));
 				sb.append(": ");
-				OStringOut.appendQuoted(sb, values[i]);
+				OStringBuilder.appendQuoted(sb, values[i]);
 				cnt++;
 			}
 		}
@@ -143,7 +143,7 @@ public class IObject implements OStringOut, OrigamiObject, Cloneable {
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 }

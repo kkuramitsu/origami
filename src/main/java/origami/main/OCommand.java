@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import origami.OConsole;
+import origami.ODebug;
 import origami.OVersion;
 import origami.main.tool.CommonWriter;
 import origami.nez.ast.Tree;
@@ -29,15 +30,16 @@ import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
 import origami.nez.parser.ParserFactory.TreeWriter;
 import origami.nez.peg.OGrammar;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public abstract class OCommand {
+public abstract class OCommand extends OConsole {
 
-	public final static String ProgName = "nez";
-	public final static String CodeName = "Go";
-	public final static int MajorVersion = 1;
+	public final static String ProgName = "ORIGAMI";
+	public final static String CodeName = "Celery";
+	
+	public final static int MajorVersion = 0;
 	public final static int MinerVersion = 0;
-	public final static int PatchLevel = 0;
+	public final static int PatchLevel = 1;
 	public static void main(String[] args) {
 		ParserFactory fac = new ParserFactory();
 		fac.set("grammar-path", new String[] { "/origami/grammar", "/nez/lib" });
@@ -159,39 +161,26 @@ public abstract class OCommand {
 		}
 	}
 
-	// read line
-	Object console = null;
-	protected int linenum = 1;
-
-	public final static int Red = 31;
-	public final static int Green = 32;
-	public final static int Yellow = 32;
-	public final static int Note = 33;
-	public final static int Blue = 34;
-	public final static int Magenta = 35;
-	public final static int Cyan = 36;
-	public final static int Gray = 37;
-
 	public final static void p(String fmt, Object... args) {
-		OConsole.println(OStringOut.format(fmt, args));
+		OConsole.println(OStringBuilder.format(fmt, args));
 	}
 
 	public final static void p(int color, String fmt, Object... args) {
-		OConsole.begin(color);
-		OConsole.println(OStringOut.format(fmt, args));
-		OConsole.end();
+		OConsole.beginColor(color);
+		OConsole.println(OStringBuilder.format(fmt, args));
+		OConsole.endColor();
 	}
 
 	public final static void begin(int color) {
-		OConsole.begin(color);
+		OConsole.beginColor(color);
 	}
 
 	public final static void end() {
-		OConsole.end();
+		OConsole.endColor();
 	}
 
 	public final static void display(ParserFactory fac, GrammarWriter w, OGrammar g) {
-		OConsole.begin(Blue);
+		OConsole.beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");
 		}
@@ -200,11 +189,11 @@ public abstract class OCommand {
 			((CommonWriter) w).End("---");
 			((CommonWriter) w).L();
 		}
-		OConsole.end();
+		OConsole.endColor();
 	}
 
 	public final static void display(ParserFactory fac, TreeWriter w, Tree<?> t) {
-		OConsole.begin(Blue);
+		OConsole.beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");
 		}
@@ -213,7 +202,7 @@ public abstract class OCommand {
 			((CommonWriter) w).End("---");
 			((CommonWriter) w).L();
 		}
-		OConsole.end();
+		OConsole.endColor();
 	}
 
 	public final static String bold(String text) {
@@ -237,14 +226,26 @@ public abstract class OCommand {
 	}
 
 	// ReadLine
+	private Object console = null;
+	private boolean consoleNotFound = false;
+	protected int linenum = 1;
 
 	private final Object getConsole() {
 		if (console == null) {
 			try {
 				console = Class.forName("jline.ConsoleReader").newInstance();
 			} catch (Exception e) {
-				System.err.println("CHECK: " + e);
 			}
+		}
+		if (console == null) {
+			try {
+				console = Class.forName("jline.console.ConsoleReader").newInstance();
+			} catch (Exception e) {
+			}
+		}
+		if (console == null && !consoleNotFound) {
+			this.consoleNotFound = true;
+			ODebug.FIXME("Jline is not found!!");
 		}
 		return console;
 	}
@@ -257,7 +258,7 @@ public abstract class OCommand {
 				Method m = c.getClass().getMethod("readLine", String.class);
 				return (String) m.invoke(c, prompt);
 			} catch (Exception e) {
-				e.printStackTrace();
+				ODebug.traceException(e);
 			}
 		}
 		System.out.print(prompt);
@@ -274,7 +275,7 @@ public abstract class OCommand {
 				m = hist.getClass().getMethod("addToHistory", String.class);
 				m.invoke(hist, text);
 			} catch (Exception e) {
-				e.printStackTrace();
+				ODebug.traceException(e);
 			}
 		}
 	}
@@ -324,4 +325,5 @@ public abstract class OCommand {
 		linenum += linecount;
 		return sb.toString();
 	}
+	
 }

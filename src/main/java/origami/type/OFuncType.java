@@ -31,7 +31,7 @@ import origami.ffi.OrigamiFunction;
 import origami.lang.OClassDeclType;
 import origami.lang.OMethodHandle;
 import origami.trait.OArrayUtils;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class OFuncType extends OClassType {
 
@@ -41,7 +41,7 @@ public class OFuncType extends OClassType {
 
 	@Override
 	public String getLocalName() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class OFuncType extends OClassType {
 	public void strOut(StringBuilder sb) {
 		OType[] p = this.getParamTypes();
 		if (p.length == 2) {
-			OStringOut.append(sb, p[1]);
+			OStringBuilder.append(sb, p[1]);
 			sb.append("->");
 		} else {
 			sb.append("(");
@@ -73,7 +73,7 @@ public class OFuncType extends OClassType {
 				if (i > 1) {
 					sb.append(",");
 				}
-				OStringOut.append(sb, p[i]);
+				OStringBuilder.append(sb, p[i]);
 			}
 			sb.append(")");
 			sb.append("->");

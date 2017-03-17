@@ -20,7 +20,7 @@ import origami.nez.ast.Tree;
 
 public interface FormatMethods {
 	public default String format(String fmt, Object[] args) {
-		return OStringOut.format(fmt, args);
+		return OStringBuilder.format(fmt, args);
 	}
 
 	public default String format(Tree<?> t, String msg, String fmt, Object[] args) {

@@ -18,7 +18,7 @@ package origami;
 
 import java.lang.reflect.Method;
 
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 import origami.trait.OTypeUtils;
 
 public class ODebug extends OConsole {
@@ -44,13 +44,13 @@ public class ODebug extends OConsole {
 	public static void trace(String fmt, Object... args) {
 		if (isDebug()) {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
-			println(loc(s[2]) + OStringOut.format(fmt, args));
+			println(loc(s[2]) + OStringBuilder.format(fmt, args));
 		}
 	}
 
 	public static void trace2(String fmt, Object... args) {
 		StackTraceElement[] s = Thread.currentThread().getStackTrace();
-		println(loc(s[2]) + OStringOut.format(fmt, args));
+		println(loc(s[2]) + OStringBuilder.format(fmt, args));
 	}
 
 	private static int countExceptions = 0;
@@ -63,10 +63,10 @@ public class ODebug extends OConsole {
 		countExceptions++;
 		if (isDebug()) {
 			StackTraceElement[] s = e.getStackTrace();
-			begin(Magenta);
+			beginColor(Magenta);
 			println("[Catching] " + loc(s[1]));
 			e.printStackTrace(System.err);
-			end();
+			endColor();
 		}
 	}
 
@@ -108,7 +108,7 @@ public class ODebug extends OConsole {
 	}
 
 	public static void TODO(String fmt, Object... args) {
-		println("[TODO] " + OStringOut.format(fmt, args));
+		println("[TODO] " + OStringBuilder.format(fmt, args));
 	}
 
 	public static void FIXME(String s) {

@@ -20,7 +20,7 @@ import origami.code.OCode;
 import origami.code.OWarningCode;
 import origami.nez.ast.Tree;
 import origami.rule.OFmt;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class OLog {
 	public Tree<?> s;
@@ -85,9 +85,9 @@ public class OLog {
 	public String toString() {
 		String msgType = (level == Error ? OFmt.error : OFmt.warning).toString();
 		if (s != null) {
-			return s.getSource().formatPositionLine(msgType, s.getSourcePosition(), OStringOut.format(format, args));
+			return s.getSource().formatPositionLine(msgType, s.getSourcePosition(), OStringBuilder.format(format, args));
 		}
-		return "(unknown source) [" + msgType + "]" + OStringOut.format(format, args);
+		return "(unknown source) [" + msgType + "]" + OStringBuilder.format(format, args);
 	}
 
 	public final static int Error = 1;
@@ -101,15 +101,15 @@ public class OLog {
 
 	static void report(OEnv env, int level, String msg) {
 		if ((level & Error) == Error) {
-			OConsole.begin(OConsole.Red);
+			OConsole.beginColor(OConsole.Red);
 			msg = OConsole.bold(msg);
 		} else if ((level & Notice) == Notice) {
-			OConsole.begin(OConsole.Cyan);
+			OConsole.beginColor(OConsole.Cyan);
 		} else {
-			OConsole.begin(OConsole.Magenta);
+			OConsole.beginColor(OConsole.Magenta);
 		}
 		OConsole.println(msg);
-		OConsole.end();
+		OConsole.endColor();
 	}
 
 	public static void reportError(OEnv env, String msg) {

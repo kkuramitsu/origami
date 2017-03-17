@@ -34,7 +34,7 @@ import origami.nez.peg.OGrammar;
 import origami.nez.peg.OProduction;
 import origami.rule.TypeAnalysis;
 import origami.trait.OScriptUtils;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class Origami extends OEnv.OBaseEnv {
 	final OrigamiRuntime runtime = new OrigamiRuntime();
@@ -94,7 +94,7 @@ public class Origami extends OEnv.OBaseEnv {
 		runtime.runREPL(this, sc);
 	}
 
-	class OrigamiRuntime implements OScriptUtils, TypeAnalysis {
+	class OrigamiRuntime extends OConsole implements OScriptUtils, TypeAnalysis {
 		OTree defaultTree = new OTree();
 
 		public void load(OEnv env, Source sc) throws Throwable {
@@ -126,9 +126,9 @@ public class Origami extends OEnv.OBaseEnv {
 					return false;
 				}
 				if (ODebug.isDebug()) {
-					OConsole.begin(OConsole.Blue);
-					OConsole.dump("  ", node.toString());
-					OConsole.end();
+					beginColor(Blue);
+					dump("  ", node.toString());
+					endColor();
 				}
 				OCode code = typeExpr(env, node);
 				env.add(LocalVariables.class, new LocalVariables());
@@ -136,11 +136,13 @@ public class Origami extends OEnv.OBaseEnv {
 				if (!code.getType().is(void.class)) {
 					String t2 = code.getType().toString();
 					StringBuilder sb = new StringBuilder();
-					sb.append(OConsole.bold("=> "));
-					OStringOut.appendQuoted(sb, value);
+					sb.append(color(Gray, " => "));
+					OStringBuilder.appendQuoted(sb, value);
+					beginColor(sb, Cyan);
 					sb.append(" :");
-					OStringOut.append(sb, t2);
-					OConsole.println(sb.toString());
+					OStringBuilder.append(sb, t2);
+					endColor(sb);
+					println(sb.toString());
 				}
 				return true;
 			} catch (Throwable e) {
@@ -163,14 +165,14 @@ public class Origami extends OEnv.OBaseEnv {
 		}
 		if (e instanceof OErrorCode) {
 			OConsole.println(OConsole.bold("Static Error: "));
-			OConsole.begin(OConsole.Red);
+			OConsole.beginColor(OConsole.Red);
 			OConsole.println(((OErrorCode) e).getLog());
-			OConsole.end();
+			OConsole.endColor();
 		} else {
 			OConsole.println(OConsole.bold("Runtime Exception: "));
-			OConsole.begin(OConsole.Yellow);
+			OConsole.beginColor(OConsole.Yellow);
 			e.printStackTrace();
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 

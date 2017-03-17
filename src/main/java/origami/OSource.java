@@ -18,9 +18,9 @@ package origami;
 
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public class OSource implements OStringOut {
+public class OSource implements OStringBuilder {
 	Source s = null;
 	int pos;
 
@@ -77,7 +77,7 @@ public class OSource implements OStringOut {
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	public static OSource from(Tree<?> t) {

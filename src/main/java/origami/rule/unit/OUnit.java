@@ -20,9 +20,9 @@ import origami.ffi.Immutable;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
 import origami.ffi.OrigamiObject;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public abstract class OUnit<This extends OUnit<This>> implements OrigamiObject, Immutable, OStringOut {
+public abstract class OUnit<This extends OUnit<This>> implements OrigamiObject, Immutable, OStringBuilder {
 	private final double value;
 
 	protected OUnit(double value) {
@@ -152,7 +152,7 @@ public abstract class OUnit<This extends OUnit<This>> implements OrigamiObject, 
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 }

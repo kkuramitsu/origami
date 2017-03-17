@@ -43,11 +43,11 @@ public class Ocheck extends Orun {
 			int passCount = ODebug.getPassCount();
 			int failCount = testCount - passCount;
 			String msg = (failCount > 0 || testCount == 0) ? OConsole.color(OConsole.Red, "FAIL") : "OK";
-			p(Note, "Tested %s (%d/%d) %s", file, passCount, testCount, msg);
+			p(Yellow, "Tested %s (%d/%d) %s", file, passCount, testCount, msg);
 			totalTestCount += 1;
 			totalPassCount += (failCount > 0 || testCount == 0) ? 0 : 1;
 			ODebug.resetCount();
 		}
-		p(Note, "Results (%d/%d)", totalPassCount, totalTestCount);
+		p(Yellow, "Results (%d/%d)", totalPassCount, totalTestCount);
 	}
 }

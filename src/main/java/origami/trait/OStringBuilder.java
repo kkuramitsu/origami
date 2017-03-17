@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import origami.ODebug;
 import origami.ffi.OAlias;
 
-public interface OStringOut {
+public interface OStringBuilder {
 	// default method cannot override a method from java.lang.Object
 	// public default String toString() {
 	// StringBuilder sb = new StringBuilder();
@@ -31,23 +31,23 @@ public interface OStringOut {
 
 	public void strOut(StringBuilder sb);
 
-	public static String stringfy(OStringOut o) {
+	public static String stringfy(OStringBuilder o) {
 		StringBuilder sb = new StringBuilder();
 		append(sb, o);
 		return sb.toString();
 	}
 
 	public static void append(StringBuilder sb, Object o) {
-		if (o instanceof OStringOut) {
-			((OStringOut) o).strOut(sb);
+		if (o instanceof OStringBuilder) {
+			((OStringBuilder) o).strOut(sb);
 		} else {
 			sb.append(o);
 		}
 	}
 
 	public static void appendQuoted(StringBuilder sb, Object o) {
-		if (o instanceof OStringOut) {
-			((OStringOut) o).strOut(sb);
+		if (o instanceof OStringBuilder) {
+			((OStringBuilder) o).strOut(sb);
 		} else if (o instanceof String) {
 			sb.append("'");
 			sb.append(o);
@@ -72,7 +72,7 @@ public interface OStringOut {
 					String name = a == null ? f.getName() : a.name();
 					sb.append(name);
 					sb.append(": ");
-					OStringOut.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
+					OStringBuilder.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
 					cnt++;
 				}
 			}

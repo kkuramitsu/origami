@@ -21,7 +21,7 @@ import origami.ODebug;
 import origami.OEnv;
 import origami.ffi.OrigamiObject;
 import origami.rule.LayerRules;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class IrohaAPIs implements OrigamiObject {
 	public final static void print(Object o) {
@@ -37,7 +37,7 @@ public class IrohaAPIs implements OrigamiObject {
 	}
 
 	public final static void printf(String fmt, Object... args) {
-		OConsole.print(OStringOut.format(fmt, args));
+		OConsole.print(OStringBuilder.format(fmt, args));
 	}
 
 	public final static <T> T p(T o, String file, int linenum, String expr, String type) {
@@ -101,7 +101,7 @@ public class IrohaAPIs implements OrigamiObject {
 		sb.append(OConsole.color(ODebug.Red, ":"));
 		sb.append(type);
 		sb.append(OConsole.color(ODebug.Gray, " => "));
-		OStringOut.appendQuoted(sb, o);
+		OStringBuilder.appendQuoted(sb, o);
 		return sb.toString();
 	}
 

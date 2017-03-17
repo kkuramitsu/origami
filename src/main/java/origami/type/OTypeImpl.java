@@ -16,13 +16,13 @@
 
 package origami.type;
 
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public abstract class OTypeImpl implements OType, OStringOut {
+public abstract class OTypeImpl implements OType, OStringBuilder {
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override

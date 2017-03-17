@@ -46,9 +46,9 @@ import origami.lang.OTypeName;
 import origami.rule.OFmt;
 import origami.trait.OArrayUtils;
 import origami.trait.OTypeUtils;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public interface OType extends OStringOut, OArrayUtils, OTypeName, ONameEntity {
+public interface OType extends OStringBuilder, OArrayUtils, OTypeName, ONameEntity {
 
 	public final static OType[] emptyTypes = new OType[0];
 

@@ -19,7 +19,7 @@ package origami.type;
 import java.lang.reflect.TypeVariable;
 
 import origami.ODebug;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public class OParamType extends OTypeImpl {
 	private final OType base;
@@ -109,13 +109,13 @@ public class OParamType extends OTypeImpl {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		OStringOut.append(sb, this.base);
+		OStringBuilder.append(sb, this.base);
 		sb.append("<");
 		for (int i = 0; i < params.length; i++) {
 			if (i > 0) {
 				sb.append(",");
 			}
-			OStringOut.append(sb, params[i]);
+			OStringBuilder.append(sb, params[i]);
 		}
 		sb.append(">");
 	}

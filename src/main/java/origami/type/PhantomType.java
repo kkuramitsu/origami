@@ -16,7 +16,7 @@
 
 package origami.type;
 
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
 public abstract class PhantomType implements OWrapperType {
 
@@ -42,7 +42,7 @@ public abstract class PhantomType implements OWrapperType {
 
 	@Override
 	public String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override

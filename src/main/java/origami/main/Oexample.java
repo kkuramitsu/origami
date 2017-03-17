@@ -53,7 +53,7 @@ public class Oexample extends OCommand {
 		if (tested > 0) {
 			double passRatio = (double) succ / tested;
 			if (cov != null) {
-				begin(Note);
+				begin(Yellow);
 				cov.dump(fac);
 				end();
 				double fullcov = cov.cov();

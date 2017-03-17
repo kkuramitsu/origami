@@ -8,9 +8,9 @@ import java.util.Objects;
 
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
-import origami.trait.OStringOut;
+import origami.trait.OStringBuilder;
 
-public class OGrammar extends AbstractList<OProduction> implements OStringOut {
+public class OGrammar extends AbstractList<OProduction> implements OStringBuilder {
 
 	protected String id;
 	protected OGrammar parent;
@@ -126,7 +126,7 @@ public class OGrammar extends AbstractList<OProduction> implements OStringOut {
 
 	@Override
 	public final String toString() {
-		return OStringOut.stringfy(this);
+		return OStringBuilder.stringfy(this);
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class OGrammar extends AbstractList<OProduction> implements OStringOut {
 			sb.append(" ");
 			sb.append(name);
 			sb.append(" = ");
-			OStringOut.append(sb, exprMap.get(name));
+			OStringBuilder.append(sb, exprMap.get(name));
 		}
 	}
 

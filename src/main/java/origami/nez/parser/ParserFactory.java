@@ -422,9 +422,9 @@ public class ParserFactory {
 	public final static int Info = 37;
 
 	void report(int level, String msg) {
-		OConsole.begin(level);
+		OConsole.beginColor(level);
 		OConsole.println(msg);
-		OConsole.end();
+		OConsole.endColor();
 	}
 
 	private int error() {
@@ -470,17 +470,17 @@ public class ParserFactory {
 
 	public final void verbose(String fmt, Object... a) {
 		if (verboseMode) {
-			OConsole.begin(34);
+			OConsole.beginColor(34);
 			OConsole.println(String.format(fmt, a));
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 
 	public final void trace(Throwable e) {
 		if (verboseMode) {
-			OConsole.begin(34);
+			OConsole.beginColor(34);
 			e.printStackTrace(System.out);
-			OConsole.end();
+			OConsole.endColor();
 		}
 	}
 
