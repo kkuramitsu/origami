@@ -1,0 +1,7 @@
+// unary.iroha -- a test for unary operator
+
+let a = -1
+assert(-a == 1)
+let b = false
+assert(!b)
+

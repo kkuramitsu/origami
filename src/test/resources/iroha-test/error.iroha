@@ -1,0 +1,6 @@
+// error.iroha
+
+let f() = a
+
+f()
+

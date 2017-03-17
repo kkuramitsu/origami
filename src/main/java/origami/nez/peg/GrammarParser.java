@@ -16,48 +16,94 @@
 
 package origami.nez.peg;
 
+import java.io.IOException;
 import java.util.List;
 
+import origami.nez.ast.Source;
+import origami.nez.ast.SourceLogger;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.ast.TreeVisitorMap;
+import origami.nez.parser.CommonSource;
+import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
 import origami.trait.OStringUtils;
 
-public class ExpressionParser extends TreeVisitorMap<ExpressionParser.ExpressionTransducer> {
+public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransducer> {
+
+	public final static Symbol _Source = Symbol.unique("Source");
+	public final static Symbol _Import = Symbol.unique("Import");
+	public final static Symbol _Grammar = Symbol.unique("Grammar");
+	public final static Symbol _Production = Symbol.unique("Production");
+	public final static Symbol _body = Symbol.unique("body");
+	public final static Symbol _public = Symbol.unique("public");
+
+	public final static Symbol _name = Symbol.unique("name");
+	public final static Symbol _expr = Symbol.unique("expr");
+	public final static Symbol _symbol = Symbol.unique("symbol");
+	public final static Symbol _min = Symbol.unique("min");
+	public final static Symbol _mask = Symbol.unique("mask"); // <scanf >
+
+	public final static Symbol _String = Symbol.unique("String");
 
 	public static interface ExpressionTransducer {
-		public Expression accept(Tree<?> node, Expression next);
+		public Expression accept(Tree<?> node, Expression next) throws IOException;
 	}
 
+	final SourceLogger logger;
 	final OGrammar grammar;
-	// final ParserFactory factory;
 
-	ExpressionParser(ParserFactory factory, OGrammar grammar) {
+	public GrammarParser(OGrammar grammar) {
+		this(null, grammar);
+	}
+
+	public GrammarParser(SourceLogger logger, OGrammar grammar) {
+		this.logger = logger == null ? new SourceLogger.SimpleSourceLogger() : logger;
 		this.grammar = grammar;
-		// this.factory = factory;
-		init(ExpressionParser.class, new SyntaxRule());
+		init(GrammarParser.class, new SyntaxRule());
+	}
+	
+	/**
+	 * NezParser
+	 */
+
+	public static final Parser NezParser;
+
+	static {
+		OGrammar grammar = new OGrammar("nez");
+		ParserFactory factory = new ParserFactory();
+		factory.setVerboseMode(false);
+		new NezGrammar().load(factory, grammar, "Start");
+		// grammar.dump();
+		NezParser = grammar.newParser();
+	}
+
+	public void importSource(Source s) throws IOException {
+		Tree<?> t = NezParser.parse(s);
+		this.find(key(t)).accept(t, null);
+	}
+	
+	public class SyntaxRule implements ExpressionTransducer {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			undefined(node);
+			return null;
+		}
 	}
 
 	private final String key(Tree<?> node) {
 		return node.getTag().getSymbol();
 	}
 
-	public Expression newInstance(Tree<?> node) {
+	/* Expression */
+	
+	public Expression newExpression(Tree<?> node) throws IOException {
 		return this.find(key(node)).accept(node, null);
 	}
-
-	public class SyntaxRule implements ExpressionTransducer {
-		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			undefined(node);
-			return null;
-		}
-	}
-
+	
 	public class _NonTerminal extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			String name = node.toText();
 
 			return new Expression.PNonTerminal(grammar, name, node);
@@ -66,7 +112,7 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _String extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression es) {
+		public Expression accept(Tree<?> node, Expression es) throws IOException {
 			String name = OProduction.terminalName(node.toText());
 			return new Expression.PNonTerminal(grammar, name, node);
 		}
@@ -74,14 +120,14 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Character extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			return Expression.newString(OStringUtils.unquoteString(node.toText()), node);
 		}
 	}
 
 	public class _Class extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			List<Expression> l = Expression.newList(2);
 			if (node.size() > 0) {
 				for (int i = 0; i < node.size(); i++) {
@@ -163,7 +209,7 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _ByteChar extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			String t = node.toText();
 			if (t.startsWith("U+")) {
 				int c = parseHexicalNumber(t.charAt(2));
@@ -197,7 +243,7 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _ByteClass extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			String t = node.toText();
 			return parseByteClass(t, node);
 		}
@@ -239,17 +285,17 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _AnyChar extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			return new Expression.PAny(node);
 		}
 	}
 
 	public class _Choice extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			List<Expression> l = Expression.newList(node.size());
 			for (int i = 0; i < node.size(); i++) {
-				Expression.addChoice(l, newInstance(node.get(i)));
+				Expression.addChoice(l, newExpression(node.get(i)));
 			}
 			return Expression.newChoice(l, node);
 		}
@@ -257,10 +303,10 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Sequence extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			List<Expression> l = Expression.newList(node.size());
 			for (int i = 0; i < node.size(); i++) {
-				Expression.addSequence(l, newInstance(node.get(i)));
+				Expression.addSequence(l, newExpression(node.get(i)));
 			}
 			return Expression.newSequence(l, node);
 		}
@@ -268,33 +314,33 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Not extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PNot(newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PNot(newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _And extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PAnd(newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PAnd(newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Option extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.POption(newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.POption(newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Repetition extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			int min = 0;
-			if (node.get(GrammarLoader._min, null) != null) {
+			if (node.get(_min, null) != null) {
 				min = 1;
 			}
-			return new Expression.PRepetition(newInstance(node.get(GrammarLoader._expr)), min, node);
+			return new Expression.PRepetition(newExpression(node.get(_expr)), min, node);
 		}
 	}
 
@@ -302,16 +348,16 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Tree extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			Tree<?> exprNode = node.get(GrammarLoader._expr, null);
-			Expression p = (exprNode == null) ? Expression.defaultEmpty : newInstance(exprNode);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			Tree<?> exprNode = node.get(_expr, null);
+			Expression p = (exprNode == null) ? Expression.defaultEmpty : newExpression(exprNode);
 			return Expression.newTree(p, node);
 		}
 	}
 
 	private Symbol parseLabel(Tree<?> node) {
 		Symbol label = null;
-		Tree<?> labelNode = node.get(GrammarLoader._name, null);
+		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
 			label = Symbol.unique(labelNode.toText());
 		}
@@ -320,59 +366,59 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _FoldTree extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			Tree<?> exprNode = node.get(GrammarLoader._expr, null);
-			Expression p = (exprNode == null) ? Expression.defaultEmpty : newInstance(exprNode);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			Tree<?> exprNode = node.get(_expr, null);
+			Expression p = (exprNode == null) ? Expression.defaultEmpty : newExpression(exprNode);
 			return Expression.newFoldTree(parseLabel(node), p, node);
 		}
 	}
 
 	public class _Link extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PLinkTree(parseLabel(node), newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PLinkTree(parseLabel(node), newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Tagging extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			return new Expression.PTag(Symbol.unique(node.toText()), node);
 		}
 	}
 
 	public class _Replace extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			return new Expression.PReplace(node.toText(), node);
 		}
 	}
 
 	public class _If extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PIfCondition(node.getText(GrammarLoader._name, ""), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PIfCondition(node.getText(_name, ""), node);
 		}
 	}
 
 	public class _On extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.POnCondition(node.getText(GrammarLoader._name, ""), newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.POnCondition(node.getText(_name, ""), newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Block extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PSymbolScope(NezFunc.block, null, newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PSymbolScope(NezFunc.block, null, newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Local extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PSymbolScope(NezFunc.local, Symbol.unique(node.getText(GrammarLoader._name, "")), newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PSymbolScope(NezFunc.local, Symbol.unique(node.getText(_name, "")), newExpression(node.get(_expr)), node);
 		}
 	}
 
@@ -392,8 +438,8 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Symbol extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String param = node.getText(GrammarLoader._name, "");
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String param = node.getText(_name, "");
 			Expression.PNonTerminal pat = new Expression.PNonTerminal(grammar, param, node);
 			return new Expression.PSymbolAction(NezFunc.symbol, param, pat, node);
 		}
@@ -401,8 +447,8 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Is extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String param = node.getText(GrammarLoader._name, "");
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String param = node.getText(_name, "");
 			Expression.PNonTerminal pat = new Expression.PNonTerminal(grammar, param, node);
 			return new Expression.PSymbolPredicate(NezFunc.is, param, pat, node);
 		}
@@ -410,8 +456,8 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Isa extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String param = node.getText(GrammarLoader._name, "");
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String param = node.getText(_name, "");
 			Expression.PNonTerminal pat = new Expression.PNonTerminal(grammar, param, node);
 			return new Expression.PSymbolPredicate(NezFunc.isa, param, pat, node);
 		}
@@ -419,8 +465,8 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Match extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String param = node.getText(GrammarLoader._name, "");
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String param = node.getText(_name, "");
 			Expression.PNonTerminal pat = new Expression.PNonTerminal(grammar, param, node);
 			return new Expression.PSymbolPredicate(NezFunc.match, param, pat, node);
 		}
@@ -428,10 +474,10 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Exists extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String param = node.getText(GrammarLoader._name, "");
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String param = node.getText(_name, "");
 			Expression.PNonTerminal pat = new Expression.PNonTerminal(grammar, param, node);
-			String symbol = node.getText(GrammarLoader._symbol, null);
+			String symbol = node.getText(_symbol, null);
 			if (symbol != null) {
 				param = param + "+" + symbol;
 			}
@@ -441,16 +487,16 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 
 	public class _Scanf extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			String mask = node.getText(GrammarLoader._mask, null);
-			return new Expression.PScan(mask, newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String mask = node.getText(_mask, null);
+			return new Expression.PScan(mask, newExpression(node.get(_expr)), node);
 		}
 	}
 
 	public class _Repeat extends SyntaxRule {
 		@Override
-		public Expression accept(Tree<?> node, Expression e) {
-			return new Expression.PRepeat(newInstance(node.get(GrammarLoader._expr)), node);
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return new Expression.PRepeat(newExpression(node.get(_expr)), node);
 		}
 	}
 
@@ -480,5 +526,108 @@ public class ExpressionParser extends TreeVisitorMap<ExpressionParser.Expression
 	// return Expressions.newDispatch(inners, indexMap);
 	// }
 	// }
+	
+	/* nez construction */
+	
+	public class _Production extends SyntaxRule {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			Tree<?> nameNode = node.get(_name);
+			boolean isPublic = node.get(_public, null) != null;
+			String name = nameNode.toText();
+			if (nameNode.is(_String)) {
+				name = OProduction.terminalName(name);
+			}
+			Expression rule = grammar.getLocalExpression(name);
+			if (rule != null) {
+				logger.reportWarning(node, "duplicated production: " + name);
+				return rule;
+			}
+			rule = newExpression(node.get(_expr));
+			grammar.addProduction(name, rule);
+			return rule;
+		}
+	}
+
+	public class _Source extends SyntaxRule {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			for (Tree<?> sub : node) {
+				newExpression(sub);
+			}
+			return null;
+		}
+	}
+
+	public class _Grammar extends SyntaxRule {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String name = node.getText(_name, null);
+			OGrammar g = new OGrammar(name, grammar);
+			GrammarParser parser = new GrammarParser(logger, g);
+			return parser.newExpression(node.get(_body));
+		}
+	}
+
+	public class _Import extends SyntaxRule {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			String name = node.getText(_name, null);
+			String path = name;
+			if (!name.startsWith("/") && !name.startsWith("\\")) {
+				path = extractFilePath(node.getSource().getResourceName()) + "/" + name;
+			}
+			importSource(CommonSource.newFileSource(path, null));
+			return null;
+		}
+	}
+
+	public class _Example extends SyntaxRule {
+		@Override
+		public Expression accept(Tree<?> node, Expression e) throws IOException {
+			return null;
+		}
+	}
+
+	public final static String extractFilePath(String path) {
+		int loc = path.lastIndexOf('/');
+		if (loc > 0) {
+			return path.substring(0, loc);
+		}
+		loc = path.lastIndexOf('\\');
+		if (loc > 0) {
+			return path.substring(0, loc);
+		}
+		return path;
+	}
+//
+//	public final static String extractFileName(String path) {
+//		int loc = path.lastIndexOf('/');
+//		if (loc > 0) {
+//			return path.substring(loc + 1);
+//		}
+//		loc = path.lastIndexOf('\\');
+//		if (loc > 0) {
+//			return path.substring(loc + 1);
+//		}
+//		return path;
+//	}
+//
+//	public final static String extractFileExtension(String path) {
+//		int loc = path.lastIndexOf('.');
+//		if (loc > 0) {
+//			return path.substring(loc + 1);
+//		}
+//		return path;
+//	}
+//
+//	public final static String changeFileExtension(String path, String ext) {
+//		int loc = path.lastIndexOf('.');
+//		if (loc > 0) {
+//			return path.substring(0, loc + 1) + ext;
+//		}
+//		return path + "." + ext;
+//	}
+
 
 }

@@ -1,0 +1,7 @@
+// range.iroha - testing generic constructor
+
+let r = (1 to 3)
+let f n = (1 to n)
+
+assert(r == f(3))
+

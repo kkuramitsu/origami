@@ -34,7 +34,7 @@ public class Ocheck extends Orun {
 			try {
 				String ext = CommonSource.extractFileExtension(file);
 				fac.set("grammar", ext + ".nez");
-				Origami env = new Origami(fac);
+				Origami env = new Origami(fac.getGrammar());
 				env.loadScriptFile(file);
 			} catch (Throwable e) {
 				ODebug.traceException(e);

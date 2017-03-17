@@ -1,0 +1,16 @@
+// isa.iroha - a test for isa operator
+
+let s = "hello"
+let a = 1
+
+assert(s isa String)
+assert(a isa int)
+assert(!(a isa double))
+
+let f s = s isa String
+let g n = n isa int
+
+assert(f("hello"))
+assert(g(1))
+assert(!(g(1) isa double))
+

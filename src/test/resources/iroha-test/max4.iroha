@@ -1,0 +1,8 @@
+// max4 - a test for max * max
+
+let max(m,n) = if(m>n) m else n
+let max(n1,n2,n3,n4) = max(max(n1,n2),max(n3,n4))
+
+assert(max(1,2,3,5) == 5)
+assert(max(2,7,1,4) == 7)
+

@@ -30,6 +30,7 @@ import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.TreeWriter;
 import origami.nez.peg.GrammarLoader;
+import origami.nez.peg.GrammarParser;
 import origami.nez.peg.OGrammar;
 
 public class Oexample extends OCommand {
@@ -83,8 +84,8 @@ public class Oexample extends OCommand {
 	}
 
 	void importFile(ParserFactory fac, String prefix, Source s) throws IOException {
-		Tree<?> t = OGrammar.NezParser.parse(s);
-		if (t.is(GrammarLoader._Source)) {
+		Tree<?> t = GrammarParser.NezParser.parse(s);
+		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
 				parse(fac, prefix, sub);
 			}
@@ -101,23 +102,23 @@ public class Oexample extends OCommand {
 	}
 
 	void parse(ParserFactory factory, String prefix, Tree<?> node) throws IOException {
-		if (node.is(GrammarLoader._Production)) {
+		if (node.is(GrammarParser._Production)) {
 			return;
 		}
 		if (node.is(_Example)) {
 			parseExample(factory, prefix, node);
 			return;
 		}
-		if (node.is(GrammarLoader._Grammar)) {
-			String name = node.getText(GrammarLoader._name, null);
-			Tree<?> body = node.get(GrammarLoader._body);
+		if (node.is(GrammarParser._Grammar)) {
+			String name = node.getText(GrammarParser._name, null);
+			Tree<?> body = node.get(GrammarParser._body);
 			for (Tree<?> sub : body) {
 				parse(factory, prefix(prefix, name), sub);
 			}
 			return;
 		}
-		if (node.is(GrammarLoader._Import)) {
-			String name = node.getText(GrammarLoader._name, null);
+		if (node.is(GrammarParser._Import)) {
+			String name = node.getText(GrammarParser._name, null);
 			String path = name;
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = GrammarLoader.extractFilePath(node.getSource().getResourceName()) + "/" + name;
@@ -128,7 +129,7 @@ public class Oexample extends OCommand {
 	}
 
 	public void parseExample(ParserFactory factory, String prefix, Tree<?> node) throws IOException {
-		Tree<?> nameNode = node.get(GrammarLoader._name, null);
+		Tree<?> nameNode = node.get(GrammarParser._name, null);
 		String uname = uname(prefix, nameNode.toText());
 		Parser p = this.getParser(factory, nameNode, uname);
 		if (p != null) {

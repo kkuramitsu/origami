@@ -1,0 +1,9 @@
+// unit.iroha
+
+let d = 42.195 [m]
+let f(d) = d * 1000
+
+assert d isa [m]
+assert f(d) isa d
+assert f(d) > d
+assert (int)d == 42

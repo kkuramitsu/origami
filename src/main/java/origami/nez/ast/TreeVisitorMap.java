@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
+import origami.OConsole;
 import origami.trait.OVerbose;
 
 public class TreeVisitorMap<V> {
@@ -56,9 +57,7 @@ public class TreeVisitorMap<V> {
 				visitors.put(n, (V) v);
 			}
 		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException | InstantiationException | IllegalArgumentException e) {
-			// Verbose.println("TreeVisitorMap.load(%s, %s): %s",
-			// baseClass.getName(), c.getName(), e.toString());
-			// Verbose.traceException(e);
+			//OConsole.exit(1, e);
 		}
 	}
 

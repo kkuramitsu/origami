@@ -28,6 +28,7 @@ import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
 import origami.nez.parser.ParserFactory.TreeWriter;
 import origami.nez.peg.GrammarLoader;
+import origami.nez.peg.GrammarParser;
 import origami.nez.peg.OGrammar;
 import origami.trait.OVerbose;
 
@@ -39,7 +40,7 @@ public class Oinez extends OCommand {
 		p(Yellow, "Tips: Start with an empty line for multiple lines.");
 		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
-		Parser nezParser = OGrammar.NezParser;
+		Parser nezParser = GrammarParser.NezParser;
 		nezParser.setPrintingException(false);
 		nezParser.setThrowingException(false);
 		Parser pegParser = parser(fac);
@@ -55,8 +56,8 @@ public class Oinez extends OCommand {
 			Source sc = CommonSource.newStringSource("<stdio>", linenum, input);
 			try {
 				Tree<?> node = nezParser.parse(sc);
-				if (node != null && node.is(GrammarLoader._Source)) {
-					OGrammar g = GrammarLoader.load(fac, sc);
+				if (node != null && node.is(GrammarParser._Source)) {
+					OGrammar g = OGrammar.loadSource(sc);
 					fac = fac.newFactory(g);
 					pegParser = parser(fac);
 					prompt = prompt(fac);

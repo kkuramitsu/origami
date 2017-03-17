@@ -285,7 +285,7 @@ public class ParserFactory {
 		if (defaultGrammar == null) {
 			String path = value("grammar", null);
 			if (path != null) {
-				defaultGrammar = GrammarLoader.load(this, path);
+				defaultGrammar = OGrammar.loadFile(path, list("grammar-path"));
 			}
 			if (defaultGrammar == null) {
 				defaultGrammar = new OGrammar(); // Empty

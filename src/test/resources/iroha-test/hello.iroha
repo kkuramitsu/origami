@@ -1,0 +1,11 @@
+// hello.iroha - a test for hello,world printing
+//
+
+println("hello,world")
+
+let main() = {
+	println("hello,world")
+}
+
+main()
+assert(true) // just checking reach here 

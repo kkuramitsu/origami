@@ -59,14 +59,14 @@ public interface OScriptUtils {
 		env.set(InteractiveMode, Boolean.class, (Boolean) t);
 	}
 
-	public default Parser getParser(OEnv env) {
-		return env.get(Parser.class);
-	}
-
-	public default void setParser(OEnv env, Parser p) {
-		env.add(Parser.class, p);
-		assert (p == getParser(env));
-	}
+//	public default Parser getParser(OEnv env) {
+//		return env.get(Parser.class);
+//	}
+//
+//	public default void setParser(OEnv env, Parser p) {
+//		env.add(Parser.class, p);
+//		assert (p == getParser(env));
+//	}
 
 	public static Set<String> symbols(String... names) {
 		Set<String> set = new HashSet<>();
@@ -214,7 +214,7 @@ public interface OScriptUtils {
 			t = new OTree();
 		}
 		Source sc = CommonSource.newFileSource(path, null);
-		Parser p = getParser(env);
+		Parser p = env.get(Parser.class);
 		return p.parse(sc, (TreeConstructor<Tree<?>>) t, (TreeConnector<Tree<?>>) t);
 	}
 

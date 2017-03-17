@@ -1,0 +1,5 @@
+
+let f n = return n
+
+assert(f(1) == 1)
+

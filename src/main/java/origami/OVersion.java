@@ -17,6 +17,9 @@
 package origami;
 
 public class OVersion {
+	public final static String ProgName = "ORIGAMI";
+	public final static String CodeName = "Celery";
+	
 	public final static int MainVersion = 0;
 	public final static int MinorVersion = 0;
 	public final static int PatchLevel = 1;

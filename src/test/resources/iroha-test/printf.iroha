@@ -1,0 +1,13 @@
+// printf.iroha - a test for varargs function with printf
+
+let f m n = {
+	printf("%d+%d=%d", m, n, m+n)
+}
+
+f(1,2)
+
+printf("hello")
+printf("zero=%d", 1)
+printf("name=%s, age=%d", "naruto", 17)
+println()
+assert(true) // for testing reach here

@@ -1,0 +1,14 @@
+// 
+
+let max(m, n) = {
+	if(m > n) {
+		return m
+	}
+	else {
+		return n
+	}
+}
+
+assert(max(1,2) == 2)
+assert(max(2,1) == 2)
+

@@ -1,0 +1,10 @@
+// bool.iroha - for boolean tests
+
+let f x y = (x == y)
+
+assert(f(1,1))
+assert(!f(1,2))
+
+let g b1 b2 b3 = b1 and b2 or b3
+
+assert(g(true, true, true))

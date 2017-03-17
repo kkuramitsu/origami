@@ -1,0 +1,8 @@
+// assume.iroha - a test for assuming variable types
+
+assume x,y,z : int
+assume name : String
+
+let f x y = x + y
+
+assert f(1,2) isa int

@@ -1,0 +1,15 @@
+// ffi.iroha - a test for foreign function interfaces
+//
+
+import origami.ffi.Sample
+
+let s = Sample("YJ", 10.3)
+
+assert(s.isHeavy())
+assert(s.name() == "YJ")
+
+let f t = Sample(t, 10.8)
+
+assert(f("YJ").isHeavy())
+assert(f("YJ").name() == "YJ")
+

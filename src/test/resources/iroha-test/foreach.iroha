@@ -1,0 +1,13 @@
+// iforeach.iroha
+
+let f() = {
+	var c = 0
+	foreach n in (0 to <3) {
+		// printf("%d %d", n, c)
+		c = n
+	}
+	return c
+}
+
+assert(f()==2)
+

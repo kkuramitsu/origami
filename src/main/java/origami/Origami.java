@@ -39,20 +39,19 @@ import origami.trait.OStringBuilder;
 public class Origami extends OEnv.OBaseEnv {
 	final OrigamiRuntime runtime = new OrigamiRuntime();
 
-	public Origami(ParserFactory fac) throws IOException {
+	public Origami(OGrammar grammar) throws IOException {
 		super(null, "__root__");
 		add(OFuncCallSite.class, new OFuncCallSite());
 		add(OMethodCallSite.class, new OMethodCallSite());
 		add(OGetterCallSite.class, new OGetterCallSite());
-		;
-		this.add(ParserFactory.class, fac);
-		init(fac);
-		Parser p = fac.newParser();
-		runtime.setParser(this, p);
+		init(grammar);
+		Parser p = grammar.newParser();
+		this.add(Parser.class, p);
+		this.add(OGrammar.class, grammar);
 	}
+	
 
-	public void init(ParserFactory fac) throws IOException {
-		OGrammar g = fac.getGrammar();
+	public void init(OGrammar g) throws IOException {
 		OProduction pp = g.getProduction("ORIGAMI");
 		if (pp != null) {
 			String c = pp.getExpression().toString().replaceAll("'", "");
@@ -84,6 +83,16 @@ public class Origami extends OEnv.OBaseEnv {
 		}
 	}
 
+	public boolean loadScriptFile(Source sc) throws IOException {
+		try {
+			runtime.load(this, sc);
+			return true;
+		} catch (Throwable e) {
+			showThrowable(e);
+			return false;
+		}
+	}
+
 	public Object eval(String source, int line, String script) throws Throwable {
 		Source sc = CommonSource.newStringSource(source, line, script);
 		return runtime.eval(this, sc);
@@ -98,7 +107,7 @@ public class Origami extends OEnv.OBaseEnv {
 		OTree defaultTree = new OTree();
 
 		public void load(OEnv env, Source sc) throws Throwable {
-			Parser p = getParser(env);
+			Parser p = env.get(Parser.class);
 			p.setThrowingException(true);
 			p.setPrintingException(true);
 			Tree<?> t = p.parse(sc, defaultTree, defaultTree);
@@ -107,7 +116,7 @@ public class Origami extends OEnv.OBaseEnv {
 		}
 
 		private Tree<?> parseTree(OEnv env, Source sc) throws IOException {
-			Parser p = getParser(env);
+			Parser p = env.get(Parser.class);
 			p.setThrowingException(false);
 			p.setPrintingException(true);
 			return p.parse(sc, defaultTree, defaultTree);

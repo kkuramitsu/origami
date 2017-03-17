@@ -1,0 +1,10 @@
+// match.iroha - a test for match expression
+let f m = match m {
+  case 0 => 1
+  case _ => 0
+}
+
+assert(f(0) == 1)
+assert(f(1) == 0)
+//assert(f(3) == 0)
+

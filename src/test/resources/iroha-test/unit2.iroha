@@ -1,0 +1,11 @@
+// unit2.iroha a test for unit with new unit definitions
+
+unit [km] = [m] * 0.001
+
+let d = 42.195 [km]
+let f(d) = d / 2.0
+
+assert d isa [km]
+assert f(d) isa d
+assert f(d) < d
+

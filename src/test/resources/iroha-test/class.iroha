@@ -1,0 +1,10 @@
+// class.iroha - a test for class
+
+class Point(x:int,y:int,z:int) 
+
+let p = Point(0,0,0)
+assert p.x == 1
+
+let f(n) = Point(n,n+1,n+2)
+assert f(0).y == 1
+

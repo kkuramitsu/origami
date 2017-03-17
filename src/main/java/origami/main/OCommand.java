@@ -34,18 +34,19 @@ import origami.trait.OStringBuilder;
 
 public abstract class OCommand extends OConsole {
 
-	public final static String ProgName = "ORIGAMI";
-	public final static String CodeName = "Celery";
+//	public final static String ProgName = "ORIGAMI";
+//	public final static String CodeName = "Celery";
+//	
+//	public final static int MajorVersion = 0;
+//	public final static int MinerVersion = 0;
+//	public final static int PatchLevel = 1;
 	
-	public final static int MajorVersion = 0;
-	public final static int MinerVersion = 0;
-	public final static int PatchLevel = 1;
 	public static void main(String[] args) {
 		ParserFactory fac = new ParserFactory();
 		fac.set("grammar-path", new String[] { "/origami/grammar", "/nez/lib" });
 		try {
 			OCommand com = newCommand(args, fac);
-			fac.verbose("nez-%d.%d.%d %s", MajorVersion, MinerVersion, PatchLevel, com.getClass().getName());
+			fac.verbose("nez-%s %s", OVersion.Version, com.getClass().getName());
 			fac.verbose("fac: %s", fac);
 			com.exec(fac);
 		} catch (IOException e) {
@@ -117,13 +118,9 @@ public abstract class OCommand extends OConsole {
 	}
 
 	protected static void displayVersion() {
-		p(bold(ProgName + "-" + OVersion.Version + " (" + CodeName + ") on Java JVM-" + System.getProperty("java.version")));
-		p(Blue, OVersion.Copyright);
+		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + OVersion.CodeName + ") on Java JVM-" + System.getProperty("java.version"));
+		p(Yellow, OVersion.Copyright);
 	}
-
-//	protected void displayVersion(String progName, String version) {
-//		p(bold(progName + "-" + version + " (" + System.getenv("USER") + ") on Nez-" + OVersion.Version));
-//	}
 
 	protected static void usage(String msg) {
 		displayVersion();

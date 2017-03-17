@@ -1,0 +1,11 @@
+// testing recursive call
+// sum.iroha - recursive call
+// sum2.iroha - easy. return type is statically given.  
+
+let sum(n) = if (n == 0) 0 else n + sum(n-1)
+
+assert(sum(0) == 0)
+assert(sum(1) == 1)
+assert(sum(2) == 3)
+
+

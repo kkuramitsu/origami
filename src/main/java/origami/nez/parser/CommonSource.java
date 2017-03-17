@@ -251,34 +251,46 @@ public abstract class CommonSource implements Source {
 	public final static Source newStringSource(String resource, long linenum, String str) {
 		return new StringSource(resource, linenum, str);
 	}
-
+	
 	public final static Source newFileSource(String fileName, String[] paths) throws IOException {
+		return newFileSource(CommonSource.class, fileName, paths);
+	}
+
+	public final static Source newFileSource(Class<?> c, String fileName, String[] paths) throws IOException {
 		File f = new File(fileName);
-		if (!f.isFile() && paths != null) {
-			for (String path : paths) {
-				if (path.endsWith("/")) {
-					path += fileName;
-				} else {
-					path += "/" + fileName;
-				}
-				InputStream stream = CommonSource.class.getResourceAsStream(path);
-				if (stream != null) {
-					BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-					StringBuilder sb = new StringBuilder();
-					String line = reader.readLine();
-					while (true) {
-						sb.append(line);
-						line = reader.readLine();
-						if (line == null) {
-							break;
-						}
-						sb.append("\n");
+		if (!f.isFile()) {
+			if(paths != null) {
+				for (String path : paths) {
+					path += path.endsWith("/") ? fileName : "/" + fileName;
+					InputStream stream = c.getResourceAsStream(path);
+					if (stream != null) {
+						return newStringSource(fileName, stream);
 					}
-					reader.close();
-					return new StringSource(fileName, 1, sb.toString());
+				}
+			}
+			else {
+				InputStream stream = c.getResourceAsStream(fileName);
+				if (stream != null) {
+					return newStringSource(fileName, stream);
 				}
 			}
 		}
 		return new FileSource(fileName);
+	}
+
+	public static Source newStringSource(String fileName, InputStream stream) throws IOException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+		StringBuilder sb = new StringBuilder();
+		String line = reader.readLine();
+		while (true) {
+			sb.append(line);
+			line = reader.readLine();
+			if (line == null) {
+				break;
+			}
+			sb.append("\n");
+		}
+		reader.close();
+		return new StringSource(fileName, 1, sb.toString());
 	}
 }

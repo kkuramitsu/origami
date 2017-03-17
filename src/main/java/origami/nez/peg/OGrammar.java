@@ -1,11 +1,14 @@
 package origami.nez.peg;
 
+import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import origami.nez.ast.Source;
+import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
 import origami.trait.OStringBuilder;
@@ -180,6 +183,24 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 
 	// ----------------------------------------------------------------------
 
+	public final static OGrammar loadFile(String file) throws IOException {
+		return loadFile(file, null);
+	}
+
+	public final static OGrammar loadFile(String file, String[] paths) throws IOException {
+		OGrammar g = new OGrammar(file);
+		GrammarParser parser = new GrammarParser(g);
+		parser.importSource(CommonSource.newFileSource(file, paths));
+		return g;
+	}
+
+	public final static OGrammar loadSource(Source s) throws IOException {
+		OGrammar g = new OGrammar(s.getResourceName());
+		GrammarParser parser = new GrammarParser(g);
+		parser.importSource(s);
+		return g;
+	}
+
 	/**
 	 * Create a new parser
 	 * 
@@ -194,26 +215,13 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 	public final Parser newParser(String name) {
 		return new Parser(new ParserFactory(), this.getProduction(name));
 	}
-
-	/**
-	 * NezParser
-	 */
-
-	public static final Parser NezParser;
-
-	static {
-		OGrammar grammar = new OGrammar("nez");
-		ParserFactory factory = new ParserFactory();
-		factory.setVerboseMode(false);
-		new NezGrammar().load(factory, grammar, "Start");
-		// grammar.dump();
-		NezParser = grammar.newParser();
-	}
+	
 
 	public void dump() {
 		for (OProduction p : this) {
 			System.out.println(p);
 		}
 	}
+
 
 }

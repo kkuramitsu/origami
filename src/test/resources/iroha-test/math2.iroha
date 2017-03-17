@@ -1,0 +1,12 @@
+// math.iroha - a test for importing java.lang.Math
+
+import java.lang.Math.*
+
+assert(E < PI)
+
+let f x = sin(x)*sin(x) + cos(x)*cos(x)
+
+println(f(0.1))
+
+assert(f(0.1) > 0.999)
+

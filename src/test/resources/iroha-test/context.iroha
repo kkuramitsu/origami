@@ -1,0 +1,21 @@
+// context.iroha
+
+let speed = 1
+let acc   = 2
+
+context Rain : Weather {
+	let speed = 3
+	println(speed)
+	println(acc)
+}
+
+context 快晴 : Weather {
+	
+}
+
+println(speed)
+println(with(Rain) speed)
+println(with(Weather) speed)
+Origami.changeContext("Weather", "快晴")
+println(with(Weather) speed)
+

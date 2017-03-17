@@ -1,0 +1,13 @@
+// iforeach3.iroha - a test for one iteration
+
+let f(m) = {
+	var c = 0
+	foreach n in m {
+		// printf("%d %d", n, c)
+		c = m
+	}
+	return c
+}
+
+assert(f(10)==10)
+

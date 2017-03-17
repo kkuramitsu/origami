@@ -36,7 +36,7 @@ public class Orun extends origami.main.OCommand {
 				fac.set("grammar", "iroha.nez");
 			}
 		}
-		Origami env = new Origami(fac);
+		Origami env = new Origami(fac.getGrammar());
 		ODebug.setDebug(this.isDebug());
 		// env.importClass(origami.rule.IrohaSet.class);
 		// importClass(env, fac.get("grammar"));
