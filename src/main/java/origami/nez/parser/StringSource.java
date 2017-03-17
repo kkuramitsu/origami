@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
+import origami.OConsole;
 import origami.nez.ast.Source;
 import origami.trait.OStringUtils;
 
@@ -101,8 +102,9 @@ public class StringSource extends CommonSource {
 	@Override
 	public final String subString(long startIndex, long endIndex) {
 		try {
-			return new String(this.inputs, (int) (startIndex), (int) (endIndex - startIndex), OStringUtils.DefaultEncoding);
+			return new String(this.inputs, (int) (startIndex), (int) (endIndex - startIndex), "UTF8");
 		} catch (UnsupportedEncodingException e) {
+			OConsole.exit(1, e);
 		}
 		return null;
 	}

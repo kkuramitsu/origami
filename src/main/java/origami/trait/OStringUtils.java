@@ -4,10 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import origami.OConsole;
+import origami.ODebug;
 
 public abstract class OStringUtils {
-
-	public final static String DefaultEncoding = "UTF8";
 
 	private final static int E = 1;
 
@@ -19,18 +18,18 @@ public abstract class OStringUtils {
 
 	public final static String newString(byte[] utf8) {
 		try {
-			return new String(utf8, DefaultEncoding);
+			return new String(utf8, "UTF8");
 		} catch (UnsupportedEncodingException e) {
-			OVerbose.traceException(e);
+			OConsole.exit(1, e);
 		}
 		return new String(utf8);
 	}
 
 	public final static byte[] utf8(String text) {
 		try {
-			return text.getBytes(DefaultEncoding);
+			return text.getBytes("UTF8");
 		} catch (UnsupportedEncodingException e) {
-			OConsole.exit(1, "unsupported character: " + e);
+			OConsole.exit(1, e);
 		}
 		return text.getBytes();
 	}

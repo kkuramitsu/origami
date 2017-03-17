@@ -157,30 +157,30 @@ public abstract class OCommand extends OConsole {
 
 	public final void checkInputSource(String[] files) {
 		if (files == null || files.length == 0) {
-			OConsole.exit(1, "no input specified");
+			exit(1, "no input specified");
 		}
 	}
 
 	public final static void p(String fmt, Object... args) {
-		OConsole.println(OStringBuilder.format(fmt, args));
+		println(OStringBuilder.format(fmt, args));
 	}
 
 	public final static void p(int color, String fmt, Object... args) {
-		OConsole.beginColor(color);
-		OConsole.println(OStringBuilder.format(fmt, args));
-		OConsole.endColor();
+		beginColor(color);
+		println(OStringBuilder.format(fmt, args));
+		endColor();
 	}
 
 	public final static void begin(int color) {
-		OConsole.beginColor(color);
+		beginColor(color);
 	}
 
 	public final static void end() {
-		OConsole.endColor();
+		endColor();
 	}
 
 	public final static void display(ParserFactory fac, GrammarWriter w, OGrammar g) {
-		OConsole.beginColor(Blue);
+		beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");
 		}
@@ -189,11 +189,11 @@ public abstract class OCommand extends OConsole {
 			((CommonWriter) w).End("---");
 			((CommonWriter) w).L();
 		}
-		OConsole.endColor();
+		endColor();
 	}
 
 	public final static void display(ParserFactory fac, TreeWriter w, Tree<?> t) {
-		OConsole.beginColor(Blue);
+		beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");
 		}
@@ -202,11 +202,7 @@ public abstract class OCommand extends OConsole {
 			((CommonWriter) w).End("---");
 			((CommonWriter) w).L();
 		}
-		OConsole.endColor();
-	}
-
-	public final static String bold(String text) {
-		return OConsole.bold(text);
+		endColor();
 	}
 
 	public final static void exit(int status, String format, Object... args) {

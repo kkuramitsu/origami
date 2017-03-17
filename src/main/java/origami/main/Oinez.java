@@ -19,6 +19,7 @@ package origami.main;
 import java.io.IOException;
 
 import origami.OConsole;
+import origami.ODebug;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
@@ -64,7 +65,7 @@ public class Oinez extends OCommand {
 					continue;
 				}
 			} catch (Exception e) {
-				OVerbose.traceException(e);
+				ODebug.traceException(e);
 			}
 			Tree<?> node = pegParser.parse(sc);
 			if (node == null) {

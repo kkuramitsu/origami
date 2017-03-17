@@ -215,7 +215,7 @@ public abstract class CommonWriter {
 			}
 			reader.close();
 		} catch (Exception e) {
-			OConsole.exit(1, "cannot load " + path + "; " + e);
+			OConsole.exit(1, e);
 		}
 	}
 
@@ -241,7 +241,7 @@ public abstract class CommonWriter {
 			}
 			reader.close();
 		} catch (Exception e) {
-			OConsole.exit(1, "cannot load " + path + "; " + e);
+			OConsole.exit(1, e);
 		}
 	}
 

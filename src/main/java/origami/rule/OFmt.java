@@ -54,7 +54,7 @@ public enum OFmt implements OFormat {
 		try {
 			return ResourceBundle.getBundle("origami.rule.OFmt", Locale.ENGLISH).getString(name());
 		} catch (java.util.MissingResourceException ex) {
-			return name().replaceAll("_", " ").replace("S", "%s");
+			return name().replaceAll("_", " ").replace("S", "%s").replaceAll("  ", " ");
 		}
 	}
 }

@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import origami.OConsole;
 import origami.trait.OStringUtils;
 import origami.trait.OVerbose;
 
@@ -65,8 +66,7 @@ public class FileSource extends CommonSource {
 			}
 			this.readMainBuffer(this.buffer_offset);
 		} catch (Exception e) {
-			OVerbose.traceException(e);
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 	}
 
@@ -150,14 +150,14 @@ public class FileSource extends CommonSource {
 						this.buffer_offset = off_s;
 						this.readMainBuffer(this.buffer_offset);
 					}
-					return new String(this.buffer, (int) (startIndex - this.buffer_offset), (int) (endIndex - startIndex), OStringUtils.DefaultEncoding);
+					return new String(this.buffer, (int) (startIndex - this.buffer_offset), (int) (endIndex - startIndex), "UTF8");
 				} else {
 					byte[] b = new byte[(int) (endIndex - startIndex)];
 					this.readStringBuffer(startIndex, b);
-					return new String(b, OStringUtils.DefaultEncoding);
+					return new String(b, "UTF8");
 				}
 			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+				OConsole.exit(1, e);
 			}
 		}
 		return "";
@@ -240,9 +240,7 @@ public class FileSource extends CommonSource {
 				b[i] = 0;
 			}
 		} catch (IOException e) {
-			OVerbose.traceException(e);
-		} catch (Exception e) {
-			OVerbose.traceException(e);
+			//ODebug.traceException(e);
 		}
 	}
 

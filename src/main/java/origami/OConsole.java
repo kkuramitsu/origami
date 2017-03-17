@@ -20,8 +20,13 @@ import origami.trait.OStringBuilder;
 
 public class OConsole {
 
-	public static void exit(int status, String message) {
-		OConsole.println("EXIT " + message);
+//	public static void exit(int status, String message) {
+//		OConsole.println("EXIT " + message);
+//		System.exit(status);
+//	}
+
+	public static void exit(int status, Throwable e) {
+		OConsole.println("EXIT by " + e);
 		System.exit(status);
 	}
 
