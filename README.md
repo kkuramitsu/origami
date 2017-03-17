@@ -5,12 +5,15 @@
 # ORIGAMI - an Extensible Language Engineering Framework
 
 Currently, under heavy development.
-Language specification is subject to change without notice. 
 
 Description
 -----------
 
-ORIGAMI is a language engineering framework ..
+Origami is a language engineering framework that includes ..
+
+* Nez parser generator based on typed parsing expression grammars
+* Configurable type checker
+* JVM bytecode compiler
 
 License
 -------
@@ -21,7 +24,7 @@ Origami is distributed under the [Apache License 2](http://www.apache.org/licens
 Documentation
 -------------
 
-* [wiki](https://github.com/jline/jline2/wiki)
+* [wiki](https://github.com/kkuramitsu/origami/wiki)
 
 Forums
 ------
@@ -56,7 +59,7 @@ Check out and build:
 
 ```
 git clone git://github.com/kkuramitsu/origami.git
-cd jline2
+cd origami
 mvn install
 ```
 
@@ -65,7 +68,7 @@ mvn install
 ```
 $ java -ea -jar origami-X.Y.Z-run.jar run
 java -ea -jar target/origami-0.0.1-run.jar
-ORIGAMI-0.0.1-413 (Celery) on Java JVM-1.8.0_91
+ORIGAMI-0.0.1 (Celery) on Java JVM-1.8.0_91
 Copyright 2017, Kimio Kuramitsu and ORIGAMI project
 Enter an input string to parse and run.
 Tips: Start with an empty line for multiple lines.
