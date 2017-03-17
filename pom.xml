@@ -24,22 +24,22 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>/Users/kimio/Git/origami/src/main/java</sourceDirectory>
-    <scriptSourceDirectory>/Users/kimio/Git/origami/src/main/scripts</scriptSourceDirectory>
-    <testSourceDirectory>/Users/kimio/Git/origami/src/test/java</testSourceDirectory>
-    <outputDirectory>/Users/kimio/Git/origami/target/classes</outputDirectory>
-    <testOutputDirectory>/Users/kimio/Git/origami/target/test-classes</testOutputDirectory>
+    <sourceDirectory>./src/main/java</sourceDirectory>
+    <scriptSourceDirectory>./src/main/scripts</scriptSourceDirectory>
+    <testSourceDirectory>./src/test/java</testSourceDirectory>
+    <outputDirectory>./target/classes</outputDirectory>
+    <testOutputDirectory>./target/test-classes</testOutputDirectory>
     <resources>
       <resource>
-        <directory>/Users/kimio/Git/origami/src/main/resources</directory>
+        <directory>./src/main/resources</directory>
       </resource>
     </resources>
     <testResources>
       <testResource>
-        <directory>/Users/kimio/Git/origami/src/test/resources</directory>
+        <directory>./src/test/resources</directory>
       </testResource>
     </testResources>
-    <directory>/Users/kimio/Git/origami/target</directory>
+    <directory>./target</directory>
     <finalName>origami-0.0.1-SNAPSHOT</finalName>
     <pluginManagement>
       <plugins>
@@ -192,7 +192,7 @@
               <goal>site</goal>
             </goals>
             <configuration>
-              <outputDirectory>/Users/kimio/Git/origami/target/site</outputDirectory>
+              <outputDirectory>./target/site</outputDirectory>
               <reportPlugins>
                 <reportPlugin>
                   <groupId>org.apache.maven.plugins</groupId>
@@ -208,7 +208,7 @@
               <goal>deploy</goal>
             </goals>
             <configuration>
-              <outputDirectory>/Users/kimio/Git/origami/target/site</outputDirectory>
+              <outputDirectory>./target/site</outputDirectory>
               <reportPlugins>
                 <reportPlugin>
                   <groupId>org.apache.maven.plugins</groupId>
@@ -219,7 +219,7 @@
           </execution>
         </executions>
         <configuration>
-          <outputDirectory>/Users/kimio/Git/origami/target/site</outputDirectory>
+          <outputDirectory>./target/site</outputDirectory>
           <reportPlugins>
             <reportPlugin>
               <groupId>org.apache.maven.plugins</groupId>
