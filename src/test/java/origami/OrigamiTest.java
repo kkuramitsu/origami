@@ -14,9 +14,9 @@ public class OrigamiTest {
 		assert(true);
 	}
 
-	public void testTest2() {
-		assert(false);
-	}
+//	public void testTest2() {
+//		assert(false);
+//	}
 
 	public void testHello() throws Throwable {
 		runScript("/iroha-test/hello.iroha");

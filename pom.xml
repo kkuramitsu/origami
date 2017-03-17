@@ -269,7 +269,7 @@
         <aggregate>true</aggregate>
     </configuration>
     </plugin>
-
+    
     </plugins>
   </build>
 </project>
