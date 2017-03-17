@@ -1,0 +1,260 @@
+// XML Document Type Declaration
+// author Shinya Yamaguchi
+
+TopLevel
+    = Document
+
+Document
+    =  PROLOG? { ($(Dtd))+ #DTD}  _ 
+    
+PROLOG
+    =  '<?xml' (!'?>' .)* '?>' _
+
+Dtd
+    = '<!' (ElementDeclaration / AttributeListDeclaration / EntityDeclaration / ConditionalSection) '>' _
+
+/* Tokens */
+
+"<" = '<' _
+"<!" = '<!' _
+">" = '>' _
+"(" = '(' _
+")" = ')' _
+"[" = '[' _
+"]]" = ']]' _
+";" = ';' _
+"|" = '|' _
+"," = ',' _
+"%" = '%' _
+
+
+
+/* keyword */
+"ANY" = 'ANY' !W _
+"ATTLIST" = 'ATTLIST' !W _
+"CDATA" = 'CDATA' !W _
+"ELEMENT" = 'ELEMENT' !W _
+"EMPTY" = 'EMPTY' !W _
+"ENTITIES" = 'ENTITIES' !W _
+"ENTITY" = 'ENTITY' !W _
+"ID" = 'ID' !W _
+"IDREF" = 'IDREF' !W _
+"IDREFS" = 'IDREFS' !W _
+"INCLUDE" = 'INCLUDE' !W _
+"IGNORE" = 'IGNORE' !W _
+"NDATA" = 'NDATA' !W _
+"NMTOKEN" = 'NMTOKEN' !W _
+"NMTOKENS" = 'NMTOKENS' !W _
+"PUBLIC" = 'PUBLIC' !W _
+"SYSTEM" = 'SYSTEM' !W _
+
+"#FIXED" = '#FIXED' !W _
+"#IMPLIED" = '#IMPLIED' !W _
+"#PCDATA" = '#PCDATA' !W _
+"#REQUIRED" = '#REQUIRED' !W _
+
+/* Conditional Section */
+
+ConditionalSection
+	= {IGNORE / _Include #CondSect}
+	
+_Include
+	= "[" ('INCLUDE'/NAME) "[" $(Dtd)*  NAME? _ "]]"
+	
+IGNORE
+	= "[" "IGNORE" "[" IGNORESECT* "]]"
+
+IGNORESECT
+	= "<!" (!'>' .)* ">" 
+	/ '%' NAME ";"
+	/ (!']' .)+ 
+example ConditionalSection ~28c214 '''
+[IGNORE[
+<!ELEMENT book (title,author,summary)>
+]]
+'''
+example ConditionalSection ~837bd6 '''
+[INCLUDE[
+<!ELEMENT book (comments*,title,author,summary)>
+]]
+'''
+
+
+
+
+/* Element Declaration */
+
+ElementDeclaration
+	= "ELEMENT" {$name(Name) $member(Content) #Element} _
+
+Content
+	= SpecialContent 
+	/ "(" (SinglePCData / ElementName) ")" {$ &'' _Qualifier}?
+	/ Member 
+	
+SpecialContent
+	= {"EMPTY" #Empty} 
+	/ {"ANY" #Any}
+
+Member
+	= PCData
+	/ ElementName 
+	/ Choice 
+	/ Sequence
+	
+PCData 
+	= {"#PCDATA" #Data} _
+	
+SinglePCData
+	= {"#PCDATA" #SingleData} _
+	
+ElementName
+	= { NAME #ElName } {$ &'' _Qualifier}? _
+	
+
+Choice 
+	= "(" { $(Member) _ ("|" $(Member))+ #Choice} ")" {$ &'' _Qualifier}? _
+
+Sequence 
+	= "(" { $(Member) _ ("," $(Member))+ #Sequence} ")" {$ &'' _Qualifier}? _
+
+_Qualifier
+	= '+' #OneMore
+	/ '*' #ZeroMore
+	/ '?' #Option 
+
+example ElementDeclaration ~d7cf5b ELEMENT a EMPTY
+example ElementDeclaration ~cbca6a ELEMENT a (#PCDATA)
+example ElementDeclaration ~3a22b9 ELEMENT a (b|c)
+example ElementDeclaration ~9eac9b ELEMENT a (b,c)
+example ElementDeclaration ~5a7c57 ELEMENT a (b|c)*
+example ElementDeclaration ~abe358 ELEMENT a ((b|c),(d|e))
+example ElementDeclaration ~88f1fa ELEMENT a (#PCDATA)*
+
+
+/* Attribute Declaration */
+	
+AttributeListDeclaration
+	= "ATTLIST" { $name(Name) $list(AttributeDefinitions) #Attlist} _
+
+AttributeDefinitions
+	= { $(AttributeDefinition)+ #List} 
+
+AttributeDefinition
+	= { $name(Name) $type(AttributeType) _AttributeQualifier } _
+	 
+AttributeType
+	=  PrimitiveType / EnumerationType
+
+PrimitiveType
+	= {"CDATA" #CDATA}
+	/ {"IDREFS" #IDREFS}		
+	/ {"IDREF" #IDREF}
+	/ {"ID" #ID}  
+	/ {"ENTITY" #ENTITY} 
+	/ {"ENTITIES" #ENTITIES} 
+	/ {"NMTOKENS" #NMTOKENS} 
+	/ {"NMTOKEN" #NMTOKEN} 
+
+EnumerationType
+	= "(" { $(Name) ( "|" $(Name) )* #Enum } ")"
+	
+_AttributeQualifier
+	= "#REQUIRED" #REQUIRED 
+	/ "#IMPLIED" #IMPLIED
+	/ "#FIXED" _DefaultValue #FIXED 
+	/ _DefaultValue #Default
+	
+_DefaultValue
+	= '"' $value({ (![<&"].)* #Value}) '"' 
+	/ '\'' $value({ (![<&"].)* #Value}) '\''
+	
+example AttributeListDeclaration ~9ed8f3 ATTLIST a b CDATA #REQUIRED
+example AttributeListDeclaration ~a4844a ATTLIST a b CDATA #IMPLIED
+example AttributeListDeclaration ~13c524 ATTLIST a b (a|b) #REQUIRED
+example AttributeListDeclaration ~83503c ATTLIST a b CDATA #FIXED "c"
+example AttributeListDeclaration ~4f7997 ATTLIST a b CDATA "c"
+example AttributeListDeclaration ~73d62d '''
+ATTLIST a 
+b CDATA #REQUIRED
+c ID #IMPLIED
+'''
+
+
+/* Entity Declaration */
+
+EntityDeclaration
+	= "ENTITY" (ExternalEntity /InternalEntity) _
+
+ExternalEntity
+	= { $name(Name) _EntityDefinition #Entity} _
+
+// Internal Entity is ignored
+InternalEntity
+	= { "%" NAME _ IECONTENTS  #Internal } _
+
+_EntityDefinition
+	= $value(EntityValue) 
+	/ EXID NDATADECL? //ignored
+
+IECONTENTS
+	= STRINGCONTENT / EXID
+
+EntityValue
+	= '"'{ (!["].)* #Value}'"'
+
+EXID 
+	= "SYSTEM" SLITERAL
+	/ "PUBLIC" PUBIDLITERAL _ SLITERAL
+
+NDATADECL
+	= "NDATA" NAME
+	
+SLITERAL
+	= (  '\'' ( !'\'' . )* '\'') 
+	/ ( '"' ( !'"' . )* '"')
+
+PUBIDLITERAL
+	= '"' PUBLICCHAR* '"'
+	
+PUBLICCHAR
+	= [a-zA-Z0-9] 
+	/ [-'()+,./:=?;!*#@$_% ]  
+	/ [\xD] / [\xA] 
+
+example EntityDeclaration ~8116db ENTITY W3C "World Wide Web Consortium"
+example EntityDeclaration ~99d221 '''
+ENTITY open-hatch
+SYSTEM "http://www.textuality.com/boilerplate/OpenHatch.xml"
+'''
+example EntityDeclaration ~3c3c95 	'''
+ENTITY % ISOLat2
+SYSTEM "http://www.xml.com/iso/isolat2-xml.entities" 
+'''
+
+// Literal
+Name
+	= { NAME #Name } _
+	
+NAME
+	=  [A-Za-z:%_] ([-A-Za-z0-9:._%;])*
+
+W
+	= [a-zA-Z0-9_:%]
+
+String
+	=  '"' { ( !'"' . )*  #String } '"'
+
+STRINGCONTENT
+	=  '"' ( !'"' . )* '"'
+
+
+// Code Layout
+
+_
+	= (S / COMMENT)*
+
+COMMENT
+    = '<!--' (!'-->' . )* '-->'
+
+S = [ \t\r\n]

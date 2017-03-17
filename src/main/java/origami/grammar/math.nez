@@ -1,0 +1,48 @@
+/**
+ * Basic mathematical operator 
+ * author: Kimio Kuramitsu
+ */
+
+grammar math {
+public File	= Expression .*
+/* Code Layout */
+_	= S*
+S	= [ \t]
+
+"+"     = '+' _
+"-"     = '-' _
+"*"     = '*' _
+"/"     = '/' _
+"%"     = '%' _
+"("     = '(' _
+")"     = ')' _
+
+/* Expression */
+
+example Expression 1
+example Expression 1+A*3
+
+example Expression '''
+1*2+3
+'''
+
+public Expression = Sum
+
+Sum	= Product {$left ( "+" #Add / "-" #Sub ) $right(Product) }*
+Product	= Value {$left ( "*" #Mul / "/" #Div / "%" #Mod ) $right(Value) }*
+public Value	= { [0-9]+ #Int } _
+	/ { [A-Za-z0-9_]+ #Variable } _
+	/ "(" Expression ")"
+
+example Expression 1
+example Expression 1+A*3
+
+example Expression '''
+1*2+3
+'''
+
+example Value 1
+example Value x
+
+}
+
