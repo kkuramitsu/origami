@@ -1,6 +1,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](#license)
-[![Build Status](https://travis-ci.org/sekiguchi-nagisa/ydsh.svg?branch=master)](https://travis-ci.org/sekiguchi-nagisa/ydsh)
+[![Build Status](https://travis-ci.org/kkuramitsu/origami.svg?branch=master)](https://travis-ci.org/kkuramitsu/origami)
+<!--
 [![Coverage Status](https://coveralls.io/repos/github/sekiguchi-nagisa/ydsh/badge.svg?branch=master)](https://coveralls.io/github/sekiguchi-nagisa/ydsh?branch=master)
+-->
 
 # ORIGAMI - an Extensible Language Engineering Framework
 
