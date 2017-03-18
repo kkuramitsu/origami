@@ -39,7 +39,7 @@ public interface TypeAnalysis {
 			throw e;
 		}
 		if (node == null) {
-			throw new OErrorCode(env, t, OFmt.fmt("%s", OFmt.undefined, OFmt.syntax), name);
+			throw new OErrorCode(env, t, OFmt.undefined_syntax__YY0, name);
 		}
 		node.setSourcePosition(t);
 		return node;
@@ -74,7 +74,7 @@ public interface TypeAnalysis {
 	public default OCode ensureTypedExpr(OEnv env, Tree<?> t) {
 		OCode node = typeExpr(env, t);
 		if (node.isUntyped()) {
-			throw new OErrorCode(env, t, OFmt.fmt(OFmt.implicit_type));
+			throw new OErrorCode(env, t, OFmt.implicit_type);
 		}
 		return node;
 	}

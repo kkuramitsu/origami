@@ -169,10 +169,10 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			if (!lty.isUntyped()) {
 				ty = ty.boxType();
 				if (ty.isAssignableFrom(lty)) {
-					return new OWarningCode(env.v(true), OFmt.fmt(OFmt.unnecessary_expression));
+					return new OWarningCode(env.v(true), OFmt.unnecessary_expression);
 				}
 				if (!lty.isAssignableFrom(ty)) {
-					return new OWarningCode(env.v(false), OFmt.fmt(OFmt.stupid_expression));
+					return new OWarningCode(env.v(false), OFmt.stupid_expression);
 				}
 			}
 			return new OInstanceOfCode(left, ty);

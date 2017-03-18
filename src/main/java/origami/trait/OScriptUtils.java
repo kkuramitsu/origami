@@ -84,7 +84,7 @@ public interface OScriptUtils {
 		try {
 			c = Class.forName(path);
 		} catch (ClassNotFoundException e) {
-			throw new OErrorCode(env, OFmt.fmt("%s by %s", OFmt.unfound, OFmt.clazz), path, e);
+			throw new OErrorCode(env, OFmt.unfound_class__YY0_by_YY1, path, e);
 		}
 		importClass(env, s, c, names);
 	}

@@ -46,7 +46,7 @@ public class OTree extends Tree<OTree> {
 
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
-		throw new OErrorCode(null, this, OFmt.fmt("%s", OFmt.syntax_error), "no " + label);
+		throw new OErrorCode(null, this, OFmt.YY0_does_not_exist, "$" + label);
 	}
 
 }

@@ -4,16 +4,17 @@ import origami.OEnv;
 import origami.OLog;
 import origami.asm.OAsm;
 import origami.nez.ast.SourcePosition;
+import origami.rule.LocaleFormat;
 import origami.type.OType;
 
 public class OWarningCode extends OParamCode<OLog> {
 
-	public OWarningCode(OCode node, int level, String fmt, Object... args) {
+	public OWarningCode(OCode node, int level, LocaleFormat fmt, Object... args) {
 		super(new OLog(null, level, fmt, args), node.getType(), node);
 
 	}
 
-	public OWarningCode(OCode node, String fmt, Object... args) {
+	public OWarningCode(OCode node, LocaleFormat fmt, Object... args) {
 		super(new OLog(null, OLog.Warning, fmt, args), node.getType(), node);
 
 	}

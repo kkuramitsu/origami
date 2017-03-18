@@ -22,6 +22,7 @@ import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.code.OWarningCode;
+import origami.rule.OFmt;
 import origami.type.OType;
 import origami.type.OUntypedType;
 
@@ -75,7 +76,7 @@ public class OUntypedMethod extends OMethod {
 		}
 		this.definedEnv.add0(this.getName(), newmh);
 		OCode node = newmh.matchParamCode(env, site, nodes);
-		return new OWarningCode(node, OLog.TypeInfo, "inferred %s", newmh);
+		return new OWarningCode(node, OLog.TypeInfo, OFmt.type_inferred__YY0, newmh);
 	}
 
 }

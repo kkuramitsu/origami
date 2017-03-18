@@ -143,14 +143,14 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OCode expr = typeExpr(env, t.get(_expr));
 			OType ty = expr.getType();
 			if (ty.isPrimitive()) {
-				return new OWarningCode(expr, OFmt.fmt(OFmt.S_is_meaningless), OFmt.quote("new")).setSourcePosition(t);
+				return new OWarningCode(expr, OFmt.YY0_is_meaningless, OFmt.quote("new")).setSourcePosition(t);
 			}
 			if (!(expr instanceof OConstructorCode)) {
 				if (ty.isA(Cloneable.class)) {
 					expr = expr.newMethodCode(env, "clone");
 					expr = expr.refineType(env, ty);
 				} else {
-					return new OErrorCode(env, t, OFmt.fmt(OFmt.not_clonable));
+					return new OErrorCode(env, t, OFmt.not_clonable);
 				}
 			}
 			if (ty.isOrigami()) {
@@ -284,7 +284,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				}
 				if (!(element instanceof OEmptyCode)) {
 					if (duplicatedChecker.contains(key)) {
-						element = new OWarningCode(element, OFmt.fmt(OFmt.S_is_duplicated), key);
+						element = new OWarningCode(element, OFmt.YY0_is_duplicated, key);
 					}
 					keys.add(env.v(key));
 					values.add(element);
@@ -354,12 +354,12 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 					if (ty != null) {
 						element = element.asType(env, ty);
 					} else {
-						element = new OWarningCode(element, OFmt.fmt(OFmt.S_is_unknown_name), key);
+						element = new OWarningCode(element, OFmt.YY0_is_unknown_name, key);
 					}
 				}
 				keys.add(env.v(Symbol.unique(key).id()));
 				if (duplicatedChecker.contains(key)) {
-					element = new OWarningCode(element, OFmt.fmt(OFmt.S_is_duplicated), key);
+					element = new OWarningCode(element, OFmt.YY0_is_duplicated, key);
 				}
 				values.add(element);
 				duplicatedChecker.add(key);

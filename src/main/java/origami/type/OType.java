@@ -131,7 +131,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		@Override
 		public OCode check(OEnv env, OType t, OCode code) {
 			if (code.getType().isNullable() && !t.isNullable()) {
-				return new OWarningCode(code, OFmt.fmt(OFmt.nullable));
+				return new OWarningCode(code, OFmt.nullable);
 			}
 			return code;
 		}
@@ -393,7 +393,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 				return f.isStatic() ? new GetterCode(f) : new GetterCode(f, recv);
 			}
 		}
-		throw new OErrorCode(env, "undefined: %s.%s", this, name);
+		throw new OErrorCode(env, OFmt.undefined_field__YY0_YY1, this, name);
 	}
 
 	public default OCode newStaticGetterCode(OEnv env, String name) {
@@ -403,7 +403,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 				return new GetterCode(f);
 			}
 		}
-		throw new OErrorCode(env, "undefined: %s.%s", this, name);
+		throw new OErrorCode(env, OFmt.undefined_static_field__YY0_YY1, this, name);
 	}
 
 	// --------------------------------------------------------------------

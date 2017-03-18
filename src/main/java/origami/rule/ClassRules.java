@@ -166,7 +166,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl cdecl = getClassContext(env);
 			if (cdecl == null) {
-				throw new OErrorCode(env, t, "not in class");
+				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, OFmt.constructor);
 			}
 
 			OAnno anno = parseAnno(env, "public", t.get(_anno, null));

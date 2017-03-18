@@ -341,7 +341,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 			return new FieldCase(l);
 		}
 		default:
-			throw new OErrorCode(env, t, OFmt.fmt("%s", OFmt.syntax_error), t.getTag().getSymbol());
+			throw new OErrorCode(env, t, OFmt.undefined_syntax__YY0, t.getTag().getSymbol());
 		}
 	}
 

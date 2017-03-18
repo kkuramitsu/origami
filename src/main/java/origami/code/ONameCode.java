@@ -53,7 +53,7 @@ public class ONameCode extends OParamCode<String> {
 	@Override
 	public OCode newAssignCode(OEnv env, OType type, OCode right) {
 		if (readOnly) {
-			throw new OErrorCode(env, OFmt.fmt("%s", OFmt.read_only), this.getName());
+			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
 		return new OAssignCode(OConfig.assignedType(env, type), false, this.getName(), right);
 	}

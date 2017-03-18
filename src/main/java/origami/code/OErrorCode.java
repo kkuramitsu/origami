@@ -41,12 +41,12 @@ public class OErrorCode extends RuntimeException implements OCode {
 		this.ret = env != null ? env.t(OUntypedType.class) : null;
 	}
 
-	public OErrorCode(OEnv env, SourcePosition s, String fmt, Object... args) {
-		this(env, s, LocaleFormat.wrap(fmt), args);
-	}
-
 	public OErrorCode(OEnv env, LocaleFormat fmt, Object... args) {
 		this(env, SourcePosition.UnknownPosition, fmt, args);
+	}
+
+	public OErrorCode(OEnv env, SourcePosition s, String fmt, Object... args) {
+		this(env, s, LocaleFormat.wrap(fmt), args);
 	}
 
 	public OErrorCode(OEnv env, String fmt, Object... args) {

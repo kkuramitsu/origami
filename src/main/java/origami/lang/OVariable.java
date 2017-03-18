@@ -60,7 +60,7 @@ public abstract class OVariable implements ONameEntity, OTypeName, StringCombina
 
 	public OCode assignCode(OEnv env, OCode right) {
 		if (this.isReadOnly()) {
-			throw new OErrorCode(env, OFmt.fmt("%s", OFmt.read_only), this.getName());
+			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
 		return defineCode(env, right);
 	}

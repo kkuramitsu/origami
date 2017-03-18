@@ -192,7 +192,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		}
 		if (ty == null) {
 			if (defaultType == null) {
-				throw new OErrorCode(env, param, OFmt.fmt("%s", OFmt.undefined, OFmt.name), param.toText());
+				throw new OErrorCode(env, param, OFmt.no_typing_hint__YY0, param.toText());
 			}
 			ty = defaultType;
 		}
@@ -239,7 +239,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isInterface()) {
-				throw new OErrorCode(env, sub, "not interface %s", sub.toText());
+				throw new OErrorCode(env, sub, OFmt.YY0_is_not_interface, sub.toText());
 			}
 			i++;
 		}
@@ -255,7 +255,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isA(Throwable.class)) {
-				throw new OErrorCode(env, sub, "not throwable %s", sub.toText());
+				throw new OErrorCode(env, sub, OFmt.YY0_is_not_throwable, sub.toText());
 			}
 			i++;
 		}
@@ -275,7 +275,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		if (c instanceof OValueCode) {
 			return ((OValueCode) c).getValue();
 		}
-		throw new OErrorCode(env, t, OFmt.fmt(OFmt.S_is_not_constant_value), t.toString());
+		throw new OErrorCode(env, t, OFmt.YY0_is_not_constant_value, t.toString());
 	}
 
 }

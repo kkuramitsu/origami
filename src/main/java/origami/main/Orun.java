@@ -38,8 +38,6 @@ public class Orun extends origami.main.OCommand {
 		}
 		Origami env = new Origami(fac.getGrammar());
 		ODebug.setDebug(this.isDebug());
-		// env.importClass(origami.rule.IrohaSet.class);
-		// importClass(env, fac.get("grammar"));
 
 		if (files.length > 0) {
 			for (String file : files) {
@@ -48,8 +46,7 @@ public class Orun extends origami.main.OCommand {
 		}
 		if (files.length == 0 || isDebug()) {
 			displayVersion();
-			p(Yellow, "Enter an input string to parse and run.");
-			p(Yellow, "Tips: Start with an empty line for multiple lines.");
+			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 			p("");
 
 			int startline = linenum;

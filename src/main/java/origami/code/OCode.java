@@ -122,7 +122,7 @@ public interface OCode {
 
 	// Code = right
 	public default OCode newAssignCode(OEnv env, OType type, OCode right) {
-		throw new OErrorCode(env, OFmt.not_assignable + ": %s" + this.getClass().getSimpleName());
+		throw new OErrorCode(env, OFmt.YY0_is_not_assignable, this.getClass().getSimpleName());
 	}
 
 	// public default OCode newIteratorCode(OEnv env) {

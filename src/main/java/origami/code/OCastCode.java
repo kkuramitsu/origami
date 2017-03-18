@@ -62,7 +62,7 @@ public class OCastCode extends OMethodCode {
 	}
 
 	public OErrorCode newErrorCode(OEnv env) {
-		return new OErrorCode(env, this.getSourcePosition(), OFmt.fmt("%s <= %s", OFmt.studpid_cast), this.getType(), this.getFromType());
+		return new OErrorCode(env, this.getSourcePosition(), OFmt.studpid_cast__YY0_to_YY1, this.getFromType(), this.getType());
 	}
 
 	public boolean isDownCast() {
@@ -70,7 +70,7 @@ public class OCastCode extends OMethodCode {
 	}
 
 	public OLog log() {
-		return new OLog(this.getSourcePosition(), OLog.Warning, OFmt.fmt("%s <= %s", OFmt.implicit_conversion), this.getType(), this.getFromType());
+		return new OLog(this.getSourcePosition(), OLog.Warning, OFmt.implicit_conversion__YY0_to_YY1, this.getFromType(), this.getType());
 	}
 
 	@Override

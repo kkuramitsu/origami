@@ -59,7 +59,7 @@ public class OLocalVariable extends OVariable {
 	@Override
 	public OCode assignCode(OEnv env, OCode right) {
 		if (this.isReadOnly()) {
-			throw new OErrorCode(env, OFmt.fmt("%s", OFmt.read_only), this.getName());
+			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
 		return new OAssignCode(OConfig.assignedType(env, this.getType()), false, this.getName(),
 				/* this.getType(), */ right);

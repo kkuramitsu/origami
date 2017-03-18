@@ -37,7 +37,7 @@ public class OMacroVariable extends OVariable {
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		throw new OErrorCode(env, OFmt.fmt("%s", OFmt.read_only), this.getName());
+		throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 	}
 
 }

@@ -79,7 +79,7 @@ public class GetterCode extends OParamCode<OField> implements DynamicInvokable {
 	public OCode newAssignCode(OEnv env, OType type, OCode right) {
 		OField field = this.getHandled();
 		if (field.isReadOnly) {
-			throw new OErrorCode(env, OFmt.fmt("%s", OFmt.read_only), field.getName());
+			throw new OErrorCode(env, OFmt.read_only__YY0, field.getName());
 		}
 		if (field.isStatic()) {
 			return new OSetterCode(field, type, right);

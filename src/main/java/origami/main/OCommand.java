@@ -30,6 +30,7 @@ import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
 import origami.nez.parser.ParserFactory.TreeWriter;
 import origami.nez.peg.Grammar;
+import origami.rule.LocaleFormat;
 import origami.trait.StringCombinator;
 
 public abstract class OCommand extends OConsole {
@@ -118,7 +119,7 @@ public abstract class OCommand extends OConsole {
 	}
 
 	protected static void displayVersion() {
-		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + OVersion.CodeName + ") on Java JVM-" + System.getProperty("java.version"));
+		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + OVersion.CodeName + "," + MainFmt.English_Edition + ") on Java JVM-" + System.getProperty("java.version"));
 		p(Yellow, OVersion.Copyright);
 	}
 
@@ -163,6 +164,12 @@ public abstract class OCommand extends OConsole {
 	}
 
 	public final static void p(int color, String fmt, Object... args) {
+		beginColor(color);
+		println(StringCombinator.format(fmt, args));
+		endColor();
+	}
+
+	public final static void p(int color, LocaleFormat fmt, Object... args) {
 		beginColor(color);
 		println(StringCombinator.format(fmt, args));
 		endColor();

@@ -61,7 +61,7 @@ public class IMethodCallSite extends OMethodCallSite {
 			if (mh != null && mh.isMutable()) {
 				OCode callee = ((OMethodCode) matched).getFirst();
 				if (!callee.getType().isMutable()) {
-					return new OWarningCode(callee, OFmt.implicit_mutation.toString());
+					return new OWarningCode(callee, OFmt.implicit_mutation);
 				}
 			}
 		}

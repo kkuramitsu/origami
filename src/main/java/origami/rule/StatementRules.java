@@ -16,8 +16,6 @@
 
 package origami.rule;
 
-import static origami.rule.OFmt.S_is_not_here;
-import static origami.rule.OFmt.fmt;
 import static origami.rule.OFmt.quote;
 
 import java.util.HashSet;
@@ -216,7 +214,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, fmt(S_is_not_here), quote("return"));
+				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("return"));
 			}
 			OCode expr = t.has(_expr) ? typeExpr(env, t.get(_expr)) : new OEmptyCode(env);
 			expr = typeCheck(env, mdecl.getReturnType(), expr);
@@ -229,7 +227,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, fmt(S_is_not_here), quote("throw"));
+				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("throw"));
 			}
 			OCode expr = typeCheck(env, env.t(Throwable.class), t.get(_expr));
 			return new OReturnCode(env, expr);
@@ -241,7 +239,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, fmt(S_is_not_here), quote("break"));
+				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("break"));
 			}
 			if (t.has(_expr)) {
 				OCode expr = typeExpr(env, t.get(_expr));
@@ -256,7 +254,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, fmt(S_is_not_here), quote("continue"));
+				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("continue"));
 			}
 			if (t.has(_expr)) {
 				OCode expr = typeExpr(env, t.get(_expr));

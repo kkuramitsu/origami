@@ -59,7 +59,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 			String name = "[" + t.toText() + "]";
 			OType ty = OTypeName.getType(env, name);
 			if (ty == null) {
-				throw new OErrorCode(env, t, OFmt.fmt("%s", OFmt.undefined_unit), name);
+				throw new OErrorCode(env, t, OFmt.undefined_unit__YY0, name);
 			}
 			return new OTypeCode(ty);
 		}
@@ -75,10 +75,10 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 					OType ty = parseType(env, t.get(_type));
 					return ty.newConstructorCode(env, env.v(d));
 				} catch (OErrorCode e) {
-					return new OWarningCode(env.v(d), OFmt.fmt("%s", OFmt.undefined_unit), t.get(_type).toText());
+					return new OWarningCode(env.v(d), OFmt.undefined_unit__YY0, t.get(_type).toText());
 				}
 			} catch (NumberFormatException e) {
-				throw new OErrorCode(env, t.get(_value), OFmt.fmt(OFmt.syntax_error));
+				throw new OErrorCode(env, t.get(_value), OFmt.syntax_error);
 			}
 		}
 

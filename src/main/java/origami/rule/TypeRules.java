@@ -32,7 +32,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis, MessageMe
 	@SuppressWarnings("serial")
 	public static class TypeNotFoundException extends OErrorCode {
 
-		public TypeNotFoundException(OEnv env, Tree<?> s, String format, Object... args) {
+		public TypeNotFoundException(OEnv env, Tree<?> s, LocaleFormat format, Object... args) {
 			super(env, s, format, args);
 		}
 
@@ -43,7 +43,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis, MessageMe
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType type = parseType(env, t);
 			if (type == null) {
-				throw new TypeNotFoundException(env, t, OFmt.fmt("%s", OFmt.undefined, OFmt.type), t.toText());
+				throw new TypeNotFoundException(env, t, OFmt.undefined_type__YY0, t.toText());
 			}
 			return new OTypeCode(type);
 		}
@@ -54,7 +54,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis, MessageMe
 				try {
 					return env.t(Class.forName(name));
 				} catch (ClassNotFoundException e) {
-					throw new TypeNotFoundException(env, t, OFmt.fmt("%s by %s", OFmt.unfound, OFmt.clazz), t.toText(), e);
+					throw new TypeNotFoundException(env, t, OFmt.unfound_class__YY0_by_YY1, t.toText(), e);
 				}
 			}
 			return OTypeName.getType(env, name);
