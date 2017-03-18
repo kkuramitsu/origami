@@ -35,13 +35,13 @@ public interface TypeAnalysis {
 		try {
 			node = env.get(name, OTypeRule.class, (d, c) -> d.typeRule(env, t));
 		} catch (OErrorCode e) {
-			e.setSource(t);
+			e.setSourcePosition(t);
 			throw e;
 		}
 		if (node == null) {
 			throw new OErrorCode(env, t, OFmt.fmt("%s", OFmt.undefined, OFmt.syntax), name);
 		}
-		node.setSource(t);
+		node.setSourcePosition(t);
 		return node;
 	}
 

@@ -17,16 +17,16 @@
 package origami.nez.parser.pass;
 
 import origami.nez.peg.Expression;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class NotCharPass extends CommonPass {
 
 	boolean BinaryGrammar = false;
 
 	@Override
-	protected void prepare(OGrammar g) {
-		for (OProduction p : g.getAllProductions()) {
+	protected void prepare(Grammar g) {
+		for (Production p : g.getAllProductions()) {
 			checkBinaryExpression(p.getExpression());
 		}
 	}

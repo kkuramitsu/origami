@@ -23,11 +23,11 @@ public enum NonEmpty {
 		return minLenFunc.check(e, null) == NonEmpty.True;
 	}
 
-	public final static boolean isAlwaysConsumed(OProduction p) {
+	public final static boolean isAlwaysConsumed(Production p) {
 		return isConsumedImpl(p.getGrammar(), p.getLocalName(), p.getExpression()) == NonEmpty.True;
 	}
 
-	static NonEmpty isConsumedImpl(OGrammar g, String name, Expression e) {
+	static NonEmpty isConsumedImpl(Grammar g, String name, Expression e) {
 		NonEmpty r = g.getProperty(name, NonEmpty.class);
 		if (r == null) {
 			g.setProperty(name, NonEmpty.Unsure);

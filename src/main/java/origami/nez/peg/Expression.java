@@ -20,18 +20,18 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.nez.ast.SourceObject;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.trait.OStringUtils;
 
-public abstract class Expression extends AbstractList<Expression> implements OStringBuilder {
+public abstract class Expression extends AbstractList<Expression> implements StringCombinator {
 
 	public abstract <VAL, ARG> VAL visit(ExpressionVisitor<VAL, ARG> v, ARG a);
 
 	@Override
 	public final String toString() {
-		return OStringBuilder.stringfy(this);
+		return StringCombinator.stringfy(this);
 	}
 
 	public Expression desugar() {
@@ -56,14 +56,14 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 
 	/* source location */
 
-	public final SourceObject getSourceLocation() {
-		if (ref instanceof SourceObject) {
-			return (SourceObject) this.ref;
+	public final SourcePosition getSourceLocation() {
+		if (ref instanceof SourcePosition) {
+			return (SourcePosition) this.ref;
 		}
 		return null;
 	}
 
-	public final void setSourceLocation(SourceObject s) {
+	public final void setSourceLocation(SourcePosition s) {
 		this.ref = s;
 	}
 
@@ -71,13 +71,13 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 		this.ref = e.getExternalReference();
 	}
 
-	public String formatSourceMessage(String type, String msg) {
-		SourceObject s = getSourceLocation();
-		if (s != null) {
-			return s.formatSourceMessage(type, msg);
-		}
-		return "(" + type + ") " + msg;
-	}
+//	public String formatSourceMessage(String type, String msg) {
+//		SourcePosition s = getSourceLocation();
+//		if (s != null) {
+//			return s.formatSourceMessage(type, msg);
+//		}
+//		return "(" + type + ") " + msg;
+//	}
 
 	// term, unary, binary, array
 
@@ -260,17 +260,17 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 
 	public final static class PNonTerminal extends Expression {
 		public boolean isLeftRecursion;
-		private OGrammar grammar;
+		private Grammar grammar;
 		private String name;
 
-		public PNonTerminal(OGrammar g, boolean isLeftRecursion, String name, Object ref) {
+		public PNonTerminal(Grammar g, boolean isLeftRecursion, String name, Object ref) {
 			super(ref);
 			this.isLeftRecursion = isLeftRecursion;
 			this.grammar = g;
 			this.name = name;
 		}
 
-		public PNonTerminal(OGrammar g, String pname, Object ref) {
+		public PNonTerminal(Grammar g, String pname, Object ref) {
 			this(g, false, pname, ref);
 		}
 
@@ -282,7 +282,7 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 			return false;
 		}
 
-		public final OGrammar getGrammar() {
+		public final Grammar getGrammar() {
 			return grammar;
 		}
 
@@ -298,7 +298,7 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 			return this.grammar.getExpression(this.name);
 		}
 
-		public final OProduction getProduction() {
+		public final Production getProduction() {
 			return this.grammar.getProduction(this.name);
 		}
 
@@ -1578,9 +1578,9 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 	// Visitor
 
 	public static abstract class AbstractExpressionVisitor<A> extends ExpressionVisitor<Expression, A> {
-		protected final OGrammar base;
+		protected final Grammar base;
 
-		public AbstractExpressionVisitor(OGrammar base) {
+		public AbstractExpressionVisitor(Grammar base) {
 			this.base = base;
 		}
 
@@ -1597,7 +1597,7 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 
 	public static class Duplicator<A> extends AbstractExpressionVisitor<A> {
 
-		public Duplicator(OGrammar grammar) {
+		public Duplicator(Grammar grammar) {
 			super(grammar);
 		}
 

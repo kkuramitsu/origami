@@ -22,9 +22,9 @@ import origami.OEnv;
 import origami.code.OCode;
 import origami.lang.OField;
 import origami.lang.OMethodHandle;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
-public interface OWrapperType extends OType, OStringBuilder {
+public interface OWrapperType extends OType, StringCombinator {
 
 	/* interface */
 	public OType thisType();

@@ -18,7 +18,7 @@ package origami.ffi;
 
 import origami.OLog;
 import origami.nez.ast.Tree;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
 @SuppressWarnings("serial")
 public class OrigamiException extends RuntimeException {
@@ -28,30 +28,25 @@ public class OrigamiException extends RuntimeException {
 	}
 
 	public OrigamiException(String fmt, Object... args) {
-		super(message(null, fmt, args));
+		super(StringCombinator.format(fmt, args));
 	}
 
 	public OrigamiException(Throwable e, String fmt, Object... args) {
-		this(OStringBuilder.format(fmt, args) + " by " + e);
+		this(StringCombinator.format(fmt, args) + " by " + e);
 	}
 
-	static final String message(String fmt, Object... args) {
-		return OStringBuilder.format(fmt, args);
-	}
-
-	private static String format(Tree<?> s, String name) {
-		String msg = "no " + name;
-		if (s != null) {
-			msg = s.getSource().formatPositionLine("error", s.getSourcePosition(), msg);
-		}
-		return msg;
-	}
-
-	@SuppressWarnings("serial")
-	public static class NotFoundException extends OrigamiException {
-		public NotFoundException(Tree<?> s, String name) {
-			super(format(s, name));
-		}
-	}
+//	private static String format(Tree<?> s, String name) {
+//		String msg = "no " + name;
+//		if (s != null) {
+//			msg = s.getSource().formatPositionLine("error", s.getSourcePosition(), msg);
+//		}
+//		return msg;
+//	}
+//
+//	public static class NotFoundException extends OrigamiException {
+//		public NotFoundException(Tree<?> s, String name) {
+//			super(format(s, name));
+//		}
+//	}
 
 }

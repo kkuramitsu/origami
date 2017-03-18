@@ -28,24 +28,24 @@ import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.GrammarFlag;
 import origami.nez.peg.NezFunc;
 import origami.nez.peg.NonEmpty;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.trait.OStringUtils;
 
 public class GrammarChecker {
 
 	private final ParserFactory factory;
-	private final OProduction start;
-	private HashMap<String, OProduction> visited = new HashMap<>();
-	private ArrayList<OProduction> prodList = new ArrayList<>();
+	private final Production start;
+	private HashMap<String, Production> visited = new HashMap<>();
+	private ArrayList<Production> prodList = new ArrayList<>();
 	private TreeMap<String, Integer> flagMap = new TreeMap<>();
 
-	public GrammarChecker(ParserFactory factory, OProduction start) {
+	public GrammarChecker(ParserFactory factory, Production start) {
 		this.factory = factory;
 		this.start = start;
 	}
 
-	static class ParserGrammar extends OGrammar {
+	static class ParserGrammar extends Grammar {
 		ParserGrammar(String name) {
 			super(name);
 		}
@@ -56,17 +56,17 @@ public class GrammarChecker {
 		}
 	}
 
-	public OGrammar checkGrammar() {
+	public Grammar checkGrammar() {
 		visitProduction(start);
 		LeftRecursionChecker lrc = new LeftRecursionChecker(factory);
 		TreeCheckerPass treeChecker = new TreeCheckerPass();
-		for (OProduction p : prodList) {
+		for (Production p : prodList) {
 			lrc.check(p.getExpression(), p);
 			if (factory.is("strict-check", false)) {
 				treeChecker.check(factory, p);
 			}
 		}
-		OGrammar g = new ParserGrammar("@" + start.getUniqueName());
+		Grammar g = new ParserGrammar("@" + start.getUniqueName());
 		String[] flags = this.flagNames();
 		GrammarFlag.checkFlag(prodList, flags);
 		EliminateFlags dup = new EliminateFlags(factory, g, flags);
@@ -78,7 +78,7 @@ public class GrammarChecker {
 		return g;
 	}
 
-	private void visitProduction(OProduction p) {
+	private void visitProduction(Production p) {
 		String key = p.getUniqueName();
 		if (!visited.containsKey(key)) {
 			visited.put(key, p);
@@ -90,7 +90,7 @@ public class GrammarChecker {
 	private void visitProduction(Expression e) {
 		if (e instanceof Expression.PNonTerminal) {
 			PNonTerminal n = ((Expression.PNonTerminal) e);
-			OProduction p = n.getProduction();
+			Production p = n.getProduction();
 			if (p == null) {
 				if (n.getLocalName().startsWith("\"")) {
 					factory.reportError(e.getSourceLocation(), "undefined terminal: %s", n.getLocalName());
@@ -235,7 +235,7 @@ class Stat {
 
 }
 
-class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
+class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 
 	private final ParserFactory factory;
 
@@ -243,48 +243,48 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 		this.factory = factory;
 	}
 
-	boolean check(Expression e, OProduction a) {
+	boolean check(Expression e, Production a) {
 		return e.visit(this, a);
 	}
 
 	@Override
-	public Boolean visitNonTerminal(Expression.PNonTerminal e, OProduction a) {
+	public Boolean visitNonTerminal(Expression.PNonTerminal e, Production a) {
 		if (e.getUniqueName().equals(a.getUniqueName())) {
 			factory.reportError(e.getSourceLocation(), "left recursion: " + a.getLocalName());
 			e.isLeftRecursion = true;
 			return true;
 		}
-		OProduction p = e.getProduction();
+		Production p = e.getProduction();
 		return check(p.getExpression(), a);
 	}
 
 	@Override
-	public Boolean visitEmpty(Expression.PEmpty e, OProduction a) {
+	public Boolean visitEmpty(Expression.PEmpty e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitFail(Expression.PFail e, OProduction a) {
+	public Boolean visitFail(Expression.PFail e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitByte(Expression.PByte e, OProduction a) {
+	public Boolean visitByte(Expression.PByte e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitByteSet(Expression.PByteSet e, OProduction a) {
+	public Boolean visitByteSet(Expression.PByteSet e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitAny(Expression.PAny e, OProduction a) {
+	public Boolean visitAny(Expression.PAny e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitPair(Expression.PPair e, OProduction a) {
+	public Boolean visitPair(Expression.PPair e, Production a) {
 		if (check(e.get(0), a) == false) {
 			return false;
 		}
@@ -292,7 +292,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 	}
 
 	@Override
-	public Boolean visitChoice(Expression.PChoice e, OProduction a) {
+	public Boolean visitChoice(Expression.PChoice e, Production a) {
 		boolean unconsumed = false;
 		for (Expression sub : e) {
 			boolean c = check(sub, a);
@@ -304,7 +304,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 	}
 
 	@Override
-	public Boolean visitDispatch(Expression.PDispatch e, OProduction a) {
+	public Boolean visitDispatch(Expression.PDispatch e, Production a) {
 		boolean unconsumed = false;
 		for (int i = 1; i < e.size(); i++) {
 			boolean c = check(e.get(i), a);
@@ -316,12 +316,12 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 	}
 
 	@Override
-	public Boolean visitOption(Expression.POption e, OProduction a) {
+	public Boolean visitOption(Expression.POption e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitRepetition(Expression.PRepetition e, OProduction a) {
+	public Boolean visitRepetition(Expression.PRepetition e, Production a) {
 		if (e.isOneMore()) {
 			return check(e.get(0), a);
 		}
@@ -329,52 +329,52 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 	}
 
 	@Override
-	public Boolean visitAnd(Expression.PAnd e, OProduction a) {
+	public Boolean visitAnd(Expression.PAnd e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitNot(Expression.PNot e, OProduction a) {
+	public Boolean visitNot(Expression.PNot e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitTree(Expression.PTree e, OProduction a) {
+	public Boolean visitTree(Expression.PTree e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitLinkTree(Expression.PLinkTree e, OProduction a) {
+	public Boolean visitLinkTree(Expression.PLinkTree e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitTag(Expression.PTag e, OProduction a) {
+	public Boolean visitTag(Expression.PTag e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitReplace(Expression.PReplace e, OProduction a) {
+	public Boolean visitReplace(Expression.PReplace e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitDetree(Expression.PDetree e, OProduction a) {
+	public Boolean visitDetree(Expression.PDetree e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolScope(Expression.PSymbolScope e, OProduction a) {
+	public Boolean visitSymbolScope(Expression.PSymbolScope e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolAction(Expression.PSymbolAction e, OProduction a) {
+	public Boolean visitSymbolAction(Expression.PSymbolAction e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolPredicate(Expression.PSymbolPredicate e, OProduction a) {
+	public Boolean visitSymbolPredicate(Expression.PSymbolPredicate e, Production a) {
 		if (e.funcName == NezFunc.exists) {
 			return true;
 		}
@@ -382,27 +382,27 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, OProduction> {
 	}
 
 	@Override
-	public Boolean visitScan(Expression.PScan e, OProduction a) {
+	public Boolean visitScan(Expression.PScan e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitRepeat(Expression.PRepeat e, OProduction a) {
+	public Boolean visitRepeat(Expression.PRepeat e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitIf(Expression.PIfCondition e, OProduction a) {
+	public Boolean visitIf(Expression.PIfCondition e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitOn(Expression.POnCondition e, OProduction a) {
+	public Boolean visitOn(Expression.POnCondition e, Production a) {
 		return check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitTrap(PTrap e, OProduction a) {
+	public Boolean visitTrap(PTrap e, Production a) {
 		return true;
 	}
 }
@@ -420,7 +420,7 @@ class FlagContext extends TreeMap<String, Boolean> {
 		}
 	}
 
-	String contextualName(OProduction p, boolean nonTreeConstruction) {
+	String contextualName(Production p, boolean nonTreeConstruction) {
 		if (flagLess) {
 			return p.getUniqueName();
 		} else {
@@ -449,7 +449,7 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 	final ParserFactory fac;
 	final FlagContext flagContext;
 
-	EliminateFlags(ParserFactory factory, OGrammar grammar, String[] flags) {
+	EliminateFlags(ParserFactory factory, Grammar grammar, String[] flags) {
 		super(grammar);
 		this.fac = factory;
 		this.flagContext = new FlagContext(flags, false);
@@ -465,9 +465,9 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 		this.flagContext.put(flag, b);
 	}
 
-	public String duplicateName(OProduction sp) {
+	public String duplicateName(Production sp) {
 		String cname = flagContext.contextualName(sp, false);
-		OProduction p = base.getProduction(cname);
+		Production p = base.getProduction(cname);
 		if (p == null) {
 			base.addProduction(cname, Expression.defaultEmpty);
 			base.setExpression(cname, dup(sp.getExpression(), null));

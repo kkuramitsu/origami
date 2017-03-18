@@ -46,8 +46,8 @@ import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.NezFunc;
 import origami.nez.peg.NonEmpty;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 import origami.trait.OStringUtils;
 import origami.trait.OVerbose;
@@ -75,7 +75,7 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 	protected ParserCode<?> code;
 
 	@Override
-	public void writeGrammar(ParserFactory fac, OGrammar g) {
+	public void writeGrammar(ParserFactory fac, Grammar g) {
 		try {
 			// FIXME Just a hack
 			fileBase = extractGrammarName((String) fac.get("grammar"));
@@ -107,15 +107,15 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 		return path.substring(start, end);
 	}
 
-	protected abstract void generateHeader(OGrammar g);
+	protected abstract void generateHeader(Grammar g);
 
-	protected abstract void generateFooter(OGrammar g);
+	protected abstract void generateFooter(Grammar g);
 
 	protected void generatePrototypes() {
 
 	}
 
-	protected String _funcname(OProduction p) {
+	protected String _funcname(Production p) {
 		return _funcname(p.getUniqueName());
 	}
 
@@ -565,7 +565,7 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 			DeclTable(Symbol.Null);
 		}
 
-		private Object decl(OProduction p) {
+		private Object decl(Production p) {
 			if (checkFuncName(p)) {
 				p.getExpression().visit(this, null);
 			}
@@ -574,7 +574,7 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 
 		String cur = null; // name
 
-		private boolean checkFuncName(OProduction p) {
+		private boolean checkFuncName(Production p) {
 			String f = _funcname(p.getUniqueName());
 			if (!funcMap.containsKey(f)) {
 				String stacked2 = cur;

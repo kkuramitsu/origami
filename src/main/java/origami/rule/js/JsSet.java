@@ -19,8 +19,8 @@ package origami.rule.js;
 import java.util.Set;
 
 import origami.OEnv;
-import origami.OSource;
 import origami.ffi.JsCore;
+import origami.nez.ast.SourcePosition;
 import origami.rule.ClassRules;
 import origami.rule.ExpressionRules;
 import origami.rule.OrigamiAPIs;
@@ -31,7 +31,7 @@ import origami.trait.OScriptUtils;
 
 public class JsSet implements OImportable, OScriptUtils {
 	@Override
-	public void importDefined(OEnv env, OSource s, Set<String> names) {
+	public void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		// addType(env, t, "Unit", void.class);
 		// addType(env, t, "Bool", boolean.class);
 		// addType(env, t, "Int", long.class);

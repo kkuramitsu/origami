@@ -1,9 +1,7 @@
 package origami.trait;
 
-import java.lang.reflect.InvocationTargetException;
 
 import origami.OConsole;
-import origami.OVersion;
 
 public class OVerbose {
 	public static boolean enabled = true;

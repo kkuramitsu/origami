@@ -18,13 +18,13 @@ package origami.main.tool;
 
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class SimpleGrammarWriter extends CommonWriter implements GrammarWriter {
 
 	@Override
-	public void writeGrammar(ParserFactory fac, OGrammar grammar) {
+	public void writeGrammar(ParserFactory fac, Grammar grammar) {
 		// OGrammar[] sub = grammar.subGrammars();
 		// for (OGrammar g : sub) {
 		// L("grammar " + g.ns + " ");
@@ -35,8 +35,8 @@ public class SimpleGrammarWriter extends CommonWriter implements GrammarWriter {
 		writeGrammar(grammar);
 	}
 
-	private void writeGrammar(OGrammar grammar) {
-		for (OProduction p : grammar) {
+	private void writeGrammar(Grammar grammar) {
+		for (Production p : grammar) {
 			String q = p.isPublic() ? "public " : "";
 			L(q + p.getLocalName() + " = " + p.getExpression());
 			this.incIndent();
@@ -45,7 +45,7 @@ public class SimpleGrammarWriter extends CommonWriter implements GrammarWriter {
 		}
 	}
 
-	protected void writeProduction(OProduction p) {
+	protected void writeProduction(Production p) {
 		// L("isAlwaysConsumed: " + prop.isAlwaysConsumed(p));
 	}
 

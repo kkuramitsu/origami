@@ -27,10 +27,8 @@ import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
 import origami.nez.parser.ParserFactory.TreeWriter;
-import origami.nez.peg.GrammarLoader;
 import origami.nez.peg.GrammarParser;
-import origami.nez.peg.OGrammar;
-import origami.trait.OVerbose;
+import origami.nez.peg.Grammar;
 
 public class Oinez extends OCommand {
 	@Override
@@ -57,7 +55,7 @@ public class Oinez extends OCommand {
 			try {
 				Tree<?> node = nezParser.parse(sc);
 				if (node != null && node.is(GrammarParser._Source)) {
-					OGrammar g = OGrammar.loadSource(sc);
+					Grammar g = Grammar.loadSource(sc);
 					fac = fac.newFactory(g);
 					pegParser = parser(fac);
 					prompt = prompt(fac);
@@ -85,7 +83,7 @@ public class Oinez extends OCommand {
 	}
 
 	private String prompt(ParserFactory fac) throws IOException {
-		OGrammar g = fac.getGrammar();
+		Grammar g = fac.getGrammar();
 		String start = g.getStartProduction().getLocalName();
 		return bold(start + ">>> ");
 	}

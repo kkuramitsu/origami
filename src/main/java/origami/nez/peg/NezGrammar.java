@@ -16,7 +16,7 @@
 
 package origami.nez.peg;
 
-public class NezGrammar extends Combinator {
+public class NezGrammar extends ParserCombinator {
 
 	public Expression pStart() {
 		return Expr("@_", Choice("@Expression", "@Source"), "@EOT");
@@ -144,15 +144,6 @@ public class NezGrammar extends Combinator {
 				("#Production") //
 		);
 	}
-
-	// public Expression pNOTRULE() {
-	// return Not(Choice(S(";"), ("@RuleHead"), ("@Import")));
-	// }
-	//
-	// public Expression pRuleHead() {
-	// return Tree(("@addQualifers"), Link(null, Choice(("@NonTerminal"),
-	// ("@String"))), "@_", ("@SKIP"), S("="));
-	// }
 
 	public Expression pExpression() {
 		return Expr("@UChoice");

@@ -25,17 +25,16 @@ import java.util.TreeMap;
 import origami.OConsole;
 import origami.nez.ast.CommonTree;
 import origami.nez.ast.Source;
-import origami.nez.ast.SourceObject;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
 import origami.nez.parser.ParserCode.StaticMemoization;
 import origami.nez.parser.pass.DispatchPass;
 import origami.nez.parser.pass.InlinePass;
 import origami.nez.parser.pass.NotCharPass;
 import origami.nez.parser.pass.TreePass;
-import origami.nez.peg.Combinator;
-import origami.nez.peg.GrammarLoader;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.ParserCombinator;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class ParserFactory {
 
@@ -58,7 +57,7 @@ public class ParserFactory {
 	}
 
 	private TreeMap<String, Object> valueMap;
-	private OGrammar defaultGrammar;
+	private Grammar defaultGrammar;
 	private Compiler optionalCompiler;
 	private StaticMemoization optionalStaticMemoization;
 	private ParserContext<?> optionalContext;
@@ -69,7 +68,7 @@ public class ParserFactory {
 	private boolean verboseMode;
 
 	@SuppressWarnings("unchecked")
-	private ParserFactory(ParserFactory fac, OGrammar g) {
+	private ParserFactory(ParserFactory fac, Grammar g) {
 		if (fac == null) {
 			this.verboseMode = false; // FIXME
 			this.valueMap = new TreeMap<>();
@@ -98,7 +97,7 @@ public class ParserFactory {
 		this(null, null);
 	}
 
-	public ParserFactory newFactory(OGrammar g) {
+	public ParserFactory newFactory(Grammar g) {
 		return new ParserFactory(this, g);
 	}
 
@@ -236,13 +235,13 @@ public class ParserFactory {
 				defaultGrammarWriter = (GrammarWriter) x;
 				return true;
 			}
-			if (x instanceof OGrammar) {
-				defaultGrammar = (OGrammar) x;
+			if (x instanceof Grammar) {
+				defaultGrammar = (Grammar) x;
 				return true;
 			}
-			if (x instanceof Combinator) {
-				defaultGrammar = new OGrammar();
-				((Combinator) x).load(this, defaultGrammar, value("start", null));
+			if (x instanceof ParserCombinator) {
+				defaultGrammar = new Grammar();
+				((ParserCombinator) x).load(this, defaultGrammar, value("start", null));
 				return true;
 			}
 			if (x instanceof Compiler) {
@@ -281,14 +280,14 @@ public class ParserFactory {
 		}
 	}
 
-	public final OGrammar getGrammar() throws IOException {
+	public final Grammar getGrammar() throws IOException {
 		if (defaultGrammar == null) {
 			String path = value("grammar", null);
 			if (path != null) {
-				defaultGrammar = OGrammar.loadFile(path, list("grammar-path"));
+				defaultGrammar = Grammar.loadFile(path, list("grammar-path"));
 			}
 			if (defaultGrammar == null) {
-				defaultGrammar = new OGrammar(); // Empty
+				defaultGrammar = new Grammar(); // Empty
 			}
 		}
 		return defaultGrammar;
@@ -299,12 +298,12 @@ public class ParserFactory {
 	}
 
 	public final Parser newParser(String start) throws IOException {
-		OGrammar g = this.getGrammar();
+		Grammar g = this.getGrammar();
 		if (start == null) {
 			start = value("start", null);
 		}
 		if (start != null) {
-			OProduction p = g.getProduction(start);
+			Production p = g.getProduction(start);
 			if (p != null) {
 				return new Parser(this, p);
 			}
@@ -314,11 +313,11 @@ public class ParserFactory {
 	}
 
 	public interface Compiler {
-		public Executable compile(ParserFactory fac, OGrammar grammar);
+		public Executable compile(ParserFactory fac, Grammar grammar);
 	}
 
 	public interface Executable {
-		public OGrammar getGrammar();
+		public Grammar getGrammar();
 
 		public <T> void initContext(ParserContext<T> ctx);
 
@@ -326,11 +325,11 @@ public class ParserFactory {
 
 	}
 
-	public OGrammar optimize(ParserFactory fac, OProduction start) {
+	public Grammar optimize(ParserFactory fac, Production start) {
 		return new GrammarChecker(fac, start).checkGrammar();
 	}
 
-	public void applyPass(OGrammar g) {
+	public void applyPass(Grammar g) {
 		if (this.is("raw", false)) {
 			return;
 		}
@@ -375,7 +374,7 @@ public class ParserFactory {
 	public interface GrammarWriter {
 		public void setPath(String path);
 
-		public void writeGrammar(ParserFactory fac, OGrammar grammar);
+		public void writeGrammar(ParserFactory fac, Grammar grammar);
 
 		public void close();
 	}
@@ -429,35 +428,35 @@ public class ParserFactory {
 		return intValue("error", 3);
 	}
 
-	private String message(SourceObject s, String type, String fmt, Object... args) {
-		if (s != null) {
-			return s.formatSourceMessage(type, String.format(fmt, args));
-		}
-		return "(" + type + ") " + String.format(fmt, args);
+//	private String message(SourcePosition s, String type, String fmt, Object... args) {
+//		if (s != null) {
+//			return s.formatSourceMessage(type, String.format(fmt, args));
+//		}
+//		return "(" + type + ") " + String.format(fmt, args);
+//	}
+
+	public final void reportError(SourcePosition s, String fmt, Object... args) {
+//		if (error() >= 1) {
+//			report(Error, message(s, "error", fmt, args));
+//		}
 	}
 
-	public final void reportError(SourceObject s, String fmt, Object... args) {
-		if (error() >= 1) {
-			report(Error, message(s, "error", fmt, args));
-		}
+	public final void reportWarning(SourcePosition s, String fmt, Object... args) {
+//		if (error() >= 2) {
+//			report(Warning, message(s, "warning", fmt, args));
+//		}
 	}
 
-	public final void reportWarning(SourceObject s, String fmt, Object... args) {
-		if (error() >= 2) {
-			report(Warning, message(s, "warning", fmt, args));
-		}
+	public final void reportNotice(SourcePosition s, String fmt, Object... args) {
+//		if (error() >= 3) {
+//			report(Notice, message(s, "notice", fmt, args));
+//		}
 	}
 
-	public final void reportNotice(SourceObject s, String fmt, Object... args) {
-		if (error() >= 3) {
-			report(Notice, message(s, "notice", fmt, args));
-		}
-	}
-
-	public final void reportInfo(SourceObject s, String fmt, Object... args) {
-		if (error() >= 4) {
-			report(Info, message(s, "info", fmt, args));
-		}
+	public final void reportInfo(SourcePosition s, String fmt, Object... args) {
+//		if (error() >= 4) {
+//			report(Info, message(s, "info", fmt, args));
+//		}
 	}
 
 	// -------------------------------------------------------------------------

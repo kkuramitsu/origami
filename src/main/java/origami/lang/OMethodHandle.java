@@ -26,7 +26,7 @@ import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.ffi.OCast;
 import origami.trait.OArrayUtils;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
@@ -216,7 +216,7 @@ public interface OMethodHandle {
 
 }
 
-abstract class OCommonMethodHandle implements OMethodHandle, OStringBuilder, OArrayUtils {
+abstract class OCommonMethodHandle implements OMethodHandle, StringCombinator, OArrayUtils {
 
 	@Override
 	public String[] getThisParamNames() {
@@ -240,14 +240,14 @@ abstract class OCommonMethodHandle implements OMethodHandle, OStringBuilder, OAr
 		sb.append(this.getName());
 		for (OType p : this.getThisParamTypes()) {
 			sb.append(" ");
-			OStringBuilder.append(sb, p);
+			StringCombinator.append(sb, p);
 		}
 		sb.append(" -> ");
-		OStringBuilder.append(sb, this.getReturnType());
+		StringCombinator.append(sb, this.getReturnType());
 	}
 
 	@Override
 	public String toString() {
-		return OStringBuilder.stringfy(this);
+		return StringCombinator.stringfy(this);
 	}
 }

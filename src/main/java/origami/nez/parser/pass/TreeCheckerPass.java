@@ -16,33 +16,33 @@
 
 package origami.nez.parser.pass;
 
-import origami.nez.ast.SourceObject;
+import origami.nez.ast.SourcePosition;
 import origami.nez.parser.ParserFactory;
 import origami.nez.peg.Expression;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 
 public class TreeCheckerPass extends CommonPass {
 
 	boolean EnableDetree;
 
-	public Expression check(ParserFactory fac, OProduction p) {
+	public Expression check(ParserFactory fac, Production p) {
 		this.fac = fac;
 		this.EnableDetree = this.fac.DetreeOption();
 		return this.checkProductionExpression(p.getUniqueName(), p.getExpression());
 	}
 
 	@Override
-	public void perform(ParserFactory fac, OGrammar g) {
+	public void perform(ParserFactory fac, Grammar g) {
 		this.fac = fac;
 		this.EnableDetree = this.fac.DetreeOption();
-		for (OProduction p : g) {
+		for (Production p : g) {
 			g.setExpression(p.getLocalName(), this.checkProductionExpression(p.getUniqueName(), p.getExpression()));
 		}
 	}
 
-	protected SourceObject src(Expression e) {
+	protected SourcePosition src(Expression e) {
 		return e.getSourceLocation();
 	}
 
@@ -108,7 +108,7 @@ public class TreeCheckerPass extends CommonPass {
 
 	@Override
 	public Expression visitNonTerminal(Expression.PNonTerminal n, Void a) {
-		OProduction p = n.getProduction();
+		Production p = n.getProduction();
 		Typestate innerState = typeState(n);
 		// System.out.println("@@@ Production " + n + " inner=" + innerState + "
 		// req=" + this.req);

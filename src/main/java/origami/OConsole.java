@@ -16,7 +16,7 @@
 
 package origami;
 
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
 public class OConsole {
 
@@ -96,11 +96,11 @@ public class OConsole {
 	}
 
 	public static void println(String format, Object... args) {
-		System.out.println(OStringBuilder.format(format, args));
+		System.out.println(StringCombinator.format(format, args));
 	}
 
 	public static void print(String format, Object... args) {
-		System.out.print(OStringBuilder.format(format, args));
+		System.out.print(StringCombinator.format(format, args));
 	}
 
 	public static void dump(String tab, Object o) {

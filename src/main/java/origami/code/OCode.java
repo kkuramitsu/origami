@@ -26,7 +26,7 @@ import origami.ffi.OCast;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;
-import origami.nez.ast.Tree;
+import origami.nez.ast.SourcePosition;
 import origami.rule.OFmt;
 import origami.type.OType;
 import origami.type.OTypeSystem;
@@ -55,9 +55,9 @@ public interface OCode {
 
 	public OType valueType();
 
-	public OCode setSource(Tree<?> t);
+	public OCode setSourcePosition(SourcePosition s);
 
-	public Tree<?> getSource();
+	public SourcePosition getSourcePosition();
 
 	public boolean isDefined();
 

@@ -16,13 +16,13 @@
 
 package origami.type;
 
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
-public abstract class OTypeImpl implements OType, OStringBuilder {
+public abstract class OTypeImpl implements OType, StringCombinator {
 
 	@Override
 	public String toString() {
-		return OStringBuilder.stringfy(this);
+		return StringCombinator.stringfy(this);
 	}
 
 	@Override

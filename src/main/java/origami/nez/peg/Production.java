@@ -16,20 +16,20 @@
 
 package origami.nez.peg;
 
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
-public class OProduction implements OStringBuilder {
-	private final OGrammar grammar;
+public class Production implements StringCombinator {
+	private final Grammar grammar;
 	private final String name;
 	private final Expression body;
 
-	OProduction(OGrammar grammar, String name, Expression body) {
+	Production(Grammar grammar, String name, Expression body) {
 		this.grammar = grammar;
 		this.name = name;
 		this.body = body;
 	}
 
-	public OGrammar getGrammar() {
+	public Grammar getGrammar() {
 		return this.grammar;
 	}
 
@@ -57,7 +57,7 @@ public class OProduction implements OStringBuilder {
 
 	@Override
 	public final String toString() {
-		return OStringBuilder.stringfy(this);
+		return StringCombinator.stringfy(this);
 	}
 
 	@Override

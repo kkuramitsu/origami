@@ -45,15 +45,15 @@ import origami.nez.peg.Expression.PTag;
 import origami.nez.peg.Expression.PTrap;
 import origami.nez.peg.Expression.PTree;
 import origami.nez.peg.ExpressionVisitor;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class PEGWriter extends CommonWriter implements GrammarWriter {
 
 	@Override
-	public void writeGrammar(ParserFactory fac, OGrammar g) {
+	public void writeGrammar(ParserFactory fac, Grammar g) {
 		WriterVisitor v = new WriterVisitor();
-		for (OProduction p : g.getAllProductions()) {
+		for (Production p : g.getAllProductions()) {
 			L(p);
 		}
 	}

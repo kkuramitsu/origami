@@ -23,7 +23,7 @@ import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.type.OType;
 
 public class OCastCode extends OMethodCode {
@@ -62,7 +62,7 @@ public class OCastCode extends OMethodCode {
 	}
 
 	public OErrorCode newErrorCode(OEnv env) {
-		return new OErrorCode(env, this.getSource(), OFmt.fmt("%s <= %s", OFmt.studpid_cast), this.getType(), this.getFromType());
+		return new OErrorCode(env, this.getSourcePosition(), OFmt.fmt("%s <= %s", OFmt.studpid_cast), this.getType(), this.getFromType());
 	}
 
 	public boolean isDownCast() {
@@ -70,7 +70,7 @@ public class OCastCode extends OMethodCode {
 	}
 
 	public OLog log() {
-		return new OLog(this.getSource(), OLog.Warning, OFmt.fmt("%s <= %s", OFmt.implicit_conversion), this.getType(), this.getFromType());
+		return new OLog(this.getSourcePosition(), OLog.Warning, OFmt.fmt("%s <= %s", OFmt.implicit_conversion), this.getType(), this.getFromType());
 	}
 
 	@Override
@@ -95,8 +95,8 @@ public class OCastCode extends OMethodCode {
 		gen.pushCast(this);
 	}
 
-	@Override
-	protected void strOutInner(StringBuilder sb) {
-		sb.append(OStringBuilder.format(" %s=>%s %s", this.getFromType(), this.getType(), this.getHandled()));
-	}
+//	@Override
+//	protected void strOutInner(StringBuilder sb) {
+//		sb.append(StringCombinator.format(" %s=>%s %s", this.getFromType(), this.getType(), this.getHandled()));
+//	}
 }

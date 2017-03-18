@@ -18,7 +18,9 @@ package origami;
 
 import java.lang.reflect.Method;
 
-import origami.trait.OStringBuilder;
+import origami.nez.ast.SourcePosition;
+import origami.rule.OFmt;
+import origami.trait.StringCombinator;
 import origami.trait.OTypeUtils;
 
 public class ODebug extends OConsole {
@@ -44,13 +46,13 @@ public class ODebug extends OConsole {
 	public static void trace(String fmt, Object... args) {
 		if (isDebug()) {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
-			println(loc(s[2]) + OStringBuilder.format(fmt, args));
+			println(loc(s[2]) + StringCombinator.format(fmt, args));
 		}
 	}
 
 	public static void trace2(String fmt, Object... args) {
 		StackTraceElement[] s = Thread.currentThread().getStackTrace();
-		println(loc(s[2]) + OStringBuilder.format(fmt, args));
+		println(loc(s[2]) + StringCombinator.format(fmt, args));
 	}
 
 	private static int countExceptions = 0;
@@ -108,7 +110,7 @@ public class ODebug extends OConsole {
 	}
 
 	public static void TODO(String fmt, Object... args) {
-		println("[TODO] " + OStringBuilder.format(fmt, args));
+		println("[TODO] " + StringCombinator.format(fmt, args));
 	}
 
 	public static void FIXME(String s) {
@@ -121,6 +123,10 @@ public class ODebug extends OConsole {
 	private static int passCount = 0;
 
 	public static final Method AssertMethod = OTypeUtils.loadMethod(ODebug.class, "assertTest", boolean.class, String.class);
+
+	public static String assertMessage(OEnv env, SourcePosition s) {
+		return SourcePosition.formatErrorMessage(s, OFmt.assertion_failed);
+	}
 
 	public final static void assertTest(boolean b, String msg) {
 		testCount++;

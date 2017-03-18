@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import origami.OConsole;
 import origami.trait.OVerbose;
 
 public class TreeVisitorMap<V> {
@@ -74,23 +73,23 @@ public class TreeVisitorMap<V> {
 		return v == null ? defaultAcceptor : v;
 	}
 
-	protected final void undefined(Tree<?> node) {
-		OVerbose.println("undefined: " + node);
-		throw new UndefinedException(node, this.getClass().getName() + ": undefined " + node);
-	}
-
-	@SuppressWarnings("serial")
-	public static class UndefinedException extends RuntimeException {
-		Tree<?> node;
-
-		public UndefinedException(Tree<?> node, String msg) {
-			super(node.formatSourceMessage("error", msg));
-			this.node = node;
-		}
-
-		public UndefinedException(Tree<?> node, String fmt, Object... args) {
-			super(node.formatSourceMessage("error", String.format(fmt, args)));
-			this.node = node;
-		}
-	}
+//	protected final void undefined(Tree<?> node) {
+//		OVerbose.println("undefined: " + node);
+//		throw new UndefinedException(node, this.getClass().getName() + ": undefined " + node);
+//	}
+//
+//	@SuppressWarnings("serial")
+//	public static class UndefinedException extends RuntimeException {
+//		Tree<?> node;
+//
+//		public UndefinedException(Tree<?> node, String msg) {
+//			super(node.formatSourceMessage("error", msg));
+//			this.node = node;
+//		}
+//
+//		public UndefinedException(Tree<?> node, String fmt, Object... args) {
+//			super(node.formatSourceMessage("error", String.format(fmt, args)));
+//			this.node = node;
+//		}
+//	}
 }

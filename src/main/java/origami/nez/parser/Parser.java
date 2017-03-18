@@ -20,16 +20,20 @@ import java.io.IOException;
 
 import origami.nez.ast.CommonTree;
 import origami.nez.ast.Source;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.NezFmt;
+import origami.nez.peg.Production;
+import origami.rule.LocaleFormat;
+import origami.rule.OFmt;
 
 public final class Parser {
-	private final OProduction start;
+	private final Production start;
 	private ParserFactory factory;
 	private ParserFactory.Executable code = null;
 
-	public Parser(ParserFactory factory, OProduction start) {
+	public Parser(ParserFactory factory, Production start) {
 		this.factory = factory;
 		this.start = start;
 	}
@@ -38,7 +42,7 @@ public final class Parser {
 		return this.factory;
 	}
 
-	public final OGrammar getGrammar() {
+	public final Grammar getGrammar() {
 		if (this.code == null) {
 			compile();
 		}
@@ -75,11 +79,11 @@ public final class Parser {
 		ParserContext<T> ctx = this.factory.newContext(s, newTree, linkTree);
 		T matched = performNull(ctx, s);
 		if (matched == null) {
-			perror(s, ctx.getMaximumPosition(), "syntax error");
+			perror(SourcePosition.newInstance(s, ctx.getMaximumPosition()), NezFmt.syntax_error);
 			return null;
 		}
 		if (!ctx.eof() && factory.is("partial-failure", this.PartialFailure)) {
-			perror(s, ctx.getPosition(), "unconsumed");
+			perror(SourcePosition.newInstance(s, ctx.getPosition()), NezFmt.unconsumed);
 		}
 		return matched;
 	}
@@ -131,33 +135,28 @@ public final class Parser {
 		this.PrintingParserError = b;
 	}
 
-	private void perror(Source source, long pos, String message) throws IOException {
+	private void perror(SourcePosition s, LocaleFormat message) throws IOException {
 		if (PrintingParserError || factory.is("print-parser-error", PrintingParserError)) {
-			factory.report(ParserFactory.Error, source.formatPositionLine("error", pos, message));
+			factory.report(ParserFactory.Error, SourcePosition.formatErrorMessage(s, message));
 		}
 		if (ThrowingParserError || factory.is("throw-parser-error", ThrowingParserError)) {
-			throw new ParserRuntimeException(source, pos, message);
+			throw new ParserErrorException(s, message);
 		}
 	}
 
-	public static class ParserRuntimeException extends IOException {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 6419448216728968762L;
-		final Source source;
-		final long pos;
-		final String message;
+	@SuppressWarnings("serial")
+	public static class ParserErrorException extends IOException {
+		final SourcePosition s;
+		final LocaleFormat message;
 
-		public ParserRuntimeException(Source source, long pos, String message) {
-			this.source = source;
-			this.pos = pos;
+		public ParserErrorException(SourcePosition s, LocaleFormat message) {
+			this.s = s;
 			this.message = message;
 		}
 
 		@Override
 		public final String toString() {
-			return source.formatPositionLine("error", pos, message);
+			return SourcePosition.formatErrorMessage(s,  message);
 		}
 	}
 

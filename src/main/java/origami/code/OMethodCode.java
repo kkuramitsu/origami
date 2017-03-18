@@ -27,7 +27,7 @@ import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethod;
 import origami.lang.OMethodHandle;
 import origami.trait.OArrayUtils;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.type.OType;
 
 public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicInvokable, OArrayUtils {
@@ -88,11 +88,6 @@ public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicI
 			return null;
 		}
 		return getMethod().getMethodHandle(env, lookup);
-	}
-
-	@Override
-	protected void strOutInner(StringBuilder sb) {
-		OStringBuilder.append(sb, this.getMethod());
 	}
 
 }

@@ -11,27 +11,27 @@ import origami.nez.ast.Source;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserFactory;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
-public class OGrammar extends AbstractList<OProduction> implements OStringBuilder {
+public class Grammar extends AbstractList<Production> implements StringCombinator {
 
 	protected String id;
-	protected OGrammar parent;
+	protected Grammar parent;
 	protected ArrayList<String> nameList;
 	protected HashMap<String, Expression> exprMap;
 
-	public OGrammar(String name, OGrammar parent) {
+	public Grammar(String name, Grammar parent) {
 		this.parent = parent;
 		this.nameList = new ArrayList<>(16);
 		this.exprMap = new HashMap<>();
 		this.id = name == null ? "g" + Objects.hashCode(this) : name;
 	}
 
-	public OGrammar(String name) {
+	public Grammar(String name) {
 		this(name, null);
 	}
 
-	public OGrammar() {
+	public Grammar() {
 		this(null, null);
 	}
 
@@ -58,10 +58,10 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 		return this.exprMap.get(name);
 	}
 
-	public OProduction getProduction(String name) {
+	public Production getProduction(String name) {
 		Expression e = this.exprMap.get(name);
 		if (e != null) {
-			return new OProduction(this, name, e);
+			return new Production(this, name, e);
 		}
 		if (this.parent != null) {
 			return this.parent.getProduction(name);
@@ -75,16 +75,16 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 	}
 
 	@Override
-	public final OProduction get(int index) {
+	public final Production get(int index) {
 		String name = this.nameList.get(index);
 		return this.getProduction(name);
 	}
 
-	public final OProduction getStartProduction() {
+	public final Production getStartProduction() {
 		if (size() > 0) {
 			return this.get(0);
 		}
-		return new OProduction(this, "EMPTY", Expression.defaultEmpty);
+		return new Production(this, "EMPTY", Expression.defaultEmpty);
 	}
 
 	public final boolean hasProduction(String name) {
@@ -105,18 +105,18 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 		exprMap.put(name, e);
 	}
 
-	public final OProduction[] getAllProductions() {
-		ArrayList<OProduction> l = new ArrayList<>();
-		for (OProduction p : this) {
+	public final Production[] getAllProductions() {
+		ArrayList<Production> l = new ArrayList<>();
+		for (Production p : this) {
 			l.add(p);
 		}
 		if (this.parent != null) {
-			HashMap<String, OProduction> map = new HashMap<>();
-			for (OProduction p : l) {
+			HashMap<String, Production> map = new HashMap<>();
+			for (Production p : l) {
 				map.put(p.getLocalName(), p);
 			}
-			for (OGrammar g = this.parent; g != null; g = g.parent) {
-				for (OProduction p : l) {
+			for (Grammar g = this.parent; g != null; g = g.parent) {
+				for (Production p : l) {
 					if (!map.containsKey(p.getLocalName())) {
 						l.add(p);
 						map.put(p.getLocalName(), p);
@@ -124,12 +124,12 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 				}
 			}
 		}
-		return l.toArray(new OProduction[l.size()]);
+		return l.toArray(new Production[l.size()]);
 	}
 
 	@Override
 	public final String toString() {
-		return OStringBuilder.stringfy(this);
+		return StringCombinator.stringfy(this);
 	}
 
 	@Override
@@ -139,14 +139,14 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 			sb.append(" ");
 			sb.append(name);
 			sb.append(" = ");
-			OStringBuilder.append(sb, exprMap.get(name));
+			StringCombinator.append(sb, exprMap.get(name));
 		}
 	}
 
-	public void replaceAll(List<OProduction> l) {
+	public void replaceAll(List<Production> l) {
 		this.nameList = new ArrayList<>(l.size());
 		this.exprMap.clear();
-		for (OProduction p : l) {
+		for (Production p : l) {
 			this.addProduction(p.getLocalName(), p.getExpression());
 		}
 	}
@@ -183,19 +183,19 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 
 	// ----------------------------------------------------------------------
 
-	public final static OGrammar loadFile(String file) throws IOException {
+	public final static Grammar loadFile(String file) throws IOException {
 		return loadFile(file, null);
 	}
 
-	public final static OGrammar loadFile(String file, String[] paths) throws IOException {
-		OGrammar g = new OGrammar(file);
+	public final static Grammar loadFile(String file, String[] paths) throws IOException {
+		Grammar g = new Grammar(file);
 		GrammarParser parser = new GrammarParser(g);
 		parser.importSource(CommonSource.newFileSource(file, paths));
 		return g;
 	}
 
-	public final static OGrammar loadSource(Source s) throws IOException {
-		OGrammar g = new OGrammar(s.getResourceName());
+	public final static Grammar loadSource(Source s) throws IOException {
+		Grammar g = new Grammar(s.getResourceName());
 		GrammarParser parser = new GrammarParser(g);
 		parser.importSource(s);
 		return g;
@@ -218,7 +218,7 @@ public class OGrammar extends AbstractList<OProduction> implements OStringBuilde
 	
 
 	public void dump() {
-		for (OProduction p : this) {
+		for (Production p : this) {
 			System.out.println(p);
 		}
 	}

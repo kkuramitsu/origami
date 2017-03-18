@@ -5,7 +5,7 @@ import java.util.ResourceBundle;
 
 import origami.OConsole;
 
-public enum OFmt implements OFormat {
+public enum OFmt implements LocaleFormat {
 	welcome, error, warning, notice, info, //
 	// syntax analysis
 	syntax_error, //
@@ -20,7 +20,8 @@ public enum OFmt implements OFormat {
 	// newly
 	studpid_cast, nullable, //
 	defineded, origami, unnecessary_expression, stupid_expression, implicit_type, //
-	undefined_unit, not_clonable, S_is_meaningless, S_is_not_constant_value, S_must_be_S;
+	undefined_unit, not_clonable, S_is_meaningless, S_is_not_constant_value, S_must_be_S, assertion_failed, //
+	undefined_name__YY0;
 
 	public static String fmt(String fmt, OFmt... m) {
 		StringBuilder sb = new StringBuilder();
@@ -37,24 +38,32 @@ public enum OFmt implements OFormat {
 		return sb.toString();
 	}
 
+	public static String fmt(OFmt... m) {
+		return fmt(null, m);
+	}
+	
 	public static String quote(Object o) {
 		return OConsole.bold("'" + o + "'");
 	}
 
-	public static String fmt(OFmt... m) {
-		return fmt(null, m);
+	@Override
+	public String error() {
+		return error.toString();
+	}
+
+	@Override
+	public String warning() {
+		return warning.toString();
+	}
+
+	@Override
+	public String notice() {
+		return notice.toString();
 	}
 
 	@Override
 	public String toString() {
-		try {
-			return ResourceBundle.getBundle("origami.rule.OFmt", Locale.getDefault()).getString(name());
-		} catch (java.util.MissingResourceException ex) {
-		}
-		try {
-			return ResourceBundle.getBundle("origami.rule.OFmt", Locale.ENGLISH).getString(name());
-		} catch (java.util.MissingResourceException ex) {
-			return name().replaceAll("_", " ").replace("S", "%s").replaceAll("  ", " ");
-		}
+		return stringfy(name());
 	}
+
 }

@@ -21,19 +21,19 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import origami.nez.ast.Source;
-import origami.nez.ast.SourceObject;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
 import origami.nez.parser.ParserFactory;
 
-public class Combinator {
+public class ParserCombinator {
 
-	public Combinator() {
+	public ParserCombinator() {
 	}
 
-	protected OGrammar grammar;
+	protected Grammar grammar;
 	protected ParserFactory factory;
 
-	public final OGrammar load(ParserFactory factory, OGrammar g, String start) {
+	public final Grammar load(ParserFactory factory, Grammar g, String start) {
 		this.grammar = g;
 		this.factory = factory;
 		Class<?> c = this.getClass();
@@ -70,45 +70,31 @@ public class Combinator {
 		}
 	}
 
-	private SourceObject src() {
+	private SourcePosition src() {
 		Exception e = new Exception();
 		StackTraceElement[] stacks = e.getStackTrace();
 		// System.out.println("^0 " + stacks[0]);
 		// System.out.println("^1 " + stacks[1]);
 		// System.out.println("^2 " + stacks[2]);
-		class JavaSourcePosition implements SourceObject {
-			StackTraceElement e;
-
-			JavaSourcePosition(StackTraceElement e) {
-				this.e = e;
-			}
-
-			@Override
-			public String formatSourceMessage(String type, String msg) {
-				return e + " " + type + " " + msg;
-			}
-
-			@Override
-			public Source getSource() {
-				return null;
-			}
-
-			@Override
-			public long getSourcePosition() {
-				return 0;
-			}
-
-			@Override
-			public int getLineNum() {
-				return 0;
-			}
-
-			@Override
-			public int getColumn() {
-				return 0;
-			}
-		}
-		return new JavaSourcePosition(stacks[2]);
+//		class JavaSourcePosition implements SourcePosition {
+//			StackTraceElement e;
+//
+//			JavaSourcePosition(StackTraceElement e) {
+//				this.e = e;
+//			}
+//
+//			@Override
+//			public Source getSource() {
+//				return null;
+//			}
+//
+//			@Override
+//			public long getSourcePosition() {
+//				return 0;
+//			}
+//		}
+//		return new JavaSourcePosition(stacks[2]);
+		return SourcePosition.UnknownPosition;
 	}
 
 	protected final Expression e(Object expr) {

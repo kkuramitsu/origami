@@ -51,13 +51,13 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	}
 
 	final SourceLogger logger;
-	final OGrammar grammar;
+	final Grammar grammar;
 
-	public GrammarParser(OGrammar grammar) {
+	public GrammarParser(Grammar grammar) {
 		this(null, grammar);
 	}
 
-	public GrammarParser(SourceLogger logger, OGrammar grammar) {
+	public GrammarParser(SourceLogger logger, Grammar grammar) {
 		this.logger = logger == null ? new SourceLogger.SimpleSourceLogger() : logger;
 		this.grammar = grammar;
 		init(GrammarParser.class, new SyntaxRule());
@@ -70,7 +70,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public static final Parser NezParser;
 
 	static {
-		OGrammar grammar = new OGrammar("nez");
+		Grammar grammar = new Grammar("nez");
 		ParserFactory factory = new ParserFactory();
 		factory.setVerboseMode(false);
 		new NezGrammar().load(factory, grammar, "Start");
@@ -86,7 +86,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class SyntaxRule implements ExpressionTransducer {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
-			undefined(node);
+			//undefined(node);
 			return null;
 		}
 	}
@@ -113,7 +113,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _String extends SyntaxRule {
 		@Override
 		public Expression accept(Tree<?> node, Expression es) throws IOException {
-			String name = OProduction.terminalName(node.toText());
+			String name = Production.terminalName(node.toText());
 			return new Expression.PNonTerminal(grammar, name, node);
 		}
 	}
@@ -533,14 +533,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			Tree<?> nameNode = node.get(_name);
-			boolean isPublic = node.get(_public, null) != null;
+			//boolean isPublic = node.get(_public, null) != null;
 			String name = nameNode.toText();
 			if (nameNode.is(_String)) {
-				name = OProduction.terminalName(name);
+				name = Production.terminalName(name);
 			}
 			Expression rule = grammar.getLocalExpression(name);
 			if (rule != null) {
-				logger.reportWarning(node, "duplicated production: " + name);
+				logger.reportWarning(node.get(_name), NezFmt.YY0_is_duplicated_name, name);
 				return rule;
 			}
 			rule = newExpression(node.get(_expr));
@@ -563,7 +563,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			String name = node.getText(_name, null);
-			OGrammar g = new OGrammar(name, grammar);
+			Grammar g = new Grammar(name, grammar);
 			GrammarParser parser = new GrammarParser(logger, g);
 			return parser.newExpression(node.get(_body));
 		}

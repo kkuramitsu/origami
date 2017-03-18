@@ -1,14 +1,13 @@
 package origami;
 
-import origami.nez.ast.Source;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.ParserFactory;
-import origami.nez.peg.OGrammar;
+import origami.nez.peg.Grammar;
 
 //import junit.framework.Assert;
 //import org.junit.Test;
 
-public class OrigamiTest {
+public class ScriptTest {
 
 	public void testTest() {
 		assert(true);
@@ -23,11 +22,10 @@ public class OrigamiTest {
 	}
 	
 	public static void runScript(String file) throws Throwable {
-		ParserFactory fac = new ParserFactory();
 		String ext = CommonSource.extractFileExtension(file);
-		OGrammar g = OGrammar.loadFile("/origami/grammar/" + ext + ".nez");
+		Grammar g = Grammar.loadFile("/origami/grammar/" + ext + ".nez");
 		Origami env = new Origami(g);
-		env.loadScriptFile(CommonSource.newFileSource(OrigamiTest.class, file, null));
+		env.loadScriptFile(CommonSource.newFileSource(ScriptTest.class, file, null));
 	}
 	
 }

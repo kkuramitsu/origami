@@ -29,8 +29,8 @@ import origami.nez.ast.Tree;
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.GrammarWriter;
 import origami.nez.parser.ParserFactory.TreeWriter;
-import origami.nez.peg.OGrammar;
-import origami.trait.OStringBuilder;
+import origami.nez.peg.Grammar;
+import origami.trait.StringCombinator;
 
 public abstract class OCommand extends OConsole {
 
@@ -159,12 +159,12 @@ public abstract class OCommand extends OConsole {
 	}
 
 	public final static void p(String fmt, Object... args) {
-		println(OStringBuilder.format(fmt, args));
+		println(StringCombinator.format(fmt, args));
 	}
 
 	public final static void p(int color, String fmt, Object... args) {
 		beginColor(color);
-		println(OStringBuilder.format(fmt, args));
+		println(StringCombinator.format(fmt, args));
 		endColor();
 	}
 
@@ -176,7 +176,7 @@ public abstract class OCommand extends OConsole {
 		endColor();
 	}
 
-	public final static void display(ParserFactory fac, GrammarWriter w, OGrammar g) {
+	public final static void display(ParserFactory fac, GrammarWriter w, Grammar g) {
 		beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");

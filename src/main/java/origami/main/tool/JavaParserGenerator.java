@@ -16,7 +16,7 @@
 
 package origami.main.tool;
 
-import origami.nez.peg.OGrammar;
+import origami.nez.peg.Grammar;
 
 public class JavaParserGenerator extends ParserGenerator {
 
@@ -44,7 +44,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected void generateHeader(OGrammar g) {
+	protected void generateHeader(Grammar g) {
 		Statement("import java.io.IOException");
 		Statement("import java.nio.charset.StandardCharsets");
 		Statement("import java.nio.file.*");
@@ -53,7 +53,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected void generateFooter(OGrammar g) {
+	protected void generateFooter(Grammar g) {
 		BeginDecl("public final static void main(String[] a)");
 		{
 			Statement("jnez_main(a)");

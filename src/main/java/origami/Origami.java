@@ -29,17 +29,16 @@ import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.rule.TypeAnalysis;
 import origami.trait.OScriptUtils;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
 public class Origami extends OEnv.OBaseEnv {
 	final OrigamiRuntime runtime = new OrigamiRuntime();
 
-	public Origami(OGrammar grammar) throws IOException {
+	public Origami(Grammar grammar) throws IOException {
 		super(null, "__root__");
 		add(OFuncCallSite.class, new OFuncCallSite());
 		add(OMethodCallSite.class, new OMethodCallSite());
@@ -47,12 +46,12 @@ public class Origami extends OEnv.OBaseEnv {
 		init(grammar);
 		Parser p = grammar.newParser();
 		this.add(Parser.class, p);
-		this.add(OGrammar.class, grammar);
+		this.add(Grammar.class, grammar);
 	}
 	
 
-	public void init(OGrammar g) throws IOException {
-		OProduction pp = g.getProduction("ORIGAMI");
+	public void init(Grammar g) throws IOException {
+		Production pp = g.getProduction("ORIGAMI");
 		if (pp != null) {
 			String c = pp.getExpression().toString().replaceAll("'", "");
 			// ODebug.trace("ORIGAMI=%s", c);
@@ -146,10 +145,10 @@ public class Origami extends OEnv.OBaseEnv {
 					String t2 = code.getType().toString();
 					StringBuilder sb = new StringBuilder();
 					sb.append(color(Gray, " => "));
-					OStringBuilder.appendQuoted(sb, value);
+					StringCombinator.appendQuoted(sb, value);
 					beginColor(sb, Cyan);
 					sb.append(" :");
-					OStringBuilder.append(sb, t2);
+					StringCombinator.append(sb, t2);
 					endColor(sb);
 					println(sb.toString());
 				}

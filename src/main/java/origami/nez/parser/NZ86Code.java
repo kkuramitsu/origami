@@ -18,11 +18,11 @@ package origami.nez.parser;
 
 import java.util.List;
 
-import origami.nez.peg.OGrammar;
+import origami.nez.peg.Grammar;
 
 public class NZ86Code extends ParserCode<NZ86Instruction> {
 
-	public NZ86Code(ParserFactory factory, OGrammar grammar, ParserFactory options) {
+	public NZ86Code(ParserFactory factory, Grammar grammar, ParserFactory options) {
 		super(factory, grammar, new NZ86Instruction[1034]);
 	}
 

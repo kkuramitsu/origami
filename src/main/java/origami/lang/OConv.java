@@ -25,7 +25,7 @@ import java.util.List;
 
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
-import origami.OSource;
+import origami.nez.ast.SourcePosition;
 import origami.asm.OCallSite;
 import origami.code.OCastCode;
 import origami.code.OCode;
@@ -56,7 +56,7 @@ public class OConv extends OMethodWrapper {
 
 	// Utils
 
-	public static void addConv(OEnv env, OSource s, int convCost, Method m) {
+	public static void addConv(OEnv env, SourcePosition s, int convCost, Method m) {
 		OMethodHandle mh = new OMethod(env, m);
 		if (convCost == 0) {
 			OCast c = m.getAnnotation(OCast.class);
@@ -67,13 +67,13 @@ public class OConv extends OMethodWrapper {
 		addConv(env, s, convCost, mh);
 	}
 
-	public static void addConv(OEnv env, OSource s, int convCost, OMethodHandle mh) {
+	public static void addConv(OEnv env, SourcePosition s, int convCost, OMethodHandle mh) {
 		OType[] p = mh.isSpecial() ? mh.getParamTypes() : mh.getThisParamTypes();
 		assert (p.length == 1);
 		addConv(env, s, p[0], mh.getReturnType(), convCost, mh);
 	}
 
-	public static void addConv(OEnv env, OSource s, OType f, OType t, int cost, OMethodHandle m) {
+	public static void addConv(OEnv env, SourcePosition s, OType f, OType t, int cost, OMethodHandle m) {
 		String key = f.typeDesc(0) + t.typeDesc(0);
 		OConv conv = m instanceof OConv ? (OConv) m : new OConv(m, cost);
 		env.add0(s, key, conv);

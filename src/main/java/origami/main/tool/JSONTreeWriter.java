@@ -52,11 +52,12 @@ public class JSONTreeWriter extends CommonWriter implements TreeWriter {
 				print("\"type\":");
 				print(OStringUtils.quoteString('"', node.getTag().toString(), '"'));
 				print(",\"pos\":");
-				print("" + node.getSourcePosition());
+				long pos = node.getSourcePosition();
+				print("" + pos);
 				print(",\"line\":");
-				print("" + node.getLineNum());
+				print("" + node.getSource().linenum(pos));
 				print(",\"column\":");
-				print("" + node.getColumn());
+				print("" + node.getSource().column(pos));
 				print(",\"text\":");
 				print(OStringUtils.quoteString('"', text, '"'));
 				print("}");

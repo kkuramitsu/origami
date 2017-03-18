@@ -21,7 +21,7 @@ import java.util.List;
 
 import origami.asm.OClassLoader;
 import origami.code.OCode;
-import origami.nez.ast.Tree;
+import origami.nez.ast.SourcePosition;
 import origami.trait.Handled;
 import origami.trait.OStackable;
 import origami.trait.OTypeUtils;
@@ -90,16 +90,16 @@ public interface OEnv {
 
 	}
 
-	public default void add0(OSource s, String name, Object value) {
+	public default void add0(SourcePosition s, String name, Object value) {
 		addDefined(name, new OEnvEntry(s, value));
 	}
 
-	public default void add0(Tree<?> t, String name, Object value) {
-		addDefined(name, new OEnvEntry(new OSource(t), value));
-	}
+//	public default void add0(Tree<?> t, String name, Object value) {
+//		addDefined(name, new OEnvEntry(new OSource(t), value));
+//	}
 
 	public default void add0(String name, Object value) {
-		add0((OSource) null, name, value);
+		add0(SourcePosition.UnknownPosition, name, value);
 	}
 
 	public default void add(Class<?> cname, Object value) {
@@ -317,7 +317,7 @@ public interface OEnv {
 		private Object value;
 		private OEnvEntry onstack = null;
 
-		OEnvEntry(OSource s, Object value) {
+		OEnvEntry(SourcePosition s, Object value) {
 			this.value = value;
 		}
 

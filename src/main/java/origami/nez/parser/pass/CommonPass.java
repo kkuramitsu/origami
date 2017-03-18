@@ -19,22 +19,22 @@ package origami.nez.parser.pass;
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.Pass;
 import origami.nez.peg.Expression;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 class CommonPass extends Pass {
 	protected ParserFactory fac;
 
 	@Override
-	public void perform(ParserFactory fac, OGrammar g) {
+	public void perform(ParserFactory fac, Grammar g) {
 		this.fac = fac;
 		prepare(g);
-		for (OProduction p : g) {
+		for (Production p : g) {
 			g.setExpression(p.getLocalName(), this.rewrite(p.getExpression(), null));
 		}
 	}
 
-	protected void prepare(OGrammar g) {
+	protected void prepare(Grammar g) {
 
 	}
 

@@ -55,7 +55,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			String name = t.toText();
 			ONameEntity nameDecl = env.get(name, ONameEntity.class, (e, c) -> e.isName(env) ? e : null);
 			if (nameDecl == null) {
-				throw new OErrorCode(env, t, OFmt.fmt("%s", OFmt.undefined, OFmt.name), name);
+				throw new OErrorCode(env, t, OFmt.undefined_name__YY0, name);
 			}
 			return nameDecl.nameCode(env, name);
 		}

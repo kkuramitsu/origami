@@ -17,6 +17,7 @@ package origami.code;
 
 import java.util.List;
 
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
 import origami.OConsts;
 import origami.OEnv;
@@ -24,27 +25,32 @@ import origami.OEnv.OListMatcher;
 import origami.OLog;
 import origami.asm.OAsm;
 import origami.ffi.OCast;
-import origami.rule.OFormat;
+import origami.rule.LocaleFormat;
 import origami.type.OType;
 import origami.type.OUntypedType;
 
+@SuppressWarnings("serial")
 public class OErrorCode extends RuntimeException implements OCode {
 
 	private final OLog log;
 	private OType ret;
 
-	public OErrorCode(OEnv env, Tree<?> s, String fmt, Object... args) {
+	public OErrorCode(OEnv env, SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
 		log = new OLog(s, OLog.Error, fmt, args);
 		this.ret = env != null ? env.t(OUntypedType.class) : null;
 	}
 
-	public OErrorCode(OEnv env, Tree<?> s, OFormat fmt, Object... args) {
-		this(env, s, fmt.toString(), args);
+	public OErrorCode(OEnv env, SourcePosition s, String fmt, Object... args) {
+		this(env, s, LocaleFormat.wrap(fmt), args);
+	}
+
+	public OErrorCode(OEnv env, LocaleFormat fmt, Object... args) {
+		this(env, SourcePosition.UnknownPosition, fmt, args);
 	}
 
 	public OErrorCode(OEnv env, String fmt, Object... args) {
-		this(env, null, fmt, args);
+		this(env, SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
 	}
 
 	public OLog getLog() {
@@ -110,13 +116,13 @@ public class OErrorCode extends RuntimeException implements OCode {
 	}
 
 	@Override
-	public OCode setSource(Tree<?> s) {
-		this.log.setSource(s);
+	public OCode setSourcePosition(SourcePosition s) {
+		this.log.setSourcePosition(s);
 		return this;
 	}
 
 	@Override
-	public Tree<?> getSource() {
+	public SourcePosition getSourcePosition() {
 		return log.s;
 	}
 

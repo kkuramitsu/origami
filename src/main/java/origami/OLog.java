@@ -18,22 +18,28 @@ package origami;
 
 import origami.code.OCode;
 import origami.code.OWarningCode;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
+import origami.rule.LocaleFormat;
 import origami.rule.OFmt;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
-public class OLog {
-	public Tree<?> s;
+public class OLog implements StringCombinator {
+	public SourcePosition s;
 	public final int level;
-	public final String format;
+	public final LocaleFormat format;
 	public final Object[] args;
 	public OLog next = null;
 
-	public OLog(Tree<?> s, int level, String format, Object... args) {
-		this.s = s;
+	public OLog(SourcePosition s, int level, LocaleFormat format, Object... args) {
+		this.s = s == null ? SourcePosition.UnknownPosition : s;
 		this.level = level;
 		this.format = format;
 		this.args = filter(args);
+	}
+
+	public OLog(SourcePosition s, int level, String fmt, Object... args) {
+		this(s, level, LocaleFormat.wrap(fmt), args);
 	}
 
 	public static Object[] filter(Object... args) {
@@ -70,9 +76,8 @@ public class OLog {
 		return args;
 	}
 
-	public void setSource(Tree<?> s) {
-		if (this.s == null && s != null) {
-			// ODebug.trace("pos=%s %s", s.getSourcePosition(), s);
+	public void setSourcePosition(SourcePosition s) {
+		if (this.s == SourcePosition.UnknownPosition && s != null) {
 			this.s = s;
 		}
 	}
@@ -80,14 +85,16 @@ public class OLog {
 	public OLog next() {
 		return this.next;
 	}
+	
+	@Override
+	public void strOut(StringBuilder sb) {
+		String mtype = (level == Error ? format.error() : format.warning());
+		SourcePosition.appendFormatMessage(sb, s, mtype, format, args);		
+	}
 
 	@Override
 	public String toString() {
-		String msgType = (level == Error ? OFmt.error : OFmt.warning).toString();
-		if (s != null) {
-			return s.getSource().formatPositionLine(msgType, s.getSourcePosition(), OStringBuilder.format(format, args));
-		}
-		return "(unknown source) [" + msgType + "]" + OStringBuilder.format(format, args);
+		return StringCombinator.stringfy(this);
 	}
 
 	public final static int Error = 1;
@@ -163,5 +170,6 @@ public class OLog {
 		}
 
 	}
+
 
 }

@@ -24,7 +24,7 @@ import java.util.Set;
 
 import origami.ODebug;
 import origami.OEnv;
-import origami.OSource;
+import origami.nez.ast.SourcePosition;
 import origami.OTree;
 import origami.code.OErrorCode;
 import origami.ffi.OAlias;
@@ -79,7 +79,7 @@ public interface OScriptUtils {
 	public static Set<String> AllSubSymbols = symbols("*");
 	public static Set<String> NoSubSymbols = null;
 
-	public default void importClass(OEnv env, OSource s, String path, Set<String> names) {
+	public default void importClass(OEnv env, SourcePosition s, String path, Set<String> names) {
 		Class<?> c = null;
 		try {
 			c = Class.forName(path);
@@ -89,11 +89,11 @@ public interface OScriptUtils {
 		importClass(env, s, c, names);
 	}
 
-	public default void importClass(OEnv env, OSource s, Class<?> c, Set<String> names) {
+	public default void importClass(OEnv env, SourcePosition s, Class<?> c, Set<String> names) {
 		this.importClass(env, s, c, null, names);
 	}
 
-	public default void importClass(OEnv env, OSource s, Class<?> c, String alias, Set<String> names) {
+	public default void importClass(OEnv env, SourcePosition s, Class<?> c, String alias, Set<String> names) {
 		if (OSimpleImportable.class.isAssignableFrom(c)) {
 			Object value = OTypeUtils.newInstance(c);
 			env.add0(s, alias != null ? alias : c.getSimpleName(), value);
@@ -138,7 +138,7 @@ public interface OScriptUtils {
 		}
 	}
 
-	public default Class<?> importClassMethod(OEnv env, OSource s, Class<?> c) {
+	public default Class<?> importClassMethod(OEnv env, SourcePosition s, Class<?> c) {
 		for (Method m : c.getDeclaredMethods()) {
 			// ODebug.trace("method %s", m);
 			if (!OTypeUtils.isPublic(m)) {
@@ -160,7 +160,7 @@ public interface OScriptUtils {
 		return c;
 	}
 
-	public default void addType(OEnv env, OSource s, String name, Class<?> c) {
+	public default void addType(OEnv env, SourcePosition s, String name, Class<?> c) {
 		if (name.equals(c.getSimpleName())) {
 			env.add0(s, name, env.t(c));
 		} else {
@@ -174,17 +174,17 @@ public interface OScriptUtils {
 		importClassMethod(env, s, c);
 	}
 
-	public default void addName(OEnv env, OSource s, OType t, String... names) {
+	public default void addName(OEnv env, SourcePosition s, OType t, String... names) {
 		for (String n : names) {
 			env.add0(s, n, OTypeName.newEntry(t));
 		}
 	}
 
-	public default void addStaticField(OEnv env, OSource s, String name, Field f) {
+	public default void addStaticField(OEnv env, SourcePosition s, String name, Field f) {
 		env.add0(s, name, new OGlobalVariable(new OField(env, f)));
 	}
 
-	public default void addStaticMethod(OEnv env, OSource s, String name, Method m) {
+	public default void addStaticMethod(OEnv env, SourcePosition s, String name, Method m) {
 		OCast conv = m.getAnnotation(OCast.class);
 		if (conv != null) {
 			OConv.addConv(env, s, conv.cost(), m);

@@ -48,16 +48,16 @@ import origami.nez.peg.Expression.PTag;
 import origami.nez.peg.Expression.PTrap;
 import origami.nez.peg.Expression.PTree;
 import origami.nez.peg.ExpressionVisitor;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class InlinePass extends CommonPass {
 
 	HashMap<String, Integer> countMap = new HashMap<>();
 
 	@Override
-	protected void prepare(OGrammar g) {
-		OProduction start = g.getStartProduction();
+	protected void prepare(Grammar g) {
+		Production start = g.getStartProduction();
 		countMap.put(start.getUniqueName(), 1);
 		count(start.getExpression());
 	}
@@ -79,18 +79,18 @@ public class InlinePass extends CommonPass {
 	}
 
 	@Override
-	public void perform(ParserFactory fac, OGrammar g) {
+	public void perform(ParserFactory fac, Grammar g) {
 		this.fac = fac;
 		prepare(g);
-		for (OProduction p : g) {
+		for (Production p : g) {
 			if (countMap.get(p.getLocalName()) != null) {
 				g.setExpression(p.getLocalName(), this.rewrite(p.getExpression(), null));
 			}
 		}
 		countMap.clear();
 		prepare(g);
-		ArrayList<OProduction> l = new ArrayList<>(g.size());
-		for (OProduction p : g) {
+		ArrayList<Production> l = new ArrayList<>(g.size());
+		for (Production p : g) {
 			if (countMap.get(p.getLocalName()) != null) {
 				l.add(p);
 			}

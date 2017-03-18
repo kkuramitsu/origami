@@ -23,7 +23,7 @@ public enum Typestate {
 
 	static TypestateAnalyzer analyzer = new TypestateAnalyzer();
 
-	public static final Typestate compute(OProduction p) {
+	public static final Typestate compute(Production p) {
 		return compute(p.getGrammar(), p.getLocalName(), p.getExpression());
 	}
 
@@ -34,7 +34,7 @@ public enum Typestate {
 		return analyzer.compute(e, null);
 	}
 
-	public static final Typestate compute(OGrammar g, String name, Expression e) {
+	public static final Typestate compute(Grammar g, String name, Expression e) {
 		Typestate v = g.getProperty(name, Typestate.class);
 		if (v == null) {
 			g.setProperty(name, Typestate.Undecided);

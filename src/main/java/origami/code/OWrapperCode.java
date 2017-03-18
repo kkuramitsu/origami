@@ -18,7 +18,7 @@ package origami.code;
 
 import java.util.List;
 
-import origami.nez.ast.Tree;
+import origami.nez.ast.SourcePosition;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.asm.OAsm;
@@ -76,14 +76,14 @@ public interface OWrapperCode extends OCode {
 	}
 
 	@Override
-	public default OCode setSource(Tree<?> t) {
-		wrapped().setSource(t);
+	public default OCode setSourcePosition(SourcePosition s) {
+		wrapped().setSourcePosition(s);
 		return this;
 	}
 
 	@Override
-	public default Tree<?> getSource() {
-		return wrapped().getSource();
+	public default SourcePosition getSourcePosition() {
+		return wrapped().getSourcePosition();
 	}
 
 	@Override

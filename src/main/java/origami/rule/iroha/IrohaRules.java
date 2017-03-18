@@ -54,6 +54,7 @@ import origami.lang.OMethodHandle;
 import origami.lang.OPartialFunc;
 import origami.lang.OTypeName;
 import origami.lang.callsite.OFuncCallSite;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.rule.AbstractTypeRule;
@@ -104,7 +105,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule AssertExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String msg = t.get(_cond).formatSourceMessage("assert", "failed");
+			String msg = ODebug.assertMessage(env, t.get(_cond));
 			OMethodHandle assertFunc = new OMethod(env, ODebug.AssertMethod);
 			OCode expr = typeCondition(env, t.get(_cond));
 			return assertFunc.newMethodCode(env, expr, env.v(msg));
@@ -130,7 +131,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OCode left = typeExpr(env, t.get(_left));
 			OCode right = typeExpr(env, t.get(_right));
 			OCode cond = new DupCode(left).newBinaryCode(env, op, right);
-			String msg = t.get(_right).formatSourceMessage("assert", "failed");
+			String msg = ODebug.assertMessage(env, t.get(_right));
 			OMethodHandle assertFunc = new OMethod(env, ODebug.AssertMethod);
 			return new HookAfterCode(left, assertFunc.newMethodCode(env, cond, env.v(msg)));
 		}
@@ -142,7 +143,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OCode expr = typeExpr(env, t.get(_expr));
 			OType ty = expr.getType();
 			if (ty.isPrimitive()) {
-				return new OWarningCode(expr, OFmt.fmt(OFmt.S_is_meaningless), OFmt.quote("new")).setSource(t);
+				return new OWarningCode(expr, OFmt.fmt(OFmt.S_is_meaningless), OFmt.quote("new")).setSourcePosition(t);
 			}
 			if (!(expr instanceof OConstructorCode)) {
 				if (ty.isA(Cloneable.class)) {
@@ -164,7 +165,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = typeExpr(env, t.get(_expr));
 			OCode file = env.v(t.getSource().getResourceName());
-			OCode linenum = env.v(t.getLineNum());
+			OCode linenum = env.v(t.getSource().linenum(t.getSourcePosition()));
 			OCode code = env.v(t.get(_expr).toText());
 			OCode type = env.v(expr.getType().toString());
 			return OCallSite.findParamCode(env, OFuncCallSite.class, "p", expr, file, linenum, code, type);
@@ -571,7 +572,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				String[] paramNames = parseParamNames(env, t.get(_param, null));
 				OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));
 				for (int i = 0; i < paramNames.length; i++) {
-					OField f = ct.addField(anno, paramTypes[i], paramNames[i], null);
+					ct.addField(anno, paramTypes[i], paramNames[i], null);
 				}
 				OMethodHandle constr = null;
 				for (OMethodHandle c : superType.getConstructors()) {

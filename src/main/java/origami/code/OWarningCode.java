@@ -3,22 +3,23 @@ package origami.code;
 import origami.OEnv;
 import origami.OLog;
 import origami.asm.OAsm;
+import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 
-public class OWarningCode extends MessageCode {
+public class OWarningCode extends OParamCode<OLog> {
 
 	public OWarningCode(OCode node, int level, String fmt, Object... args) {
-		super(level, new OLog(null, OLog.Warning, fmt, args), node.getType(), node);
+		super(new OLog(null, level, fmt, args), node.getType(), node);
 
 	}
 
 	public OWarningCode(OCode node, String fmt, Object... args) {
-		super(OLog.Warning, new OLog(null, OLog.Warning, fmt, args), node.getType(), node);
+		super(new OLog(null, OLog.Warning, fmt, args), node.getType(), node);
 
 	}
 
 	public OWarningCode(OCode node, OLog m) {
-		super(OLog.Warning, m, node.getType(), node);
+		super(m, node.getType(), node);
 	}
 
 	@Override
@@ -37,9 +38,15 @@ public class OWarningCode extends MessageCode {
 		return nodes[0].hasReturnCode();
 	}
 
+	public OLog getLog() {
+		return this.getHandled();
+	}
+
 	@Override
-	public OCode checkAcc(OEnv env) {
-		return nodes[0].checkAcc(env);
+	public OCode setSourcePosition(SourcePosition s) {
+		super.setSourcePosition(s);
+		this.getLog().setSourcePosition(s);
+		return this;
 	}
 
 	@Override

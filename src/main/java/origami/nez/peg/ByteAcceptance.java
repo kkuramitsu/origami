@@ -23,11 +23,11 @@ public enum ByteAcceptance {
 
 	static Analyzer analyzer = new Analyzer();
 
-	public static ByteAcceptance acc(OProduction p, int c) {
+	public static ByteAcceptance acc(Production p, int c) {
 		return acc(p.getGrammar(), p.getLocalName(), p.getExpression(), c);
 	}
 
-	public static ByteAcceptance acc(OGrammar g, String name, Expression e, int c) {
+	public static ByteAcceptance acc(Grammar g, String name, Expression e, int c) {
 		ByteAcceptance[] acc = g.getProperty(name, ByteAcceptance[].class);
 		if (acc == null) {
 			acc = new ByteAcceptance[256];
@@ -71,7 +71,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitNonTerminal(Expression.PNonTerminal e, Integer ch) {
-			OProduction p = e.getProduction();
+			Production p = e.getProduction();
 			return ByteAcceptance.acc(p, ch);
 			// if (this.memo != null) {
 			// return memo.acc(p, ch);

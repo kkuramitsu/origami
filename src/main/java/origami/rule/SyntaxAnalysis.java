@@ -21,7 +21,6 @@ import java.util.Map;
 import origami.ODebug;
 import origami.OEnv;
 import origami.OLog;
-import origami.OSource;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
@@ -83,13 +82,12 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 
 	public default void defineName(OEnv env, Tree<?> t, Object d) {
 		String name = t.getText(_name, null);
-		OSource s = new OSource(t);
 		if (name != null) {
-			env.add0(s, name, d);
+			env.add0(t, name, d);
 		}
 		name = t.getText(_alias, null);
 		if (name != null) {
-			env.add0(s, name, d);
+			env.add0(t, name, d);
 		}
 	}
 

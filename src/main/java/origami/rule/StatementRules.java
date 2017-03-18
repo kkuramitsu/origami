@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import origami.ODebug;
 import origami.OEnv;
-import origami.OSource;
 import origami.asm.OAnno;
 import origami.code.ForCode;
 import origami.code.OBreakCode;
@@ -147,7 +147,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			}
 			try {
 				Class<?> c = Class.forName(path);
-				importClass(env, new OSource(t), c, alias, option);
+				importClass(env, t, c, alias, option);
 			} catch (ClassNotFoundException e) {
 				throw new OErrorCode(env, t.get(_path), "undefined class: %s by %s", path, e);
 			}
@@ -416,7 +416,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			if (t.has(_value)) {
 				msg = typeCheck(env, env.t(String.class), t.get(_value));
 			} else {
-				msg = env.v(t.get(_cond).formatSourceMessage("assert", "failed"));
+				msg = env.v(ODebug.assertMessage(env, t.get(_cond)));
 			}
 			return new OMethodCode(env, OTypeUtils.loadMethod(StatementRules.class, "assertTest", boolean.class, String.class), cond, msg);
 		}

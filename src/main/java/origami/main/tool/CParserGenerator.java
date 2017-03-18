@@ -16,7 +16,7 @@
 
 package origami.main.tool;
 
-import origami.nez.peg.OGrammar;
+import origami.nez.peg.Grammar;
 import origami.trait.OStringUtils;
 
 public class CParserGenerator extends ParserGenerator {
@@ -149,7 +149,7 @@ public class CParserGenerator extends ParserGenerator {
 	// Grammar Generator
 
 	@Override
-	protected void generateHeader(OGrammar g) {
+	protected void generateHeader(Grammar g) {
 		importFileContent("cnez-runtime.txt");
 	}
 
@@ -162,7 +162,7 @@ public class CParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected void generateFooter(OGrammar g) {
+	protected void generateFooter(Grammar g) {
 		importFileContent("cnez-utils.txt");
 		//
 		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");

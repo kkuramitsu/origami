@@ -36,7 +36,7 @@ import origami.ffi.OCast;
 import origami.ffi.OrigamiException;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethodHandle;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.trait.OTypeUtils;
 import origami.type.OType;
 
@@ -104,7 +104,7 @@ public abstract class OCallSite extends MutableCallSite {
 		sb.append("unfound " + this.name);
 		for (int i = 0; i < args.length; i++) {
 			sb.append(" ");
-			OStringBuilder.append(sb, args[i] == null ? args[i] : env().t(args[i].getClass()));
+			StringCombinator.append(sb, args[i] == null ? args[i] : env().t(args[i].getClass()));
 		}
 		throw new OrigamiException(sb.toString());
 	}

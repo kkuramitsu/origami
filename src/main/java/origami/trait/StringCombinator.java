@@ -20,34 +20,29 @@ import java.lang.reflect.Field;
 
 import origami.ODebug;
 import origami.ffi.OAlias;
+import origami.rule.LocaleFormat;
 
-public interface OStringBuilder {
-	// default method cannot override a method from java.lang.Object
-	// public default String toString() {
-	// StringBuilder sb = new StringBuilder();
-	// strOut(sb);
-	// return sb.toString();
-	// }
+public interface StringCombinator {
 
 	public void strOut(StringBuilder sb);
 
-	public static String stringfy(OStringBuilder o) {
+	public static String stringfy(StringCombinator o) {
 		StringBuilder sb = new StringBuilder();
 		append(sb, o);
 		return sb.toString();
 	}
 
 	public static void append(StringBuilder sb, Object o) {
-		if (o instanceof OStringBuilder) {
-			((OStringBuilder) o).strOut(sb);
+		if (o instanceof StringCombinator) {
+			((StringCombinator) o).strOut(sb);
 		} else {
 			sb.append(o);
 		}
 	}
 
 	public static void appendQuoted(StringBuilder sb, Object o) {
-		if (o instanceof OStringBuilder) {
-			((OStringBuilder) o).strOut(sb);
+		if (o instanceof StringCombinator) {
+			((StringCombinator) o).strOut(sb);
 		} else if (o instanceof String) {
 			sb.append("'");
 			sb.append(o);
@@ -72,7 +67,7 @@ public interface OStringBuilder {
 					String name = a == null ? f.getName() : a.name();
 					sb.append(name);
 					sb.append(": ");
-					OStringBuilder.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
+					StringCombinator.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
 					cnt++;
 				}
 			}
@@ -80,14 +75,51 @@ public interface OStringBuilder {
 		return cnt;
 	}
 
+	public static String format(LocaleFormat fmt, Object... args) {
+		return format(fmt.toString(), args);
+	}
+
 	public static String format(String fmt, Object... args) {
+		StringBuilder sb = new StringBuilder();
+		appendFormat(sb, fmt, args);
+		return sb.toString();
+	}
+
+	public static void appendFormat(StringBuilder sb, LocaleFormat fmt, Object... args) {
+		appendFormat(sb, fmt.toString(), args);
+	}
+
+	public static void appendFormat(StringBuilder sb, String fmt, Object... args) {
 		assert (fmt != null);
 		try {
-			return String.format(fmt, args);
+			if(fmt.indexOf("$0") >= 0) {
+				formatIndexedFormat(sb, fmt, args);
+			}
+			else {
+				sb.append(String.format(fmt, args));
+			}
 		} catch (Exception e) {
 			ODebug.traceException(e);
-			return "FIXME: WRONG FORMAT: '" + fmt + "' by " + e;
+			sb.append("FIXME: WRONG FORMAT: '" + fmt + "' by " + e);
 		}
 	}
+
+	static void formatIndexedFormat(StringBuilder sb, String fmt2, Object[] args) {
+		String[] tokens = fmt2.split("\\$", -1);
+		sb.append(tokens[0]);
+		for(int i = 1; i < tokens.length; i++) {
+			String t = tokens[i];
+			if(t.length() > 0 && Character.isDigit(t.charAt(0))) {
+				int index = t.charAt(0) - '0';
+				StringCombinator.append(sb, args[index]);
+				sb.append(t.substring(1));
+			}
+			else {
+				sb.append("$");
+				sb.append(t);				
+			}
+		}
+	}
+	
 
 }

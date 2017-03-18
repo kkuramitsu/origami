@@ -23,8 +23,8 @@ import origami.nez.parser.NZ86ParserContext;
 import origami.nez.parser.ParserFactory;
 import origami.nez.parser.TrapAction;
 import origami.nez.peg.Expression;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 
 public class Otest extends Oexample {
 
@@ -37,8 +37,8 @@ public class Otest extends Oexample {
 		public Coverage() {
 		}
 
-		public void init(ParserFactory fac, OGrammar g) {
-			OProduction[] prods = g.getAllProductions();
+		public void init(ParserFactory fac, Grammar g) {
+			Production[] prods = g.getAllProductions();
 			this.unameMap = new HashMap<>();
 			this.names = new String[prods.length];
 			this.enterCounts = new int[prods.length];
@@ -46,7 +46,7 @@ public class Otest extends Oexample {
 			int enterId = fac.addTrapAction(this.newEnterAction());
 			int exitId = fac.addTrapAction(this.newExitAction());
 			int uid = 0;
-			for (OProduction p : prods) {
+			for (Production p : prods) {
 				this.names[uid] = p.getUniqueName();
 				Expression enterTrap = new Expression.PTrap(enterId, uid, null);
 				Expression exitTrap = new Expression.PTrap(exitId, uid++, null);

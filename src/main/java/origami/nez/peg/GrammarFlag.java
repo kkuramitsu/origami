@@ -25,18 +25,18 @@ import origami.nez.peg.Expression.PNonTerminal;
 public enum GrammarFlag {
 	Yes, No, Unsure;
 
-	public final static void checkFlag(ArrayList<OProduction> prodList, String[] flags) {
+	public final static void checkFlag(ArrayList<Production> prodList, String[] flags) {
 		for (String flag : flags) {
 			checkFlag(prodList, flag);
 		}
 	}
 
-	static void checkFlag(ArrayList<OProduction> prodList, String flag) {
+	static void checkFlag(ArrayList<Production> prodList, String flag) {
 		int size = prodList.size();
 		int prev = 0;
 		while (true) {
 			int found = 0;
-			for (OProduction p : prodList) {
+			for (Production p : prodList) {
 				GrammarFlag f = getFlag(p.getGrammar(), p.getLocalName(), flag);
 				if (f != Yes && f != No) {
 					f = checkFlag(p.getGrammar(), p.getLocalName(), p.getExpression(), flag);
@@ -51,7 +51,7 @@ public enum GrammarFlag {
 			}
 			prev = found;
 		}
-		for (OProduction p : prodList) {
+		for (Production p : prodList) {
 			GrammarFlag f = getFlag(p.getGrammar(), p.getLocalName(), flag);
 			if (f != Yes && f != No) {
 				setFlag(p.getGrammar(), p.getLocalName(), flag, No);
@@ -59,7 +59,7 @@ public enum GrammarFlag {
 		}
 	}
 
-	static GrammarFlag checkFlag(OGrammar g, String name, Expression e, String flag) {
+	static GrammarFlag checkFlag(Grammar g, String name, Expression e, String flag) {
 		if (e instanceof PIfCondition) {
 			PIfCondition p = (PIfCondition) e;
 			if (p.flagName().equals(flag)) {
@@ -94,7 +94,7 @@ public enum GrammarFlag {
 
 	}
 
-	static GrammarFlag getFlag(OGrammar g, String name, String flag) {
+	static GrammarFlag getFlag(Grammar g, String name, String flag) {
 		FlagMap map = g.getProperty(name, FlagMap.class);
 		if (map == null) {
 			map = new FlagMap();
@@ -103,7 +103,7 @@ public enum GrammarFlag {
 		return map.get(flag);
 	}
 
-	static void setFlag(OGrammar g, String name, String flag, GrammarFlag y) {
+	static void setFlag(Grammar g, String name, String flag, GrammarFlag y) {
 		FlagMap map = g.getProperty(name, FlagMap.class);
 		if (map == null) {
 			map = new FlagMap();
@@ -112,7 +112,7 @@ public enum GrammarFlag {
 		map.put(flag, y);
 	}
 
-	public final static boolean hasFlag(OProduction p, String flag) {
+	public final static boolean hasFlag(Production p, String flag) {
 		GrammarFlag f = getFlag(p.getGrammar(), p.getLocalName(), flag);
 		assert f != null;
 		return f != No;

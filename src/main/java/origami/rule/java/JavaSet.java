@@ -19,7 +19,7 @@ package origami.rule.java;
 import java.util.Set;
 
 import origami.OEnv;
-import origami.OSource;
+import origami.nez.ast.SourcePosition;
 import origami.rule.ClassRules;
 import origami.rule.ExpressionRules;
 import origami.rule.LiteralRules;
@@ -31,7 +31,7 @@ import origami.trait.OScriptUtils;
 
 public class JavaSet implements OImportable, OScriptUtils {
 	@Override
-	public void importDefined(OEnv env, OSource s, Set<String> names) {
+	public void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		addType(env, s, "boolean", boolean.class);
 		addType(env, s, "byte", byte.class);
 		addType(env, s, "char", char.class);

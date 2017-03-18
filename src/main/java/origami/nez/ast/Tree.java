@@ -9,7 +9,7 @@ import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
 import origami.trait.OStringUtils;
 
-public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourceObject, TreeConstructor<E>, TreeConnector<E> {
+public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition, TreeConstructor<E>, TreeConnector<E> {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -75,16 +75,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	public final void setPosition(int pos, int len) {
 		this.pos = pos;
 		this.length = len;
-	}
-
-	@Override
-	public final int getLineNum() {
-		return (int) this.source.linenum(this.pos);
-	}
-
-	@Override
-	public final int getColumn() {
-		return this.source.column(this.pos);
 	}
 
 	public final int getLength() {
@@ -337,11 +327,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 			}
 		}
 		return defvalue;
-	}
-
-	@Override
-	public final String formatSourceMessage(String type, String msg) {
-		return this.getSource().formatPositionLine(type, this.getSourcePosition(), msg);
 	}
 
 	/**

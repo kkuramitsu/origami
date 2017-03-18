@@ -23,8 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import origami.OConsole;
-import origami.trait.OStringUtils;
-import origami.trait.OVerbose;
 
 public class FileSource extends CommonSource {
 	public final static int PageSize = 4096;

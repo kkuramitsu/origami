@@ -17,12 +17,12 @@
 package origami.nez.parser;
 
 import origami.nez.peg.Expression;
-import origami.nez.peg.OGrammar;
+import origami.nez.peg.Grammar;
 
 public abstract class Pass extends Expression.Rewriter<Void> {
-	public abstract void perform(ParserFactory fac, OGrammar g);
+	public abstract void perform(ParserFactory fac, Grammar g);
 
-	public final static void apply(ParserFactory fac, OGrammar g, String... passes) {
+	public final static void apply(ParserFactory fac, Grammar g, String... passes) {
 		for (String p : passes) {
 			Pass pass = newInstance(fac, p);
 			if (pass != null) {
@@ -33,7 +33,7 @@ public abstract class Pass extends Expression.Rewriter<Void> {
 		}
 	}
 
-	public final static void apply(ParserFactory fac, OGrammar g, Class<?>... passes) {
+	public final static void apply(ParserFactory fac, Grammar g, Class<?>... passes) {
 		for (Class<?> c : passes) {
 			Pass pass = newInstance(fac, c);
 			if (pass != null) {

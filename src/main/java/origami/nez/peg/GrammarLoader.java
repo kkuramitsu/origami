@@ -16,13 +16,6 @@
 
 package origami.nez.peg;
 
-import java.io.IOException;
-
-import origami.nez.ast.Source;
-import origami.nez.ast.Symbol;
-import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
-import origami.nez.parser.ParserFactory;
 
 public class GrammarLoader {
 

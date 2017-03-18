@@ -21,10 +21,10 @@ import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import origami.OEnv;
-import origami.OSource;
+import origami.nez.ast.SourcePosition;
 
 public interface OImportable {
-	public default void importDefined(OEnv env, OSource s, Set<String> names) {
+	public default void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		boolean allSymbols = names == null || names.contains("*");
 		for (Field f : this.getClass().getDeclaredFields()) {
 			if (!Modifier.isPublic(f.getModifiers())) {

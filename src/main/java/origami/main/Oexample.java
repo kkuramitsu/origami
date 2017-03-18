@@ -31,7 +31,6 @@ import origami.nez.parser.ParserFactory;
 import origami.nez.parser.ParserFactory.TreeWriter;
 import origami.nez.peg.GrammarLoader;
 import origami.nez.peg.GrammarParser;
-import origami.nez.peg.OGrammar;
 
 public class Oexample extends OCommand {
 	HashMap<String, Parser> parserMap = new HashMap<>();
@@ -172,7 +171,7 @@ public class Oexample extends OCommand {
 	protected void performExample(Parser p, String uname, Tree<?> ex) {
 		Tree<?> textNode = ex.get(_text);
 		Source s = newSource(textNode, p.getFactory());
-		String name = uname + " (" + textNode.getSource().getResourceName() + ":" + textNode.getLineNum() + ")";
+		String name = uname + " (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
 		try {
 			tested++;
 			long t1 = System.nanoTime();

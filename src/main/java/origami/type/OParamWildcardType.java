@@ -18,7 +18,7 @@ package origami.type;
 
 import java.lang.reflect.WildcardType;
 
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 
 public class OParamWildcardType extends OTypeImpl {
 	private final OType upperBound;
@@ -61,7 +61,7 @@ public class OParamWildcardType extends OTypeImpl {
 		sb.append("?");
 		if (!this.upperBound.is(Object.class)) {
 			// sb.append(" extends ");
-			OStringBuilder.append(sb, this.upperBound);
+			StringCombinator.append(sb, this.upperBound);
 		}
 	}
 

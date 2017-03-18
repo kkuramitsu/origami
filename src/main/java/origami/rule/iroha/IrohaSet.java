@@ -19,9 +19,9 @@ package origami.rule.iroha;
 import java.util.Set;
 
 import origami.OEnv;
-import origami.OSource;
 import origami.lang.callsite.IMethodCallSite;
 import origami.lang.callsite.OMethodCallSite;
+import origami.nez.ast.SourcePosition;
 import origami.rule.ExpressionRules;
 import origami.rule.LayerRules;
 import origami.rule.LiteralRules;
@@ -44,7 +44,7 @@ import origami.type.OUntypedType;
 
 public class IrohaSet implements OImportable, OScriptUtils {
 	@Override
-	public final void importDefined(OEnv env, OSource s, Set<String> names) {
+	public final void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		addType(env, s, "void", void.class);
 		addType(env, s, "bool", boolean.class);
 		addType(env, s, "int", int.class);

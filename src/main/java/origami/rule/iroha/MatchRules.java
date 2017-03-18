@@ -47,7 +47,7 @@ import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.unit.OUnit;
 import origami.trait.OImportable;
-import origami.trait.OStringBuilder;
+import origami.trait.StringCombinator;
 import origami.trait.OTypeRule;
 import origami.type.NullableType;
 import origami.type.OType;
@@ -345,7 +345,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	}
 
-	public static abstract class ICase implements Case, OStringBuilder {
+	public static abstract class ICase implements Case, StringCombinator {
 		String name;
 		OType type;
 		boolean nullAble;
@@ -426,7 +426,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			appendName(sb);
-			OStringBuilder.append(sb, this);
+			StringCombinator.append(sb, this);
 			return sb.toString();
 		}
 
@@ -504,9 +504,9 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 
 		@Override
 		public void strOut(StringBuilder sb) {
-			OStringBuilder.append(sb, this.getType());
+			StringCombinator.append(sb, this.getType());
 			if (inner != null) {
-				OStringBuilder.append(sb, inner);
+				StringCombinator.append(sb, inner);
 			}
 		}
 
@@ -532,7 +532,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 
 		@Override
 		public void strOut(StringBuilder sb) {
-			OStringBuilder.appendQuoted(sb, this.value);
+			StringCombinator.appendQuoted(sb, this.value);
 		}
 
 	}
@@ -563,7 +563,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 				if (i > 0) {
 					sb.append("|");
 				}
-				OStringBuilder.appendQuoted(sb, this.values[i]);
+				StringCombinator.appendQuoted(sb, this.values[i]);
 			}
 		}
 
@@ -618,12 +618,12 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("(");
-			OStringBuilder.appendQuoted(sb, this.start);
+			StringCombinator.appendQuoted(sb, this.start);
 			sb.append(" to ");
 			if (!inclusive) {
 				sb.append("<");
 			}
-			OStringBuilder.appendQuoted(sb, this.end);
+			StringCombinator.appendQuoted(sb, this.end);
 			sb.append(")");
 		}
 
@@ -665,12 +665,12 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("(");
-			OStringBuilder.appendQuoted(sb, this.start);
+			StringCombinator.appendQuoted(sb, this.start);
 			sb.append(" to ");
 			if (!inclusive) {
 				sb.append("<");
 			}
-			OStringBuilder.appendQuoted(sb, this.end);
+			StringCombinator.appendQuoted(sb, this.end);
 			sb.append(")");
 		}
 
@@ -684,7 +684,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 			this.innerCases = list;
 		}
 
-		boolean matchInner(SequenceExtractable se, List<Object> matched) {
+		boolean matchInner(SequenceExtractable<?> se, List<Object> matched) {
 			int index = 0;
 			for (ICase inner : innerCases) {
 				if (!inner.match((index), matched)) {

@@ -1,14 +1,13 @@
 package origami.nez.ast;
 
 import origami.OConsole;
-import origami.trait.OStringBuilder;
+import origami.rule.LocaleFormat;
 
 public interface SourceLogger {
 
-	public void reportError(SourceObject s, String fmt, Object... args);
-	public void reportWarning(SourceObject s, String fmt, Object... args);
-	public void reportNotice(SourceObject s, String fmt, Object... args);
-	public void reportInfo(SourceObject s, String fmt, Object... args);
+	public void reportError(SourcePosition s, LocaleFormat fmt, Object... args);
+	public void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args);
+	public void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args);
 
 	public static class SimpleSourceLogger implements SourceLogger {
 		final static int Error = 31;
@@ -22,28 +21,18 @@ public interface SourceLogger {
 			OConsole.endColor();
 		}
 
-		private String message(SourceObject s, String type, String fmt, Object... args) {
-			if (s != null) {
-				return s.formatSourceMessage(type, OStringBuilder.format(fmt, args));
-			}
-			return "(" + type + ") " + OStringBuilder.format(fmt, args);
-		}
-
-		public final void reportError(SourceObject s, String fmt, Object... args) {
-			report(Error, message(s, "error", fmt, args));
+		public final void reportError(SourcePosition s, LocaleFormat fmt, Object... args) {
+			report(Error, SourcePosition.formatErrorMessage(s, fmt, args));
 		}
 	
-		public final void reportWarning(SourceObject s, String fmt, Object... args) {
-			report(Warning, message(s, "warning", fmt, args));
+		public final void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args) {
+			report(Warning, SourcePosition.formatWarningMessage(s, fmt, args));
 		}
 	
-		public final void reportNotice(SourceObject s, String fmt, Object... args) {
-			report(Notice, message(s, "notice", fmt, args));
+		public final void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args) {
+			report(Notice, SourcePosition.formatNoticeMessage(s, fmt, args));
 		}
 	
-		public final void reportInfo(SourceObject s, String fmt, Object... args) {
-			report(Info, message(s, "info", fmt, args));
-		}
 	}
 
 }

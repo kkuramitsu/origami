@@ -20,18 +20,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 
 public abstract class ParserCode<I> implements ParserFactory.Executable {
 
 	protected final ParserFactory factory;
-	protected final OGrammar grammar;
+	protected final Grammar grammar;
 	protected ArrayList<I> codeList;
 	protected HashMap<String, I> codeMap;
 
-	protected ParserCode(ParserFactory factory, OGrammar grammar, I[] initArray) {
+	protected ParserCode(ParserFactory factory, Grammar grammar, I[] initArray) {
 		this.factory = factory;
 		this.grammar = grammar;
 		this.codeList = initArray != null ? new ArrayList<>() : null;
@@ -39,7 +39,7 @@ public abstract class ParserCode<I> implements ParserFactory.Executable {
 	}
 
 	@Override
-	public final OGrammar getGrammar() {
+	public final Grammar getGrammar() {
 		return this.grammar;
 	}
 
@@ -176,8 +176,8 @@ public abstract class ParserCode<I> implements ParserFactory.Executable {
 	}
 
 	public static class StaticMemoization {
-		public void init(ParserFactory factory, OGrammar grammar, Map<String, MemoPoint> memoPointMap) {
-			for (OProduction p : grammar) {
+		public void init(ParserFactory factory, Grammar grammar, Map<String, MemoPoint> memoPointMap) {
+			for (Production p : grammar) {
 				Typestate ts = Typestate.compute(p);
 				if (ts == Typestate.Tree) {
 					String uname = p.getUniqueName();

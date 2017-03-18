@@ -23,8 +23,8 @@ import origami.nez.parser.ParserCode.MemoPoint;
 import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.NezFunc;
-import origami.nez.peg.OGrammar;
-import origami.nez.peg.OProduction;
+import origami.nez.peg.Grammar;
+import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 import origami.trait.OStringUtils;
 
@@ -43,7 +43,7 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 	boolean Optimization = true;
 
 	@Override
-	public NZ86Code compile(ParserFactory factory, OGrammar grammar) {
+	public NZ86Code compile(ParserFactory factory, Grammar grammar) {
 		NZ86Code code = new NZ86Code(factory, grammar, factory);
 		this.TreeConstruction = factory.TreeOption();
 		if (factory.MemoOption()) {
@@ -57,17 +57,17 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 	class CompilerVisitor extends ExpressionVisitor<NZ86Instruction, NZ86Instruction> {
 
 		final NZ86Code code;
-		final OGrammar grammar;
+		final Grammar grammar;
 		final ParserFactory factory;
 
-		CompilerVisitor(ParserFactory factory, NZ86Code code, OGrammar grammar) {
+		CompilerVisitor(ParserFactory factory, NZ86Code code, Grammar grammar) {
 			this.code = code;
 			this.grammar = grammar;
 			this.factory = factory;
 		}
 
 		private NZ86Code compileAll() {
-			for (OProduction p : grammar) {
+			for (Production p : grammar) {
 				this.compileProduction(code.codeList(), p, new NZ86.Ret());
 			}
 			for (NZ86Instruction inst : code.codeList()) {
@@ -82,7 +82,7 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 			return code;
 		}
 
-		protected void compileProduction(List<NZ86Instruction> codeList, OProduction p, NZ86Instruction next) {
+		protected void compileProduction(List<NZ86Instruction> codeList, Production p, NZ86Instruction next) {
 			MemoPoint memoPoint = code.getMemoPoint(p.getUniqueName());
 			next = compileProductionExpression(memoPoint, p.getExpression(), next);
 			code.setInstruction(p.getUniqueName(), next);
@@ -176,7 +176,7 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 
 		@Override
 		public final NZ86Instruction visitNonTerminal(Expression.PNonTerminal n, NZ86Instruction next) {
-			OProduction p = n.getProduction();
+			Production p = n.getProduction();
 			return new NZ86.Call(p.getUniqueName(), next);
 		}
 
