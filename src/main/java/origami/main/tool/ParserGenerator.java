@@ -16,7 +16,6 @@
 
 package origami.main.tool;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,12 +35,14 @@ import java.util.Map;
 //import nezgo.peg.Production.Pmemo;
 //import nezgo.peg.Typestate;
 import origami.ODebug;
+import origami.main.CommonWriter;
+import origami.main.OOption;
+import origami.main.ParserOption;
 import origami.nez.ast.Symbol;
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserCode;
 import origami.nez.parser.ParserCode.MemoPoint;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.GrammarWriter;
+
 import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.NezFunc;
@@ -52,7 +53,7 @@ import origami.nez.peg.Typestate;
 import origami.trait.OStringUtils;
 import origami.trait.OVerbose;
 
-public abstract class ParserGenerator extends CommonWriter implements GrammarWriter {
+public abstract class ParserGenerator extends CommonWriter /*implements GrammarWriter*/ {
 
 	protected boolean verboseMode = true;
 	protected boolean Optimization = true;
@@ -74,12 +75,11 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 	//
 	protected ParserCode<?> code;
 
-	@Override
-	public void writeGrammar(ParserFactory fac, Grammar g) {
+	public void writeGrammar(OOption options, Grammar g) {
 		try {
 			// FIXME Just a hack
-			fileBase = extractGrammarName((String) fac.get("grammar"));
-			Parser parser = fac.newParser();
+			fileBase = extractGrammarName((String) options.get(ParserOption.GrammarFile));
+			Parser parser = g.newParser(options);
 			this.code = (ParserCode<?>) parser.compile();
 			this.initLanguageSpec();
 			this.generateHeader(g);
@@ -92,7 +92,7 @@ public abstract class ParserGenerator extends CommonWriter implements GrammarWri
 			this.generateFooter(g);
 			// file.writeNewLine();
 			// file.flush();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			ODebug.traceException(e);
 		}
 	}

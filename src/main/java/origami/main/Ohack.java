@@ -16,7 +16,7 @@
 
 package origami.main;
 
-public class Odrun extends Orun {
+public class Ohack extends Orun {
 	@Override
 	public boolean isDebug() {
 		return true;

@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import origami.main.OOption;
+import origami.main.ParserOption;
 import origami.nez.ast.Source;
+import origami.nez.ast.SourcePosition;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
+
 import origami.trait.StringCombinator;
 
 public class Grammar extends AbstractList<Production> implements StringCombinator {
@@ -24,7 +27,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		this.parent = parent;
 		this.nameList = new ArrayList<>(16);
 		this.exprMap = new HashMap<>();
-		this.id = name == null ? "g" + Objects.hashCode(this) : name;
+		this.id = name == null ? "g" + Objects.hashCode(this) : SourcePosition.extractFileName(name);
 	}
 
 	public Grammar(String name) {
@@ -126,7 +129,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		}
 		return l.toArray(new Production[l.size()]);
 	}
-
+	
 	@Override
 	public final String toString() {
 		return StringCombinator.stringfy(this);
@@ -209,12 +212,21 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 	 */
 
 	public final Parser newParser() {
-		return new Parser(new ParserFactory(), this.getStartProduction());
+		return new Parser(this.getStartProduction(), new OOption());
 	}
 
 	public final Parser newParser(String name) {
-		return new Parser(new ParserFactory(), this.getProduction(name));
+		return new Parser(this.getProduction(name), new OOption());
 	}
+
+	public Parser newParser(OOption options) {
+		String start = options.value(ParserOption.Start, null);
+		if(start == null) {
+			return new Parser(this.getStartProduction(), options);
+		}
+		return new Parser(this.getProduction(start), options);
+	}
+	
 	
 
 	public void dump() {
@@ -222,6 +234,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 			System.out.println(p);
 		}
 	}
+
 
 
 }

@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 import origami.OConsole;
 import origami.nez.parser.NZ86ParserContext;
-import origami.nez.parser.ParserFactory;
+
 import origami.nez.parser.TrapAction;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
@@ -37,14 +37,15 @@ public class Otest extends Oexample {
 		public Coverage() {
 		}
 
-		public void init(ParserFactory fac, Grammar g) {
+		public void init(OOption options, Grammar g) {
 			Production[] prods = g.getAllProductions();
 			this.unameMap = new HashMap<>();
 			this.names = new String[prods.length];
 			this.enterCounts = new int[prods.length];
 			this.exitCounts = new int[prods.length];
-			int enterId = fac.addTrapAction(this.newEnterAction());
-			int exitId = fac.addTrapAction(this.newExitAction());
+			options.add(ParserOption.TrapActions, new TrapAction[]{this.newEnterAction(), this.newExitAction()});
+			int enterId = 0;
+			int exitId = 1;
 			int uid = 0;
 			for (Production p : prods) {
 				this.names[uid] = p.getUniqueName();
@@ -107,7 +108,7 @@ public class Otest extends Oexample {
 			return ((double) c) / names.length;
 		}
 
-		public void dump(ParserFactory fac) {
+		public void dump(OOption options) {
 			for (int i = 0; i < names.length; i++) {
 				if (exitCounts[i] == 0) {
 					OConsole.println("%s %d/%d", names[i], enterCounts[i], exitCounts[i]);

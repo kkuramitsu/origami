@@ -281,8 +281,4 @@ public interface SourcePosition {
 		}
 		return new SimpleSourcePosition(s, pos);
 	}
-
-
-
-	
 }

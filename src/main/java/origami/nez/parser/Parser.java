@@ -18,6 +18,8 @@ package origami.nez.parser;
 
 import java.io.IOException;
 
+import origami.main.OOption;
+import origami.main.ParserOption;
 import origami.nez.ast.CommonTree;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
@@ -30,16 +32,12 @@ import origami.rule.OFmt;
 
 public final class Parser {
 	private final Production start;
-	private ParserFactory factory;
-	private ParserFactory.Executable code = null;
+	private final OOption options;
+	private ParserExecutable code = null;
 
-	public Parser(ParserFactory factory, Production start) {
-		this.factory = factory;
+	public Parser(Production start, OOption options) {
+		this.options = options;
 		this.start = start;
-	}
-
-	public final ParserFactory getFactory() {
-		return this.factory;
 	}
 
 	public final Grammar getGrammar() {
@@ -49,15 +47,16 @@ public final class Parser {
 		return code.getGrammar();
 	}
 
-	public final ParserFactory.Executable compile() {
-		long t = factory.nanoTime(null, 0);
-		ParserFactory.Compiler compl = this.factory.newCompiler();
-		this.code = compl.compile(factory, factory.optimize(factory, start));
-		factory.nanoTime("CompilingTime", t);
+	public final ParserExecutable compile() {
+		ParserCompiler compl = options.newInstance(NZ86Compiler.class);
+		long t = options.nanoTime(null, 0);
+		Grammar g = new GrammarChecker(options, start).checkGrammar();
+		this.code = compl.compile(g);
+		options.nanoTime("ParserCompilingTime@" + start, t);
 		return code;
 	}
 
-	public final ParserFactory.Executable getExecutable() {
+	public final ParserExecutable getExecutable() {
 		if (this.code == null) {
 			compile();
 		}
@@ -67,29 +66,31 @@ public final class Parser {
 	/* --------------------------------------------------------------------- */
 
 	final <T> T performNull(ParserContext<T> ctx, Source s) {
-		ParserFactory.Executable code = this.getExecutable();
-		code.initContext(ctx);
+//		ParserExecutable code = this.getExecutable();
+//		code.initContext(ctx);
 		ctx.start();
 		T matched = code.exec(ctx);
 		ctx.end();
 		return matched;
 	}
 
-	public final <T> T parse(Source s, TreeConstructor<T> newTree, TreeConnector<T> linkTree) throws IOException {
-		ParserContext<T> ctx = this.factory.newContext(s, newTree, linkTree);
+	public final <T> T parse(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) throws IOException {
+		ParserExecutable parser = this.getExecutable();
+		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
 		T matched = performNull(ctx, s);
 		if (matched == null) {
 			perror(SourcePosition.newInstance(s, ctx.getMaximumPosition()), NezFmt.syntax_error);
 			return null;
 		}
-		if (!ctx.eof() && factory.is("partial-failure", this.PartialFailure)) {
+		if (!ctx.eof() && options.is(ParserOption.PartialFailure, true)) {
 			perror(SourcePosition.newInstance(s, ctx.getPosition()), NezFmt.unconsumed);
 		}
 		return matched;
 	}
 
-	public final <T> long match(Source s, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-		ParserContext<T> ctx = this.factory.newContext(s, newTree, linkTree);
+	public final <T> long match(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
+		ParserExecutable parser = this.getExecutable();
+		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
 		T matched = performNull(ctx, s);
 		if (matched == null) {
 			return -1;
@@ -102,7 +103,7 @@ public final class Parser {
 	private static CommonTree defaultTree = new CommonTree();
 
 	public final int match(Source s) {
-		return (int) this.match(s, defaultTree, defaultTree);
+		return (int) this.match(s, 0, defaultTree, defaultTree);
 	}
 
 	public final int match(String str) {
@@ -110,7 +111,7 @@ public final class Parser {
 	}
 
 	public final Tree<?> parse(Source sc) throws IOException {
-		return this.parse(sc, defaultTree, defaultTree);
+		return this.parse(sc, 0, defaultTree, defaultTree);
 	}
 
 	public final Tree<?> parse(String str) throws IOException {
@@ -119,28 +120,28 @@ public final class Parser {
 
 	/* Errors */
 
-	private boolean PartialFailure = false;
-	private boolean PrintingParserError = false;
-	private boolean ThrowingParserError = true;
-
-	public void setPartialFailure(boolean b) {
-		this.PartialFailure = b;
-	}
-
-	public void setThrowingException(boolean b) {
-		this.ThrowingParserError = b;
-	}
-
-	public void setPrintingException(boolean b) {
-		this.PrintingParserError = b;
-	}
+//	private boolean PartialFailure = false;
+//	private boolean PrintingParserError = false;
+//	private boolean ThrowingParserError = true;
+//
+//	public void setPartialFailure(boolean b) {
+//		this.PartialFailure = b;
+//	}
+//
+//	public void setThrowingException(boolean b) {
+//		this.ThrowingParserError = b;
+//	}
+//
+//	public void setPrintingException(boolean b) {
+//		this.PrintingParserError = b;
+//	}
 
 	private void perror(SourcePosition s, LocaleFormat message) throws IOException {
-		if (PrintingParserError || factory.is("print-parser-error", PrintingParserError)) {
-			factory.report(ParserFactory.Error, SourcePosition.formatErrorMessage(s, message));
-		}
-		if (ThrowingParserError || factory.is("throw-parser-error", ThrowingParserError)) {
+		if (options.is(ParserOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
+		}
+		else {
+			options.reportError(s, message);			
 		}
 	}
 

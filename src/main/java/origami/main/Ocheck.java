@@ -16,25 +16,23 @@
 
 package origami.main;
 
-import java.io.IOException;
-
 import origami.OConsole;
 import origami.ODebug;
 import origami.Origami;
 import origami.nez.parser.CommonSource;
-import origami.nez.parser.ParserFactory;
+import origami.nez.peg.Grammar;
 
 public class Ocheck extends Orun {
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
+	public void exec(OOption options) throws Exception {
 		int totalTestCount = 0;
 		int totalPassCount = 0;
-		String[] files = fac.list("files");
+		String[] files = options.list(ParserOption.InputFiles);
 		for (String file : files) {
 			try {
 				String ext = CommonSource.extractFileExtension(file);
-				fac.set("grammar", ext + ".nez");
-				Origami env = new Origami(fac.getGrammar());
+				Grammar g = Grammar.loadFile(ext + ".nez", options.list(ParserOption.GrammarPath));
+				Origami env = new Origami(g);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {
 				ODebug.traceException(e);

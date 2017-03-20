@@ -24,66 +24,67 @@ import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.GrammarWriter;
-import origami.nez.parser.ParserFactory.TreeWriter;
+
 import origami.nez.peg.GrammarParser;
 import origami.nez.peg.Grammar;
 
 public class Oinez extends OCommand {
+	
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.ThrowingParserError, false);		
+	}
+
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		OCommand.displayVersion();
+	public void exec(OOption options) throws Exception {
+		OCommand.displayVersion("Nez");
 		p(Yellow, "Enter an input string to match (or a grammar if you want to update).");
 		p(Yellow, "Tips: Start with an empty line for multiple lines.");
 		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
 		Parser nezParser = GrammarParser.NezParser;
-		nezParser.setPrintingException(false);
-		nezParser.setThrowingException(false);
-		Parser pegParser = parser(fac);
-		GrammarWriter gw = fac.newGrammarWriter(origami.main.tool.SimpleGrammarWriter.class);
-		TreeWriter tw = fac.newTreeWriter(origami.main.tool.AbstractSyntaxTreeWriter.class);
-		String prompt = prompt(fac);
+		//nezParser.setPrintingException(false);
+		//nezParser.setThrowingException(false);
+		
+		Grammar g = getGrammar(options);
+		Parser p = newParser(g, options);
+		TreeWriter tw = options.newInstance(TreeWriter.class);
+		String prompt = getPrompt(g);
 		String input = null;
 		while ((input = this.readMulti(prompt)) != null) {
 			if (checkEmptyInput(input)) {
-				display(fac, gw, fac.getGrammar());
+				display(options, g);
 				continue;
 			}
 			Source sc = CommonSource.newStringSource("<stdio>", linenum, input);
 			try {
 				Tree<?> node = nezParser.parse(sc);
 				if (node != null && node.is(GrammarParser._Source)) {
-					Grammar g = Grammar.loadSource(sc);
-					fac = fac.newFactory(g);
-					pegParser = parser(fac);
-					prompt = prompt(fac);
+					g = Grammar.loadSource(sc);
+					p = newParser(g, options);
+					prompt = getPrompt(g);
 					addHistory(input);
 					p(Yellow, "Grammar is successfully loaded!");
 					continue;
 				}
 			} catch (Exception e) {
-				ODebug.traceException(e);
+				//ODebug.traceException(e);
 			}
-			Tree<?> node = pegParser.parse(sc);
+			Tree<?> node = p.parse(sc);
 			if (node == null) {
-				p(Red, "Tips: To enter multiple lines, start and end an empty line.");
+				p(Red, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 			} else {
-				display(fac, tw, node);
+				display(tw, node);
 			}
 		}
 	}
 
-	private Parser parser(ParserFactory fac) throws IOException {
-		Parser p = fac.newParser();
-		p.setPrintingException(true);
-		p.setThrowingException(false);
+	private Parser newParser(Grammar g, OOption options) throws IOException {
+		Parser p = g.newParser(options);
 		return p;
 	}
 
-	private String prompt(ParserFactory fac) throws IOException {
-		Grammar g = fac.getGrammar();
+	private String getPrompt(Grammar g) throws IOException {
 		String start = g.getStartProduction().getLocalName();
 		return bold(start + ">>> ");
 	}

@@ -16,23 +16,21 @@
 
 package origami.main;
 
-import java.io.IOException;
-
+import origami.ODebug;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.GrammarWriter;
 
 public class Cpeg extends OCommand {
 
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		GrammarWriter grammarWriter = fac.newGrammarWriter(origami.main.tool.PEGWriter.class);
-		if (fac.is("raw", false)) {
-			grammarWriter.writeGrammar(fac, fac.getGrammar());
-		} else {
-			Parser p = fac.newParser();
-			grammarWriter.writeGrammar(fac, p.getGrammar());
-		}
+	public void exec(OOption options) throws Exception {
+		ODebug.TODO(this);
+//		GrammarWriter grammarWriter = options.newGrammarWriter(origami.main.tool.PEGWriter.class);
+//		if (options.is("raw", false)) {
+//			grammarWriter.writeGrammar(options, options.getGrammar());
+//		} else {
+//			Parser p = options.newParser();
+//			grammarWriter.writeGrammar(options, p.getGrammar());
+//		}
 	}
 
 }

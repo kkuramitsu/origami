@@ -18,7 +18,6 @@ package origami.code;
 import java.util.List;
 
 import origami.nez.ast.SourcePosition;
-import origami.nez.ast.Tree;
 import origami.OConsts;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;

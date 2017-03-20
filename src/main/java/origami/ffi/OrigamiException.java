@@ -17,7 +17,6 @@
 package origami.ffi;
 
 import origami.OLog;
-import origami.nez.ast.Tree;
 import origami.trait.StringCombinator;
 
 @SuppressWarnings("serial")
@@ -34,19 +33,5 @@ public class OrigamiException extends RuntimeException {
 	public OrigamiException(Throwable e, String fmt, Object... args) {
 		this(StringCombinator.format(fmt, args) + " by " + e);
 	}
-
-//	private static String format(Tree<?> s, String name) {
-//		String msg = "no " + name;
-//		if (s != null) {
-//			msg = s.getSource().formatPositionLine("error", s.getSourcePosition(), msg);
-//		}
-//		return msg;
-//	}
-//
-//	public static class NotFoundException extends OrigamiException {
-//		public NotFoundException(Tree<?> s, String name) {
-//			super(format(s, name));
-//		}
-//	}
 
 }

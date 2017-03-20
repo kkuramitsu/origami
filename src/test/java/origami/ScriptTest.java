@@ -1,7 +1,7 @@
 package origami;
 
 import origami.nez.parser.CommonSource;
-import origami.nez.parser.ParserFactory;
+
 import origami.nez.peg.Grammar;
 
 //import junit.framework.Assert;

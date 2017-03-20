@@ -16,14 +16,10 @@
 
 package origami.main;
 
-import java.io.IOException;
-
-import origami.nez.parser.ParserFactory;
-
 public class Cpass extends OCommand {
 
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
+	public void exec(OOption options) throws Exception {
 
 	}
 

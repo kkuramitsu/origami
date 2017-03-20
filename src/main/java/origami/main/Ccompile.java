@@ -16,16 +16,13 @@
 
 package origami.main;
 
-import java.io.IOException;
-
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserCode;
-import origami.nez.parser.ParserFactory;
 
 public class Ccompile extends OCommand {
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		Parser parser = fac.newParser();
+	public void exec(OOption options) throws Exception {
+		Parser parser = getParser(options);
 		ParserCode<?> code = (ParserCode<?>) parser.compile();
 		code.dump();
 	}

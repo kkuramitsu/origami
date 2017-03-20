@@ -16,14 +16,15 @@
 
 package origami;
 
+import origami.rule.LocaleFormat;
 import origami.trait.StringCombinator;
 
 public class OConsole {
 
-//	public static void exit(int status, String message) {
-//		OConsole.println("EXIT " + message);
-//		System.exit(status);
-//	}
+	public static void exit(int status, LocaleFormat message) {
+		OConsole.println("EXIT " + message);
+		System.exit(status);
+	}
 
 	public static void exit(int status, Throwable e) {
 		OConsole.println("EXIT by " + e);
@@ -117,5 +118,8 @@ public class OConsole {
 		}
 		System.out.println();
 	}
+	
+	// reporting
+	
 
 }

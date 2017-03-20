@@ -16,36 +16,31 @@
 
 package origami.main;
 
-import java.io.IOException;
-
 import origami.ODebug;
 import origami.Origami;
 import origami.nez.parser.CommonSource;
-import origami.nez.parser.ParserFactory;
+import origami.nez.peg.Grammar;
 
 public class Orun extends origami.main.OCommand {
 
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		String[] files = fac.list("files");
-		if (fac.value("grammar", null) == null) {
+	public void exec(OOption options) throws Exception {
+		String[] files = options.list(ParserOption.InputFiles);
+		if (options.value(ParserOption.GrammarFile, null) == null) {
 			if (files.length > 0) {
 				String ext = CommonSource.extractFileExtension(files[0]);
-				fac.set("grammar", ext + ".nez");
-			} else {
-				fac.set("grammar", "iroha.nez");
-			}
+				options.set(ParserOption.GrammarFile, ext + ".nez");
+			} 
 		}
-		Origami env = new Origami(fac.getGrammar());
+		Grammar g = getGrammar(options, "iroha.nez");
+		Origami env = new Origami(g);
 		ODebug.setDebug(this.isDebug());
 
-		if (files.length > 0) {
-			for (String file : files) {
-				env.loadScriptFile(file);
-			}
+		for (String file : files) {
+			env.loadScriptFile(file);
 		}
 		if (files.length == 0 || isDebug()) {
-			displayVersion();
+			displayVersion(g.getName());
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 			p("");
 

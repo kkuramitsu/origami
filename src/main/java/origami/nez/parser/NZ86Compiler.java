@@ -19,6 +19,8 @@ package origami.nez.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import origami.main.OOption;
+import origami.main.ParserOption;
 import origami.nez.parser.ParserCode.MemoPoint;
 import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;
@@ -28,28 +30,39 @@ import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 import origami.trait.OStringUtils;
 
-public class NZ86Compiler implements ParserFactory.Compiler {
+public class NZ86Compiler implements ParserCompiler {
 
-	public final static NZ86Compiler newCompiler(ParserFactory strategy) {
+	public NZ86Compiler() {
+		
+	}
+
+	@Override
+	public ParserCompiler clone() {
 		return new NZ86Compiler();
 	}
 
-	public NZ86Compiler() {
-	}
-
 	// Local Option
-	boolean BinaryGrammar = false;
+	OOption options = null;
 	boolean TreeConstruction = true;
+	boolean enableMemo = false;
+	boolean BinaryGrammar = false;
 	boolean Optimization = true;
 
 	@Override
-	public NZ86Code compile(ParserFactory factory, Grammar grammar) {
-		NZ86Code code = new NZ86Code(factory, grammar, factory);
-		this.TreeConstruction = factory.TreeOption();
-		if (factory.MemoOption()) {
-			code.initMemoPoint(factory);
+	public void init(OOption options) {
+		this.options = options;
+		this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
+		this.enableMemo = options.is(ParserOption.PackratParsing, true);
+	}
+
+
+	@Override
+	public NZ86Code compile(Grammar grammar) {
+		NZ86Code code = new NZ86Code(grammar, options);
+		if (this.enableMemo) {
+			code.initMemoPoint();
 		}
-		new CompilerVisitor(factory, code, grammar).compileAll();
+		new CompilerVisitor(code, grammar).compileAll();
 		// code.dump();
 		return code;
 	}
@@ -58,12 +71,10 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 
 		final NZ86Code code;
 		final Grammar grammar;
-		final ParserFactory factory;
 
-		CompilerVisitor(ParserFactory factory, NZ86Code code, Grammar grammar) {
+		CompilerVisitor(NZ86Code code, Grammar grammar) {
 			this.code = code;
 			this.grammar = grammar;
-			this.factory = factory;
 		}
 
 		private NZ86Code compileAll() {
@@ -475,13 +486,13 @@ public class NZ86Compiler implements ParserFactory.Compiler {
 
 		@Override
 		public NZ86Instruction visitIf(Expression.PIfCondition e, NZ86Instruction next) {
-			factory.verbose("unremoved if condition", e);
+			options.verbose("unremoved if condition", e);
 			return next;
 		}
 
 		@Override
 		public NZ86Instruction visitOn(Expression.POnCondition e, NZ86Instruction next) {
-			factory.verbose("unremoved on condition", e);
+			options.verbose("unremoved on condition", e);
 			return compile(e.get(0), next);
 		}
 	}

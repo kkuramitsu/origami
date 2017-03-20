@@ -16,22 +16,24 @@
 
 package origami.nez.parser.pass;
 
-import origami.nez.parser.ParserFactory;
+import origami.main.OOption;
+
 import origami.nez.parser.Pass;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 
 class CommonPass extends Pass {
-	protected ParserFactory fac;
+	protected OOption options;
 
 	@Override
-	public void perform(ParserFactory fac, Grammar g) {
-		this.fac = fac;
+	public Grammar perform(Grammar g, OOption options) {
+		this.options = options;
 		prepare(g);
 		for (Production p : g) {
 			g.setExpression(p.getLocalName(), this.rewrite(p.getExpression(), null));
 		}
+		return g;
 	}
 
 	protected void prepare(Grammar g) {

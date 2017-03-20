@@ -18,53 +18,43 @@ package origami.main;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
 import origami.OConsole;
 import origami.ODebug;
 import origami.OVersion;
-import origami.main.tool.CommonWriter;
+import origami.main.OOption.Key;
 import origami.nez.ast.Tree;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.GrammarWriter;
-import origami.nez.parser.ParserFactory.TreeWriter;
+import origami.nez.parser.Parser;
+
 import origami.nez.peg.Grammar;
 import origami.rule.LocaleFormat;
 import origami.trait.StringCombinator;
 
 public abstract class OCommand extends OConsole {
-
-//	public final static String ProgName = "ORIGAMI";
-//	public final static String CodeName = "Celery";
-//	
-//	public final static int MajorVersion = 0;
-//	public final static int MinerVersion = 0;
-//	public final static int PatchLevel = 1;
 	
 	public static void main(String[] args) {
-		ParserFactory fac = new ParserFactory();
-		fac.set("grammar-path", new String[] { "/origami/grammar", "/nez/lib" });
+		OOption options = new OOption();
 		try {
-			OCommand com = newCommand(args, fac);
-			fac.verbose("nez-%s %s", OVersion.Version, com.getClass().getName());
-			fac.verbose("fac: %s", fac);
-			com.exec(fac);
-		} catch (IOException e) {
-			System.err.println(e);
-			fac.trace(e);
-			System.exit(1);
+			OCommand com = newCommand(args, options);
+			com.exec(options);
+		} catch (Exception e) {
+			e.printStackTrace();
+			exit(1, e);
 		}
 	}
 
-	private static OCommand newCommand(String[] args, ParserFactory fac) {
+	private static OCommand newCommand(String[] args, OOption options) {
 		try {
-			String className = args.length == 0 ? "drun" : args[0];
+			String className = args.length == 0 ? "hack" : args[0];
 			if (className.indexOf('.') == -1) {
 				className = "origami.main.O" + className;
 			}
 			OCommand cmd = (OCommand) Class.forName(className).newInstance();
-			cmd.parseCommandOption(args, fac);
+			cmd.initOption(options);
+			cmd.parseCommandOption(args, options);
 			return cmd;
 		} catch (Exception e) {
 			usage("unknown command by " + e);
@@ -72,94 +62,117 @@ public abstract class OCommand extends OConsole {
 		}
 	}
 
-	public abstract void exec(ParserFactory fac) throws IOException;
+	public abstract void exec(OOption options) throws Exception;
 
-	static HashMap<String, String> optMap = new HashMap<>();
-	static {
-		optMap.put("-g", "grammar");
-		optMap.put("--grammar", "grammar");
-		optMap.put("-p", "grammar");
-		optMap.put("-e", "expression");
-		optMap.put("--expression", "expression");
-		optMap.put("-s", "start");
-		optMap.put("--start", "start");
-		optMap.put("-f", "format");
-		optMap.put("--format", "format");
-		optMap.put("-d", "dir");
-		optMap.put("--dir", "dir");
+	protected void initOption(OOption options) {
+		options.set(ParserOption.GrammarPath, new String[] { "/origami/grammar", "/nez/lib" });		
 	}
 
-	private void parseCommandOption(String[] args, ParserFactory fac) throws IOException {
+	static HashMap<String, Key> optMap = new HashMap<>();
+	static {
+		optMap.put("-g", ParserOption.GrammarFile);
+		optMap.put("--grammar", ParserOption.GrammarFile);
+		optMap.put("-p", ParserOption.GrammarFile);
+		optMap.put("-e", ParserOption.InlineGrammar);
+		optMap.put("--expression", ParserOption.InlineGrammar);
+		optMap.put("-s", ParserOption.Start);
+		optMap.put("--start", ParserOption.Start);
+//		optMap.put("-f", "format");
+//		optMap.put("--format", "format");
+//		optMap.put("-d", "dir");
+//		optMap.put("--dir", "dir");
+	}
+	
+	private void parseCommandOption(String[] args, OOption options)  {
+		ArrayList<String> fileList = new ArrayList<>();
 		for (int index = 1; index < args.length; index++) {
 			String as = args[index];
-			String key = optMap.get(as);
+			Key key = optMap.get(as);
 			if (key != null && index + 1 < args.length) {
-				fac.set(key, args[index + 1]);
+				options.set(key, args[index + 1]);
 				index++;
 				continue;
 			}
 			if (as.startsWith("-D")) {
-				fac.setOption(as.substring(2));
+				options.setKeyValue(as.substring(2), ParserOption.Start);
 				continue;
 			}
 			if (as.startsWith("-X")) {
-				fac.loadClass(as.substring(2));
-				continue;
-			}
-			if (as.equals("--verbose")) {
-				fac.setVerboseMode(true);
+				try {
+					options.setClass(as.substring(2));
+				}
+				catch(Throwable e) {
+					OConsole.println("unfound class " + as);
+				}
 				continue;
 			}
 			if (!as.startsWith("-")) {
-				fac.add("files", as);
+				fileList.add(as);
 				continue;
 			}
 			usage("undefined option: " + as);
 		}
+		options.set(ParserOption.InputFiles, fileList.toArray(new String[fileList.size()]));
 	}
 
-	protected static void displayVersion() {
-		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + OVersion.CodeName + "," + MainFmt.English_Edition + ") on Java JVM-" + System.getProperty("java.version"));
+	protected Grammar getGrammar(OOption options) throws IOException {
+		return getGrammar(options, null);
+	}
+
+	protected Grammar getGrammar(OOption options, String file) throws IOException {
+		file = options.value(ParserOption.GrammarFile, file);
+		if(file == null) {
+			exit(1, MainFmt.no_specified_grammar);
+		}
+		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
+	}
+
+	protected Parser getParser(OOption options) throws IOException {
+		Grammar g = getGrammar(options);
+		return g.newParser(options);
+	}
+
+	protected static void displayVersion(String codeName) {
+		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + codeName + "," + MainFmt.English + ") on Java JVM-" + System.getProperty("java.version"));
 		p(Yellow, OVersion.Copyright);
 	}
 
 	protected static void usage(String msg) {
-		displayVersion();
+		displayVersion("Celery");
 		p(bold("Usage: origami <command> options inputs"));
-		p("  -g | --grammar <file>      Specify a grammar file");
-		//p("  -f | --format <string>     Specify an output format");
-		// p(" -e <text> Specify a Nez parsing expression");
-		// p(" -a <file> Specify a Nez auxiliary grammar
-		// files");
-		p("  -s | --start <NAME>        Specify a starting production");
-		//p("  -d | --dir <dirname>       Specify an output dir");
+		p2("  -g | --grammar <file>      ", MainFmt.specify_a_grammar_file);
+		p2("  -s | --start <NAME>        ", MainFmt.specify_a_starting_rule);
+		p2("  -X                         ", MainFmt.specify_an_extension_class);
+		p2("  -D                         ", MainFmt.specify_an_optional_value);
 		p("Example:");
-		p("  origami run -g iroha.nez sample.iroha");
+		p("  origami run sample.iroha");
 		p("  origami example -g js.nez");
-		p("  origami parse -g js.nez jquery.js");
+		p("  origami parse -g js.nez -X JsonWriter jquery.js");
 		p("");
 
 		p(bold("The most commonly used origami commands are:"));
-		p("  parse      parse inputs and construct ASTs");
-		p("  match      match inputs without ASTs");
-		p("  inez       an interactive parser");
-		p("  code       generate a parser source code for --format");
-		p("  cnez       generate a C-based fast parser");
-		p("  peg        translate a grammar into PEG specified with --format");
-		p("  compile    compile a grammar into Nez bytecode .moz");
-		p("  bench      perform benchmark tests");
-		p("  example    display examples in a grammar");
-		p("  test       perform grammar tests");
+		p2("  run      ", MainFmt.run_script_files);
+		p2("  hack     ", MainFmt.run_in_a_hacker_mode);
+		p2("  check    ", MainFmt.test_script_files);
+		p2("  parse    ", MainFmt.parse_files);
+		p2("  example  ", MainFmt.display_examples_in_a_grammar);
+		p2("  test     ", MainFmt.test_a_grammar_file);
+		p2("  nez      ", MainFmt.run_an_interactive_parser);
 		exit(0, msg);
 	}
 
 	public final void checkInputSource(String[] files) {
 		if (files == null || files.length == 0) {
-			exit(1, "no input specified");
+			exit(1, MainFmt.no_specified_inputs.toString());
 		}
 	}
 
 	public final static void p(String fmt, Object... args) {
+		println(StringCombinator.format(fmt, args));
+	}
+
+	static void p2(String desc, LocaleFormat fmt, Object...args) {
+		print(desc);
 		println(StringCombinator.format(fmt, args));
 	}
 
@@ -175,33 +188,18 @@ public abstract class OCommand extends OConsole {
 		endColor();
 	}
 
-	public final static void begin(int color) {
-		beginColor(color);
-	}
-
-	public final static void end() {
+	public final static void display(OOption options, Grammar g) {
+		beginColor(Blue);
+		g.dump();
 		endColor();
 	}
 
-	public final static void display(ParserFactory fac, GrammarWriter w, Grammar g) {
+	public final static void display(TreeWriter w, Tree<?> t) {
 		beginColor(Blue);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).Begin("---");
 		}
-		w.writeGrammar(fac, g);
-		if (w instanceof CommonWriter) {
-			((CommonWriter) w).End("---");
-			((CommonWriter) w).L();
-		}
-		endColor();
-	}
-
-	public final static void display(ParserFactory fac, TreeWriter w, Tree<?> t) {
-		beginColor(Blue);
-		if (w instanceof CommonWriter) {
-			((CommonWriter) w).Begin("---");
-		}
-		w.writeTree(fac, t);
+		w.writeTree(t);
 		if (w instanceof CommonWriter) {
 			((CommonWriter) w).End("---");
 			((CommonWriter) w).L();

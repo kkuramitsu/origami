@@ -215,7 +215,7 @@ public interface OScriptUtils {
 		}
 		Source sc = CommonSource.newFileSource(path, null);
 		Parser p = env.get(Parser.class);
-		return p.parse(sc, (TreeConstructor<Tree<?>>) t, (TreeConnector<Tree<?>>) t);
+		return p.parse(sc, 0, (TreeConstructor<Tree<?>>) t, (TreeConnector<Tree<?>>) t);
 	}
 
 	public default Tree<?> loadScriptFile(OEnv env, String file) throws IOException {

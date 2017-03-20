@@ -20,7 +20,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import origami.ODebug;
+import origami.main.OOption;
+import origami.main.ParserOption;
+import origami.nez.parser.pass.DispatchPass;
+import origami.nez.parser.pass.InlinePass;
+import origami.nez.parser.pass.NotCharPass;
 import origami.nez.parser.pass.TreeCheckerPass;
+import origami.nez.parser.pass.TreePass;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Expression.PNonTerminal;
 import origami.nez.peg.Expression.PTrap;
@@ -34,14 +41,14 @@ import origami.trait.OStringUtils;
 
 public class GrammarChecker {
 
-	private final ParserFactory factory;
 	private final Production start;
+	private final OOption options;
 	private HashMap<String, Production> visited = new HashMap<>();
 	private ArrayList<Production> prodList = new ArrayList<>();
 	private TreeMap<String, Integer> flagMap = new TreeMap<>();
 
-	public GrammarChecker(ParserFactory factory, Production start) {
-		this.factory = factory;
+	public GrammarChecker(OOption options, Production start) {
+		this.options = options;
 		this.start = start;
 	}
 
@@ -58,23 +65,61 @@ public class GrammarChecker {
 
 	public Grammar checkGrammar() {
 		visitProduction(start);
-		LeftRecursionChecker lrc = new LeftRecursionChecker(factory);
+		LeftRecursionChecker lrc = new LeftRecursionChecker(options);
 		TreeCheckerPass treeChecker = new TreeCheckerPass();
 		for (Production p : prodList) {
 			lrc.check(p.getExpression(), p);
-			if (factory.is("strict-check", false)) {
-				treeChecker.check(factory, p);
+			if (options.is(ParserOption.StrictChecker, false)) {
+				treeChecker.check(p, options);
 			}
 		}
 		Grammar g = new ParserGrammar("@" + start.getUniqueName());
 		String[] flags = this.flagNames();
 		GrammarFlag.checkFlag(prodList, flags);
-		EliminateFlags dup = new EliminateFlags(factory, g, flags);
+		EliminateFlags dup = new EliminateFlags(options, g, flags);
 		dup.duplicateName(start);
 		// if (flags.length > 0) {
 		// g.dump();
 		// }
-		factory.applyPass(g);
+		return applyPass(g);
+	}
+
+	private Grammar applyPass(Grammar g) {
+		if (options.is(ParserOption.Unoptimized, false)) {
+			return g;
+		}
+		String[] pass = options.list(ParserOption.Pass);
+		if (pass.length > 0) {
+			return applyPass(g, loadPassClass(pass));
+		} else {
+			return applyPass(g, NotCharPass.class, TreePass.class, DispatchPass.class, InlinePass.class);
+		}
+	}
+
+	private Class<?>[] loadPassClass(String[] pass) {
+		ArrayList<Class<?>> l = new ArrayList<>();
+		for(String p: pass) {
+			try {
+				l.add(options.loadClass(p, options.list(ParserOption.PassPath)));
+			}
+			catch(ClassNotFoundException e) {
+				ODebug.traceException(e);
+			}
+		}
+		return l.toArray(new Class<?>[l.size()]);
+	}
+	
+	private Grammar applyPass(Grammar g, Class<?>... classes) {
+		for (Class<?> c : classes) {
+			try {
+				Pass pass = (Pass)c.newInstance();
+				long t1 = options.nanoTime(null, 0);
+				g = pass.perform(g, options);
+				options.nanoTime("Pass: " + pass, t1);
+			} catch (InstantiationException | IllegalAccessException e) {
+				ODebug.traceException(e);
+			}
+		}
 		return g;
 	}
 
@@ -93,10 +138,10 @@ public class GrammarChecker {
 			Production p = n.getProduction();
 			if (p == null) {
 				if (n.getLocalName().startsWith("\"")) {
-					factory.reportError(e.getSourceLocation(), "undefined terminal: %s", n.getLocalName());
+					options.reportError(e.getSourceLocation(), "undefined terminal: %s", n.getLocalName());
 					n.getGrammar().addProduction(n.getLocalName(), Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null));
 				} else {
-					factory.reportError(e.getSourceLocation(), "undefined %s", n.getLocalName());
+					options.reportError(e.getSourceLocation(), "undefined %s", n.getLocalName());
 					n.getGrammar().addProduction(n.getLocalName(), Expression.defaultFailure);
 				}
 				p = n.getProduction();
@@ -237,10 +282,10 @@ class Stat {
 
 class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 
-	private final ParserFactory factory;
+	private final OOption options;
 
-	LeftRecursionChecker(ParserFactory factory) {
-		this.factory = factory;
+	LeftRecursionChecker(OOption options) {
+		this.options = options;
 	}
 
 	boolean check(Expression e, Production a) {
@@ -250,7 +295,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	@Override
 	public Boolean visitNonTerminal(Expression.PNonTerminal e, Production a) {
 		if (e.getUniqueName().equals(a.getUniqueName())) {
-			factory.reportError(e.getSourceLocation(), "left recursion: " + a.getLocalName());
+			options.reportError(e.getSourceLocation(), "left recursion: " + a.getLocalName());
 			e.isLeftRecursion = true;
 			return true;
 		}
@@ -446,12 +491,12 @@ class FlagContext extends TreeMap<String, Boolean> {
 }
 
 class EliminateFlags extends Expression.Duplicator<Void> {
-	final ParserFactory fac;
+	final OOption fac;
 	final FlagContext flagContext;
 
-	EliminateFlags(ParserFactory factory, Grammar grammar, String[] flags) {
+	EliminateFlags(OOption options, Grammar grammar, String[] flags) {
 		super(grammar);
-		this.fac = factory;
+		this.fac = options;
 		this.flagContext = new FlagContext(flags, false);
 	}
 

@@ -16,43 +16,42 @@
 
 package origami.main;
 
-import java.io.IOException;
-
-import origami.main.tool.LineTreeWriter;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.TreeWriter;
 //import origami.nez.tool.LineTreeWriter;
 
 public class Oparse extends OCommand {
+	
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.ThrowingParserError, false);		
+	}
+
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		Parser parser = fac.newParser();
-		parser.setThrowingException(false);
-		parser.setPrintingException(true);
-		TreeWriter treeWriter = fac.newTreeWriter(origami.main.tool.AbstractSyntaxTreeWriter.class);
-		if (fac.value("text", null) != null) {
-			Source input = CommonSource.newStringSource(fac.value("text", null));
+	public void exec(OOption options) throws Exception {
+		Parser parser = getParser(options);
+		
+		TreeWriter treeWriter = options.newInstance(TreeWriter.class);
+		treeWriter.init(options);
+		if (options.value(ParserOption.InlineGrammar, null) != null) {
+			Source input = CommonSource.newStringSource(options.value(ParserOption.InlineGrammar, null));
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
-				treeWriter.writeTree(fac, node);
+				treeWriter.writeTree(node);
 			}
 		}
-		String[] files = fac.list("files");
+		String[] files = options.list(ParserOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
 			Source input = CommonSource.newFileSource(file, null);
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
-				treeWriter.writeTree(fac, node);
-			}
-			if (node == null && treeWriter instanceof LineTreeWriter) {
-				p("null");
+				treeWriter.writeTree(node);
 			}
 		}
 		treeWriter.close();
 	}
+
 }

@@ -20,19 +20,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import origami.main.OOption;
+import origami.main.OOption.OptionalFactory;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
 
-public abstract class ParserCode<I> implements ParserFactory.Executable {
+public abstract class ParserCode<I> implements ParserExecutable {
 
-	protected final ParserFactory factory;
+	protected final OOption options;
 	protected final Grammar grammar;
 	protected ArrayList<I> codeList;
 	protected HashMap<String, I> codeMap;
 
-	protected ParserCode(ParserFactory factory, Grammar grammar, I[] initArray) {
-		this.factory = factory;
+	protected ParserCode(Grammar grammar, OOption options, I[] initArray) {
+		this.options = options;
 		this.grammar = grammar;
 		this.codeList = initArray != null ? new ArrayList<>() : null;
 		this.codeMap = new HashMap<>();
@@ -170,13 +172,14 @@ public abstract class ParserCode<I> implements ParserFactory.Executable {
 		return this.memoPointMap != null ? this.memoPointMap.size() : 0;
 	}
 
-	public void initMemoPoint(ParserFactory factory) {
+	public void initMemoPoint() {
+		StaticMemoization memo = options.newInstance(StaticMemoization.class);
 		memoPointMap = new HashMap<>();
-		factory.newStaticMemoization().init(factory, grammar, memoPointMap);
+		memo.init(grammar, memoPointMap);
 	}
 
-	public static class StaticMemoization {
-		public void init(ParserFactory factory, Grammar grammar, Map<String, MemoPoint> memoPointMap) {
+	public static class StaticMemoization implements OptionalFactory<StaticMemoization> {
+		public void init(Grammar grammar, Map<String, MemoPoint> memoPointMap) {
 			for (Production p : grammar) {
 				Typestate ts = Typestate.compute(p);
 				if (ts == Typestate.Tree) {
@@ -186,16 +189,32 @@ public abstract class ParserCode<I> implements ParserFactory.Executable {
 				}
 			}
 		}
+
+		@Override
+		public Class<?> entryClass() {
+			return StaticMemoization.class;
+		}
+
+		@Override
+		public StaticMemoization clone() {
+			return new StaticMemoization();
+		}
+
+		protected OOption options;
+		@Override
+		public void init(OOption options) {
+			this.options = options;
+		}
 	}
 
 	public final void dumpMemoPoints() {
 		if (this.memoPointMap != null) {
-			factory.verbose("ID\tPEG\tCount\tHit\tFail\tMean");
+			options.verbose("ID\tPEG\tCount\tHit\tFail\tMean");
 			for (String key : this.memoPointMap.keySet()) {
 				MemoPoint p = this.memoPointMap.get(key);
-				factory.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
+				options.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
 			}
-			factory.verbose("");
+			options.verbose("");
 		}
 	}
 
@@ -215,14 +234,6 @@ public abstract class ParserCode<I> implements ParserFactory.Executable {
 	// }
 
 	// Executble Core
-
-	@Override
-	public final <E> void initContext(ParserContext<E> ctx) {
-		int w = factory.intValue("memo-window", 64);
-		if (this.getMemoPointSize() > 0 && w > 0) {
-			ctx.initMemoTable(w, this.getMemoPointSize());
-		}
-	}
 
 	abstract public void dump();
 }

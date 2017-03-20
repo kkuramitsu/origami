@@ -16,27 +16,28 @@
 
 package origami.main;
 
-import java.io.IOException;
-
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
 
 public class Obench extends OCommand {
+	
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.ThrowingParserError, false);		
+	}
+	
 	@Override
-	public void exec(ParserFactory factory) throws IOException {
-		Parser parser = factory.newParser();
-		parser.setThrowingException(false);
-		parser.setPrintingException(true);
-		if (factory.value("text", null) != null) {
+	public void exec(OOption options) throws Exception {
+		if (options.value(ParserOption.InlineGrammar, null) != null) {
 			exit(1, "unavailable -t --text option");
 			return;
 		}
+		Parser parser = getParser(options);
 		double total = 0.0;
 		int len = 0;
-		String[] files = factory.list("files");
+		String[] files = options.list(ParserOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
 			System.out.printf("%s", file);

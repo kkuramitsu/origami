@@ -16,8 +16,9 @@
 
 package origami.nez.parser.pass;
 
+import origami.main.OOption;
 import origami.nez.ast.SourcePosition;
-import origami.nez.parser.ParserFactory;
+
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
@@ -27,19 +28,20 @@ public class TreeCheckerPass extends CommonPass {
 
 	boolean EnableDetree;
 
-	public Expression check(ParserFactory fac, Production p) {
-		this.fac = fac;
-		this.EnableDetree = this.fac.DetreeOption();
+	public Expression check(Production p, OOption options) {
+		this.options = options;
+		this.EnableDetree = true;
 		return this.checkProductionExpression(p.getUniqueName(), p.getExpression());
 	}
 
 	@Override
-	public void perform(ParserFactory fac, Grammar g) {
-		this.fac = fac;
-		this.EnableDetree = this.fac.DetreeOption();
+	public Grammar perform(Grammar g, OOption options) {
+		this.options = options;
+		this.EnableDetree = true;
 		for (Production p : g) {
 			g.setExpression(p.getLocalName(), this.checkProductionExpression(p.getUniqueName(), p.getExpression()));
 		}
+		return g;
 	}
 
 	protected SourcePosition src(Expression e) {
@@ -78,7 +80,7 @@ public class TreeCheckerPass extends CommonPass {
 	private Expression detree(Expression e, int index, Typestate req, Typestate after) {
 		Expression ue = index == -1 ? e : e.get(index);
 		if (req != Typestate.Unit) {
-			fac.reportWarning(src(ue), "removed mutation in %s", ue);
+			options.reportWarning(src(ue), "removed mutation in %s", ue);
 			if (!(ue instanceof Expression.PNonTerminal)) {
 				this.req = Typestate.Unit;
 				ue = ue.visit(this, null);
@@ -97,10 +99,10 @@ public class TreeCheckerPass extends CommonPass {
 
 	private Expression insertLink(Expression e, int index) {
 		if (index == -1) {
-			fac.reportNotice(src(e), "inserted unlabeled link");
+			options.reportNotice(src(e), "inserted unlabeled link");
 			return new Expression.PLinkTree(null, e, ref(e));
 		} else {
-			fac.reportNotice(src(e.get(index)), "inserted unlabeled link");
+			options.reportNotice(src(e.get(index)), "inserted unlabeled link");
 			e.set(index, new Expression.PLinkTree(null, e.get(index), ref(e.get(index))));
 			return e;
 		}
@@ -142,7 +144,7 @@ public class TreeCheckerPass extends CommonPass {
 		Typestate innerState = typeState(p.get(0));
 		if (p.folding) {
 			if (req != Typestate.Immutation) {
-				fac.reportWarning(src(p), "removed tree folding %s", p);
+				options.reportWarning(src(p), "removed tree folding %s", p);
 				detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
@@ -154,7 +156,7 @@ public class TreeCheckerPass extends CommonPass {
 				return p.get(0);
 			}
 			if (req != Typestate.Tree) {
-				fac.reportWarning(src(p), "removed tree %s (req=%s)", p, req);
+				options.reportWarning(src(p), "removed tree %s (req=%s)", p, req);
 				detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
@@ -165,7 +167,7 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitTag(Expression.PTag p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			fac.reportWarning(src(p), "removed %s", p);
+			options.reportWarning(src(p), "removed %s", p);
 			return Expression.defaultEmpty;
 		}
 		return super.visitTag(p, a);
@@ -174,7 +176,7 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitReplace(Expression.PReplace p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			fac.reportWarning(src(p), "removed %s", p);
+			options.reportWarning(src(p), "removed %s", p);
 			return Expression.defaultEmpty;
 		}
 		return p;

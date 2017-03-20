@@ -16,23 +16,24 @@
 
 package origami.main;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import origami.nez.ast.Source;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
 
 public class Omatch extends OCommand {
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.ThrowingParserError, false);		
+		options.set(ParserOption.TreeConstruction, false);
+	}
+
 	@Override
-	public void exec(ParserFactory factory) throws IOException {
-		factory.set("tree", false);
-		Parser parser = factory.newParser();
-		parser.setThrowingException(false);
-		parser.setPrintingException(true);
-		if (factory.value("text", null) != null) {
-			String t = factory.value("text", null);
+	public void exec(OOption options) throws Exception {
+		Parser parser = getParser(options);
+		if (options.value(ParserOption.InlineGrammar, null) != null) {
+			String t = options.value(ParserOption.InlineGrammar, null);
 			Source input = CommonSource.newStringSource(t);
 			int l = parser.match(input);
 			if (l == -1) {
@@ -41,7 +42,7 @@ public class Omatch extends OCommand {
 			}
 			return;
 		}
-		String[] files = factory.list("files");
+		String[] files = options.list(ParserOption.InputFiles);
 		ArrayList<String> failedFileList = new ArrayList<>();
 		this.checkInputSource(files);
 		for (String file : files) {

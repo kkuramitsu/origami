@@ -26,23 +26,23 @@ public abstract class ParserContext<T> {
 	protected final TreeConstructor<T> newTree;
 	protected final TreeConnector<T> linkTree;
 
-	public ParserContext(String s, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-		this(new StringSource(s), newTree, linkTree);
+	public ParserContext(String s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
+		this(new StringSource(s), pos, newTree, linkTree);
 		inputs = ((StringSource) source).inputs;
 		length = inputs.length - 1;
 	}
 
-	protected ParserContext(Source s, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
+	protected ParserContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		this.source = s;
 		inputs = null;
 		length = 0;
-		this.pos = 0;
+		this.pos = (int)pos;
 		this.left = null;
 		this.newTree = newTree;
 		this.linkTree = linkTree;
 	}
 
-	public abstract <K> ParserContext<K> newInstance(Source s, TreeConstructor<K> newTree, TreeConnector<K> linkTree);
+	public abstract <K> ParserContext<K> newInstance(Source s, long pos, TreeConstructor<K> newTree, TreeConnector<K> linkTree);
 
 	public abstract long getPosition();
 

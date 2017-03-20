@@ -19,7 +19,8 @@ package origami.nez.parser.pass;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import origami.nez.parser.ParserFactory;
+import origami.main.OOption;
+
 import origami.nez.peg.Expression;
 import origami.nez.peg.Expression.PAnd;
 import origami.nez.peg.Expression.PAny;
@@ -79,8 +80,8 @@ public class InlinePass extends CommonPass {
 	}
 
 	@Override
-	public void perform(ParserFactory fac, Grammar g) {
-		this.fac = fac;
+	public Grammar perform(Grammar g, OOption options) {
+		this.options = options;
 		prepare(g);
 		for (Production p : g) {
 			if (countMap.get(p.getLocalName()) != null) {
@@ -97,6 +98,7 @@ public class InlinePass extends CommonPass {
 		}
 		g.replaceAll(l);
 		log("inlining %d => %d", g.size(), l.size());
+		return g;
 	}
 
 	@Override

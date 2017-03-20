@@ -48,7 +48,6 @@ public class Origami extends OEnv.OBaseEnv {
 		this.add(Parser.class, p);
 		this.add(Grammar.class, grammar);
 	}
-	
 
 	public void init(Grammar g) throws IOException {
 		Production pp = g.getProduction("ORIGAMI");
@@ -107,18 +106,18 @@ public class Origami extends OEnv.OBaseEnv {
 
 		public void load(OEnv env, Source sc) throws Throwable {
 			Parser p = env.get(Parser.class);
-			p.setThrowingException(true);
-			p.setPrintingException(true);
-			Tree<?> t = p.parse(sc, defaultTree, defaultTree);
+			//p.setThrowingException(true);
+			//p.setPrintingException(true);
+			Tree<?> t = p.parse(sc, 0, defaultTree, defaultTree);
 			OCode code = typeExpr(env, t);
 			code.eval(env);
 		}
 
 		private Tree<?> parseTree(OEnv env, Source sc) throws IOException {
 			Parser p = env.get(Parser.class);
-			p.setThrowingException(false);
-			p.setPrintingException(true);
-			return p.parse(sc, defaultTree, defaultTree);
+			//p.setThrowingException(false);
+			//p.setPrintingException(true);
+			return p.parse(sc, 0, defaultTree, defaultTree);
 		}
 
 		public Object eval(OEnv env, Source sc) throws Throwable {

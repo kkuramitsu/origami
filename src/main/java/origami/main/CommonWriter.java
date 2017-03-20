@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.main.tool;
+package origami.main;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -37,7 +37,7 @@ public abstract class CommonWriter {
 		this.firstLine = true;
 	}
 
-	public void open(String path) throws IOException {
+	protected void open(String path) throws IOException {
 		close();
 		if (path != null) {
 			this.out = new PrintStream(new FileOutputStream(path));

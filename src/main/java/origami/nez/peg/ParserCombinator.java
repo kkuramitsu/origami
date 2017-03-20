@@ -20,10 +20,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import origami.nez.ast.Source;
+import origami.ODebug;
+import origami.main.OOption;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
-import origami.nez.parser.ParserFactory;
 
 public class ParserCombinator {
 
@@ -31,11 +31,11 @@ public class ParserCombinator {
 	}
 
 	protected Grammar grammar;
-	protected ParserFactory factory;
+	protected OOption options;
 
-	public final Grammar load(ParserFactory factory, Grammar g, String start) {
+	public final Grammar load(Grammar g, String start, OOption options) {
 		this.grammar = g;
-		this.factory = factory;
+		this.options = options;
 		Class<?> c = this.getClass();
 		Method startMethod = null;
 		if (start != null) {
@@ -43,7 +43,7 @@ public class ParserCombinator {
 				startMethod = c.getMethod("p" + start);
 				addMethodProduction(start, startMethod);
 			} catch (NoSuchMethodException | SecurityException e2) {
-				factory.verbose(e2.toString());
+				options.verbose(e2.toString());
 			}
 		}
 		for (Method m : c.getDeclaredMethods()) {
@@ -66,13 +66,13 @@ public class ParserCombinator {
 			Expression e = (Expression) m.invoke(this);
 			grammar.addProduction(name, e);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-			factory.trace(e1);
+			ODebug.traceException(e1);
 		}
 	}
 
 	private SourcePosition src() {
-		Exception e = new Exception();
-		StackTraceElement[] stacks = e.getStackTrace();
+//		Exception e = new Exception();
+//		StackTraceElement[] stacks = e.getStackTrace();
 		// System.out.println("^0 " + stacks[0]);
 		// System.out.println("^1 " + stacks[1]);
 		// System.out.println("^2 " + stacks[2]);

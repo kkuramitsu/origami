@@ -19,6 +19,7 @@ package origami.nez.peg;
 import java.io.IOException;
 import java.util.List;
 
+import origami.main.OOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourceLogger;
 import origami.nez.ast.Symbol;
@@ -26,7 +27,6 @@ import origami.nez.ast.Tree;
 import origami.nez.ast.TreeVisitorMap;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
 import origami.trait.OStringUtils;
 
 public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransducer> {
@@ -71,11 +71,11 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 
 	static {
 		Grammar grammar = new Grammar("nez");
-		ParserFactory factory = new ParserFactory();
-		factory.setVerboseMode(false);
-		new NezGrammar().load(factory, grammar, "Start");
+		OOption options = new OOption();
+		//options.setVerboseMode(false);
+		new NezGrammar().load(grammar, "Start", options);
 		// grammar.dump();
-		NezParser = grammar.newParser();
+		NezParser = grammar.newParser(options);
 	}
 
 	public void importSource(Source s) throws IOException {

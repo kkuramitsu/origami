@@ -21,14 +21,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import origami.OConsole;
+import origami.ODebug;
 import origami.main.Otest.Coverage;
 import origami.nez.ast.Source;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.parser.CommonSource;
 import origami.nez.parser.Parser;
-import origami.nez.parser.ParserFactory;
-import origami.nez.parser.ParserFactory.TreeWriter;
+
+import origami.nez.peg.Grammar;
 import origami.nez.peg.GrammarLoader;
 import origami.nez.peg.GrammarParser;
 
@@ -42,20 +43,27 @@ public class Oexample extends OCommand {
 	int tested = 0;
 	int succ = 0;
 
+
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.ThrowingParserError, false);
+	}
+
 	@Override
-	public void exec(ParserFactory fac) throws IOException {
-		treeWriter = fac.newTreeWriter(origami.main.tool.AbstractSyntaxTreeWriter.class);
-		if (this instanceof Otest || fac.is("cov", true)) {
+	public void exec(OOption options) throws Exception {
+		Grammar g = getGrammar(options);
+		treeWriter = options.newInstance(TreeWriter.class);
+		if (this instanceof Otest || options.is(ParserOption.Coverage, true)) {
 			cov = new Coverage();
-			cov.init(fac, fac.getGrammar());
+			cov.init(options, g);
 		}
-		loadExample(fac);
+		loadExample(options, g);
 		if (tested > 0) {
 			double passRatio = (double) succ / tested;
 			if (cov != null) {
-				begin(Yellow);
-				cov.dump(fac);
-				end();
+				beginColor(Yellow);
+				cov.dump(options);
+				endColor();
 				double fullcov = cov.cov();
 				p(bold("Result: %.2f%% passed, %.2f%% (coverage) tested."), (passRatio * 100), (fullcov * 100));
 				if (tested == succ && fullcov > 0.5) {
@@ -72,21 +80,21 @@ public class Oexample extends OCommand {
 		}
 	}
 
-	void loadExample(ParserFactory fac) throws IOException {
-		String path = fac.value("grammar", null);
+	void loadExample(OOption options, Grammar g) throws IOException {
+		String path = options.value(ParserOption.GrammarFile, null);
 		if (path == null) {
-			exit(1, "specified grammar");
+			exit(1, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 		}
-		Source s = CommonSource.newFileSource(path, fac.list("grammar-path"));
-		importFile(fac, null, s);
+		Source s = CommonSource.newFileSource(path, options.list(ParserOption.GrammarPath));
+		importFile(options, null, s, g);
 		desc = parseGrammarDescription(s);
 	}
 
-	void importFile(ParserFactory fac, String prefix, Source s) throws IOException {
+	void importFile(OOption options, String prefix, Source s, Grammar g) throws IOException {
 		Tree<?> t = GrammarParser.NezParser.parse(s);
 		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
-				parse(fac, prefix, sub);
+				parse(options, prefix, sub, g);
 			}
 		}
 	}
@@ -100,19 +108,19 @@ public class Oexample extends OCommand {
 		return prefix == null ? name : prefix + "." + name;
 	}
 
-	void parse(ParserFactory factory, String prefix, Tree<?> node) throws IOException {
+	void parse(OOption options, String prefix, Tree<?> node, Grammar g) throws IOException {
 		if (node.is(GrammarParser._Production)) {
 			return;
 		}
 		if (node.is(_Example)) {
-			parseExample(factory, prefix, node);
+			parseExample(options, prefix, node, g);
 			return;
 		}
 		if (node.is(GrammarParser._Grammar)) {
 			String name = node.getText(GrammarParser._name, null);
 			Tree<?> body = node.get(GrammarParser._body);
 			for (Tree<?> sub : body) {
-				parse(factory, prefix(prefix, name), sub);
+				parse(options, prefix(prefix, name), sub, g);
 			}
 			return;
 		}
@@ -122,15 +130,15 @@ public class Oexample extends OCommand {
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = GrammarLoader.extractFilePath(node.getSource().getResourceName()) + "/" + name;
 			}
-			importFile(factory, prefix, CommonSource.newFileSource(path, null));
+			importFile(options, prefix, CommonSource.newFileSource(path, null), g);
 			return;
 		}
 	}
 
-	public void parseExample(ParserFactory factory, String prefix, Tree<?> node) throws IOException {
+	public void parseExample(OOption options, String prefix, Tree<?> node, Grammar g) throws IOException {
 		Tree<?> nameNode = node.get(GrammarParser._name, null);
 		String uname = uname(prefix, nameNode.toText());
-		Parser p = this.getParser(factory, nameNode, uname);
+		Parser p = this.getParser(options, nameNode, g, uname);
 		if (p != null) {
 			performExample(p, uname, node);
 		}
@@ -138,7 +146,7 @@ public class Oexample extends OCommand {
 			nameNode = node.get(_name2, null);
 			if (nameNode != null) {
 				uname = uname(prefix, nameNode.toText());
-				p = this.getParser(factory, nameNode, uname);
+				p = this.getParser(options, nameNode, g, uname);
 				if (p != null) {
 					performExample(p, uname, node);
 				}
@@ -146,16 +154,15 @@ public class Oexample extends OCommand {
 		}
 	}
 
-	private Parser getParser(ParserFactory factory, Tree<?> nameNode, String uname) throws IOException {
+	private Parser getParser( OOption options, Tree<?> nameNode, Grammar g, String uname) throws IOException {
 		Parser p = this.parserMap.get(uname);
 		if (p == null) {
-			ParserFactory fac = factory.newFactory(factory.getGrammar());
-			p = fac.newParser(uname);
+			options.set(ParserOption.Start, uname);
+			p = g.newParser(options);
 			if (p == null) {
-				factory.reportError(nameNode, "undefined nonterminal: %s", uname);
+				options.reportError(nameNode, "undefined nonterminal: %s", uname);
 				return null;
 			}
-			p.setPrintingException(true);
 			this.parserMap.put(uname, p);
 		}
 		return p;
@@ -170,7 +177,7 @@ public class Oexample extends OCommand {
 
 	protected void performExample(Parser p, String uname, Tree<?> ex) {
 		Tree<?> textNode = ex.get(_text);
-		Source s = newSource(textNode, p.getFactory());
+		Source s = newSource(textNode);
 		String name = uname + " (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
 		try {
 			tested++;
@@ -182,7 +189,7 @@ public class Oexample extends OCommand {
 			if (!(this instanceof Otest)) {
 				if (node != null) {
 					OConsole.dump(" ", bold(textNode.toText()));
-					display(p.getFactory(), treeWriter, node);
+					display(treeWriter, node);
 				}
 			}
 			record(uname, t2 - t1);
@@ -192,7 +199,7 @@ public class Oexample extends OCommand {
 		} catch (Throwable e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
-			p.getFactory().trace(e);
+			ODebug.traceException(e);
 		}
 	}
 
@@ -206,49 +213,47 @@ public class Oexample extends OCommand {
 		this.timeMap.put(uname, l);
 	}
 
-	private Source newSource(Tree<?> textNode, ParserFactory fac) {
-		// byte[] b = parseBinary(textNode.toText());
-		// if (b != null) {
-		// fac.verbose("binary example: %s", textNode.toText());
-		// return new StringSource(textNode.getSource().getResourceName(),
-		// textNode.getSourcePosition(), b, true);
-		// }
+	private Source newSource(Tree<?> textNode) {
+//		byte[] b = parseBinary(textNode.toText());
+//		if (b != null) {
+//			return new StringSource(textNode.getSource().getResourceName(), textNode.getSourcePosition(), b, true);
+//		}
 		return textNode.toSource();
 	}
 
-	private byte[] parseBinary(String t) {
-		ArrayList<Byte> bytes = new ArrayList<>(t.length());
-		for (int i = 0; i < t.length(); i++) {
-			char ch = t.charAt(i);
-			if (ch == ' ' || ch == '\n' || ch == '\r') {
-				continue;
-			}
-			int b = parseHex(t, i);
-			if (b != -1) {
-				// System.out.println("hex=" + b);
-				i += 1;
-				bytes.add((byte) b);
-				continue;
-			}
-		}
-		bytes.add((byte) 0);
-		byte[] b = new byte[bytes.size()];
-		for (int i = 0; i < b.length; i++) {
-			b[i] = bytes.get(i);
-		}
-		return b;
-	}
-
-	private int parseHex(String t, int i) {
-		try {
-			char ch = t.charAt(i);
-			char ch2 = t.charAt(i + 1);
-			return Integer.parseInt("" + ch + ch2, 16);
-
-		} catch (Exception e) {
-			return -1;
-		}
-	}
+//	private byte[] parseBinary(String t) {
+//		ArrayList<Byte> bytes = new ArrayList<>(t.length());
+//		for (int i = 0; i < t.length(); i++) {
+//			char ch = t.charAt(i);
+//			if (ch == ' ' || ch == '\n' || ch == '\r') {
+//				continue;
+//			}
+//			int b = parseHex(t, i);
+//			if (b != -1) {
+//				// System.out.println("hex=" + b);
+//				i += 1;
+//				bytes.add((byte) b);
+//				continue;
+//			}
+//		}
+//		bytes.add((byte) 0);
+//		byte[] b = new byte[bytes.size()];
+//		for (int i = 0; i < b.length; i++) {
+//			b[i] = bytes.get(i);
+//		}
+//		return b;
+//	}
+//
+//	private int parseHex(String t, int i) {
+//		try {
+//			char ch = t.charAt(i);
+//			char ch2 = t.charAt(i + 1);
+//			return Integer.parseInt("" + ch + ch2, 16);
+//
+//		} catch (Exception e) {
+//			return -1;
+//		}
+//	}
 
 	public final static String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();
