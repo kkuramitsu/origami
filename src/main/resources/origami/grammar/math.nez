@@ -3,8 +3,8 @@
  * author: Kimio Kuramitsu
  */
 
-grammar math {
 public File	= Expression .*
+
 /* Code Layout */
 _	= S*
 S	= [ \t]
@@ -44,5 +44,4 @@ example Expression '''
 example Value 1
 example Value x
 
-}
 

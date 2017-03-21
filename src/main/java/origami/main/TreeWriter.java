@@ -18,9 +18,14 @@ public class TreeWriter extends CommonWriter implements OOption.OptionalFactory<
 
 	}
 
-	public void writeTree(Tree<?> t) {
+	public void write(Tree<?> t) {
 		print(t.toString());
+	}
+
+	public void writeln(Tree<?> t) {
+		write(t);
 		L();
+		flush();
 	}
 
 }

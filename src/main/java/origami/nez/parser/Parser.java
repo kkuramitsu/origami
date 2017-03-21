@@ -38,6 +38,7 @@ public final class Parser {
 	public Parser(Production start, OOption options) {
 		this.options = options;
 		this.start = start;
+		assert start != null;
 	}
 
 	public final Grammar getGrammar() {
@@ -52,7 +53,7 @@ public final class Parser {
 		long t = options.nanoTime(null, 0);
 		Grammar g = new GrammarChecker(options, start).checkGrammar();
 		this.code = compl.compile(g);
-		options.nanoTime("ParserCompilingTime@" + start, t);
+		options.nanoTime("ParserCompilingTime@" + start.getUniqueName(), t);
 		return code;
 	}
 

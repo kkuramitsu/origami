@@ -53,7 +53,7 @@ public class Onez extends OCommand {
 		String input = null;
 		while ((input = this.readMulti(prompt)) != null) {
 			if (checkEmptyInput(input)) {
-				display(options, g);
+				g.dump();
 				continue;
 			}
 			Source sc = CommonSource.newStringSource("<stdio>", linenum, input);

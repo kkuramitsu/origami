@@ -39,7 +39,7 @@ public class Oparse extends OCommand {
 			Source input = CommonSource.newStringSource(options.value(ParserOption.InlineGrammar, null));
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
-				treeWriter.writeTree(node);
+				treeWriter.write(node);
 			}
 		}
 		String[] files = options.list(ParserOption.InputFiles);
@@ -48,7 +48,7 @@ public class Oparse extends OCommand {
 			Source input = CommonSource.newFileSource(file, null);
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
-				treeWriter.writeTree(node);
+				treeWriter.write(node);
 			}
 		}
 		treeWriter.close();

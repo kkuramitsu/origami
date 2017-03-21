@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import origami.OConsole;
+import origami.ODebug;
 import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.ast.Source;
@@ -226,15 +228,11 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		}
 		return new Parser(this.getProduction(start), options);
 	}
-	
-	
 
 	public void dump() {
+		OConsole.println("dump grammar " + id + " size=" + this.nameList.size());
 		for (Production p : this) {
 			System.out.println(p);
 		}
 	}
-
-
-
 }

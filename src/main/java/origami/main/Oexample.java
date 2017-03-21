@@ -43,17 +43,19 @@ public class Oexample extends OCommand {
 	int tested = 0;
 	int succ = 0;
 
-
+	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, false);
+
 	}
 
 	@Override
 	public void exec(OOption options) throws Exception {
 		Grammar g = getGrammar(options);
+		g.dump();
 		treeWriter = options.newInstance(TreeWriter.class);
-		if (this instanceof Otest || options.is(ParserOption.Coverage, true)) {
+		if (options.is(ParserOption.Coverage, false)) {
 			cov = new Coverage();
 			cov.init(options, g);
 		}
@@ -83,7 +85,7 @@ public class Oexample extends OCommand {
 	void loadExample(OOption options, Grammar g) throws IOException {
 		String path = options.value(ParserOption.GrammarFile, null);
 		if (path == null) {
-			exit(1, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
+			exit(1, MainFmt.no_specified_grammar);
 		}
 		Source s = CommonSource.newFileSource(path, options.list(ParserOption.GrammarPath));
 		importFile(options, null, s, g);
@@ -113,7 +115,7 @@ public class Oexample extends OCommand {
 			return;
 		}
 		if (node.is(_Example)) {
-			parseExample(options, prefix, node, g);
+			parseExample(prefix, node, g, options);
 			return;
 		}
 		if (node.is(GrammarParser._Grammar)) {
@@ -135,10 +137,10 @@ public class Oexample extends OCommand {
 		}
 	}
 
-	public void parseExample(OOption options, String prefix, Tree<?> node, Grammar g) throws IOException {
+	public void parseExample(String prefix, Tree<?> node, Grammar g, OOption options) throws IOException {
 		Tree<?> nameNode = node.get(GrammarParser._name, null);
-		String uname = uname(prefix, nameNode.toText());
-		Parser p = this.getParser(options, nameNode, g, uname);
+		String uname = nameNode.toText();
+		Parser p = this.getParser(nameNode, g, options, uname);
 		if (p != null) {
 			performExample(p, uname, node);
 		}
@@ -146,7 +148,7 @@ public class Oexample extends OCommand {
 			nameNode = node.get(_name2, null);
 			if (nameNode != null) {
 				uname = uname(prefix, nameNode.toText());
-				p = this.getParser(options, nameNode, g, uname);
+				p = this.getParser(nameNode, g, options, uname);
 				if (p != null) {
 					performExample(p, uname, node);
 				}
@@ -154,7 +156,7 @@ public class Oexample extends OCommand {
 		}
 	}
 
-	private Parser getParser( OOption options, Tree<?> nameNode, Grammar g, String uname) throws IOException {
+	private Parser getParser(Tree<?> nameNode, Grammar g, OOption options, String uname) throws IOException {
 		Parser p = this.parserMap.get(uname);
 		if (p == null) {
 			options.set(ParserOption.Start, uname);
@@ -196,9 +198,11 @@ public class Oexample extends OCommand {
 		} catch (IOException e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
+			//e.printStackTrace();
 		} catch (Throwable e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
+			e.printStackTrace();
 			ODebug.traceException(e);
 		}
 	}

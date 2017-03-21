@@ -121,16 +121,16 @@ public abstract class OCommand extends OConsole {
 		options.set(ParserOption.InputFiles, fileList.toArray(new String[fileList.size()]));
 	}
 
-	protected Grammar getGrammar(OOption options) throws IOException {
-		return getGrammar(options, null);
-	}
-
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
 		file = options.value(ParserOption.GrammarFile, file);
 		if(file == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
 		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
+	}
+
+	protected Grammar getGrammar(OOption options) throws IOException {
+		return getGrammar(options, null);
 	}
 
 	protected Parser getParser(OOption options) throws IOException {
@@ -194,7 +194,7 @@ public abstract class OCommand extends OConsole {
 		endColor();
 	}
 
-	public final static void display(OOption options, Grammar g) {
+	public final static void display(Grammar g) {
 		beginColor(Blue);
 		g.dump();
 		endColor();
@@ -202,14 +202,8 @@ public abstract class OCommand extends OConsole {
 
 	public final static void display(TreeWriter w, Tree<?> t) {
 		beginColor(Blue);
-		if (w instanceof CommonWriter) {
-			((CommonWriter) w).Begin("---");
-		}
-		w.writeTree(t);
-		if (w instanceof CommonWriter) {
-			((CommonWriter) w).End("---");
-			((CommonWriter) w).L();
-		}
+		println("-----------");
+		w.writeln(t);
 		endColor();
 	}
 

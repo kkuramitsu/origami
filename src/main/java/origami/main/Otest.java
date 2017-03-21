@@ -28,6 +28,12 @@ import origami.nez.peg.Production;
 
 public class Otest extends Oexample {
 
+	@Override
+	protected void initOption(OOption options) {
+		super.initOption(options);
+		options.set(ParserOption.Coverage, true);
+	}
+
 	public static class Coverage {
 		HashMap<String, Integer> unameMap = null;
 		String[] names;
