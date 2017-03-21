@@ -28,7 +28,7 @@ import origami.nez.parser.Parser;
 import origami.nez.peg.GrammarParser;
 import origami.nez.peg.Grammar;
 
-public class Oinez extends OCommand {
+public class Onez extends OCommand {
 	
 	protected void initOption(OOption options) {
 		super.initOption(options);

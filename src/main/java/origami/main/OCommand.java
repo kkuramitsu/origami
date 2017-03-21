@@ -46,6 +46,12 @@ public abstract class OCommand extends OConsole {
 		}
 	}
 
+	public static void start(String ... args) throws Exception {
+		OOption options = new OOption();
+		OCommand com = newCommand(args, options);
+		com.exec(options);
+	}
+	
 	private static OCommand newCommand(String[] args, OOption options) {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
