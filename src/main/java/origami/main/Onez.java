@@ -22,7 +22,7 @@ import origami.OConsole;
 import origami.ODebug;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 import origami.nez.peg.GrammarParser;
@@ -56,7 +56,7 @@ public class Onez extends OCommand {
 				g.dump();
 				continue;
 			}
-			Source sc = CommonSource.newStringSource("<stdio>", linenum, input);
+			Source sc = ParserSource.newStringSource("<stdio>", linenum, input);
 			try {
 				Tree<?> node = nezParser.parse(sc);
 				if (node != null && node.is(GrammarParser._Source)) {

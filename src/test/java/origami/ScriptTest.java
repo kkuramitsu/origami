@@ -1,6 +1,7 @@
 package origami;
 
-import origami.nez.parser.CommonSource;
+import origami.nez.ast.SourcePosition;
+import origami.nez.parser.ParserSource;
 
 import origami.nez.peg.Grammar;
 
@@ -22,10 +23,10 @@ public class ScriptTest {
 	}
 	
 	public static void runScript(String file) throws Throwable {
-		String ext = CommonSource.extractFileExtension(file);
+		String ext = SourcePosition.extractFileExtension(file);
 		Grammar g = Grammar.loadFile("/origami/grammar/" + ext + ".nez");
 		Origami env = new Origami(g);
-		env.loadScriptFile(CommonSource.newFileSource(ScriptTest.class, file, null));
+		env.loadScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 	}
 	
 }

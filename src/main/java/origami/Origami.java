@@ -27,7 +27,7 @@ import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
@@ -71,7 +71,7 @@ public class Origami extends OEnv.OBaseEnv {
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
-		Source sc = CommonSource.newFileSource(path, null);
+		Source sc = ParserSource.newFileSource(path, null);
 		try {
 			runtime.load(this, sc);
 			return true;
@@ -92,12 +92,12 @@ public class Origami extends OEnv.OBaseEnv {
 	}
 
 	public Object eval(String source, int line, String script) throws Throwable {
-		Source sc = CommonSource.newStringSource(source, line, script);
+		Source sc = ParserSource.newStringSource(source, line, script);
 		return runtime.eval(this, sc);
 	}
 
 	public void shell(String source, int line, String script) {
-		Source sc = CommonSource.newStringSource(source, line, script);
+		Source sc = ParserSource.newStringSource(source, line, script);
 		runtime.runREPL(this, sc);
 	}
 

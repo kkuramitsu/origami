@@ -39,7 +39,7 @@ import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.trait.OStringUtils;
 
-public class GrammarChecker {
+public class ParserChecker {
 
 	private final Production start;
 	private final OOption options;
@@ -47,7 +47,7 @@ public class GrammarChecker {
 	private ArrayList<Production> prodList = new ArrayList<>();
 	private TreeMap<String, Integer> flagMap = new TreeMap<>();
 
-	public GrammarChecker(OOption options, Production start) {
+	public ParserChecker(OOption options, Production start) {
 		this.options = options;
 		this.start = start;
 	}
@@ -112,7 +112,7 @@ public class GrammarChecker {
 	private Grammar applyPass(Grammar g, Class<?>... classes) {
 		for (Class<?> c : classes) {
 			try {
-				Pass pass = (Pass)c.newInstance();
+				ParserPass pass = (ParserPass)c.newInstance();
 				long t1 = options.nanoTime(null, 0);
 				g = pass.perform(g, options);
 				options.nanoTime("Pass: " + pass, t1);

@@ -24,7 +24,7 @@ import java.util.Map;
 
 import origami.OConsole;
 
-public class FileSource extends CommonSource {
+public class FileSource extends ParserSource {
 	public final static int PageSize = 4096;
 
 	private RandomAccessFile file;

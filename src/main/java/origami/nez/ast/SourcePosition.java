@@ -259,6 +259,26 @@ public interface SourcePosition {
 		return path;
 	}
 
+	public static String extractFilePath(String path) {
+		int loc = path.lastIndexOf('/');
+		if (loc > 0) {
+			return path.substring(0, loc);
+		}
+		loc = path.lastIndexOf('\\');
+		if (loc > 0) {
+			return path.substring(0, loc);
+		}
+		return path;
+	}
+
+	public static String changeFileExtension(String path, String ext) {
+		int loc = path.lastIndexOf('.');
+		if (loc > 0) {
+			return path.substring(0, loc + 1) + ext;
+		}
+		return path + "." + ext;
+	}
+
 	public static SourcePosition newInstance(Source s, long pos) {
 		class SimpleSourcePosition implements SourcePosition {
 			private final Source s;

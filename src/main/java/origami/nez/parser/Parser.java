@@ -51,7 +51,7 @@ public final class Parser {
 	public final ParserExecutable compile() {
 		ParserCompiler compl = options.newInstance(NZ86Compiler.class);
 		long t = options.nanoTime(null, 0);
-		Grammar g = new GrammarChecker(options, start).checkGrammar();
+		Grammar g = new ParserChecker(options, start).checkGrammar();
 		this.code = compl.compile(g);
 		options.nanoTime("ParserCompilingTime@" + start.getUniqueName(), t);
 		return code;
@@ -108,7 +108,7 @@ public final class Parser {
 	}
 
 	public final int match(String str) {
-		return match(CommonSource.newStringSource(str));
+		return match(ParserSource.newStringSource(str));
 	}
 
 	public final Tree<?> parse(Source sc) throws IOException {
@@ -116,7 +116,7 @@ public final class Parser {
 	}
 
 	public final Tree<?> parse(String str) throws IOException {
-		return this.parse(CommonSource.newStringSource(str));
+		return this.parse(ParserSource.newStringSource(str));
 	}
 
 	/* Errors */

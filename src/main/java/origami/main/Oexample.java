@@ -24,9 +24,10 @@ import origami.OConsole;
 import origami.ODebug;
 import origami.main.Otest.Coverage;
 import origami.nez.ast.Source;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 import origami.nez.peg.Grammar;
@@ -87,7 +88,7 @@ public class Oexample extends OCommand {
 		if (path == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		Source s = CommonSource.newFileSource(path, options.list(ParserOption.GrammarPath));
+		Source s = ParserSource.newFileSource(path, options.list(ParserOption.GrammarPath));
 		importFile(options, null, s, g);
 		desc = parseGrammarDescription(s);
 	}
@@ -130,9 +131,9 @@ public class Oexample extends OCommand {
 			String name = node.getText(GrammarParser._name, null);
 			String path = name;
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
-				path = GrammarLoader.extractFilePath(node.getSource().getResourceName()) + "/" + name;
+				path = SourcePosition.extractFilePath(node.getSource().getResourceName()) + "/" + name;
 			}
-			importFile(options, prefix, CommonSource.newFileSource(path, null), g);
+			importFile(options, prefix, ParserSource.newFileSource(path, null), g);
 			return;
 		}
 	}

@@ -19,7 +19,8 @@ package origami.main;
 import origami.OConsole;
 import origami.ODebug;
 import origami.Origami;
-import origami.nez.parser.CommonSource;
+import origami.nez.ast.SourcePosition;
+import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 
 public class Ocheck extends Orun {
@@ -30,7 +31,7 @@ public class Ocheck extends Orun {
 		String[] files = options.list(ParserOption.InputFiles);
 		for (String file : files) {
 			try {
-				String ext = CommonSource.extractFileExtension(file);
+				String ext = SourcePosition.extractFileExtension(file);
 				Grammar g = Grammar.loadFile(ext + ".nez", options.list(ParserOption.GrammarPath));
 				Origami env = new Origami(g);
 				env.loadScriptFile(file);
@@ -40,7 +41,7 @@ public class Ocheck extends Orun {
 			int testCount = ODebug.getTestCount();
 			int passCount = ODebug.getPassCount();
 			int failCount = testCount - passCount;
-			String msg = (failCount > 0 || testCount == 0) ? OConsole.color(OConsole.Red, "FAIL") : "OK";
+			String msg = (failCount > 0 || testCount == 0) ? OConsole.color(Red, "FAIL") : "OK";
 			p(Yellow, "Tested %s (%d/%d) %s", file, passCount, testCount, msg);
 			totalTestCount += 1;
 			totalPassCount += (failCount > 0 || testCount == 0) ? 0 : 1;

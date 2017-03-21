@@ -19,7 +19,7 @@ package origami.main;
 import java.util.ArrayList;
 
 import origami.nez.ast.Source;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 public class Omatch extends OCommand {
@@ -34,7 +34,7 @@ public class Omatch extends OCommand {
 		Parser parser = getParser(options);
 		if (options.value(ParserOption.InlineGrammar, null) != null) {
 			String t = options.value(ParserOption.InlineGrammar, null);
-			Source input = CommonSource.newStringSource(t);
+			Source input = ParserSource.newStringSource(t);
 			int l = parser.match(input);
 			if (l == -1) {
 				p("failed: %s", t);
@@ -46,7 +46,7 @@ public class Omatch extends OCommand {
 		ArrayList<String> failedFileList = new ArrayList<>();
 		this.checkInputSource(files);
 		for (String file : files) {
-			Source input = CommonSource.newFileSource(file, null);
+			Source input = ParserSource.newFileSource(file, null);
 			int l = parser.match(input);
 			if (l == -1) {
 				failedFileList.add(file);

@@ -76,44 +76,5 @@ public class GrammarLoader {
 //		g.addProduction(name, ep.newInstance(node.get(_expr)));
 //	}
 
-	public final static String extractFilePath(String path) {
-		int loc = path.lastIndexOf('/');
-		if (loc > 0) {
-			return path.substring(0, loc);
-		}
-		loc = path.lastIndexOf('\\');
-		if (loc > 0) {
-			return path.substring(0, loc);
-		}
-		return path;
-	}
-
-	public final static String extractFileName(String path) {
-		int loc = path.lastIndexOf('/');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		loc = path.lastIndexOf('\\');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		return path;
-	}
-
-	public final static String extractFileExtension(String path) {
-		int loc = path.lastIndexOf('.');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		return path;
-	}
-
-	public final static String changeFileExtension(String path, String ext) {
-		int loc = path.lastIndexOf('.');
-		if (loc > 0) {
-			return path.substring(0, loc + 1) + ext;
-		}
-		return path + "." + ext;
-	}
 
 }

@@ -18,12 +18,12 @@ package origami.nez.parser.pass;
 
 import origami.main.OOption;
 
-import origami.nez.parser.Pass;
+import origami.nez.parser.ParserPass;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 
-class CommonPass extends Pass {
+class CommonPass extends ParserPass {
 	protected OOption options;
 
 	@Override

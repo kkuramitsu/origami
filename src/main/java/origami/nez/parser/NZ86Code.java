@@ -70,7 +70,7 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 				// }
 				cur = next;
 			}
-		} catch (TerminationException e) {
+		} catch (ParserTerminationException e) {
 			return e.status;
 		}
 	}

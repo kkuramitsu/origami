@@ -41,7 +41,7 @@ public abstract class NZ86Instruction {
 
 	public abstract void visit(NZ86Visitor v);
 
-	public abstract NZ86Instruction exec(NZ86ParserContext<?> sc) throws TerminationException;
+	public abstract NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException;
 
 	public final boolean isIncrementedNext() {
 		if (this.next != null) {

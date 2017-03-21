@@ -18,7 +18,8 @@ package origami.main;
 
 import origami.ODebug;
 import origami.Origami;
-import origami.nez.parser.CommonSource;
+import origami.nez.ast.SourcePosition;
+import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 
 public class Orun extends origami.main.OCommand {
@@ -28,7 +29,7 @@ public class Orun extends origami.main.OCommand {
 		String[] files = options.list(ParserOption.InputFiles);
 		if (options.value(ParserOption.GrammarFile, null) == null) {
 			if (files.length > 0) {
-				String ext = CommonSource.extractFileExtension(files[0]);
+				String ext = SourcePosition.extractFileExtension(files[0]);
 				options.set(ParserOption.GrammarFile, ext + ".nez");
 			} 
 		}

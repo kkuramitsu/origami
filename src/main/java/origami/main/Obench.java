@@ -18,7 +18,7 @@ package origami.main;
 
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 public class Obench extends OCommand {
@@ -43,7 +43,7 @@ public class Obench extends OCommand {
 			System.out.printf("%s", file);
 			double dsum = 0.0;
 			for (int c = 0; c < 10; c++) {
-				Source input = CommonSource.newFileSource(file, null);
+				Source input = ParserSource.newFileSource(file, null);
 				long t1 = System.nanoTime();
 				Tree<?> node = parser.parse(input);
 				if (node == null) {
@@ -56,7 +56,7 @@ public class Obench extends OCommand {
 				}
 			}
 			for (int c = 0; c < 5; c++) {
-				Source input = CommonSource.newFileSource(file, null);
+				Source input = ParserSource.newFileSource(file, null);
 				long t1 = System.nanoTime();
 				Tree<?> node = parser.parse(input);
 				if (node == null) {

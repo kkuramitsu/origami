@@ -36,7 +36,7 @@ import origami.lang.OMethod;
 import origami.lang.OTypeName;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
@@ -207,13 +207,13 @@ public interface OScriptUtils {
 			if (!file.startsWith("/") && !file.startsWith("\\")) {
 				Source s = t.getSource();
 				if (s != null) {
-					path = GrammarLoader.extractFilePath(s.getResourceName()) + "/" + file;
+					path = SourcePosition.extractFilePath(s.getResourceName()) + "/" + file;
 				}
 			}
 		} else {
 			t = new OTree();
 		}
-		Source sc = CommonSource.newFileSource(path, null);
+		Source sc = ParserSource.newFileSource(path, null);
 		Parser p = env.get(Parser.class);
 		return p.parse(sc, 0, (TreeConstructor<Tree<?>>) t, (TreeConnector<Tree<?>>) t);
 	}

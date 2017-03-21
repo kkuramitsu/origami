@@ -13,7 +13,7 @@ import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 import origami.trait.StringCombinator;
@@ -195,7 +195,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 	public final static Grammar loadFile(String file, String[] paths) throws IOException {
 		Grammar g = new Grammar(file);
 		GrammarParser parser = new GrammarParser(g);
-		parser.importSource(CommonSource.newFileSource(file, paths));
+		parser.importSource(ParserSource.newFileSource(file, paths));
 		return g;
 	}
 

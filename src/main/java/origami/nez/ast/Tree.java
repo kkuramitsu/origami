@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.AbstractList;
 import java.util.Arrays;
 
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
 import origami.trait.OStringUtils;
@@ -336,7 +336,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	 */
 
 	public final Source toSource() {
-		return CommonSource.newStringSource(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
+		return ParserSource.newStringSource(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	public final boolean containsToken(String token) {

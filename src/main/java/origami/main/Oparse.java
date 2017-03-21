@@ -18,7 +18,7 @@ package origami.main;
 
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 //import origami.nez.tool.LineTreeWriter;
 
@@ -36,7 +36,7 @@ public class Oparse extends OCommand {
 		TreeWriter treeWriter = options.newInstance(TreeWriter.class);
 		treeWriter.init(options);
 		if (options.value(ParserOption.InlineGrammar, null) != null) {
-			Source input = CommonSource.newStringSource(options.value(ParserOption.InlineGrammar, null));
+			Source input = ParserSource.newStringSource(options.value(ParserOption.InlineGrammar, null));
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
 				treeWriter.write(node);
@@ -45,7 +45,7 @@ public class Oparse extends OCommand {
 		String[] files = options.list(ParserOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
-			Source input = CommonSource.newFileSource(file, null);
+			Source input = ParserSource.newFileSource(file, null);
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
 				treeWriter.write(node);

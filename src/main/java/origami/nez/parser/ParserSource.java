@@ -24,12 +24,12 @@ import java.io.InputStreamReader;
 
 import origami.nez.ast.Source;
 
-public abstract class CommonSource implements Source {
+public abstract class ParserSource implements Source {
 
 	private String resourceName;
 	protected long startLineNum = 1;
 
-	protected CommonSource(String resourceName, long linenum) {
+	protected ParserSource(String resourceName, long linenum) {
 		this.resourceName = resourceName;
 		this.startLineNum = linenum;
 	}
@@ -38,21 +38,6 @@ public abstract class CommonSource implements Source {
 	public final String getResourceName() {
 		return resourceName;
 	}
-
-//	@Override
-//	public abstract long length();
-//
-//	@Override
-//	public abstract int byteAt(long pos);
-//
-//	@Override
-//	public abstract boolean eof(long pos);
-//
-//	@Override
-//	public abstract boolean match(long pos, byte[] text);
-//
-//	@Override
-//	public abstract String subString(long startIndex, long endIndex);
 
 	@Override
 	public Source subSource(long startIndex, long endIndex) {
@@ -74,83 +59,7 @@ public abstract class CommonSource implements Source {
 		return count;
 	}
 
-
-	/* handling input stream */
-
-	// final String getFilePath(String fileName) {
-	// int loc = this.getResourceName().lastIndexOf("/");
-	// if(loc > 0) {
-	// return this.getResourceName().substring(0, loc+1) + fileName;
-	// }
-	// return fileName;
-	// }
-	//
-	//	private final long getLineStartPosition(long fromPostion) {
-	//		long startIndex = fromPostion;
-	//		if (!(startIndex < this.length())) {
-	//			startIndex = this.length() - 1;
-	//		}
-	//		if (startIndex < 0) {
-	//			startIndex = 0;
-	//		}
-	//		while (startIndex > 0) {
-	//			int ch = byteAt(startIndex);
-	//			if (ch == '\n') {
-	//				startIndex = startIndex + 1;
-	//				break;
-	//			}
-	//			startIndex = startIndex - 1;
-	//		}
-	//		return startIndex;
-	//	}
-	//
-	//	public final String getIndentText(long fromPosition) {
-	//		long startPosition = this.getLineStartPosition(fromPosition);
-	//		long i = startPosition;
-	//		String indent = "";
-	//		for (; i < fromPosition; i++) {
-	//			int ch = this.byteAt(i);
-	//			if (ch != ' ' && ch != '\t') {
-	//				if (i + 1 != fromPosition) {
-	//					for (long j = i; j < fromPosition; j++) {
-	//						indent = indent + " ";
-	//					}
-	//				}
-	//				break;
-	//			}
-	//		}
-	//		indent = this.subString(startPosition, i) + indent;
-	//		return indent;
-	//	}
-	//
-//	public final String formatPositionMessage(String messageType, long pos, String message) {
-//		return "(" + extractFileName(this.getResourceName()) + ":" + this.linenum(pos) + ") [" + messageType + "] " + message;
-//	}
-
-	public final static String extractFileName(String path) {
-		int loc = path.lastIndexOf('/');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		loc = path.lastIndexOf('\\');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		return path;
-	}
-
-	public final static String extractFileExtension(String path) {
-		int loc = path.lastIndexOf('.');
-		if (loc > 0) {
-			return path.substring(loc + 1);
-		}
-		return path;
-	}
-	//
-	//	@Override
-	//	public final String formatPositionLine(String messageType, long pos, String message) {
-	//		return this.formatPositionMessage(messageType, pos, message) + this.getTextAround(pos, "\n ");
-	//	}
+	/* utils */
 
 	public final static Source newStringSource(String str) {
 		return new StringSource(str);
@@ -161,7 +70,7 @@ public abstract class CommonSource implements Source {
 	}
 	
 	public final static Source newFileSource(String fileName, String[] paths) throws IOException {
-		return newFileSource(CommonSource.class, fileName, paths);
+		return newFileSource(ParserSource.class, fileName, paths);
 	}
 
 	public final static Source newFileSource(Class<?> c, String fileName, String[] paths) throws IOException {

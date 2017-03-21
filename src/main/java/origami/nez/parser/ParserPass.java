@@ -16,12 +16,12 @@
 
 package origami.nez.parser;
 
-@SuppressWarnings("serial")
-public class TerminationException extends Exception {
-	public boolean status;
+import origami.main.OOption;
+import origami.nez.peg.Expression;
+import origami.nez.peg.Grammar;
 
-	public TerminationException(boolean status) {
-		super();
-		this.status = status;
-	}
+public abstract class ParserPass extends Expression.Rewriter<Void> {
+	public abstract Grammar perform(Grammar g, OOption options);
+
+
 }

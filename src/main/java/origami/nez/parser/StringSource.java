@@ -29,7 +29,7 @@ import origami.OConsole;
 import origami.nez.ast.Source;
 import origami.trait.OStringUtils;
 
-public class StringSource extends CommonSource {
+public class StringSource extends ParserSource {
 	public final byte[] inputs;
 	long length;
 
@@ -133,14 +133,14 @@ public class StringSource extends CommonSource {
 
 	/* utils */
 
-	public final static CommonSource loadClassPath(String fileName, String[] classPath) throws IOException {
+	public final static ParserSource loadClassPath(String fileName, String[] classPath) throws IOException {
 		File f = new File(fileName);
 		if (f.isFile()) {
 			return loadStream(f.getAbsolutePath(), new FileInputStream(f));
 		}
 		for (String path : classPath) {
 			path = "/" + path + "/" + fileName;
-			InputStream stream = CommonSource.class.getResourceAsStream(path);
+			InputStream stream = ParserSource.class.getResourceAsStream(path);
 			if (stream != null) {
 				return loadStream(path, stream);
 			}
@@ -148,7 +148,7 @@ public class StringSource extends CommonSource {
 		throw new FileNotFoundException(fileName);
 	}
 
-	private final static CommonSource loadStream(String urn, InputStream stream) throws IOException {
+	private final static ParserSource loadStream(String urn, InputStream stream) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		StringBuilder builder = new StringBuilder();
 		String line = reader.readLine();

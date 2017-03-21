@@ -25,7 +25,7 @@ import origami.nez.ast.SourceLogger;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.ast.TreeVisitorMap;
-import origami.nez.parser.CommonSource;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 import origami.trait.OStringUtils;
 
@@ -577,7 +577,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = extractFilePath(node.getSource().getResourceName()) + "/" + name;
 			}
-			importSource(CommonSource.newFileSource(path, null));
+			importSource(ParserSource.newFileSource(path, null));
 			return null;
 		}
 	}
