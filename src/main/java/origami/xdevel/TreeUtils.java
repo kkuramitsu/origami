@@ -1,5 +1,6 @@
-package origami.main.tool;
-
+package origami.xdevel;
+// package origami.main.tool;
+//
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *

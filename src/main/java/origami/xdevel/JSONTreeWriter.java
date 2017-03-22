@@ -1,3 +1,4 @@
+package origami.xdevel;
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *

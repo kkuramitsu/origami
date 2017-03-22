@@ -1,3 +1,4 @@
+package origami.xdevel;
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *
@@ -17,38 +18,39 @@
 // package origami.main.tool;
 //
 // import origami.main.CommonWriter;
+// import origami.nez.ast.Symbol;
+// import origami.nez.ast.Tree;
 //
-// import origami.nez.parser.ParserFactory.GrammarWriter;
-// import origami.nez.peg.Grammar;
-// import origami.nez.peg.Production;
+// import origami.trait.OStringUtils;
 //
-// public class SimpleGrammarWriter extends CommonWriter implements
-/// GrammarWriter {
+// public class AbstractSyntaxTreeWriter extends CommonWriter implements
+/// TreeWriter {
 //
 // @Override
-// public void writeGrammar(ParserFactory fac, Grammar grammar) {
-// // OGrammar[] sub = grammar.subGrammars();
-// // for (OGrammar g : sub) {
-// // L("grammar " + g.ns + " ");
-// // Begin("{");
-// // writeGrammar(g);
-// // End("}");
-// // }
-// writeGrammar(grammar);
+// public void writeTree(Tree<?> node) {
+// writeAST(null, node);
 // }
 //
-// private void writeGrammar(Grammar grammar) {
-// for (Production p : grammar) {
-// String q = p.isPublic() ? "public " : "";
-// L(q + p.getLocalName() + " = " + p.getExpression());
-// this.incIndent();
-// writeProduction(p);
-// this.decIndent();
+// private void writeAST(Symbol label, Tree<?> node) {
+// if (node == null) {
+// L("null");
+// return;
+// }
+// if (label == null) {
+// L("#" + node.getTag() + "[");
+// } else {
+// L("$" + label + ": #" + node.getTag() + "[");
+// }
+// if (node.size() == 0) {
+// _L(OStringUtils.quoteString('\'', node.toText(), '\''));
+// _L("]");
+// } else {
+// incIndent();
+// for (int i = 0; i < node.size(); i++) {
+// this.writeAST(node.getLabel(i), node.get(i));
+// }
+// decIndent();
+// L("]");
 // }
 // }
-//
-// protected void writeProduction(Production p) {
-// // L("isAlwaysConsumed: " + prop.isAlwaysConsumed(p));
-// }
-//
 // }

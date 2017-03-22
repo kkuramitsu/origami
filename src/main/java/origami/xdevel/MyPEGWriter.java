@@ -1,3 +1,4 @@
+package origami.xdevel;
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *
@@ -18,7 +19,7 @@
 //
 // import origami.main.CommonWriter;
 //
-// import origami.nez.parser.ParserFactory.GrammarWriter;
+// import origami.nez.peg.Expression;
 // import origami.nez.peg.Expression.PAnd;
 // import origami.nez.peg.Expression.PAny;
 // import origami.nez.peg.Expression.PByte;
@@ -47,19 +48,19 @@
 // import origami.nez.peg.Expression.PTree;
 // import origami.nez.peg.ExpressionVisitor;
 // import origami.nez.peg.Grammar;
-// import origami.nez.peg.Production;
 //
-// public class PEGWriter extends CommonWriter implements GrammarWriter {
+// public class MyPEGWriter extends CommonWriter {
 //
 // @Override
 // public void writeGrammar(ParserFactory fac, Grammar g) {
 // WriterVisitor v = new WriterVisitor();
-// for (Production p : g.getAllProductions()) {
-// L(p);
-// }
 // }
 //
 // class WriterVisitor extends ExpressionVisitor<Void, Void> {
+//
+// public Void visit(Expression e) {
+// return e.visit(this, null);
+// }
 //
 // @Override
 // public Void visitNonTerminal(PNonTerminal e, Void a) {
@@ -99,13 +100,18 @@
 //
 // @Override
 // public Void visitPair(PPair e, Void a) {
-// // TODO Auto-generated method stub
+// visit(e.left);
+// visit(e.right);
+//
 // return null;
 // }
 //
 // @Override
 // public Void visitChoice(PChoice e, Void a) {
-// // TODO Auto-generated method stub
+// for (Expression inner : e.inners) {
+// visit(inner);
+// }
+//
 // return null;
 // }
 //
@@ -159,7 +165,7 @@
 //
 // @Override
 // public Void visitTag(PTag e, Void a) {
-// // TODO Auto-generated method stub
+//
 // return null;
 // }
 //

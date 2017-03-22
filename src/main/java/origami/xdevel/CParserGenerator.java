@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.main.tool;
+package origami.xdevel;
 
 import origami.nez.peg.Grammar;
 import origami.util.OStringUtils;
