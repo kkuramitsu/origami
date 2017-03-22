@@ -23,8 +23,8 @@ import origami.code.OGetterCode;
 import origami.code.OCode;
 import origami.ffi.OMutable;
 import origami.ffi.ONullable;
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.util.OTypeUtils;
 
 public class OField {

@@ -38,6 +38,9 @@ import origami.lang.OField;
 import origami.lang.OGlobalVariable;
 import origami.lang.OMethod;
 import origami.lang.OTypeName;
+import origami.lang.type.OLocalClassType;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
@@ -46,9 +49,6 @@ import origami.nez.parser.ParserSource;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
 import origami.rule.OFmt;
-import origami.type.OLocalClassType;
-import origami.type.OType;
-import origami.type.OTypeSystem;
 
 public interface OScriptUtils {
 	public static String parser = " parser";

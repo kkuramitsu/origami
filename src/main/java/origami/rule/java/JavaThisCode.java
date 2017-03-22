@@ -18,7 +18,7 @@ package origami.rule.java;
 
 import origami.code.OGenerator;
 import origami.code.OValueCode;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class JavaThisCode extends OValueCode {
 	public JavaThisCode(OType ty) {

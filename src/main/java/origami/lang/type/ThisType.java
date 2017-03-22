@@ -14,15 +14,13 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
-import origami.util.StringCombinator;
-
-public abstract class PhantomType implements OWrapperType {
+public class ThisType implements OWrapperType {
 
 	private OType base;
 
-	public PhantomType(OType wrapped) {
+	public ThisType(OType wrapped) {
 		this.base = wrapped;
 	}
 
@@ -36,18 +34,13 @@ public abstract class PhantomType implements OWrapperType {
 	}
 
 	@Override
-	public OType valueType() {
-		return base;
-	}
-
-	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return base.toString();
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.getLocalName());
+		base.strOut(sb);
 	}
 
 }

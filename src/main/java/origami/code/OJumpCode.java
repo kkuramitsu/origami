@@ -17,8 +17,8 @@
 package origami.code;
 
 import origami.lang.OEnv;
-import origami.type.OType;
-import origami.type.OUntypedType;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.util.OConsts;
 
 public class OJumpCode<T> extends OParamCode<T> {

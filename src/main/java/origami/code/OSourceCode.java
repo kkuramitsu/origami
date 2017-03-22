@@ -1,8 +1,8 @@
 package origami.code;
 
 import origami.lang.OEnv;
+import origami.lang.type.OType;
 import origami.nez.ast.SourcePosition;
-import origami.type.OType;
 import origami.util.Handled;
 import origami.util.ODebug;
 import origami.util.StringCombinator;

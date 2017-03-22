@@ -17,7 +17,7 @@
 package origami.code;
 
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OEmptyCode extends OValueCode {
 

@@ -14,22 +14,20 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
-public class NullableType extends PhantomType {
+import origami.util.StringCombinator;
 
-	public NullableType(OType t) {
-		super(t);
+public abstract class OTypeImpl implements OType, StringCombinator {
+
+	@Override
+	public String toString() {
+		return StringCombinator.stringfy(this);
 	}
 
 	@Override
-	public boolean isNullable() {
-		return true;
-	}
-
-	@Override
-	public String getLocalName() {
-		return thisType().getLocalName() + "?";
+	public void strOut(StringBuilder sb) {
+		sb.append(this.getLocalName());
 	}
 
 }

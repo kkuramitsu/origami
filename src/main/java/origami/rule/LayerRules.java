@@ -38,9 +38,9 @@ import origami.lang.OMethodWrapper;
 import origami.lang.OVariable;
 import origami.lang.OEnv.OBaseEnv;
 import origami.lang.OEnv.OListMatcher;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.nez.ast.Tree;
-import origami.type.OType;
-import origami.type.OTypeSystem;
 import origami.util.ODebug;
 import origami.util.OTypeRule;
 

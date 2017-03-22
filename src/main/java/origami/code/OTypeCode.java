@@ -22,7 +22,7 @@ import java.util.List;
 import origami.asm.OCallSite;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OTypeCode extends OValueCode {
 	public OTypeCode(OType ty) {

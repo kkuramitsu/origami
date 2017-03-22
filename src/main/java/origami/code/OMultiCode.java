@@ -3,7 +3,7 @@ package origami.code;
 import java.util.List;
 
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OMultiCode extends OParamCode<Void> {
 

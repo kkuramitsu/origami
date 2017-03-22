@@ -20,7 +20,7 @@ import java.lang.reflect.Array;
 
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 /**
  * <pre>

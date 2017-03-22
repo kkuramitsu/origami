@@ -16,8 +16,8 @@
 
 package origami.lang;
 
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 
 abstract class OFieldHandle extends OCommonMethodHandle {
 	OField field;

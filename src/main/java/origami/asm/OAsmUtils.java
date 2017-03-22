@@ -19,7 +19,7 @@ package origami.asm;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OAsmUtils {
 

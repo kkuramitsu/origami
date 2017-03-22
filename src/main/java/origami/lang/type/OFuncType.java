@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

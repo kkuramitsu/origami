@@ -21,10 +21,10 @@ import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OTypeCode;
 import origami.lang.OEnv;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.type.OType;
-import origami.type.OUntypedType;
 import origami.util.OTypeRule;
 
 public interface TypeAnalysis {

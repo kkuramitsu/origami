@@ -18,7 +18,7 @@ package origami.util;
 
 import java.lang.reflect.Array;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public interface OArrayUtils {
 	public static String[] emptyNames = new String[0];

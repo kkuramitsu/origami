@@ -29,6 +29,9 @@ import origami.lang.OClassDeclType;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OPartialFunc;
+import origami.lang.type.AnyType;
+import origami.lang.type.OArrayType;
+import origami.lang.type.OType;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.rule.TypeRule;
@@ -36,9 +39,6 @@ import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
-import origami.type.AnyType;
-import origami.type.OArrayType;
-import origami.type.OType;
 import origami.util.OTypeRule;
 
 public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAnalysis {

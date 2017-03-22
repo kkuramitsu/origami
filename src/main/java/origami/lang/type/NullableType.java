@@ -14,22 +14,22 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
-public class MutableType extends PhantomType {
+public class NullableType extends PhantomType {
 
-	public MutableType(OType wrapped) {
-		super(wrapped);
+	public NullableType(OType t) {
+		super(t);
 	}
 
 	@Override
-	public final boolean isMutable() {
+	public boolean isNullable() {
 		return true;
 	}
 
 	@Override
 	public String getLocalName() {
-		return this.thisType().getLocalName() + " (new!!)";
+		return thisType().getLocalName() + "?";
 	}
 
 }

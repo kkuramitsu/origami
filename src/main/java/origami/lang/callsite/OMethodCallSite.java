@@ -25,7 +25,7 @@ import origami.asm.OCallSite;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OMethodCallSite extends OCallSite {
 	public OMethodCallSite() {

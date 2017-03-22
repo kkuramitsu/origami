@@ -22,9 +22,9 @@ import origami.code.OTypeCode;
 import origami.ffi.OImportable;
 import origami.lang.OEnv;
 import origami.lang.OTypeName;
+import origami.lang.type.OType;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
-import origami.type.OType;
 import origami.util.OTypeRule;
 
 public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
@@ -65,7 +65,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType ty = parseType(env, t.get(_base));
-			return new OTypeCode(new origami.type.OArrayType(ty));
+			return new OTypeCode(new origami.lang.type.OArrayType(ty));
 		}
 
 	};
@@ -79,7 +79,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 			for (int i = 0; i < params.size(); i++) {
 				a[i] = parseType(env, params.get(i));
 			}
-			OType ty = origami.type.OFuncType.newType(env, returnType, a);
+			OType ty = origami.lang.type.OFuncType.newType(env, returnType, a);
 			return new OTypeCode(ty);
 		}
 	};
@@ -89,7 +89,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType p = parseType(env, t.get(_base));
 			OType ret = parseType(env, t.get(_param));
-			OType ty = origami.type.OFuncType.newType(env, ret, p);
+			OType ty = origami.lang.type.OFuncType.newType(env, ret, p);
 			return new OTypeCode(ty);
 		}
 	};

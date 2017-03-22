@@ -23,8 +23,8 @@ import java.lang.reflect.Field;
 import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OGetter;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 import origami.util.OTypeUtils;
 
 public class OGetterCode extends OParamCode<OField> implements ODyCode {

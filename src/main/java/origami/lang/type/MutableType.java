@@ -14,33 +14,22 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
-public class ThisType implements OWrapperType {
+public class MutableType extends PhantomType {
 
-	private OType base;
-
-	public ThisType(OType wrapped) {
-		this.base = wrapped;
+	public MutableType(OType wrapped) {
+		super(wrapped);
 	}
 
 	@Override
-	public OType thisType() {
-		return base;
-	}
-
-	public void setType(OType t) {
-		base = t;
+	public final boolean isMutable() {
+		return true;
 	}
 
 	@Override
-	public String toString() {
-		return base.toString();
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		base.strOut(sb);
+	public String getLocalName() {
+		return this.thisType().getLocalName() + " (new!!)";
 	}
 
 }

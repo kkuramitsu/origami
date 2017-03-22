@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
 public abstract class OTypeSystemType extends OTypeImpl {
 	private final OTypeSystem ts;

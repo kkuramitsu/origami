@@ -22,8 +22,8 @@ import java.lang.reflect.Field;
 
 import origami.asm.OCallSite;
 import origami.code.OGetterCode;
+import origami.lang.type.OType;
 import origami.code.OCode;
-import origami.type.OType;
 
 public class OGetter extends OFieldHandle {
 

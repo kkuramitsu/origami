@@ -25,12 +25,12 @@ import origami.lang.OEnv;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.OVariable;
+import origami.lang.type.AnyType;
+import origami.lang.type.OType;
 import origami.nez.ast.Tree;
 import origami.rule.TypeRule;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
-import origami.type.AnyType;
-import origami.type.OType;
 import origami.util.OArrayUtils;
 import origami.util.OTypeRule;
 

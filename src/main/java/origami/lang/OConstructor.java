@@ -25,8 +25,8 @@ import origami.asm.OClassLoader;
 import origami.code.OCode;
 import origami.code.OConstructorCode;
 import origami.code.ODefaultValueCode;
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.util.ODebug;
 
 public class OConstructor extends OExecutable<Constructor<?>> {

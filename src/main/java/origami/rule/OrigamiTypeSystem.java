@@ -20,11 +20,11 @@ import origami.lang.OEnv;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;
+import origami.lang.type.OTypeSystem;
 import origami.main.OOption;
 import origami.main.OOption.OptionalFactory;
 import origami.nez.ast.SourcePosition;
 import origami.rule.java.ClassRules;
-import origami.type.OTypeSystem;
 import origami.util.OConsole;
 import origami.util.OScriptUtils;
 

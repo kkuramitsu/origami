@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public abstract class OMatchedCode<T> extends OParamCode<T> {
 	private int matchCost;

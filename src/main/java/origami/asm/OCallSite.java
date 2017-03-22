@@ -34,7 +34,7 @@ import origami.lang.ODynamicMethodHandle;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.ODebug;
 import origami.util.OTypeUtils;
 import origami.util.StringCombinator;

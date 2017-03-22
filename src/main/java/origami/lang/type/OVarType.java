@@ -1,4 +1,4 @@
-package origami.type;
+package origami.lang.type;
 
 import origami.code.OCode;
 import origami.lang.OEnv;

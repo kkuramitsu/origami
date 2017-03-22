@@ -25,12 +25,12 @@ import origami.asm.OAnno;
 import origami.asm.OClassLoader;
 import origami.code.OCode;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OTypeSystemType;
+import origami.lang.type.OParamType;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
+import origami.lang.type.OTypeSystemType;
 import origami.util.ODebug;
 import origami.util.OTypeUtils;
-import origami.type.OType;
-import origami.type.OTypeSystem;
-import origami.type.OParamType;
 
 public class OClassDeclType extends OTypeSystemType {
 

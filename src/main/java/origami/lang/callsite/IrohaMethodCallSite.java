@@ -27,8 +27,8 @@ import origami.code.OWarningCode;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OEnv.OListMatcher;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 
 public class IrohaMethodCallSite extends OMethodCallSite {
 	public IrohaMethodCallSite() {

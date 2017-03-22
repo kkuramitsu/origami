@@ -25,10 +25,10 @@ import origami.lang.OEnv.OListMatcher;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.nez.ast.SourcePosition;
 import origami.rule.OFmt;
-import origami.type.OType;
-import origami.type.OTypeSystem;
 
 public interface OCode {
 

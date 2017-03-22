@@ -16,7 +16,7 @@
 
 package origami.asm.code;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class LoadThisCode extends OAsmCode<Void> {
 

@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class MutableCode extends OSourceCode<OCode> implements OWrapperCode {
 

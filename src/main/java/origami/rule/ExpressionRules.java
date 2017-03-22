@@ -38,12 +38,12 @@ import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.ONameEntity;
 import origami.lang.OVariable;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.nez.ast.Tree;
 import origami.rule.java.JavaPostOpCode;
 import origami.rule.java.JavaThisCode;
 import origami.rule.java.PreOpCode;
-import origami.type.OType;
-import origami.type.OUntypedType;
 import origami.util.OArrayUtils;
 import origami.util.OTypeRule;
 

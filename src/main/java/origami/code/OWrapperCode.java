@@ -20,9 +20,9 @@ import java.util.List;
 
 import origami.lang.OEnv;
 import origami.lang.OEnv.OListMatcher;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.nez.ast.SourcePosition;
-import origami.type.OType;
-import origami.type.OTypeSystem;
 
 public interface OWrapperCode extends OCode {
 

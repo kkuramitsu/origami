@@ -17,7 +17,7 @@
 package origami.code;
 
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OValueCode extends OParamCode<Object> {
 	public OValueCode(Object handled, OType ty) {

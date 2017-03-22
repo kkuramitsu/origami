@@ -24,7 +24,7 @@ import java.util.Optional;
 import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OSetter;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.OTypeUtils;
 
 public class OSetterCode extends OParamCode<OField> implements ODyCode {

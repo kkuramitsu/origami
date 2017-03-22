@@ -32,7 +32,7 @@ import origami.lang.OEnv;
 import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.OConsole;
 import origami.util.ODebug;
 import origami.util.OTypeUtils;

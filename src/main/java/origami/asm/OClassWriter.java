@@ -27,7 +27,7 @@ import origami.ffi.OMutable;
 import origami.ffi.ONullable;
 import origami.lang.OClassDecl;
 import origami.lang.OMethodDecl;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.OArrayUtils;
 import origami.util.OStackable;
 

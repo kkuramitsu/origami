@@ -20,7 +20,7 @@ import origami.asm.OAnno;
 import origami.code.OGetterCode;
 import origami.code.OCode;
 import origami.code.OSetterCode;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OGlobalVariable extends OVariable {
 	private final OField field;

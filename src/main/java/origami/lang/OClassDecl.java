@@ -29,11 +29,11 @@ import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.code.OValueCode;
 import origami.lang.OEnv.OListMatcher;
+import origami.lang.type.OParamVarType;
+import origami.lang.type.OType;
 import origami.nez.ast.Tree;
 import origami.rule.OSymbols;
 import origami.rule.TypeAnalysis;
-import origami.type.OParamVarType;
-import origami.type.OType;
 
 public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 	private final OEnv definedClassEnv;

@@ -20,10 +20,10 @@ import java.util.List;
 import origami.ffi.OCast;
 import origami.lang.OEnv;
 import origami.lang.OEnv.OListMatcher;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
-import origami.type.OType;
-import origami.type.OUntypedType;
 import origami.util.OConsts;
 import origami.util.OLog;
 

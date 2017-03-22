@@ -21,8 +21,8 @@ import java.lang.invoke.MethodHandles.Lookup;
 
 import origami.asm.OCallSite;
 import origami.code.OCode;
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 
 public class OMethodWrapper implements OMethodHandle {
 	protected final OMethodHandle mh;

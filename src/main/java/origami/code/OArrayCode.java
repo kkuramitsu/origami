@@ -19,9 +19,9 @@ package origami.code;
 import java.lang.reflect.Array;
 
 import origami.lang.OEnv;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.rule.TypeAnalysis;
-import origami.type.OType;
-import origami.type.OUntypedType;
 
 public class OArrayCode extends OParamCode<Void> implements TypeAnalysis {
 

@@ -22,7 +22,7 @@ import java.util.Iterator;
 import origami.code.OCode;
 import origami.ffi.OrigamiPrimitiveGenerics;
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.StringCombinator;
 
 public class OrigamiIterator {

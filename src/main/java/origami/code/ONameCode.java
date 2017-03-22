@@ -18,8 +18,8 @@ package origami.code;
 
 import origami.OrigamiContext.LocalVariables;
 import origami.lang.OEnv;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 
 public class ONameCode extends OParamCode<String> {
 	private final boolean readOnly;

@@ -22,7 +22,7 @@ import origami.ffi.OCast;
 import origami.lang.OConstructor;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OConstructorCode extends OMethodCode {
 

@@ -21,9 +21,9 @@ import java.util.List;
 
 import origami.asm.OClassLoader;
 import origami.code.OCode;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 import origami.nez.ast.SourcePosition;
-import origami.type.OType;
-import origami.type.OTypeSystem;
 import origami.util.Handled;
 import origami.util.OStackable;
 import origami.util.OTypeUtils;

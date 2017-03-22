@@ -14,35 +14,24 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
+package origami.lang.type;
 
-import origami.util.ODebug;
+public class AnyType extends OClassType {
+	public String name;
 
-public class OUntypedType extends OTypeSystemType {
-
-	OUntypedType(OTypeSystem ts) {
-		super(ts);
+	AnyType(OTypeSystem ts) {
+		super(ts, Object.class);
+		this.name = "any";
 	}
 
 	@Override
-	public Class<?> unwrap() {
-		return Object.class;
-	}
-
-	@Override
-	public String getLocalName() {
-		return "?";
-	}
-
-	@Override
-	public boolean isUntyped() {
+	public boolean isDynamic() {
 		return true;
 	}
 
 	@Override
-	public void typeDesc(StringBuilder sb, int levelGeneric) {
-		ODebug.NotAvailable(this);
-		sb.append("Ljava.lang.Object;");
+	public String getLocalName() {
+		return name;
 	}
 
 }

@@ -18,10 +18,10 @@ package origami.code;
 
 import origami.ffi.OCast;
 import origami.lang.OConv.OConvCallSite;
+import origami.lang.type.OType;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
-import origami.type.OType;
 
 public class ODyCastCode extends OCastCode {
 	private OEnv env;

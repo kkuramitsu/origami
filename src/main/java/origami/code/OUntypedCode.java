@@ -19,12 +19,12 @@ package origami.code;
 import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
+import origami.lang.type.OVarType;
 import origami.nez.ast.Tree;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
-import origami.type.OType;
-import origami.type.OUntypedType;
-import origami.type.OVarType;
 import origami.util.ODebug;
 
 public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis, TypeAnalysis {

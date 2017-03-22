@@ -19,7 +19,7 @@ package origami.code;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.callsite.OFuncCallSite;
-import origami.type.OFuncType;
+import origami.lang.type.OFuncType;
 
 public class OFuncNameCode extends OParamCode<String> {
 	OEnv env;

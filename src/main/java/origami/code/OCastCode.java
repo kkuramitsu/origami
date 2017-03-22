@@ -20,8 +20,8 @@ import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 import origami.util.OLog;
 
 public class OCastCode extends OMethodCode {

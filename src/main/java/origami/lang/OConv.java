@@ -29,7 +29,7 @@ import origami.code.OCastCode;
 import origami.code.OCode;
 import origami.ffi.OCast;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OConv extends OMethodWrapper {
 	int matchCost;

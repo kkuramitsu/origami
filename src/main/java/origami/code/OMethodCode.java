@@ -25,7 +25,7 @@ import origami.lang.ODynamicMethodHandle;
 import origami.lang.OEnv;
 import origami.lang.OMethod;
 import origami.lang.OMethodHandle;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.OArrayUtils;
 
 public class OMethodCode extends OMatchedCode<OMethodHandle> implements ODyCode, OArrayUtils {

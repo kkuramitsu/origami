@@ -21,7 +21,7 @@ import origami.code.OCode;
 import origami.code.OGenerator;
 import origami.code.OParamCode;
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OAsmCode<T> extends OParamCode<T> {
 

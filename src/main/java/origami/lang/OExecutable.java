@@ -20,8 +20,8 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 
 abstract class OExecutable<T extends Executable> extends OCommonMethodHandle {
 	protected final OTypeSystem typeSystem;

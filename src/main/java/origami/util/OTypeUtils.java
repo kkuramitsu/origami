@@ -30,8 +30,8 @@ import origami.lang.OConstructor;
 import origami.lang.OMethod;
 import origami.lang.OMethodHandle;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 
 public class OTypeUtils {
 

@@ -20,8 +20,8 @@ import origami.code.OAssignCode;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.ONameCode;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 
 public class OLocalVariable extends OVariable {
 

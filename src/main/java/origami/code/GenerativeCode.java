@@ -7,8 +7,8 @@ import origami.asm.code.ArrayGetCode;
 import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethod;
-import origami.type.OType;
-import origami.type.OUntypedType;
+import origami.lang.type.OType;
+import origami.lang.type.OUntypedType;
 import origami.util.ODebug;
 import origami.util.OTypeUtils;
 

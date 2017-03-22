@@ -27,7 +27,7 @@ import origami.lang.OField;
 import origami.lang.OGetter;
 import origami.lang.OMethodHandle;
 import origami.lang.OEnv.OListMatcher;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OGetterCallSite extends OCallSite {
 	public OGetterCallSite() {

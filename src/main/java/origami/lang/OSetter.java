@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.code.OSetterCode;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OSetter extends OFieldHandle {
 

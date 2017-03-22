@@ -28,9 +28,9 @@ import origami.code.OCode;
 import origami.code.OMethodCode;
 import origami.ffi.OMutable;
 import origami.ffi.ONullable;
-import origami.type.OFuncType;
-import origami.type.OType;
-import origami.type.OTypeSystem;
+import origami.lang.type.OFuncType;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
 
 public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeName {
 

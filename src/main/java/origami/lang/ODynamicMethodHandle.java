@@ -24,9 +24,9 @@ import org.objectweb.asm.Type;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.code.OMethodCode;
-import origami.type.OType;
-import origami.type.OTypeSystem;
-import origami.type.OUntypedType;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
+import origami.lang.type.OUntypedType;
 
 public class ODynamicMethodHandle extends OCommonMethodHandle {
 

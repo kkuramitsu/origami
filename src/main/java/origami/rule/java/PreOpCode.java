@@ -22,7 +22,7 @@ import origami.code.OGenerator;
 import origami.code.OMultiCode;
 import origami.code.OParamCode;
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class PreOpCode extends OParamCode<String> {
 	OCode setter;

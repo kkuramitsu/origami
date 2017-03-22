@@ -14,55 +14,40 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.type;
-
-import java.lang.reflect.WildcardType;
+package origami.lang.type;
 
 import origami.util.StringCombinator;
 
-public class OParamWildcardType extends OTypeImpl {
-	private final OType upperBound;
+public abstract class PhantomType implements OWrapperType {
 
-	OParamWildcardType(OTypeSystem ts, WildcardType w) {
-		this.upperBound = OParamVarType.bound(ts, w.getUpperBounds());
+	private OType base;
+
+	public PhantomType(OType wrapped) {
+		this.base = wrapped;
 	}
 
 	@Override
-	public String getLocalName() {
-		return "?";
+	public OType thisType() {
+		return base;
+	}
+
+	public void setType(OType t) {
+		base = t;
 	}
 
 	@Override
-	public Class<?> unwrap() {
-		return upperBound.unwrap();
+	public OType valueType() {
+		return base;
 	}
 
 	@Override
-	public OTypeSystem getTypeSystem() {
-		return this.upperBound.getTypeSystem();
-	}
-
-	@Override
-	public void typeDesc(StringBuilder sb, int levelGeneric) {
-		if (levelGeneric == 2) {
-			if (upperBound.is(Object.class)) {
-				sb.append("*");
-			} else {
-				sb.append("+");
-				upperBound.typeDesc(sb, levelGeneric);
-			}
-		} else {
-			upperBound.typeDesc(sb, levelGeneric);
-		}
+	public String toString() {
+		return StringCombinator.stringfy(this);
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append("?");
-		if (!this.upperBound.is(Object.class)) {
-			// sb.append(" extends ");
-			StringCombinator.append(sb, this.upperBound);
-		}
+		sb.append(this.getLocalName());
 	}
 
 }

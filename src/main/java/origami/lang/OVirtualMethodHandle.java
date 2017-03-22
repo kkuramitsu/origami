@@ -21,7 +21,7 @@ import java.lang.invoke.MethodType;
 import org.objectweb.asm.Type;
 
 import origami.asm.OCallSite;
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.OTypeUtils;
 
 public class OVirtualMethodHandle extends OMethodWrapper {

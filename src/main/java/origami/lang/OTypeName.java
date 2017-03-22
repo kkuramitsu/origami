@@ -16,7 +16,7 @@
 
 package origami.lang;
 
-import origami.type.OType;
+import origami.lang.type.OType;
 import origami.util.ODebug;
 
 public interface OTypeName {

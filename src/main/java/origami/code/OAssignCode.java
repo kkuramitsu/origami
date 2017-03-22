@@ -18,7 +18,7 @@ package origami.code;
 
 import origami.OrigamiContext.LocalVariables;
 import origami.lang.OEnv;
-import origami.type.OType;
+import origami.lang.type.OType;
 
 public class OAssignCode extends OParamCode<String> {
 	public final boolean defined;

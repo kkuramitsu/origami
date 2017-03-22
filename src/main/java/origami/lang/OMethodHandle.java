@@ -23,13 +23,13 @@ import java.lang.invoke.MethodType;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.ffi.OCast;
-import origami.type.OType;
-import origami.type.OTypeSystem;
-import origami.type.OUntypedType;
+import origami.lang.type.OParamMatcher;
+import origami.lang.type.OType;
+import origami.lang.type.OTypeSystem;
+import origami.lang.type.OUntypedType;
 import origami.util.OArrayUtils;
 import origami.util.ODebug;
 import origami.util.StringCombinator;
-import origami.type.OParamMatcher;
 
 public interface OMethodHandle {
 

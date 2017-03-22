@@ -18,8 +18,8 @@ package origami.lang;
 
 import origami.code.OCode;
 import origami.code.OErrorCode;
+import origami.lang.type.OType;
 import origami.rule.OFmt;
-import origami.type.OType;
 import origami.util.StringCombinator;
 
 public abstract class OVariable implements ONameEntity, OTypeName, StringCombinator {
