@@ -22,7 +22,7 @@ import origami.code.OCode;
 import origami.code.OSetterCode;
 import origami.code.OUntypedCode;
 import origami.code.OValueCode;
-import origami.code.ThisCode;
+import origami.rule.java.JavaThisCode;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 
@@ -90,7 +90,7 @@ public class OFieldDecl {
 			if (this.isStatic()) {
 				initCode = new OSetterCode(this.field, env.t(void.class), initValue);
 			} else {
-				initCode = new OSetterCode(this.field, env.t(void.class), new ThisCode(this.getDeclaringClass()),
+				initCode = new OSetterCode(this.field, env.t(void.class), new JavaThisCode(this.getDeclaringClass()),
 						initValue);
 			}
 			this.initValue = null;

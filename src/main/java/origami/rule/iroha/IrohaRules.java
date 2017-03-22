@@ -41,7 +41,6 @@ import origami.code.OSugarCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
 import origami.code.RunnableCode;
-import origami.code.ThisCode;
 import origami.ffi.OMutable;
 import origami.ffi.OrigamiObject;
 import origami.ffi.OrigamiPrimitiveGenerics;
@@ -57,6 +56,7 @@ import origami.lang.callsite.OFuncCallSite;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.rule.TypeRule;
+import origami.rule.java.JavaThisCode;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.OrigamiIterator;
@@ -608,7 +608,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			if (anno.isStatic()) {
 				IrohaRules.this.defineName(env, t, m);
 			} else {
-				IrohaRules.this.defineName(env, t, new OPartialFunc(m, 0, new ThisCode(cdecl.getType())));
+				IrohaRules.this.defineName(env, t, new OPartialFunc(m, 0, new JavaThisCode(cdecl.getType())));
 			}
 			return new OEmptyCode(env);
 		}

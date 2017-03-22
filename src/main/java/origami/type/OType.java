@@ -27,7 +27,7 @@ import org.objectweb.asm.Type;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.asm.OCallSite;
-import origami.code.DynamicCastCode;
+import origami.code.ODyCastCode;
 import origami.code.OGetterCode;
 import origami.code.OCastCode;
 import origami.code.OCode;
@@ -162,7 +162,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 			return new OCastCode(t, OCast.UPCAST, code);
 		}
 		if (f.isUntyped() || f.isDynamic()) {
-			return new DynamicCastCode(env, t, code);
+			return new ODyCastCode(env, t, code);
 		}
 		if (f.isPrimitive() && t.is(Object.class)) {
 			return code.boxCode(env);

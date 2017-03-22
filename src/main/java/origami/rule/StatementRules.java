@@ -25,7 +25,6 @@ import java.util.StringJoiner;
 import origami.ODebug;
 import origami.OEnv;
 import origami.asm.OAnno;
-import origami.code.CStyleForCode;
 import origami.code.OBreakCode;
 import origami.code.OCode;
 import origami.code.OContinueCode;
@@ -39,14 +38,15 @@ import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.code.OTryCode;
 import origami.code.OTryCode.CatchCode;
-import origami.code.SwitchCode;
-import origami.code.SwitchCode.CaseCode;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
 import origami.lang.OMethodHandle;
 import origami.lang.OUntypedMethod;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
+import origami.rule.java.JavaForCode;
+import origami.rule.java.JavaSwitchCode;
+import origami.rule.java.JavaSwitchCode.CaseCode;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.util.OArrayUtils;
@@ -291,7 +291,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
 			OCode iterCode = StatementRules.this.typeStmt(env, t.get(_iter, null));
 			OCode bodyCode = StatementRules.this.typeStmt(env, t.get(_body, null));
-			return new CStyleForCode(env, initCode, condCode, iterCode, bodyCode);
+			return new JavaForCode(env, initCode, condCode, iterCode, bodyCode);
 		}
 	};
 
@@ -302,7 +302,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
 			OCode iterCode = new OEmptyCode(env);
 			OCode bodyCode = StatementRules.this.typeStmt(env, t.get(_body, null));
-			return new CStyleForCode(env, initCode, condCode, iterCode, bodyCode);
+			return new JavaForCode(env, initCode, condCode, iterCode, bodyCode);
 		}
 	};
 
@@ -343,7 +343,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			if (caseNode.size() > 0) {
 				caseCode = new OMultiCode(caseCodes);
 			}
-			return new SwitchCode(env, condCode, caseCode);
+			return new JavaSwitchCode(env, condCode, caseCode);
 		}
 	};
 

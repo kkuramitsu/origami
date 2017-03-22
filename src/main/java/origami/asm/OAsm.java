@@ -60,13 +60,13 @@ import origami.code.OValueCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
 import origami.code.OSetIndexCode;
-import origami.code.SwitchCode;
-import origami.code.SwitchCode.CaseCode;
 import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
 import origami.lang.OMethodDecl;
 import origami.lang.OMethodHandle;
+import origami.rule.java.JavaSwitchCode;
+import origami.rule.java.JavaSwitchCode.CaseCode;
 import origami.type.OType;
 import origami.util.OArrayUtils;
 import origami.util.OTypeUtils;
@@ -860,7 +860,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushSwitch(SwitchCode code) {
+	public void pushSwitch(JavaSwitchCode code) {
 		OBreakBlock block = this.mBuilder.pushBlock(new OBreakBlock(this.mBuilder, null));
 		Label condLabel = this.mBuilder.newLabel();
 		Label breakLabel = block.endLabel;

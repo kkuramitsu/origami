@@ -14,13 +14,15 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.code;
+package origami.rule.java;
 
 import origami.OEnv;
+import origami.code.OCode;
+import origami.code.OSugarCode;
 
-public class SwitchCode extends OSugarCode {
+public class JavaSwitchCode extends OSugarCode {
 
-	public SwitchCode(OEnv env, OCode... nodes) {
+	public JavaSwitchCode(OEnv env, OCode... nodes) {
 		super(env, env.t(void.class), nodes);
 	}
 

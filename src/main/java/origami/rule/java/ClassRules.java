@@ -24,7 +24,6 @@ import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OUntypedCode;
 import origami.code.RunnableCode;
-import origami.code.ThisCode;
 import origami.lang.OClassDecl;
 import origami.lang.OClassDeclType;
 import origami.lang.OMethodHandle;
@@ -157,7 +156,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			if (anno.isStatic()) {
 				env.add(t, name, m);
 			} else {
-				env.add(t, name, new OPartialFunc(m, 0, new ThisCode(cdecl.getType())));
+				env.add(t, name, new OPartialFunc(m, 0, new JavaThisCode(cdecl.getType())));
 			}
 			return new OEmptyCode(env);
 		}

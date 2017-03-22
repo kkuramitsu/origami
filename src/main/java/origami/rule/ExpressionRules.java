@@ -32,15 +32,15 @@ import origami.code.OOrCode;
 import origami.code.OTypeCode;
 import origami.code.OValueCode;
 import origami.code.OWarningCode;
-import origami.code.PostOpCode;
-import origami.code.PreOpCode;
-import origami.code.ThisCode;
 import origami.lang.OClassDecl;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.ONameEntity;
 import origami.lang.OVariable;
 import origami.nez.ast.Tree;
+import origami.rule.java.JavaPostOpCode;
+import origami.rule.java.JavaThisCode;
+import origami.rule.java.PreOpCode;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.util.OArrayUtils;
@@ -110,7 +110,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl defined = ExpressionRules.this.getClassContext(env);
 			if (defined != null) {
-				return new ThisCode(defined.getType());
+				return new JavaThisCode(defined.getType());
 			}
 			throw new OErrorCode(env, t, "can't use 'this' in global");
 		}
@@ -432,7 +432,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			OCode expr = ExpressionRules.this.typeExpr(env, tree);
 			OCode op = expr.newBinaryCode(env, this.name, this.expr);
 			OCode setter = expr.newAssignCode(env, op);
-			return new PostOpCode(this.name, expr.getType(), expr, setter);
+			return new JavaPostOpCode(this.name, expr.getType(), expr, setter);
 		}
 	}
 
