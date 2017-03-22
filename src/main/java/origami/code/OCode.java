@@ -51,7 +51,7 @@ public interface OCode {
 
 	public Object eval(OEnv env) throws Throwable;
 
-	public void generate(OAsm gen);
+	public void generate(OGenerator gen);
 
 	public OType valueType();
 

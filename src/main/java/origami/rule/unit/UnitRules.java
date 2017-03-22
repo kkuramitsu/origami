@@ -41,15 +41,15 @@ import origami.rule.AbstractTypeRule;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
-import origami.trait.OImportable;
-import origami.trait.OScriptUtils;
-import origami.trait.OTypeRule;
-import origami.trait.OTypeUtils;
 import origami.type.OLocalClassType;
 import origami.type.OParamType;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.type.ThisType;
+import origami.util.OImportable;
+import origami.util.OScriptUtils;
+import origami.util.OTypeRule;
+import origami.util.OTypeUtils;
 
 public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScriptUtils {
 	public OTypeRule UnitType = new AbstractTypeRule() {
@@ -159,7 +159,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 			importClassMethod(env, null, c);
 			OType unitType = new OLocalClassType(env, c, unitName, null);
 			env.getTypeSystem().define(c, unitType);
-			env.add0(unitName, unitType);
+			env.add(unitName, unitType);
 			return new OEmptyCode(env);
 		}
 

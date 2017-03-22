@@ -3,8 +3,8 @@ package origami.code;
 import origami.OEnv;
 import origami.OLog;
 import origami.asm.OAsm;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
-import origami.rule.LocaleFormat;
 import origami.type.OType;
 
 public class OWarningCode extends OParamCode<OLog> {
@@ -57,7 +57,7 @@ public class OWarningCode extends OParamCode<OLog> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushWarning(this);
 	}
 

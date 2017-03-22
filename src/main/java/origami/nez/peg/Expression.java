@@ -22,8 +22,8 @@ import java.util.List;
 
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
-import origami.trait.StringCombinator;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
+import origami.util.StringCombinator;
 
 public abstract class Expression extends AbstractList<Expression> implements StringCombinator {
 

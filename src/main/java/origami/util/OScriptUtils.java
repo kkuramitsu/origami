@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.util;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -40,7 +40,6 @@ import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
-import origami.nez.peg.GrammarLoader;
 import origami.rule.OFmt;
 import origami.type.OLocalClassType;
 import origami.type.OType;
@@ -96,7 +95,7 @@ public interface OScriptUtils {
 	public default void importClass(OEnv env, SourcePosition s, Class<?> c, String alias, Set<String> names) {
 		if (OSimpleImportable.class.isAssignableFrom(c)) {
 			Object value = OTypeUtils.newInstance(c);
-			env.add0(s, alias != null ? alias : c.getSimpleName(), value);
+			env.add(s, alias != null ? alias : c.getSimpleName(), value);
 			return;
 		}
 		if (OImportable.class.isAssignableFrom(c)) {
@@ -153,7 +152,7 @@ public interface OScriptUtils {
 			if (a != null) {
 				OMethod mh = new OMethod(env, m);
 				mh.setLocalName(a.name());
-				env.add0(s, a.name(), mh);
+				env.add(s, a.name(), mh);
 				// ODebug.trace("op %s %s", a.name(), mh);
 			}
 		}
@@ -162,26 +161,26 @@ public interface OScriptUtils {
 
 	public default void addType(OEnv env, SourcePosition s, String name, Class<?> c) {
 		if (name.equals(c.getSimpleName())) {
-			env.add0(s, name, env.t(c));
+			env.add(s, name, env.t(c));
 		} else {
 			OTypeSystem ts = env.getTypeSystem();
 			OType t = new OLocalClassType(ts, c, name, null);
 			if (!ts.isDefined(c)) {
 				ts.define(c, t);
 			}
-			env.add0(s, name, t);
+			env.add(s, name, t);
 		}
 		importClassMethod(env, s, c);
 	}
 
 	public default void addName(OEnv env, SourcePosition s, OType t, String... names) {
 		for (String n : names) {
-			env.add0(s, n, OTypeName.newEntry(t));
+			env.add(s, n, OTypeName.newEntry(t));
 		}
 	}
 
 	public default void addStaticField(OEnv env, SourcePosition s, String name, Field f) {
-		env.add0(s, name, new OGlobalVariable(new OField(env, f)));
+		env.add(s, name, new OGlobalVariable(new OField(env, f)));
 	}
 
 	public default void addStaticMethod(OEnv env, SourcePosition s, String name, Method m) {
@@ -197,7 +196,7 @@ public interface OScriptUtils {
 			mh.setLocalName(name);
 		}
 		ODebug.trace("name %s %s", name, mh);
-		env.add0(s, name, mh);
+		env.add(s, name, mh);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -18,31 +18,14 @@ package origami.code;
 
 import origami.OEnv;
 import origami.asm.OAsm;
-import origami.code.TryCatchCode.CatchCode;
+import origami.code.OTryCode.CatchCode;
 import origami.type.OType;
 
-/**
- * <pre>
- * Params 0 : With Resources (LocalVar[]?) 1 : Try Clause (MultiCode) 2 : Catch
- * Clauses (CatchCode[]?) 3 : Finally Clause (MultiCode?)
- **/
+public class OTryCode extends OParamCode<CatchCode[]> {
 
-public class TryCatchCode extends OParamCode<CatchCode[]> {
-
-	public TryCatchCode(OEnv env, OCode tryCode, CatchCode[] catchCodes, OCode finallyCode) {
+	public OTryCode(OEnv env, OCode tryCode, CatchCode[] catchCodes, OCode finallyCode) {
 		super(catchCodes, tryCode.getType(), tryCode, finallyCode);
 	}
-
-	public void generate(OGenerator gen) {
-		gen.pushTry(this);
-	}
-
-	// public Optional<OCode[]> withResourses() {
-	// if (nodes[0] != null) {
-	// return Optional.of(nodes[0].getParams());
-	// }
-	// return Optional.empty();
-	// }
 
 	public OCode tryClasuse() {
 		return nodes[0];
@@ -75,11 +58,11 @@ public class TryCatchCode extends OParamCode<CatchCode[]> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushTry(this);
 	}
 
-	public static class CatchCode extends LocalCode<String> {
+	public static class CatchCode extends OLocalCode<String> {
 
 		public CatchCode(OType type, String name, OCode clause) {
 			super(name, type, clause);
@@ -95,22 +78,4 @@ public class TryCatchCode extends OParamCode<CatchCode[]> {
 
 	}
 
-	// /**
-	// * <pre>
-	// * Params 0 : VarDecl (LocalVarDecl) 1 : Call close() (MethodCallCode)
-	// **/
-	// public static class WithResourceCode extends StmtCode {
-	//
-	// public WithResourceCode(OEnv env, OCode... nodes) {
-	// super(env, "withResource", nodes);
-	// }
-	//
-	// public OVariable varDecl() {
-	// return (OVariable) nodes[0];
-	// }
-	//
-	// public OCode callClose() {
-	// return nodes[1];
-	// }
-	// }
 }

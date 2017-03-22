@@ -1,4 +1,4 @@
-package origami.trait;
+package origami.util;
 
 
 import origami.OConsole;

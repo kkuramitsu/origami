@@ -17,7 +17,7 @@
 package origami.ffi;
 
 import origami.OLog;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 @SuppressWarnings("serial")
 public class OrigamiException extends RuntimeException {

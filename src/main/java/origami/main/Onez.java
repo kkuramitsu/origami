@@ -19,7 +19,6 @@ package origami.main;
 import java.io.IOException;
 
 import origami.OConsole;
-import origami.ODebug;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.ParserSource;
@@ -36,7 +35,7 @@ public class Onez extends OCommand {
 	}
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		OCommand.displayVersion("Nez");
 		p(Yellow, "Enter an input string to match (or a grammar if you want to update).");
 		p(Yellow, "Tips: Start with an empty line for multiple lines.");

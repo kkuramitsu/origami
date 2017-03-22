@@ -9,7 +9,7 @@ public class ThisCode extends OValueCode {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushThis();
 	}
 

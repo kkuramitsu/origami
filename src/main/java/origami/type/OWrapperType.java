@@ -22,7 +22,7 @@ import origami.OEnv;
 import origami.code.OCode;
 import origami.lang.OField;
 import origami.lang.OMethodHandle;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public interface OWrapperType extends OType, StringCombinator {
 

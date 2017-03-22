@@ -21,7 +21,6 @@ import origami.code.OAssignCode;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.ONameCode;
-import origami.rule.OConfig;
 import origami.rule.OFmt;
 import origami.type.OType;
 
@@ -52,8 +51,7 @@ public class OLocalVariable extends OVariable {
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		return new OAssignCode(OConfig.assignedType(env, this.getType()), true, this.getName(),
-				/* this.getType(), */ right);
+		return new OAssignCode(this.getType(), true, this.getName(), right);
 	}
 
 	@Override
@@ -61,8 +59,7 @@ public class OLocalVariable extends OVariable {
 		if (this.isReadOnly()) {
 			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
-		return new OAssignCode(OConfig.assignedType(env, this.getType()), false, this.getName(),
-				/* this.getType(), */ right);
+		return new OAssignCode(this.getType(), false, this.getName(), right);
 	}
 
 }

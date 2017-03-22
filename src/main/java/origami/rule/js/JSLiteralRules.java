@@ -27,12 +27,12 @@ import origami.code.OValueCode;
 import origami.nez.ast.Tree;
 import origami.rule.AbstractTypeRule;
 import origami.rule.TypeAnalysis;
-import origami.trait.OImportable;
-import origami.trait.OStringUtils;
-import origami.trait.OTypeRule;
 import origami.type.AnyType;
 import origami.type.OArrayType;
 import origami.type.OType;
+import origami.util.OImportable;
+import origami.util.OStringUtils;
+import origami.util.OTypeRule;
 
 public class JSLiteralRules implements OImportable, TypeAnalysis {
 

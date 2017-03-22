@@ -21,14 +21,13 @@ import java.io.IOException;
 import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.ast.CommonTree;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.NezFmt;
 import origami.nez.peg.Production;
-import origami.rule.LocaleFormat;
-import origami.rule.OFmt;
 
 public final class Parser {
 	private final Production start;

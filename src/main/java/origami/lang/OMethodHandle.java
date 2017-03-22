@@ -25,11 +25,11 @@ import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.ffi.OCast;
-import origami.trait.OArrayUtils;
-import origami.trait.StringCombinator;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
+import origami.util.OArrayUtils;
+import origami.util.StringCombinator;
 import origami.type.OParamMatcher;
 
 public interface OMethodHandle {

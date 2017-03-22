@@ -18,7 +18,7 @@ package origami.type;
 
 import java.lang.reflect.WildcardType;
 
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class OParamWildcardType extends OTypeImpl {
 	private final OType upperBound;

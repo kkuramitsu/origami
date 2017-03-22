@@ -26,11 +26,11 @@ import origami.nez.ast.Tree;
 import origami.rule.AbstractTypeRule;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
-import origami.trait.OArrayUtils;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
 import origami.type.AnyType;
 import origami.type.OType;
+import origami.util.OArrayUtils;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
 
 public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalysis, OArrayUtils {
 

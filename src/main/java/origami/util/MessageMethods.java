@@ -1,3 +1,4 @@
+package origami.util;
 ///***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // * 
@@ -16,19 +17,29 @@
 //
 //package origami.trait;
 //
+//import origami.OEnv;
+//import origami.OLog.Messenger;
 //import origami.nez.ast.Tree;
 //
-//public interface FormatMethods {
-//	public default String format(String fmt, Object[] args) {
-//		return OStringBuilder.format(fmt, args);
-//	}
+//public interface MessageMethods {
 //
-//	public default String format(Tree<?> t, String msg, String fmt, Object[] args) {
-//		String m = format(fmt, args);
-//		if (t != null) {
-//			return t.getSource().formatPositionLine(msg, t.getSourcePosition(), m);
-//		}
-//		return m;
-//	}
+////	public default Messenger getMessenger(OEnv env) {
+////		return env.get("__msg__", null);
+////	}
+////
+////	public default void reportError(OEnv env, Tree<?> s, String fmt, Object... args) {
+////		Messenger m = this.getMessenger(env);
+////		m.reportError(s, fmt, args);
+////	}
+////
+////	public default void reportWarning(OEnv env, Tree<?> s, String fmt, Object... args) {
+////		Messenger m = this.getMessenger(env);
+////		m.reportWarning(s, fmt, args);
+////	}
+////
+////	public default void reportNotice(OEnv env, Tree<?> s, String fmt, Object... args) {
+////		Messenger m = this.getMessenger(env);
+////		m.reportWarning(s, fmt, args);
+////	}
 //
 //}

@@ -22,7 +22,7 @@ import origami.ffi.OMutable;
 import origami.ffi.ONullable;
 import origami.ffi.OrigamiObject;
 import origami.nez.ast.Symbol;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class IObject implements StringCombinator, OrigamiObject, Cloneable {
 	private final static int Unused = 0;

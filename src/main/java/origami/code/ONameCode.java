@@ -17,9 +17,8 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.Origami.LocalVariables;
+import origami.OrigamiContext.LocalVariables;
 import origami.asm.OAsm;
-import origami.rule.OConfig;
 import origami.rule.OFmt;
 import origami.type.OType;
 
@@ -46,7 +45,7 @@ public class ONameCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushName(this);
 	}
 
@@ -55,6 +54,6 @@ public class ONameCode extends OParamCode<String> {
 		if (readOnly) {
 			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
-		return new OAssignCode(OConfig.assignedType(env, type), false, this.getName(), right);
+		return new OAssignCode(type, false, this.getName(), right);
 	}
 }

@@ -70,7 +70,7 @@ public class OArrayCode extends OParamCode<Void> implements TypeAnalysis {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushArray(this);
 	}
 

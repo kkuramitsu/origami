@@ -16,7 +16,7 @@
 
 package origami.type;
 
-import origami.trait.OArrayUtils;
+import origami.util.OArrayUtils;
 
 public class OVarDomain implements OArrayUtils {
 	// Type Resolver

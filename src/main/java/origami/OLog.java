@@ -18,11 +18,10 @@ package origami;
 
 import origami.code.OCode;
 import origami.code.OWarningCode;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
-import origami.rule.LocaleFormat;
-import origami.rule.OFmt;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class OLog implements StringCombinator {
 	public SourcePosition s;

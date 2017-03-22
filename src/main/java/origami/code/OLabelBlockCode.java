@@ -60,7 +60,7 @@ public class OLabelBlockCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushBlockCode(this);
 	}
 

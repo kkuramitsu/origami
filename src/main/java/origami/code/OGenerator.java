@@ -2,19 +2,11 @@ package origami.code;
 
 public interface OGenerator {
 
-	public void pushMulti(OMultiCode node);
-
-	public void pushReturn(OReturnCode node);
-
-	public void pushIf(OIfCode node);
-
 	public void pushValue(OValueCode node);
 
 	public void pushArray(OArrayCode node);
 
 	public void pushName(ONameCode node);
-
-	public void pushAssign(OAssignCode node);
 
 	public void pushConstructor(OConstructorCode node);
 
@@ -24,23 +16,35 @@ public interface OGenerator {
 
 	public void pushSetter(OSetterCode node);
 
-	public void pushGetter(GetterCode node);
+	public void pushGetter(OGetterCode node);
 
-	// public void pushDynamic(CallSiteCode node);
+	public void pushInstanceOf(OInstanceOfCode code);
 
-	public void pushUndefined(OCode node);
+	public void pushAnd(OAndCode code);
 
-	public void pushError(OErrorCode node);
+	public void pushOr(OOrCode code);
 
-	public void pushWarning(OWarningCode node);
+	public void pushNot(ONotCode code);
 
-	/*--------*/
-
-	public void pushThis();
+	public void pushGetSize(GetSizeCode code);
 
 	public void pushSetIndex(SetIndexCode code);
 
-	public void pushGetIndex(GetIndexCode code);
+	public void pushGetIndex(OGetIndexCode code);
+
+	public void pushMulti(OMultiCode node);
+
+	public void pushAssign(OAssignCode node);
+
+	public void pushIf(OIfCode node);
+
+	public void pushWhile(OWhileCode code);
+
+	public void pushTry(OTryCode code);
+
+	public void pushSwitch(SwitchCode code);
+
+	public void pushReturn(OReturnCode node);
 
 	public void pushThrow(OThrowCode code);
 
@@ -50,10 +54,16 @@ public interface OGenerator {
 
 	public void pushBlockCode(OLabelBlockCode code);
 
+	/*--------*/
+
+	public void pushThis();
+
 	public void pushLoop(ForCode code);
 
-	public void pushTry(TryCatchCode code);
+	public void pushUndefined(OCode node);
 
-	public void pushSwitch(SwitchCode code);
+	public void pushError(OErrorCode node);
+
+	public void pushWarning(OWarningCode node);
 
 }

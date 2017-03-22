@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.rule;
+package origami.rule.java;
 
 import origami.OEnv;
 import origami.asm.OAnno;
@@ -31,11 +31,16 @@ import origami.lang.OMethodHandle;
 import origami.lang.OPartialFunc;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
+import origami.rule.AbstractTypeRule;
+import origami.rule.OFmt;
+import origami.rule.OSymbols;
+import origami.rule.SyntaxAnalysis;
+import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OArrayType;
 import origami.type.OType;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
 
 public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAnalysis {
 
@@ -86,7 +91,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			OClassLoader cl = env.getClassLoader();
 			OClassDeclType ct = cl.newType(env, anno, name, params, superClass, interfaces);
 			ct.getDecl().addBody(t.get(_body, null));
-			env.add0(t, name, ct); // FIXME
+			env.add(t, name, ct); // FIXME
 			return new RunnableCode(env, ct.getDecl()::typeCheck);
 		}
 
@@ -145,15 +150,14 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			String[] paramNames = parseParamNames(env, t.get(_param, null));
 			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));
 			OType ret = parseType(env, t.get(_type, null), env.t(AnyType.class));
-			ret = OConfig.inferReturnType(env, name, ret);
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 
 			OCode body = parseUntypedCode(env, t.get(_body));
 			OMethodHandle m = cdecl.addMethod(anno, ret, name, paramNames, paramTypes, exceptions, body);
 			if (anno.isStatic()) {
-				env.add0(t, name, m);
+				env.add(t, name, m);
 			} else {
-				env.add0(t, name, new OPartialFunc(m, 0, new ThisCode(cdecl.getType())));
+				env.add(t, name, new OPartialFunc(m, 0, new ThisCode(cdecl.getType())));
 			}
 			return new OEmptyCode(env);
 		}
@@ -171,7 +175,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
 			String[] paramNames = parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), OConfig.Untyped(env));
+			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), getDefaultParamType(env));
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 			OCode body = parseUntypedCode(env, t.get(_body));
 			cdecl.addConstructorCode(anno, paramNames, paramTypes, exceptions, body);

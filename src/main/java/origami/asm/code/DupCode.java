@@ -17,12 +17,10 @@
 package origami.asm.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.code.OCode;
-import origami.code.OParamCode;
 import origami.type.OType;
 
-public class DupCode extends OParamCode<OCode> implements AsmCode {
+public class DupCode extends OAsmCode<OCode> {
 
 	public DupCode(OCode code) {
 		super(code, null);
@@ -36,11 +34,6 @@ public class DupCode extends OParamCode<OCode> implements AsmCode {
 	@Override
 	public Object eval(OEnv env) throws Throwable {
 		return this.getHandled().eval(env);
-	}
-
-	@Override
-	public void generate(OAsm gen) {
-		gen.pushAsmCode(this);
 	}
 
 }

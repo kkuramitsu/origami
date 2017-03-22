@@ -1,7 +1,6 @@
 package origami.nez.ast;
 
 import origami.OConsole;
-import origami.rule.LocaleFormat;
 
 public interface SourceLogger {
 

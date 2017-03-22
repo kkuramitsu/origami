@@ -17,7 +17,7 @@
 package origami.main.tool;
 
 import origami.nez.peg.Grammar;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public class CParserGenerator extends ParserGenerator {
 

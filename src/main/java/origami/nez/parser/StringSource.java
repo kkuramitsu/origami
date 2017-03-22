@@ -27,7 +27,7 @@ import java.io.UnsupportedEncodingException;
 
 import origami.OConsole;
 import origami.nez.ast.Source;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public class StringSource extends ParserSource {
 	public final byte[] inputs;

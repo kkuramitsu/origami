@@ -17,23 +17,11 @@
 package origami.asm.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
-import origami.code.OParamCode;
 
-public class ArrayLengthCode extends OParamCode<Object> implements AsmCode {
+public class ArrayLengthCode extends OAsmCode<Object> {
 
 	public ArrayLengthCode(OEnv env) {
 		super(null, env.t(int.class));
-	}
-
-	@Override
-	public Object eval(OEnv env) throws Throwable {
-		return null;
-	}
-
-	@Override
-	public void generate(OAsm gen) {
-		gen.pushAsmCode(this);
 	}
 
 }

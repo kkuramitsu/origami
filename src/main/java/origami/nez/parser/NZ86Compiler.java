@@ -28,7 +28,7 @@ import origami.nez.peg.NezFunc;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public class NZ86Compiler implements ParserCompiler {
 

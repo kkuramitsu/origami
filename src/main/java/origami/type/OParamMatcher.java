@@ -24,7 +24,7 @@ import origami.code.OCode;
 import origami.ffi.OCast;
 import origami.lang.OMethodHandle;
 import origami.rule.TypeAnalysis;
-import origami.trait.OArrayUtils;
+import origami.util.OArrayUtils;
 
 public class OParamMatcher extends OVarDomain implements OArrayUtils, TypeAnalysis {
 

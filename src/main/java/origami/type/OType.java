@@ -28,7 +28,7 @@ import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.asm.OCallSite;
 import origami.code.DynamicCastCode;
-import origami.code.GetterCode;
+import origami.code.OGetterCode;
 import origami.code.OCastCode;
 import origami.code.OCode;
 import origami.code.OErrorCode;
@@ -44,9 +44,9 @@ import origami.lang.OMethodHandle;
 import origami.lang.ONameEntity;
 import origami.lang.OTypeName;
 import origami.rule.OFmt;
-import origami.trait.OArrayUtils;
-import origami.trait.OTypeUtils;
-import origami.trait.StringCombinator;
+import origami.util.OArrayUtils;
+import origami.util.OTypeUtils;
+import origami.util.StringCombinator;
 
 public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEntity {
 
@@ -390,7 +390,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		OField f = this.getDeclaredField(name);
 		if (f != null) {
 			if (f.isPublic()) {
-				return f.isStatic() ? new GetterCode(f) : new GetterCode(f, recv);
+				return f.isStatic() ? new OGetterCode(f) : new OGetterCode(f, recv);
 			}
 		}
 		throw new OErrorCode(env, OFmt.undefined_field__YY0_YY1, this, name);
@@ -400,7 +400,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		OField f = this.getDeclaredField(name);
 		if (f != null) {
 			if (f.isPublic() && f.isStatic()) {
-				return new GetterCode(f);
+				return new OGetterCode(f);
 			}
 		}
 		throw new OErrorCode(env, OFmt.undefined_static_field__YY0_YY1, this, name);

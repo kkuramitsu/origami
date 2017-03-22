@@ -15,7 +15,7 @@ public class PreOpCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		this.setter.generate(gen);
 	}
 

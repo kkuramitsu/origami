@@ -16,25 +16,12 @@
 
 package origami.asm.code;
 
-import origami.OEnv;
-import origami.asm.OAsm;
-import origami.code.OParamCode;
 import origami.type.OType;
 
-public class LoadThisCode extends OParamCode<Object> implements AsmCode {
+public class LoadThisCode extends OAsmCode<Void> {
 
 	public LoadThisCode(OType returnType) {
 		super(null, returnType);
-	}
-
-	@Override
-	public Object eval(OEnv env) throws Throwable {
-		return null;
-	}
-
-	@Override
-	public void generate(OAsm gen) {
-		gen.pushAsmCode(this);
 	}
 
 }

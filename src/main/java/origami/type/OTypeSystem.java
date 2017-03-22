@@ -25,21 +25,38 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 
-import origami.code.NullCode;
+import origami.OEnv;
+import origami.asm.OClassLoader;
+import origami.code.ONullCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
 import origami.ffi.Immutable;
 import origami.ffi.ONullable;
 import origami.ffi.OrigamiObject;
-import origami.trait.OTypeUtils;
+import origami.nez.ast.SourcePosition;
+import origami.util.OTypeUtils;
 
-public class OTypeSystem {
+public abstract class OTypeSystem {
+
+	private final OClassLoader classLoader;
 
 	public OTypeSystem() {
+		this.classLoader = new OClassLoader();
 		define(OUntypedType.class, new OUntypedType(this));
 		define(AnyType.class, new AnyType(this));
 	}
 
+	/* class loader */
+	
+	public final OClassLoader getClassLoader() {
+		return this.classLoader;
+	}
+
+	/* env */
+	
+	public abstract void init(OEnv env, SourcePosition s);
+	
+	
 	/* configuration */
 
 	protected OType createClassType(Class<?> c) {
@@ -206,18 +223,9 @@ public class OTypeSystem {
 
 	public final OCode newValueCode(Object value) {
 		if (value == null) {
-			return new NullCode(newType(OUntypedType.class));
+			return new ONullCode(newType(OUntypedType.class));
 		}
 		return new OValueCode(value, valueType(value));
 	}
-
-	// public OCode checkAcc(OEnv env, OCode code, OType calleeType,
-	// OMethodHandle m) {
-	// if (m.isMutable() && !calleeType.isMutable()) {
-	// throw new ErrorCode(env, OFmt.fmt(OFmt.S_is_not_mutable),
-	// code.getParams()[0]);
-	// }
-	// return code;
-	// }
 
 }

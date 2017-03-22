@@ -14,10 +14,31 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.asm.code;
+package origami.code;
 
-import origami.code.OCode;
+import origami.ODebug;
+import origami.OEnv;
+import origami.type.OType;
 
-public interface AsmCode extends OCode {
+public class OLocalCode<T> extends OParamCode<T> {
+
+	protected OLocalCode(T handled, OType ret, OCode... codes) {
+		super(handled, ret, codes);
+	}
+
+	protected OLocalCode(T handled, OType ret) {
+		super(handled, ret);
+	}
+
+	@Override
+	public final Object eval(OEnv env) throws Throwable {
+		ODebug.FIXME("Don't eval");
+		return null;
+	}
+
+	@Override
+	public final void generate(OGenerator gen) {
+		ODebug.FIXME("Don't generate directly");
+	}
 
 }

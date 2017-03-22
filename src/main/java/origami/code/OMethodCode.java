@@ -26,9 +26,8 @@ import origami.ffi.OCast;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethod;
 import origami.lang.OMethodHandle;
-import origami.trait.OArrayUtils;
-import origami.trait.StringCombinator;
 import origami.type.OType;
+import origami.util.OArrayUtils;
 
 public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicInvokable, OArrayUtils {
 
@@ -78,7 +77,7 @@ public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicI
 	/* Asm interface */
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushMethod(this);
 	}
 

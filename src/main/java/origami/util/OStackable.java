@@ -14,14 +14,11 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.util;
 
-import origami.OEnv;
-import origami.code.OCode;
-import origami.nez.ast.Tree;
+public interface OStackable<T> {
+	public T push(T onstack);
 
-public interface OTypeRule {
-
-	public OCode typeRule(OEnv env, Tree<?> t);
+	public T pop();
 
 }

@@ -14,7 +14,7 @@ public class SwitchCode extends StmtCode {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushSwitch(this);
 	}
 

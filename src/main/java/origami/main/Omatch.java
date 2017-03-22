@@ -30,7 +30,7 @@ public class Omatch extends OCommand {
 	}
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
 		if (options.value(ParserOption.InlineGrammar, null) != null) {
 			String t = options.value(ParserOption.InlineGrammar, null);

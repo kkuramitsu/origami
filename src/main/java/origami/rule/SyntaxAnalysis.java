@@ -39,7 +39,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	// defining env
 
 	public default void setDefiningEnv(OEnv env, OEnv defineEnv) {
-		env.add0(" export", defineEnv);
+		env.add(" export", defineEnv);
 	}
 
 	public default OEnv getDefiningEnv(OEnv env) {
@@ -83,11 +83,11 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	public default void defineName(OEnv env, Tree<?> t, Object d) {
 		String name = t.getText(_name, null);
 		if (name != null) {
-			env.add0(t, name, d);
+			env.add(t, name, d);
 		}
 		name = t.getText(_alias, null);
 		if (name != null) {
-			env.add0(t, name, d);
+			env.add(t, name, d);
 		}
 	}
 
@@ -163,6 +163,14 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		}
 	}
 
+	public default void setDefaultParamType(OEnv env, OType t) {
+		env.add(OUntypedType.class, t);
+	}
+
+	public default OType getDefaultParamType(OEnv env) {
+		return env.get(OUntypedType.class);
+	}
+	
 	public default OType[] parseParamTypes(OEnv env, String[] paramNames, Tree<?> params, OType defaultType) {
 		if (params == null) {
 			return OType.emptyTypes;

@@ -17,6 +17,7 @@ package origami.code;
 
 import java.util.List;
 
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.OConsts;
 import origami.OEnv;
@@ -24,7 +25,6 @@ import origami.OEnv.OListMatcher;
 import origami.OLog;
 import origami.asm.OAsm;
 import origami.ffi.OCast;
-import origami.rule.LocaleFormat;
 import origami.type.OType;
 import origami.type.OUntypedType;
 
@@ -131,7 +131,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushError(this);
 	}
 

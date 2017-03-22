@@ -76,7 +76,7 @@ public class OIfCode extends OParamCode<OEnv> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushIf(this);
 	}
 

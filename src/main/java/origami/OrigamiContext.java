@@ -20,85 +20,117 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import origami.code.OErrorCode;
 import origami.code.OCode;
-import origami.lang.callsite.OFuncCallSite;
-import origami.lang.callsite.OGetterCallSite;
-import origami.lang.callsite.OMethodCallSite;
+import origami.code.OErrorCode;
+import origami.main.OOption;
 import origami.nez.ast.Source;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
-import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
+import origami.rule.OrigamiTypeSystem;
 import origami.rule.TypeAnalysis;
-import origami.trait.OScriptUtils;
-import origami.trait.StringCombinator;
+import origami.type.OTypeSystem;
+import origami.util.OScriptUtils;
+import origami.util.StringCombinator;
 
-public class Origami extends OEnv.OBaseEnv {
+public class OrigamiContext extends OEnv.OBaseEnv {
 	final OrigamiRuntime runtime = new OrigamiRuntime();
 
-	public Origami(Grammar grammar) throws IOException {
-		super(null, "__root__");
-		add(OFuncCallSite.class, new OFuncCallSite());
-		add(OMethodCallSite.class, new OMethodCallSite());
-		add(OGetterCallSite.class, new OGetterCallSite());
-		init(grammar);
+	public OrigamiContext() {
+		this(new OrigamiTypeSystem());
+	}
+
+	public OrigamiContext(OTypeSystem ts) {
+		super(ts);
+		ts.init(this, SourcePosition.UnknownPosition);
+	}
+
+	public OrigamiContext(Grammar grammar, OTypeSystem ts) {
+		this(ts);
 		Parser p = grammar.newParser();
 		this.add(Parser.class, p);
 		this.add(Grammar.class, grammar);
 	}
 
-	public void init(Grammar g) throws IOException {
+	public OrigamiContext(Grammar grammar) throws ClassNotFoundException {
+		this(grammar, loadTypeSystem(grammar, null));
+	}
+
+	public OrigamiContext(Grammar grammar, OOption options) throws ClassNotFoundException {
+		this(grammar, loadTypeSystem(grammar, options));
+	}
+
+	static OTypeSystem loadTypeSystem(Grammar g, OOption options) throws ClassNotFoundException {
 		Production pp = g.getProduction("ORIGAMI");
 		if (pp != null) {
-			String c = pp.getExpression().toString().replaceAll("'", "");
-			// ODebug.trace("ORIGAMI=%s", c);
+			String cpath = pp.getExpression().toString().replaceAll("'", "");
+			// ODebug.trace("ORIGAMI=%s", cpath);
 			try {
-				importClass(Class.forName(c));
-			} catch (ClassNotFoundException e) {
+				return (OTypeSystem) Class.forName(cpath).newInstance();
+			} catch (Exception e) {
 				ODebug.traceException(e);
-				throw new IOException("cannot load " + c);
 			}
-		} else {
-			ODebug.println("set ORIGAMI in nez file");
-			importClass(origami.rule.iroha.IrohaSet.class);
+			// return null;
 		}
+		return new OrigamiTypeSystem();
 	}
 
 	public void importClass(Class<?> c) throws IOException {
-		runtime.importClass(this, null, c, null);
+		this.runtime.importClass(this, null, c, null);
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
-		Source sc = ParserSource.newFileSource(path, null);
+		return this.loadScriptFile(ParserSource.newFileSource(path, null));
+	}
+
+	public boolean loadScriptFile(Source sc) {
 		try {
-			runtime.load(this, sc);
+			this.runtime.load(this, sc);
 			return true;
 		} catch (Throwable e) {
-			showThrowable(e);
+			this.showThrowable(e);
 			return false;
 		}
 	}
 
-	public boolean loadScriptFile(Source sc) throws IOException {
+	public void testScriptFile(Source sc) throws Throwable {
 		try {
-			runtime.load(this, sc);
-			return true;
+			this.runtime.load(this, sc);
 		} catch (Throwable e) {
-			showThrowable(e);
-			return false;
+			this.showThrowable(e);
+			throw e;
+		}
+	}
+
+	void showThrowable(Throwable e) {
+		if (e instanceof InvocationTargetException) {
+			this.showThrowable(((InvocationTargetException) e).getTargetException());
+			return;
+		}
+		if (e instanceof OErrorCode) {
+			OConsole.println(OConsole.bold("Static Error: "));
+			OConsole.beginColor(OConsole.Red);
+			OConsole.println(((OErrorCode) e).getLog());
+			OConsole.endColor();
+		} else {
+			OConsole.println(OConsole.bold("Runtime Exception: "));
+			OConsole.beginColor(OConsole.Yellow);
+			e.printStackTrace();
+			OConsole.endColor();
 		}
 	}
 
 	public Object eval(String source, int line, String script) throws Throwable {
 		Source sc = ParserSource.newStringSource(source, line, script);
-		return runtime.eval(this, sc);
+		return this.runtime.eval(this, sc);
 	}
 
 	public void shell(String source, int line, String script) {
 		Source sc = ParserSource.newStringSource(source, line, script);
-		runtime.runREPL(this, sc);
+		this.runtime.runREPL(this, sc);
 	}
 
 	class OrigamiRuntime extends OConsole implements OScriptUtils, TypeAnalysis {
@@ -106,29 +138,25 @@ public class Origami extends OEnv.OBaseEnv {
 
 		public void load(OEnv env, Source sc) throws Throwable {
 			Parser p = env.get(Parser.class);
-			//p.setThrowingException(true);
-			//p.setPrintingException(true);
-			Tree<?> t = p.parse(sc, 0, defaultTree, defaultTree);
-			OCode code = typeExpr(env, t);
+			Tree<?> t = p.parse(sc, 0, this.defaultTree, this.defaultTree);
+			OCode code = this.typeExpr(env, t);
 			code.eval(env);
 		}
 
 		private Tree<?> parseTree(OEnv env, Source sc) throws IOException {
 			Parser p = env.get(Parser.class);
-			//p.setThrowingException(false);
-			//p.setPrintingException(true);
-			return p.parse(sc, 0, defaultTree, defaultTree);
+			return p.parse(sc, 0, this.defaultTree, this.defaultTree);
 		}
 
 		public Object eval(OEnv env, Source sc) throws Throwable {
-			Tree<?> node = parseTree(env, sc);
-			OCode code = typeExpr(env, node);
+			Tree<?> node = this.parseTree(env, sc);
+			OCode code = this.typeExpr(env, node);
 			return code.eval(env);
 		}
 
 		public boolean runREPL(OEnv env, Source sc) {
 			try {
-				Tree<?> node = parseTree(env, sc);
+				Tree<?> node = this.parseTree(env, sc);
 				if (node == null) {
 					return false;
 				}
@@ -137,7 +165,7 @@ public class Origami extends OEnv.OBaseEnv {
 					dump("  ", node.toString());
 					endColor();
 				}
-				OCode code = typeExpr(env, node);
+				OCode code = this.typeExpr(env, node);
 				env.add(LocalVariables.class, new LocalVariables());
 				Object value = code.eval(env);
 				if (!code.getType().is(void.class)) {
@@ -153,7 +181,7 @@ public class Origami extends OEnv.OBaseEnv {
 				}
 				return true;
 			} catch (Throwable e) {
-				showThrowable(e);
+				OrigamiContext.this.showThrowable(e);
 			}
 			return false;
 		}
@@ -163,24 +191,6 @@ public class Origami extends OEnv.OBaseEnv {
 	@SuppressWarnings("serial")
 	public static class LocalVariables extends HashMap<String, Object> {
 
-	}
-
-	public static void showThrowable(Throwable e) {
-		if (e instanceof InvocationTargetException) {
-			showThrowable(((InvocationTargetException) e).getTargetException());
-			return;
-		}
-		if (e instanceof OErrorCode) {
-			OConsole.println(OConsole.bold("Static Error: "));
-			OConsole.beginColor(OConsole.Red);
-			OConsole.println(((OErrorCode) e).getLog());
-			OConsole.endColor();
-		} else {
-			OConsole.println(OConsole.bold("Runtime Exception: "));
-			OConsole.beginColor(OConsole.Yellow);
-			e.printStackTrace();
-			OConsole.endColor();
-		}
 	}
 
 }

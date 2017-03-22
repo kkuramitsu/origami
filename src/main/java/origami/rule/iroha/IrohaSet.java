@@ -19,14 +19,14 @@ package origami.rule.iroha;
 import java.util.Set;
 
 import origami.OEnv;
-import origami.lang.callsite.IMethodCallSite;
+import origami.lang.callsite.IrohaMethodCallSite;
 import origami.lang.callsite.OMethodCallSite;
 import origami.nez.ast.SourcePosition;
 import origami.rule.ExpressionRules;
 import origami.rule.LayerRules;
 import origami.rule.LiteralRules;
-import origami.rule.OConfig2;
 import origami.rule.OrigamiAPIs;
+import origami.rule.OrigamiDevelAPIs;
 import origami.rule.StatementRules;
 import origami.rule.TypeRules;
 import origami.rule.iroha.OrigamiList.IList;
@@ -38,9 +38,9 @@ import origami.rule.unit.MeterUnit;
 import origami.rule.unit.OUnit;
 import origami.rule.unit.SecondUnit;
 import origami.rule.unit.UnitRules;
-import origami.trait.OImportable;
-import origami.trait.OScriptUtils;
 import origami.type.OUntypedType;
+import origami.util.OImportable;
+import origami.util.OScriptUtils;
 
 public class IrohaSet implements OImportable, OScriptUtils {
 	@Override
@@ -69,10 +69,7 @@ public class IrohaSet implements OImportable, OScriptUtils {
 		addName(env, s, env.t(String.class), "s", "t", "str", "text", "name");
 		addName(env, s, env.t(OUntypedType.class), "X", "Y", "Z");
 
-		env.add(OMethodCallSite.class, new IMethodCallSite());
-		OConfig2 conf = new OConfig2();
-		conf.DefaultParamType = null;
-		env.add(OConfig2.class, conf);
+		env.add(OMethodCallSite.class, new IrohaMethodCallSite());
 
 		importClass(env, s, StatementRules.class, AllSubSymbols);
 		importClass(env, s, LiteralRules.class, AllSubSymbols);
@@ -85,6 +82,7 @@ public class IrohaSet implements OImportable, OScriptUtils {
 		importClass(env, s, IrohaRules.class, AllSubSymbols);
 
 		importClass(env, s, OrigamiAPIs.class, AllSubSymbols);
+		importClass(env, s, OrigamiDevelAPIs.class, AllSubSymbols);
 		importClass(env, s, IrohaAPIs.class, AllSubSymbols);
 
 	}

@@ -19,7 +19,7 @@ package origami.main;
 public class Cpass extends OCommand {
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 
 	}
 

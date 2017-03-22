@@ -22,8 +22,8 @@ import org.objectweb.asm.Type;
 
 import origami.OEnv;
 import origami.asm.OCallSite;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
+import origami.util.OTypeUtils;
 
 public class OVirtualMethodHandle extends OMethodWrapper {
 

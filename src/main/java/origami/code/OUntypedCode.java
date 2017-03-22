@@ -44,7 +44,7 @@ public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis,
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		ODebug.NotAvailable();
 	}
 
@@ -59,7 +59,7 @@ public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis,
 		OType[] op = mdecl.getThisParamTypes();
 		String[] names = mdecl.getThisParamNames();
 		for (int i = 0; i < op.length; i++) {
-			env.add0(names[i], new OLocalVariable(true, names[i], op[i]));
+			env.add(names[i], new OLocalVariable(true, names[i], op[i]));
 			// ODebug.trace("'%s' %s", names[i], env.get(names[i],
 			// NameDecl.class));
 		}

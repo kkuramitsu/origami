@@ -76,8 +76,8 @@ public class OConv extends OMethodWrapper {
 	public static void addConv(OEnv env, SourcePosition s, OType f, OType t, int cost, OMethodHandle m) {
 		String key = f.typeDesc(0) + t.typeDesc(0);
 		OConv conv = m instanceof OConv ? (OConv) m : new OConv(m, cost);
-		env.add0(s, key, conv);
-		env.add0(s, "->" + t.typeDesc(0), conv);
+		env.add(s, key, conv);
+		env.add(s, "->" + t.typeDesc(0), conv);
 	}
 
 	public static OConv getConv(OEnv env, OType f, OType t) {

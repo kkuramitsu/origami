@@ -17,23 +17,12 @@
 package origami.asm.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
-import origami.code.OParamCode;
 import origami.type.OType;
 
-public class CheckCastCode extends OParamCode<OType> implements AsmCode {
+public class CheckCastCode extends OAsmCode<OType> {
 
 	public CheckCastCode(OEnv env, OType toType) {
 		super(toType, env.t(void.class));
 	}
 
-	@Override
-	public Object eval(OEnv env) {
-		return null;
-	}
-
-	@Override
-	public void generate(OAsm gen) {
-		gen.pushAsmCode(this);
-	}
 }

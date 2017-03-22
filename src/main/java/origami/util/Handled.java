@@ -14,18 +14,21 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.util;
 
-public class AbstractHandled<T> implements Handled<T> {
-	protected final T handled;
+public interface Handled<T> {
+	public T getHandled();
 
-	protected AbstractHandled(T handled) {
-		this.handled = handled;
+	public default boolean isA(Class<?> c) {
+		return c.isInstance(getHandled());
 	}
 
-	@Override
-	public T getHandled() {
-		return handled;
+	@SuppressWarnings("unchecked")
+	public default <X> X getHandled(Class<X> c) {
+		if (c.isInstance(getHandled())) {
+			return (X) this.getHandled();
+		}
+		return null;
 	}
 
 }

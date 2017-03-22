@@ -26,7 +26,7 @@ import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.asm.code.DupCode;
 import origami.code.GenerativeCode;
-import origami.code.GetterCode;
+import origami.code.OGetterCode;
 import origami.code.HookAfterCode;
 import origami.code.MutableCode;
 import origami.code.OArrayCode;
@@ -62,14 +62,14 @@ import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.OrigamiIterator;
 import origami.rule.SyntaxAnalysis;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
-import origami.trait.OTypeUtils;
 import origami.type.AnyType;
 import origami.type.OParamType;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
+import origami.util.OTypeUtils;
 
 public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 
@@ -93,7 +93,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				OType type = parseType(env, t.get(_type));
 				String[] names = parseNames(env, t.get(_name));
 				for (String name : names) {
-					defineEnv.add0(t, name, OTypeName.newEntry(type));
+					defineEnv.add(t, name, OTypeName.newEntry(type));
 				}
 			}
 			return new OEmptyCode(env);
@@ -176,7 +176,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Class<?> c = env.findEntryPoint();
-			return new GetterCode(new OField(env, OTypeUtils.loadField(c, "entry")));
+			return new OGetterCode(new OField(env, OTypeUtils.loadField(c, "entry")));
 		}
 	};
 
@@ -408,7 +408,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OType nameType = nextCode.getType();
 			// ODebug.trace("iter %s %s", nameType, iterCode);
 			OEnv lenv = env.newEnv();
-			lenv.add0(name, new OLocalVariable(true, name, nameType));
+			lenv.add(name, new OLocalVariable(true, name, nameType));
 			OCode bodyCode = typeExprOrErrorCode(lenv, t.get(_body));
 			return new ForEachCode(lenv, name, nameType, iterCode, bodyCode);
 		}

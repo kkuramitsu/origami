@@ -36,9 +36,9 @@ import origami.ffi.OCast;
 import origami.ffi.OrigamiException;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethodHandle;
-import origami.trait.StringCombinator;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
+import origami.util.OTypeUtils;
+import origami.util.StringCombinator;
 
 public abstract class OCallSite extends MutableCallSite {
 

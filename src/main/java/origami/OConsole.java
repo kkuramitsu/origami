@@ -16,8 +16,8 @@
 
 package origami;
 
-import origami.rule.LocaleFormat;
-import origami.trait.StringCombinator;
+import origami.nez.ast.LocaleFormat;
+import origami.util.StringCombinator;
 
 public class OConsole {
 

@@ -1,9 +1,9 @@
 package origami.code;
 
 import origami.nez.ast.SourcePosition;
-import origami.trait.Handled;
-import origami.trait.StringCombinator;
 import origami.type.OType;
+import origami.util.Handled;
+import origami.util.StringCombinator;
 
 public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombinator {
 	private T handled;

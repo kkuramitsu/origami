@@ -21,24 +21,9 @@ import origami.ODebug;
 import origami.OEnv;
 import origami.ffi.OrigamiObject;
 import origami.rule.LayerRules;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class IrohaAPIs implements OrigamiObject {
-	public final static void print(Object o) {
-		OConsole.print(o);
-	}
-
-	public final static void println(Object o) {
-		OConsole.println(o);
-	}
-
-	public final static void println() {
-		OConsole.println("");
-	}
-
-	public final static void printf(String fmt, Object... args) {
-		OConsole.print(StringCombinator.format(fmt, args));
-	}
 
 	public final static <T> T p(T o, String file, int linenum, String expr, String type) {
 		System.err.println(tweet(file, linenum, expr, type, o));

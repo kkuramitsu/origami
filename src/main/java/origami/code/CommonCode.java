@@ -2,7 +2,6 @@ package origami.code;
 
 import origami.ODebug;
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public interface CommonCode extends OCode {
@@ -48,14 +47,14 @@ public interface CommonCode extends OCode {
 	}
 
 	@Override
-	public default void generate(OAsm gen) {
+	public default void generate(OGenerator gen) {
 		ODebug.NotAvailable(this);
 	}
 
 	@Override
 	public default Object eval(OEnv env) throws Throwable {
 		ODebug.NotAvailable(this);
-		return this;
+		return null;
 	}
 
 }

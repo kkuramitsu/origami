@@ -16,7 +16,7 @@
 
 package origami.rule;
 
-import origami.trait.OTypeRule;
+import origami.util.OTypeRule;
 
 public abstract class AbstractTypeRule implements OTypeRule {
 

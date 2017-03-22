@@ -1,4 +1,4 @@
-package origami.trait;
+package origami.util;
 
 public interface OSimpleImportable {
 

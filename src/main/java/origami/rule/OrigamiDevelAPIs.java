@@ -14,21 +14,34 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.rule;
 
-public interface Handled<T> {
-	public T getHandled();
+import java.lang.reflect.Array;
+//
+//import origami.nez.iroha.api.IMethod;
+import java.util.Objects;
 
-	public default boolean isA(Class<?> c) {
-		return c.isInstance(getHandled());
+import origami.OConsole;
+import origami.ffi.OAlias;
+import origami.ffi.OCast;
+import origami.util.StringCombinator;
+
+public class OrigamiDevelAPIs {
+	public final static void print(Object o) {
+		OConsole.print(o);
 	}
 
-	@SuppressWarnings("unchecked")
-	public default <X> X getHandled(Class<X> c) {
-		if (c.isInstance(getHandled())) {
-			return (X) this.getHandled();
-		}
-		return null;
+	public final static void println(Object o) {
+		OConsole.println(o);
 	}
+
+	public final static void println() {
+		OConsole.println("");
+	}
+
+	public final static void printf(String fmt, Object... args) {
+		OConsole.print(StringCombinator.format(fmt, args));
+	}
+
 
 }

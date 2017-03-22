@@ -22,7 +22,7 @@ import java.util.Objects;
 import origami.ffi.Immutable;
 import origami.ffi.OrigamiObject;
 import origami.rule.OrigamiIterator.IRangeIterator;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class IRange<T extends Number> implements Iterable<Integer>, StringCombinator, OrigamiObject, Immutable {
 	final T start;

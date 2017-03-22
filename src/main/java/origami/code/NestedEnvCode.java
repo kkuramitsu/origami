@@ -17,7 +17,7 @@ public class NestedEnvCode extends OParamCode<OEnv> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		blockCode.generate(gen);
 	}
 

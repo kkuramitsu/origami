@@ -50,8 +50,8 @@ import origami.nez.peg.NonEmpty;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
-import origami.trait.OStringUtils;
-import origami.trait.OVerbose;
+import origami.util.OStringUtils;
+import origami.util.OVerbose;
 
 public abstract class ParserGenerator extends CommonWriter /*implements GrammarWriter*/ {
 

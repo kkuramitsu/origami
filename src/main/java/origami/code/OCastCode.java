@@ -23,7 +23,6 @@ import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
-import origami.trait.StringCombinator;
 import origami.type.OType;
 
 public class OCastCode extends OMethodCode {
@@ -91,7 +90,7 @@ public class OCastCode extends OMethodCode {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushCast(this);
 	}
 

@@ -17,7 +17,6 @@
 package origami.main;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import origami.OConsole;
@@ -27,11 +26,9 @@ import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
-
+import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
-import origami.nez.peg.GrammarLoader;
 import origami.nez.peg.GrammarParser;
 
 public class Oexample extends OCommand {
@@ -52,30 +49,30 @@ public class Oexample extends OCommand {
 	}
 
 	@Override
-	public void exec(OOption options) throws Exception {
-		Grammar g = getGrammar(options);
+	public void exec(OOption options) throws Throwable {
+		Grammar g = this.getGrammar(options);
 		g.dump();
-		treeWriter = options.newInstance(TreeWriter.class);
+		this.treeWriter = options.newInstance(TreeWriter.class);
 		if (options.is(ParserOption.Coverage, false)) {
-			cov = new Coverage();
-			cov.init(options, g);
+			this.cov = new Coverage();
+			this.cov.init(options, g);
 		}
-		loadExample(options, g);
-		if (tested > 0) {
-			double passRatio = (double) succ / tested;
-			if (cov != null) {
+		this.loadExample(options, g);
+		if (this.tested > 0) {
+			double passRatio = (double) this.succ / this.tested;
+			if (this.cov != null) {
 				beginColor(Yellow);
-				cov.dump(options);
+				this.cov.dump(options);
 				endColor();
-				double fullcov = cov.cov();
+				double fullcov = this.cov.cov();
 				p(bold("Result: %.2f%% passed, %.2f%% (coverage) tested."), (passRatio * 100), (fullcov * 100));
-				if (tested == succ && fullcov > 0.5) {
+				if (this.tested == this.succ && fullcov > 0.5) {
 					p("");
 					p(bold("Congratulation!!"));
 					p("You are invited to share your grammar at Nez open grammar repository, ");
 					p(" http://github.com/nez-peg/grammar.");
 					p("If you want, please send a pull-request with:");
-					p(bold("git commit -am '" + desc + ", %.2f%% (coverage) tested.'"), (fullcov * 100));
+					p(bold("git commit -am '" + this.desc + ", %.2f%% (coverage) tested.'"), (fullcov * 100));
 				}
 			} else {
 				p(bold("Result: %.2f%% passed."), (passRatio * 100));
@@ -89,15 +86,15 @@ public class Oexample extends OCommand {
 			exit(1, MainFmt.no_specified_grammar);
 		}
 		Source s = ParserSource.newFileSource(path, options.list(ParserOption.GrammarPath));
-		importFile(options, null, s, g);
-		desc = parseGrammarDescription(s);
+		this.importFile(options, null, s, g);
+		this.desc = parseGrammarDescription(s);
 	}
 
 	void importFile(OOption options, String prefix, Source s, Grammar g) throws IOException {
 		Tree<?> t = GrammarParser.NezParser.parse(s);
 		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
-				parse(options, prefix, sub, g);
+				this.parse(options, prefix, sub, g);
 			}
 		}
 	}
@@ -116,14 +113,14 @@ public class Oexample extends OCommand {
 			return;
 		}
 		if (node.is(_Example)) {
-			parseExample(prefix, node, g, options);
+			this.parseExample(prefix, node, g, options);
 			return;
 		}
 		if (node.is(GrammarParser._Grammar)) {
 			String name = node.getText(GrammarParser._name, null);
 			Tree<?> body = node.get(GrammarParser._body);
 			for (Tree<?> sub : body) {
-				parse(options, prefix(prefix, name), sub, g);
+				this.parse(options, this.prefix(prefix, name), sub, g);
 			}
 			return;
 		}
@@ -133,7 +130,7 @@ public class Oexample extends OCommand {
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = SourcePosition.extractFilePath(node.getSource().getResourceName()) + "/" + name;
 			}
-			importFile(options, prefix, ParserSource.newFileSource(path, null), g);
+			this.importFile(options, prefix, ParserSource.newFileSource(path, null), g);
 			return;
 		}
 	}
@@ -143,15 +140,15 @@ public class Oexample extends OCommand {
 		String uname = nameNode.toText();
 		Parser p = this.getParser(nameNode, g, options, uname);
 		if (p != null) {
-			performExample(p, uname, node);
+			this.performExample(p, uname, node);
 		}
 		if (this instanceof Otest) {
 			nameNode = node.get(_name2, null);
 			if (nameNode != null) {
-				uname = uname(prefix, nameNode.toText());
+				uname = this.uname(prefix, nameNode.toText());
 				p = this.getParser(nameNode, g, options, uname);
 				if (p != null) {
-					performExample(p, uname, node);
+					this.performExample(p, uname, node);
 				}
 			}
 		}
@@ -175,31 +172,32 @@ public class Oexample extends OCommand {
 		if (name.indexOf('.') > 0) {
 			return name;
 		}
-		return prefix(prefix, name);
+		return this.prefix(prefix, name);
 	}
 
 	protected void performExample(Parser p, String uname, Tree<?> ex) {
 		Tree<?> textNode = ex.get(_text);
-		Source s = newSource(textNode);
-		String name = uname + " (" + textNode.getSource().getResourceName() + ":" + textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
+		Source s = this.newSource(textNode);
+		String name = uname + " (" + textNode.getSource().getResourceName() + ":"
+				+ textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
 		try {
-			tested++;
+			this.tested++;
 			long t1 = System.nanoTime();
 			Tree<?> node = p.parse(s);
-			succ++;
+			this.succ++;
 			long t2 = System.nanoTime();
 			p(Green, "[PASS] " + name);
 			if (!(this instanceof Otest)) {
 				if (node != null) {
 					OConsole.dump(" ", bold(textNode.toText()));
-					display(treeWriter, node);
+					display(this.treeWriter, node);
 				}
 			}
-			record(uname, t2 - t1);
+			this.record(uname, t2 - t1);
 		} catch (IOException e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
-			//e.printStackTrace();
+			// e.printStackTrace();
 		} catch (Throwable e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
@@ -219,46 +217,47 @@ public class Oexample extends OCommand {
 	}
 
 	private Source newSource(Tree<?> textNode) {
-//		byte[] b = parseBinary(textNode.toText());
-//		if (b != null) {
-//			return new StringSource(textNode.getSource().getResourceName(), textNode.getSourcePosition(), b, true);
-//		}
+		// byte[] b = parseBinary(textNode.toText());
+		// if (b != null) {
+		// return new StringSource(textNode.getSource().getResourceName(),
+		// textNode.getSourcePosition(), b, true);
+		// }
 		return textNode.toSource();
 	}
 
-//	private byte[] parseBinary(String t) {
-//		ArrayList<Byte> bytes = new ArrayList<>(t.length());
-//		for (int i = 0; i < t.length(); i++) {
-//			char ch = t.charAt(i);
-//			if (ch == ' ' || ch == '\n' || ch == '\r') {
-//				continue;
-//			}
-//			int b = parseHex(t, i);
-//			if (b != -1) {
-//				// System.out.println("hex=" + b);
-//				i += 1;
-//				bytes.add((byte) b);
-//				continue;
-//			}
-//		}
-//		bytes.add((byte) 0);
-//		byte[] b = new byte[bytes.size()];
-//		for (int i = 0; i < b.length; i++) {
-//			b[i] = bytes.get(i);
-//		}
-//		return b;
-//	}
-//
-//	private int parseHex(String t, int i) {
-//		try {
-//			char ch = t.charAt(i);
-//			char ch2 = t.charAt(i + 1);
-//			return Integer.parseInt("" + ch + ch2, 16);
-//
-//		} catch (Exception e) {
-//			return -1;
-//		}
-//	}
+	// private byte[] parseBinary(String t) {
+	// ArrayList<Byte> bytes = new ArrayList<>(t.length());
+	// for (int i = 0; i < t.length(); i++) {
+	// char ch = t.charAt(i);
+	// if (ch == ' ' || ch == '\n' || ch == '\r') {
+	// continue;
+	// }
+	// int b = parseHex(t, i);
+	// if (b != -1) {
+	// // System.out.println("hex=" + b);
+	// i += 1;
+	// bytes.add((byte) b);
+	// continue;
+	// }
+	// }
+	// bytes.add((byte) 0);
+	// byte[] b = new byte[bytes.size()];
+	// for (int i = 0; i < b.length; i++) {
+	// b[i] = bytes.get(i);
+	// }
+	// return b;
+	// }
+	//
+	// private int parseHex(String t, int i) {
+	// try {
+	// char ch = t.charAt(i);
+	// char ch2 = t.charAt(i + 1);
+	// return Integer.parseInt("" + ch + ch2, 16);
+	//
+	// } catch (Exception e) {
+	// return -1;
+	// }
+	// }
 
 	public final static String parseGrammarDescription(Source sc) {
 		StringBuilder sb = new StringBuilder();

@@ -46,7 +46,7 @@ public class ForCode extends StmtCode {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushLoop(this);
 	}
 

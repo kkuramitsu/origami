@@ -16,7 +16,7 @@ public class RunnableCode extends OParamCode<Runnable> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 
 	}
 

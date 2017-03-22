@@ -15,7 +15,7 @@ import java.lang.Math
 import java.lang.Math
 '''
 
-ORIGAMI = 'origami.rule.iroha.IrohaSet'
+ORIGAMI = 'origami.rule.iroha.IrohaTypeSystem'
 
 /* Code Layout (Whitespace) */
 _                      = ( S / BLOCKCOMMENT / LINECOMMENT )*

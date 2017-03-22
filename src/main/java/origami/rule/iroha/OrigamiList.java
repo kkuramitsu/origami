@@ -25,9 +25,9 @@ import origami.ffi.OrigamiObject;
 import origami.ffi.OrigamiPrimitiveGenerics;
 import origami.ffi.SequenceExtractable;
 import origami.rule.OrigamiIterator;
-import origami.trait.StringCombinator;
 import origami.type.OParamType;
 import origami.type.OType;
+import origami.util.StringCombinator;
 
 public class OrigamiList implements OrigamiObject {
 

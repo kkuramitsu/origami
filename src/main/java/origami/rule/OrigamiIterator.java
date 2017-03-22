@@ -22,8 +22,8 @@ import java.util.Iterator;
 import origami.OEnv;
 import origami.code.OCode;
 import origami.ffi.OrigamiPrimitiveGenerics;
-import origami.trait.StringCombinator;
 import origami.type.OType;
+import origami.util.StringCombinator;
 
 public class OrigamiIterator {
 

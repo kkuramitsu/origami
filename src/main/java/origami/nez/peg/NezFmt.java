@@ -1,6 +1,6 @@
 package origami.nez.peg;
 
-import origami.rule.LocaleFormat;
+import origami.nez.ast.LocaleFormat;
 
 public enum NezFmt implements LocaleFormat {
 	error, warning, notice,//

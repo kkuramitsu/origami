@@ -55,7 +55,7 @@ public class OContinueCode extends OJumpCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushContinue(this);
 	}
 

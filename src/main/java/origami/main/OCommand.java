@@ -26,32 +26,31 @@ import origami.OConsole;
 import origami.ODebug;
 import origami.OVersion;
 import origami.main.OOption.Key;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
 import origami.nez.parser.Parser;
-
 import origami.nez.peg.Grammar;
-import origami.rule.LocaleFormat;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public abstract class OCommand extends OConsole {
-	
+
 	public static void main(String[] args) {
 		OOption options = new OOption();
 		try {
 			OCommand com = newCommand(args, options);
 			com.exec(options);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			exit(1, e);
 		}
 	}
 
-	public static void start(String ... args) throws Exception {
+	public static void start(String... args) throws Throwable {
 		OOption options = new OOption();
 		OCommand com = newCommand(args, options);
 		com.exec(options);
 	}
-	
+
 	private static OCommand newCommand(String[] args, OOption options) {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
@@ -68,10 +67,10 @@ public abstract class OCommand extends OConsole {
 		}
 	}
 
-	public abstract void exec(OOption options) throws Exception;
+	public abstract void exec(OOption options) throws Throwable;
 
 	protected void initOption(OOption options) {
-		options.set(ParserOption.GrammarPath, new String[] { "/origami/grammar", "/nez/lib" });		
+		options.set(ParserOption.GrammarPath, new String[] { "/origami/grammar", "/nez/lib" });
 	}
 
 	static HashMap<String, Key> optMap = new HashMap<>();
@@ -83,13 +82,13 @@ public abstract class OCommand extends OConsole {
 		optMap.put("--expression", ParserOption.InlineGrammar);
 		optMap.put("-s", ParserOption.Start);
 		optMap.put("--start", ParserOption.Start);
-//		optMap.put("-f", "format");
-//		optMap.put("--format", "format");
-//		optMap.put("-d", "dir");
-//		optMap.put("--dir", "dir");
+		// optMap.put("-f", "format");
+		// optMap.put("--format", "format");
+		// optMap.put("-d", "dir");
+		// optMap.put("--dir", "dir");
 	}
-	
-	private void parseCommandOption(String[] args, OOption options)  {
+
+	private void parseCommandOption(String[] args, OOption options) {
 		ArrayList<String> fileList = new ArrayList<>();
 		for (int index = 1; index < args.length; index++) {
 			String as = args[index];
@@ -106,8 +105,7 @@ public abstract class OCommand extends OConsole {
 			if (as.startsWith("-X")) {
 				try {
 					options.setClass(as.substring(2));
-				}
-				catch(Throwable e) {
+				} catch (Throwable e) {
 					OConsole.println("unfound class " + as);
 				}
 				continue;
@@ -123,23 +121,24 @@ public abstract class OCommand extends OConsole {
 
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
 		file = options.value(ParserOption.GrammarFile, file);
-		if(file == null) {
+		if (file == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
 		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
 	}
 
 	protected Grammar getGrammar(OOption options) throws IOException {
-		return getGrammar(options, null);
+		return this.getGrammar(options, null);
 	}
 
 	protected Parser getParser(OOption options) throws IOException {
-		Grammar g = getGrammar(options);
+		Grammar g = this.getGrammar(options);
 		return g.newParser(options);
 	}
 
 	protected static void displayVersion(String codeName) {
-		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + codeName + "," + MainFmt.English + ") on Java JVM-" + System.getProperty("java.version"));
+		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + codeName + "," + MainFmt.English + ") on Java JVM-"
+				+ System.getProperty("java.version"));
 		p(Yellow, OVersion.Copyright);
 	}
 
@@ -177,7 +176,7 @@ public abstract class OCommand extends OConsole {
 		println(StringCombinator.format(fmt, args));
 	}
 
-	static void p2(String desc, LocaleFormat fmt, Object...args) {
+	static void p2(String desc, LocaleFormat fmt, Object... args) {
 		print(desc);
 		println(StringCombinator.format(fmt, args));
 	}
@@ -229,23 +228,23 @@ public abstract class OCommand extends OConsole {
 	protected int linenum = 1;
 
 	private final Object getConsole() {
-		if (console == null) {
+		if (this.console == null) {
 			try {
-				console = Class.forName("jline.ConsoleReader").newInstance();
+				this.console = Class.forName("jline.ConsoleReader").newInstance();
 			} catch (Exception e) {
 			}
 		}
-		if (console == null) {
+		if (this.console == null) {
 			try {
-				console = Class.forName("jline.console.ConsoleReader").newInstance();
+				this.console = Class.forName("jline.console.ConsoleReader").newInstance();
 			} catch (Exception e) {
 			}
 		}
-		if (console == null && !consoleNotFound) {
+		if (this.console == null && !this.consoleNotFound) {
 			this.consoleNotFound = true;
 			ODebug.FIXME("Jline is not found!!");
 		}
-		return console;
+		return this.console;
 	}
 
 	@SuppressWarnings("resource")
@@ -280,7 +279,7 @@ public abstract class OCommand extends OConsole {
 
 	protected final String readMulti(String prompt) {
 		StringBuilder sb = new StringBuilder();
-		String line = readSingleLine(prompt);
+		String line = this.readSingleLine(prompt);
 		if (line == null) {
 			return null;
 		}
@@ -297,7 +296,7 @@ public abstract class OCommand extends OConsole {
 			sb.append(line);
 		}
 		while (hasNext) {
-			line = readSingleLine("");
+			line = this.readSingleLine("");
 			if (line == null) { // cancel
 				return null;
 			}
@@ -320,8 +319,8 @@ public abstract class OCommand extends OConsole {
 		if (linecount > 1) {
 			sb.append("\n");
 		}
-		linenum += linecount;
+		this.linenum += linecount;
 		return sb.toString();
 	}
-	
+
 }

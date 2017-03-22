@@ -34,17 +34,15 @@ import origami.lang.OClassDeclType;
 import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
+import origami.util.OTypeUtils;
 
 public class OClassLoader extends ClassLoader {
 
-	final OEnv rootEnv;
 	private final Map<String, OClassDecl> uncompiledMap;
 
-	public OClassLoader(OEnv env) {
+	public OClassLoader() {
 		super();
-		this.rootEnv = env;
 		this.uncompiledMap = new HashMap<>();
 		this.dumpDirectory = System.getenv("DUMPDIR");
 	}

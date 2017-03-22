@@ -29,7 +29,7 @@ public class Obench extends OCommand {
 	}
 	
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		if (options.value(ParserOption.InlineGrammar, null) != null) {
 			exit(1, "unavailable -t --text option");
 			return;

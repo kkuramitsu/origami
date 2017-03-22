@@ -18,7 +18,7 @@ package origami.nez.parser;
 
 import origami.nez.ast.Source;
 import origami.nez.ast.Symbol;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public abstract class ParserContext<T> {
 	public int pos = 0;

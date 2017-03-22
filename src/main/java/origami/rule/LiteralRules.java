@@ -21,20 +21,20 @@ import java.math.BigInteger;
 
 import origami.OEnv;
 import origami.OLog.Messenger;
-import origami.code.NullCode;
+import origami.code.ONullCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
 import origami.nez.ast.Tree;
-import origami.trait.OImportable;
-import origami.trait.OStringUtils;
-import origami.trait.OTypeRule;
+import origami.util.OImportable;
+import origami.util.OStringUtils;
+import origami.util.OTypeRule;
 
 public class LiteralRules implements OImportable, TypeAnalysis {
 
 	public OTypeRule NullExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new NullCode(env);
+			return new ONullCode(env);
 		}
 	};
 

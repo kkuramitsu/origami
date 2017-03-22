@@ -30,8 +30,8 @@ import origami.code.OReturnCode;
 import origami.ffi.OrigamiFunction;
 import origami.lang.OClassDeclType;
 import origami.lang.OMethodHandle;
-import origami.trait.OArrayUtils;
-import origami.trait.StringCombinator;
+import origami.util.OArrayUtils;
+import origami.util.StringCombinator;
 
 public class OFuncType extends OClassType {
 

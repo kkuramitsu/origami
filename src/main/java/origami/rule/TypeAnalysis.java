@@ -23,9 +23,9 @@ import origami.code.OErrorCode;
 import origami.code.OTypeCode;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.trait.OTypeRule;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OTypeRule;
 
 public interface TypeAnalysis {
 

@@ -26,8 +26,8 @@ import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.ast.TreeVisitorMap;
 import origami.nez.parser.ParserSource;
+import origami.util.OStringUtils;
 import origami.nez.parser.Parser;
-import origami.trait.OStringUtils;
 
 public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransducer> {
 

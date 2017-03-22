@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import origami.OConsole;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourceLogger;
 import origami.nez.ast.SourcePosition;
-import origami.rule.LocaleFormat;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();

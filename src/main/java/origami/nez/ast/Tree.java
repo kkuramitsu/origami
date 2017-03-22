@@ -7,7 +7,7 @@ import java.util.Arrays;
 import origami.nez.parser.ParserSource;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition, TreeConstructor<E>, TreeConnector<E> {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];

@@ -35,7 +35,7 @@ public class OOrCode extends OParamCode<Void> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushOr(this);
 	}
 

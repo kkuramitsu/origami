@@ -20,8 +20,8 @@ import java.lang.reflect.Method;
 
 import origami.nez.ast.SourcePosition;
 import origami.rule.OFmt;
-import origami.trait.StringCombinator;
-import origami.trait.OTypeUtils;
+import origami.util.OTypeUtils;
+import origami.util.StringCombinator;
 
 public class ODebug extends OConsole {
 

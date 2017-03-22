@@ -16,7 +16,7 @@
 
 package origami.nez.peg;
 
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public class Production implements StringCombinator {
 	private final Grammar grammar;

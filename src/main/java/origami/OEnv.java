@@ -22,11 +22,11 @@ import java.util.List;
 import origami.asm.OClassLoader;
 import origami.code.OCode;
 import origami.nez.ast.SourcePosition;
-import origami.trait.Handled;
-import origami.trait.OStackable;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
 import origami.type.OTypeSystem;
+import origami.util.Handled;
+import origami.util.OStackable;
+import origami.util.OTypeUtils;
 
 public interface OEnv {
 
@@ -90,20 +90,16 @@ public interface OEnv {
 
 	}
 
-	public default void add0(SourcePosition s, String name, Object value) {
+	public default void add(SourcePosition s, String name, Object value) {
 		addDefined(name, new OEnvEntry(s, value));
 	}
 
-//	public default void add0(Tree<?> t, String name, Object value) {
-//		addDefined(name, new OEnvEntry(new OSource(t), value));
-//	}
-
-	public default void add0(String name, Object value) {
-		add0(SourcePosition.UnknownPosition, name, value);
+	public default void add(String name, Object value) {
+		add(SourcePosition.UnknownPosition, name, value);
 	}
 
 	public default void add(Class<?> cname, Object value) {
-		add0(cname.getName(), value);
+		add(cname.getName(), value);
 	}
 
 	public default <X> void set(String name, Class<X> c, X value) {
@@ -114,7 +110,7 @@ public interface OEnv {
 				return;
 			}
 		}
-		add0(name, value);
+		add(name, value);
 	}
 
 	public OEnvEntry getDefined(String name, boolean isRuntime);
@@ -175,7 +171,8 @@ public interface OEnv {
 		public boolean isEnd(X x);
 	}
 
-	public default <X, Y> Y find(String name, Class<X> c, OEnvMatcher<X, Y> f, OEnvChoicer<Y> g, Y start, OEnvBreaker<Y> h) {
+	public default <X, Y> Y find(String name, Class<X> c, OEnvMatcher<X, Y> f, OEnvChoicer<Y> g, Y start,
+			OEnvBreaker<Y> h) {
 		Y y = start;
 		for (OEnv env = this; env != null; env = env.getParent()) {
 			for (OEnvEntry d = env.getDefined(name, this.isRuntime()); d != null; d = d.pop()) {
@@ -217,22 +214,18 @@ public interface OEnv {
 		final OEnv parent_;
 		Class<?> entryPoint = null;
 		private final String name;
-		private final OClassLoader classLoader;
 		private final OTypeSystem typeSystem;
+
+		protected OBaseEnv(OTypeSystem ts) {
+			this.parent_ = null;
+			this.name = "__root__";
+			this.typeSystem = ts;
+		}
 
 		protected OBaseEnv(OEnv parent, String name) {
 			this.parent_ = parent;
 			this.name = name;
-			if (parent == null) {
-				this.classLoader = new OClassLoader(this);
-				this.typeSystem = new OTypeSystem();
-			} else {
-				this.classLoader = parent.getClassLoader();
-				this.typeSystem = parent.getTypeSystem();
-			}
-			// if (name != null) {
-			// add(name, this);
-			// }
+			this.typeSystem = parent.getTypeSystem();
 		}
 
 		@Override
@@ -255,14 +248,13 @@ public interface OEnv {
 
 		@Override
 		public OClassLoader getClassLoader() {
-			return this.classLoader;
+			return this.typeSystem.getClassLoader();
 		}
 
 		@Override
 		public OTypeSystem getTypeSystem() {
 			return this.typeSystem;
 		}
-
 	}
 
 	public static class OLocalEnv extends OMapEnv implements OEnv {
@@ -358,7 +350,7 @@ abstract class OMapEnv implements OEnv {
 
 	@Override
 	public OEnvEntry getDefined(String name, boolean isRuntime) {
-		if (definedMap != null) {
+		if (this.definedMap != null) {
 			return this.definedMap.get(name);
 		}
 		return null;
@@ -366,8 +358,8 @@ abstract class OMapEnv implements OEnv {
 
 	@Override
 	public void addDefined(String name, OEnvEntry defined) {
-		if (definedMap == null) {
-			definedMap = new HashMap<>();
+		if (this.definedMap == null) {
+			this.definedMap = new HashMap<>();
 		}
 		OEnvEntry prev = this.definedMap.get(name);
 		defined.push(prev);

@@ -4,6 +4,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import origami.OConsole;
+import origami.nez.ast.LocaleFormat;
 
 public enum OFmt implements LocaleFormat {
 	welcome, error, warning, notice, info, //

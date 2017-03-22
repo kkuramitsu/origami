@@ -20,7 +20,7 @@ import origami.ffi.Immutable;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
 import origami.ffi.OrigamiObject;
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public abstract class OUnit<This extends OUnit<This>> implements OrigamiObject, Immutable, StringCombinator {
 	private final double value;

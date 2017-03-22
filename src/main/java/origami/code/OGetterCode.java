@@ -21,28 +21,27 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.lang.OField;
 import origami.lang.OGetter;
 import origami.rule.OFmt;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
+import origami.util.OTypeUtils;
 
-public class GetterCode extends OParamCode<OField> implements DynamicInvokable {
+public class OGetterCode extends OParamCode<OField> implements DynamicInvokable {
 
-	public GetterCode(OType ret, OField field, OCode recv) {
+	public OGetterCode(OType ret, OField field, OCode recv) {
 		super(field, ret, recv);
 	}
 
-	public GetterCode(OType ret, OField field) {
+	public OGetterCode(OType ret, OField field) {
 		super(field, ret);
 	}
 
-	public GetterCode(OField field, OCode recv) {
+	public OGetterCode(OField field, OCode recv) {
 		super(field, field.getType(), recv);
 	}
 
-	public GetterCode(OField field) {
+	public OGetterCode(OField field) {
 		super(field, field.getType());
 	}
 
@@ -60,18 +59,18 @@ public class GetterCode extends OParamCode<OField> implements DynamicInvokable {
 		if (OTypeUtils.isStatic(field)) {
 			return field.get(null);
 		} else {
-			Object[] values = evalParams(env, nodes);
+			Object[] values = this.evalParams(env, this.nodes);
 			return field.get(values[0]);
 		}
 	}
 
 	@Override
 	public MethodHandle getMethodHandle(OEnv env, MethodHandles.Lookup lookup) throws Throwable {
-		return new OGetter(getHandled()).getMethodHandle(env, lookup);
+		return new OGetter(this.getHandled()).getMethodHandle(env, lookup);
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushGetter(this);
 	}
 

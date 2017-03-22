@@ -21,13 +21,13 @@ import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.OTypeCode;
 import origami.lang.OTypeName;
+import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
-import origami.trait.MessageMethods;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
 import origami.type.OType;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
 
-public class TypeRules implements OImportable, OSymbols, TypeAnalysis, MessageMethods {
+public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 
 	@SuppressWarnings("serial")
 	public static class TypeNotFoundException extends OErrorCode {

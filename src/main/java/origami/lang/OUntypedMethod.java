@@ -74,7 +74,7 @@ public class OUntypedMethod extends OMethod {
 		if (newmh.getReturnType() instanceof OUntypedType) {
 			newmh.getDecl().typeCheck(this.definedEnv);
 		}
-		this.definedEnv.add0(this.getName(), newmh);
+		this.definedEnv.add(this.getName(), newmh);
 		OCode node = newmh.matchParamCode(env, site, nodes);
 		return new OWarningCode(node, OLog.TypeInfo, OFmt.type_inferred__YY0, newmh);
 	}

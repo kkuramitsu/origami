@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
-import origami.trait.OArrayUtils;
+import origami.util.OArrayUtils;
 
 public class OPartialFunc extends OMethodWrapper implements OMethodHandle, OArrayUtils {
 

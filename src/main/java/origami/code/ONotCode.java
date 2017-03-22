@@ -32,7 +32,7 @@ public class ONotCode extends OParamCode<Void> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushNot(this);
 	}
 

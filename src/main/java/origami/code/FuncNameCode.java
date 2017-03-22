@@ -22,7 +22,7 @@ public class FuncNameCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		OFuncType.newFuncCode(this.env, mh).generate(gen);
 	}
 

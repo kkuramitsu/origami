@@ -16,7 +16,7 @@
 
 package origami.type;
 
-import origami.trait.StringCombinator;
+import origami.util.StringCombinator;
 
 public abstract class OTypeImpl implements OType, StringCombinator {
 

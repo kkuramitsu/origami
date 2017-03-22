@@ -18,10 +18,9 @@ package origami.lang;
 
 import origami.OEnv;
 import origami.asm.OAnno;
-import origami.code.GetterCode;
+import origami.code.OGetterCode;
 import origami.code.OCode;
 import origami.code.OSetterCode;
-import origami.rule.OConfig;
 import origami.type.OType;
 
 public class OGlobalVariable extends OVariable {
@@ -45,12 +44,12 @@ public class OGlobalVariable extends OVariable {
 
 	@Override
 	public OCode nameCode(OEnv env, String name) {
-		return new GetterCode(this.field);
+		return new OGetterCode(this.field);
 	}
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		return new OSetterCode(this.field, OConfig.assignedType(env, this.getType()), right);
+		return new OSetterCode(this.field, this.getType(), right);
 	}
 
 }

@@ -17,7 +17,7 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.Origami.LocalVariables;
+import origami.OrigamiContext.LocalVariables;
 import origami.asm.OAsm;
 import origami.type.OType;
 
@@ -40,23 +40,31 @@ public class OAssignCode extends OParamCode<String> {
 	}
 
 	public OType getDefinedType() {
-		return right().getType();
+		return rightCode().getType();
 	}
 
-	public OCode right() {
+	public OCode rightCode() {
 		return this.getParams()[0];
 	}
 
 	@Override
+	public OCode refineType(OEnv env, OType req) {
+		if(req.is(void.class)) {
+			this.setType(req);
+		}
+		return this;
+	}
+
+	@Override
 	public Object eval(OEnv env) throws Throwable {
-		Object v = right().eval(env);
+		Object v = rightCode().eval(env);
 		LocalVariables vars = env.get(LocalVariables.class);
 		vars.put(this.getName(), v);
 		return v;
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushAssign(this);
 	}
 

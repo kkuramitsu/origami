@@ -39,10 +39,10 @@ import origami.lang.OMethodHandle;
 import origami.lang.OMethodWrapper;
 import origami.lang.OVariable;
 import origami.nez.ast.Tree;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
 import origami.type.OType;
 import origami.type.OTypeSystem;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
 
 public class LayerRules implements OImportable, SyntaxAnalysis {
 
@@ -56,14 +56,14 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 				OContextGroup base = env.get(ext, OContextGroup.class);
 				if (base == null) {
 					base = new OContextGroup(env, ext);
-					env.add0(t, ext, base);
+					env.add(t, ext, base);
 				}
 				caseEnv = base.newInnerEnv(name);
 			} else {
 				caseEnv = env.newEnv(name);
 			}
 			// addDefined(env, t, caseEnv);
-			env.add0(t, name, caseEnv);
+			env.add(t, name, caseEnv);
 			OCode mod = typeStmt(caseEnv, t.get(_body));
 			return new NestedEnvCode(caseEnv, mod);
 		}
@@ -169,7 +169,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 			if (cvar == null) {
 				ODebug.trace("adding context variable: %s on %s", name, this);
 				cvar = new OContextVariable(this.getName(), gvar.isReadOnly(), gvar.getName(), gvar.getType());
-				super.add0(name, cvar);
+				super.add(name, cvar);
 			} else {
 				if (!cvar.getType().eq(gvar.getType())) {
 					throw new OErrorCode(this, OFmt.mismatched + " %s defined=%s", gvar.getType(), cvar.getType());
@@ -183,7 +183,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 			if (cmh == null) {
 				ODebug.trace("adding context method: %s on %s", name, this);
 				cmh = new OContextMethod(this.getName(), mh);
-				super.add0(name, cmh);
+				super.add(name, cmh);
 			} else {
 				if (!cmh.getReturnType().eq(mh.getReturnType())) {
 					throw new OErrorCode(this, OFmt.mismatched + " %s defined=%s", mh, cmh);

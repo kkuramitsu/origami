@@ -18,9 +18,8 @@ package origami.nez.ast;
 
 import java.util.ArrayList;
 
-import origami.trait.StringCombinator;
-import origami.rule.LocaleFormat;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
+import origami.util.StringCombinator;
 
 public interface SourcePosition {
 	public Source getSource();

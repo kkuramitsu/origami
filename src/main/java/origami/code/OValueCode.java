@@ -43,7 +43,7 @@ public class OValueCode extends OParamCode<Object> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushValue(this);
 	}
 

@@ -39,21 +39,21 @@ import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.code.SwitchCode;
 import origami.code.SwitchCode.CaseCode;
-import origami.code.TryCatchCode;
-import origami.code.TryCatchCode.CatchCode;
+import origami.code.OTryCode;
+import origami.code.OTryCode.CatchCode;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
 import origami.lang.OMethodHandle;
 import origami.lang.OUntypedMethod;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.trait.OArrayUtils;
-import origami.trait.OImportable;
-import origami.trait.OScriptUtils;
-import origami.trait.OTypeRule;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OArrayUtils;
+import origami.util.OImportable;
+import origami.util.OScriptUtils;
+import origami.util.OTypeRule;
+import origami.util.OTypeUtils;
 
 public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis, OArrayUtils {
 
@@ -167,12 +167,10 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule FuncDecl = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OConfig2 conf = env.get(OConfig2.class);
 			OAnno anno = parseAnno(env, "public,static,final", t.get(_anno, null));
-
 			String name = t.getText(_name, null);
 			String[] paramNames = parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), conf.DefaultParamType);
+			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), getDefaultParamType(env));
 			OType returnType = parseType(env, t.get(_type, null), env.t(OUntypedType.class));
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 
@@ -186,12 +184,11 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule DyFuncDecl = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OConfig2 conf = env.get(OConfig2.class);
 			OAnno anno = parseAnno(env, "public,static", t.get(_anno, null));
 
 			String name = t.getText(_name, null);
 			String[] paramNames = parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), conf.DefaultParamType);
+			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), getDefaultParamType(env));
 			OType returnType = parseType(env, t.get(_type, null), env.t(OUntypedType.class));
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 
@@ -394,7 +391,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 				String name = sub.getText(_name, "");
 				OType type = parseType(env, sub.get(_type, null), env.t(Exception.class));
 				OEnv lenv = env.newEnv();
-				lenv.add0(sub.get(_name), name, new OLocalVariable(name, type));
+				lenv.add(sub.get(_name), name, new OLocalVariable(name, type));
 				OCode clause = typeStmt(lenv, sub.get(_body, null));
 				catchCodes[i] = new CatchCode(type, name, clause);
 				i++;
@@ -403,7 +400,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		/* Finally Clause */
 		OCode finallyCode = typeStmt(env, t.get(_finally, null));
 
-		return new TryCatchCode(env, tryCode, catchCodes, finallyCode);
+		return new OTryCode(env, tryCode, catchCodes, finallyCode);
 	}
 
 	public OTypeRule AssertStmt = new AbstractTypeRule() {

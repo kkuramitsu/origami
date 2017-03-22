@@ -4,19 +4,19 @@ import origami.main.OCommand;
 
 public class CommandTest {
 
-	public void testExample() throws Exception {
+	public void testExample() throws Throwable {
 		OCommand.start("example", "-g", "math.nez");
 	}
 
-	public void testTest() throws Exception {
+	public void testTest() throws Throwable {
 		OCommand.start("test", "-g", "math.nez", "-D", "hoge=hoge");
 	}
 
-	public void testMatch() throws Exception {
+	public void testMatch() throws Throwable {
 		OCommand.start("match", "-g", "xml.nez", "pom.xml");
 	}
 
-	public void testParse() throws Exception {
+	public void testParse() throws Throwable {
 		OCommand.start("parse", "-g", "xml.nez", "pom.xml");
 	}
 

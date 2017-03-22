@@ -31,13 +31,13 @@ import origami.nez.parser.pass.TreePass;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Expression.PNonTerminal;
 import origami.nez.peg.Expression.PTrap;
+import origami.util.OStringUtils;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.GrammarFlag;
 import origami.nez.peg.NezFunc;
 import origami.nez.peg.NonEmpty;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
-import origami.trait.OStringUtils;
 
 public class ParserChecker {
 

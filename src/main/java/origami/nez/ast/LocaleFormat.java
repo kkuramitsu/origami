@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.rule;
+package origami.nez.ast;
 
 import java.util.Locale;
 import java.util.ResourceBundle;

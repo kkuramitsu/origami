@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.util;
 
 import java.lang.reflect.Array;
 

@@ -8,9 +8,9 @@ import origami.OEnv;
 import origami.asm.code.ArrayGetCode;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethod;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OTypeUtils;
 
 public class GenerativeCode extends OSugarCode {
 	List<OCode> codes = new ArrayList<>();
@@ -44,7 +44,7 @@ public class GenerativeCode extends OSugarCode {
 	}
 
 	public OCode _null() {
-		return new NullCode(env().t(Object.class));
+		return new ONullCode(env().t(Object.class));
 	}
 
 	public String name(String name) {
@@ -93,7 +93,7 @@ public class GenerativeCode extends OSugarCode {
 		if (name != null) {
 			this.resultName = name(name);
 			this.initRightCode = right;
-			env().add0(resultName, new OLocalVariable(true, resultName, right.getType()));
+			env().add(resultName, new OLocalVariable(true, resultName, right.getType()));
 		}
 	}
 
@@ -136,13 +136,13 @@ public class GenerativeCode extends OSugarCode {
 	public OCode define(String name, Class<?> c) {
 		OType t = env().t(c);
 		name = name(name);
-		env().add0(name, new OLocalVariable(true, name, t));
+		env().add(name, new OLocalVariable(true, name, t));
 		return new OAssignCode(env().t(void.class), true, name, new ODefaultValueCode(t));
 	}
 
 	public void pushDefine(String name, OCode right) {
 		name = name(name);
-		env().add0(name, new OLocalVariable(true, name, right.getType()));
+		env().add(name, new OLocalVariable(true, name, right.getType()));
 		push(new OAssignCode(env().t(void.class), true, name, right));
 	}
 

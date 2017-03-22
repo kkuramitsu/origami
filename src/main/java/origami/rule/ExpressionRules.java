@@ -41,11 +41,11 @@ import origami.lang.OLocalVariable;
 import origami.lang.ONameEntity;
 import origami.lang.OVariable;
 import origami.nez.ast.Tree;
-import origami.trait.OArrayUtils;
-import origami.trait.OImportable;
-import origami.trait.OTypeRule;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OArrayUtils;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
 
 public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils {
 

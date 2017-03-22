@@ -30,17 +30,17 @@ import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
 import origami.type.OType;
 
-public class IMethodCallSite extends OMethodCallSite {
-	public IMethodCallSite() {
+public class IrohaMethodCallSite extends OMethodCallSite {
+	public IrohaMethodCallSite() {
 		super(null, null, null, null);
 	}
 
-	private IMethodCallSite(OEnv env, String name, String sig, MethodType methodType) {
+	private IrohaMethodCallSite(OEnv env, String name, String sig, MethodType methodType) {
 		super(env, name, sig, methodType);
 	}
 
 	public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry, String sig) throws Throwable {
-		return new IMethodCallSite(loadEnv(entry), name, sig, type);
+		return new IrohaMethodCallSite(loadEnv(entry), name, sig, type);
 	}
 
 	@Override

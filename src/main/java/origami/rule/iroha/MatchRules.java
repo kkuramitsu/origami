@@ -46,13 +46,13 @@ import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.unit.OUnit;
-import origami.trait.OImportable;
-import origami.trait.StringCombinator;
-import origami.trait.OTypeRule;
 import origami.type.NullableType;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
+import origami.util.OImportable;
+import origami.util.OTypeRule;
+import origami.util.StringCombinator;
 
 public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 
@@ -73,7 +73,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 				HashMap<String, OType> varMap = new HashMap<>();
 				iCase.updateLocalVariable(null, varMap);
 				for (Map.Entry<String, OType> v : varMap.entrySet()) {
-					lenv.add0(v.getKey(), new OLocalVariable(true, v.getKey(), v.getValue()));
+					lenv.add(v.getKey(), new OLocalVariable(true, v.getKey(), v.getValue()));
 				}
 				OCode condCode = typeCondition(lenv, t.get(_cond, null));
 				OCode bodyCode = typeExprOrErrorCode(lenv, t.get(_body));

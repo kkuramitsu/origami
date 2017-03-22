@@ -1,6 +1,6 @@
 package origami.main;
 
-import origami.rule.LocaleFormat;
+import origami.nez.ast.LocaleFormat;
 
 public enum MainFmt implements LocaleFormat {
 	error, warning, notice, //

@@ -10,7 +10,7 @@ public class PostOpCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		this.expr().generate(gen);
 		this.setter().generate(gen);
 		// gen.mBuilder.pop();

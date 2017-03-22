@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import origami.nez.ast.Symbol;
 import origami.nez.parser.ParserCode.MemoPoint;
-import origami.trait.OStringUtils;
+import origami.util.OStringUtils;
 
 public class NZ86 {
 	public final static String[][] Specification = { //

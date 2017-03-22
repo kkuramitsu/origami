@@ -22,7 +22,7 @@ import origami.nez.parser.Parser;
 public class Cpeg extends OCommand {
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		ODebug.TODO(this);
 //		GrammarWriter grammarWriter = options.newGrammarWriter(origami.main.tool.PEGWriter.class);
 //		if (options.is("raw", false)) {

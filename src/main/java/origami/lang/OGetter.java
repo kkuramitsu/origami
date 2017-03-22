@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 
 import origami.OEnv;
 import origami.asm.OCallSite;
-import origami.code.GetterCode;
+import origami.code.OGetterCode;
 import origami.code.OCode;
 import origami.type.OType;
 
@@ -83,9 +83,9 @@ public class OGetter extends OFieldHandle {
 	@Override
 	public OCode newMatchedParamCode(OEnv env, OCallSite site, OType ret, OCode[] params, int matchCost) {
 		if (this.isStatic()) {
-			return new GetterCode(ret, this.field);
+			return new OGetterCode(ret, this.field);
 		} else {
-			return new GetterCode(ret, this.field, params[0]);
+			return new OGetterCode(ret, this.field, params[0]);
 		}
 	}
 

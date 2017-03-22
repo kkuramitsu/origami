@@ -30,7 +30,7 @@ public class OThrowCode extends OJumpCode<Void> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushThrow(this);
 	}
 

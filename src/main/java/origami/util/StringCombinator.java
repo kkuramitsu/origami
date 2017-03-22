@@ -14,13 +14,13 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.util;
 
 import java.lang.reflect.Field;
 
 import origami.ODebug;
 import origami.ffi.OAlias;
-import origami.rule.LocaleFormat;
+import origami.nez.ast.LocaleFormat;
 
 public interface StringCombinator {
 

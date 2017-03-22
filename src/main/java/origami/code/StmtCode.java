@@ -19,7 +19,7 @@ public abstract class StmtCode extends OParamCode<String> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		// gen.pushStmt(this);
 	}
 

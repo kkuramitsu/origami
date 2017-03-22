@@ -19,7 +19,7 @@ package origami.asm;
 import org.objectweb.asm.Label;
 
 import origami.code.OCode;
-import origami.trait.OStackable;
+import origami.util.OStackable;
 
 class OBlock implements OStackable<OBlock> {
 	OBlock onstack = null;

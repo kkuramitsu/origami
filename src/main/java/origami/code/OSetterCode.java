@@ -25,8 +25,8 @@ import origami.OEnv;
 import origami.asm.OAsm;
 import origami.lang.OField;
 import origami.lang.OSetter;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
+import origami.util.OTypeUtils;
 
 public class OSetterCode extends OParamCode<OField> implements DynamicInvokable {
 
@@ -56,7 +56,7 @@ public class OSetterCode extends OParamCode<OField> implements DynamicInvokable 
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		gen.pushSetter(this);
 	}
 

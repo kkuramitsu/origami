@@ -17,7 +17,7 @@
 package origami.main;
 
 import origami.ODebug;
-import origami.Origami;
+import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
 import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
@@ -25,7 +25,7 @@ import origami.nez.peg.Grammar;
 public class Orun extends origami.main.OCommand {
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		String[] files = options.list(ParserOption.InputFiles);
 		if (options.value(ParserOption.GrammarFile, null) == null) {
 			if (files.length > 0) {
@@ -34,7 +34,7 @@ public class Orun extends origami.main.OCommand {
 			} 
 		}
 		Grammar g = getGrammar(options, "iroha.nez");
-		Origami env = new Origami(g);
+		OrigamiContext env = new OrigamiContext(g, options);
 		ODebug.setDebug(this.isDebug());
 
 		for (String file : files) {

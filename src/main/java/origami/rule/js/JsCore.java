@@ -14,7 +14,9 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.ffi;
+package origami.rule.js;
+
+import origami.ffi.OAlias;
 
 public class JsCore {
 

@@ -30,7 +30,7 @@ public class Oparse extends OCommand {
 	}
 
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
 		
 		TreeWriter treeWriter = options.newInstance(TreeWriter.class);

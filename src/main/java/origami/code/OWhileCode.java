@@ -18,8 +18,8 @@ public class OWhileCode extends OParamCode<Void> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
-		gen.pushLoop(this);
+	public void generate(OGenerator gen) {
+		gen.pushWhile(this);
 	}
 
 	public OCode cond() {

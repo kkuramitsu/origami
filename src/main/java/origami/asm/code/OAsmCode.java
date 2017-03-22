@@ -14,11 +14,35 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
+package origami.asm.code;
 
-public interface OStackable<T> {
-	public T push(T onstack);
+import origami.OEnv;
+import origami.asm.OAsm;
+import origami.code.OCode;
+import origami.code.OGenerator;
+import origami.code.OParamCode;
+import origami.type.OType;
 
-	public T pop();
+public class OAsmCode<T> extends OParamCode<T> {
+
+	OAsmCode(T handled, OType returnType) {
+		super(handled, returnType);
+	}
+
+	OAsmCode(T handled, OType returnType, OCode... args) {
+		super(handled, returnType, args);
+	}
+
+	@Override
+	public Object eval(OEnv env) throws Throwable {
+		return null;
+	}
+
+	@Override
+	public void generate(OGenerator gen) {
+		if (gen instanceof OAsm) {
+			((OAsm) gen).pushAsmCode(this);
+		}
+	}
 
 }

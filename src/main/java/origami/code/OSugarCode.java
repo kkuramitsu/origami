@@ -42,7 +42,7 @@ public abstract class OSugarCode extends OParamCode<OEnv> {
 	}
 
 	@Override
-	public void generate(OAsm gen) {
+	public void generate(OGenerator gen) {
 		desugar().generate(gen);
 	}
 

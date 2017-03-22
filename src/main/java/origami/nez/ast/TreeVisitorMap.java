@@ -20,7 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import origami.trait.OVerbose;
+import origami.util.OVerbose;
 
 public class TreeVisitorMap<V> {
 	private static boolean OnWhenDebugging = false;

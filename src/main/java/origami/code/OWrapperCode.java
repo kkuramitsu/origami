@@ -18,10 +18,9 @@ package origami.code;
 
 import java.util.List;
 
-import origami.nez.ast.SourcePosition;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
-import origami.asm.OAsm;
+import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 
@@ -107,7 +106,7 @@ public interface OWrapperCode extends OCode {
 	}
 
 	@Override
-	public default void generate(OAsm gen) {
+	public default void generate(OGenerator gen) {
 		wrapped().generate(gen);
 	}
 

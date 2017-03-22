@@ -20,14 +20,13 @@ import java.util.Set;
 
 import origami.OEnv;
 import origami.nez.ast.SourcePosition;
-import origami.rule.ClassRules;
 import origami.rule.ExpressionRules;
 import origami.rule.LiteralRules;
 import origami.rule.OrigamiAPIs;
 import origami.rule.StatementRules;
 import origami.rule.TypeRules;
-import origami.trait.OImportable;
-import origami.trait.OScriptUtils;
+import origami.util.OImportable;
+import origami.util.OScriptUtils;
 
 public class JavaSet implements OImportable, OScriptUtils {
 	@Override

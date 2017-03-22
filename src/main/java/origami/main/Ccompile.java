@@ -21,7 +21,7 @@ import origami.nez.parser.ParserCode;
 
 public class Ccompile extends OCommand {
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
 		ParserCode<?> code = (ParserCode<?>) parser.compile();
 		code.dump();

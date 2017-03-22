@@ -20,13 +20,13 @@ import java.lang.reflect.Field;
 
 import origami.OEnv;
 import origami.asm.OAnno;
-import origami.code.GetterCode;
+import origami.code.OGetterCode;
 import origami.code.OCode;
 import origami.ffi.OMutable;
 import origami.ffi.ONullable;
-import origami.trait.OTypeUtils;
 import origami.type.OType;
 import origami.type.OTypeSystem;
+import origami.util.OTypeUtils;
 
 public class OField {
 	public final OTypeSystem typeSystem;
@@ -121,15 +121,15 @@ public class OField {
 
 	public OCode nameCode(OEnv env) {
 		assert (this.isStatic());
-		return new GetterCode(this);
+		return new OGetterCode(this);
 	}
 
 	public OCode matchParamCode(OEnv env, OCode[] params) {
 		// if (params.length == 1) {
 		if (this.isStatic()) {
-			return new GetterCode(this);
+			return new OGetterCode(this);
 		}
-		return new GetterCode(this, params[0]);
+		return new OGetterCode(this, params[0]);
 		// }
 		// return new MismatchedCode(env, new OGetter(this));
 	}

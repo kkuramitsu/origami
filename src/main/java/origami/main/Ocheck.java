@@ -18,14 +18,14 @@ package origami.main;
 
 import origami.OConsole;
 import origami.ODebug;
-import origami.Origami;
+import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
 import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 
 public class Ocheck extends Orun {
 	@Override
-	public void exec(OOption options) throws Exception {
+	public void exec(OOption options) throws Throwable {
 		int totalTestCount = 0;
 		int totalPassCount = 0;
 		String[] files = options.list(ParserOption.InputFiles);
@@ -33,7 +33,7 @@ public class Ocheck extends Orun {
 			try {
 				String ext = SourcePosition.extractFileExtension(file);
 				Grammar g = Grammar.loadFile(ext + ".nez", options.list(ParserOption.GrammarPath));
-				Origami env = new Origami(g);
+				OrigamiContext env = new OrigamiContext(g, options);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {
 				ODebug.traceException(e);

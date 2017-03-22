@@ -14,33 +14,33 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.trait;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Set;
+package origami.code;
 
 import origami.OEnv;
-import origami.nez.ast.SourcePosition;
+import origami.type.OType;
+import origami.type.OUntypedType;
 
-public interface OImportable {
-	public default void importDefined(OEnv env, SourcePosition s, Set<String> names) {
-		boolean allSymbols = names == null || names.contains("*");
-		for (Field f : this.getClass().getDeclaredFields()) {
-			if (!Modifier.isPublic(f.getModifiers())) {
-				continue;
-			}
-			String name = definedName(f.getName());
-			if (!allSymbols && !names.contains(name)) {
-				continue;
-			}
-			env.add0(s, name, OTypeUtils.valueField(f, this));
-		}
+public class ONullCode extends OValueCode {
+
+	public ONullCode(OType ret) {
+		super(null, ret);
 	}
 
-	public default String definedName(String name) {
-		int loc = name.lastIndexOf("__");
-		return loc == -1 ? name : name.substring(0, loc);
+	public ONullCode(OEnv env) {
+		this(env.t(OUntypedType.class));
+	}
+
+	@Override
+	public OCode refineType(OEnv env, OType ty) {
+		if (this.getType() instanceof OUntypedCode) {
+			this.setType(ty);
+		}
+		return this;
+	}
+
+	@Override
+	public Object eval(OEnv env) throws Throwable {
+		return this.getType().getDefaultValue();
 	}
 
 }
