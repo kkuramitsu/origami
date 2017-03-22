@@ -25,7 +25,6 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 
-import origami.OEnv;
 import origami.asm.OClassLoader;
 import origami.code.ONullCode;
 import origami.code.OCode;
@@ -33,6 +32,7 @@ import origami.code.OValueCode;
 import origami.ffi.Immutable;
 import origami.ffi.ONullable;
 import origami.ffi.OrigamiObject;
+import origami.lang.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.util.OTypeUtils;
 

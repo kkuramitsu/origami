@@ -16,7 +16,6 @@
 
 package origami.rule.java;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OClassLoader;
 import origami.code.OCode;
@@ -27,6 +26,7 @@ import origami.code.RunnableCode;
 import origami.ffi.OImportable;
 import origami.lang.OClassDecl;
 import origami.lang.OClassDeclType;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OPartialFunc;
 import origami.nez.ast.Symbol;

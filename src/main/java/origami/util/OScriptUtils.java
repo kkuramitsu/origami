@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
@@ -34,6 +33,7 @@ import origami.ffi.OImportable;
 import origami.ffi.OSimpleImportable;
 import origami.lang.OClassDeclType;
 import origami.lang.OConv;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OGlobalVariable;
 import origami.lang.OMethod;

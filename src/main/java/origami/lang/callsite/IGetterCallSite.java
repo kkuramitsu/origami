@@ -21,11 +21,11 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OGetter;
 import origami.lang.OMethodHandle;
+import origami.lang.OEnv.OListMatcher;
 import origami.type.OType;
 
 public class IGetterCallSite extends OGetterCallSite {

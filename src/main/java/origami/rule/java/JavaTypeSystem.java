@@ -16,7 +16,7 @@
 
 package origami.rule.java;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;

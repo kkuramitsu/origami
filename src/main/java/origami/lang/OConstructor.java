@@ -20,7 +20,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.asm.OClassLoader;
 import origami.code.OCode;

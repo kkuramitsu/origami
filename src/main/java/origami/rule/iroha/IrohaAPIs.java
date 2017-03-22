@@ -16,8 +16,8 @@
 
 package origami.rule.iroha;
 
-import origami.OEnv;
 import origami.ffi.OrigamiObject;
+import origami.lang.OEnv;
 import origami.rule.LayerRules;
 import origami.util.OConsole;
 import origami.util.ODebug;

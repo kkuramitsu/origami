@@ -21,7 +21,6 @@ import java.util.Arrays;
 
 import org.objectweb.asm.Type;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.code.OMethodCode;

@@ -19,7 +19,6 @@ package origami.lang;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.type.OType;

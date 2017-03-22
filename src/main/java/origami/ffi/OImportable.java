@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.util.OTypeUtils;
 

@@ -16,11 +16,11 @@
 
 package origami.rule.java;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OMultiCode;
 import origami.code.OSugarCode;
 import origami.code.OWhileCode;
+import origami.lang.OEnv;
 
 public class JavaForCode extends OSugarCode {
 

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import origami.OEnv;
 import origami.code.GenerativeCode;
 import origami.code.OBreakCode;
 import origami.code.OCode;
@@ -38,6 +37,7 @@ import origami.ffi.OImportable;
 import origami.ffi.ObjectExtractable;
 import origami.ffi.OrigamiException;
 import origami.ffi.SequenceExtractable;
+import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;

@@ -16,7 +16,7 @@
 
 package origami.rule.iroha;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.callsite.IrohaMethodCallSite;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;

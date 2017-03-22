@@ -20,7 +20,6 @@ import java.lang.invoke.MethodType;
 
 import org.objectweb.asm.Type;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.type.OType;
 import origami.util.OTypeUtils;

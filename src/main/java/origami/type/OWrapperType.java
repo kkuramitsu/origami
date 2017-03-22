@@ -18,8 +18,8 @@ package origami.type;
 
 import org.objectweb.asm.Type;
 
-import origami.OEnv;
 import origami.code.OCode;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OMethodHandle;
 import origami.util.StringCombinator;

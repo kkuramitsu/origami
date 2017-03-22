@@ -21,7 +21,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.asm.OClassLoader;
 import origami.code.OFuncNameCode;

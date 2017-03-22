@@ -16,7 +16,6 @@
 
 package origami.lang;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.rule.OFmt;

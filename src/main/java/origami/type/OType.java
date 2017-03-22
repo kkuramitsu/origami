@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
 import origami.asm.OCallSite;
 import origami.code.ODyCastCode;
 import origami.code.OGetterCode;
@@ -38,7 +36,9 @@ import origami.ffi.OAlias;
 import origami.ffi.OCast;
 import origami.ffi.OrigamiObject;
 import origami.lang.OConstructor.DefaultThisCode;
+import origami.lang.OEnv.OListMatcher;
 import origami.lang.OConv;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OMethodHandle;
 import origami.lang.ONameEntity;

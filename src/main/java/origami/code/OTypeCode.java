@@ -19,8 +19,8 @@ package origami.code;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
 

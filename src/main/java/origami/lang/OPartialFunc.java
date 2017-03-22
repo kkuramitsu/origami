@@ -18,7 +18,6 @@ package origami.lang;
 
 import java.lang.reflect.Method;
 
-import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
 import origami.util.OArrayUtils;

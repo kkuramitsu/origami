@@ -16,12 +16,12 @@
 
 package origami.rule.java;
 
-import origami.OEnv;
 import origami.asm.code.DupCode;
 import origami.code.OCode;
 import origami.code.OGenerator;
 import origami.code.OMultiCode;
 import origami.code.OParamCode;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class PreOpCode extends OParamCode<String> {

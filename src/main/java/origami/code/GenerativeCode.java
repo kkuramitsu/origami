@@ -3,8 +3,8 @@ package origami.code;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.OEnv;
 import origami.asm.code.ArrayGetCode;
+import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethod;
 import origami.type.OType;

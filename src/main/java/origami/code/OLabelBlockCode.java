@@ -2,9 +2,9 @@ package origami.code;
 
 import java.util.Objects;
 
-import origami.OEnv;
 import origami.asm.OrigamiBreakException;
 import origami.asm.OrigamiContinueException;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class OLabelBlockCode extends OParamCode<String> {

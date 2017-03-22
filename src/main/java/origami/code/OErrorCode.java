@@ -17,9 +17,9 @@ package origami.code;
 
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
 import origami.ffi.OCast;
+import origami.lang.OEnv;
+import origami.lang.OEnv.OListMatcher;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.type.OType;

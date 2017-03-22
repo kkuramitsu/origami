@@ -18,7 +18,6 @@ package origami.lang;
 
 import java.lang.reflect.Field;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OGetterCode;
 import origami.code.OCode;

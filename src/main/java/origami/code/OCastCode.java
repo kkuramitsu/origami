@@ -16,9 +16,9 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.ffi.OCast;
 import origami.lang.OConv;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
 import origami.type.OType;

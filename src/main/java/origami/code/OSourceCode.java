@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.util.Handled;

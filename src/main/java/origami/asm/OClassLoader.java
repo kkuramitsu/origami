@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import origami.OEnv;
 import origami.code.OValueCode;
 import origami.ffi.OrigamiObject;
 import origami.lang.OClassDeclType;
+import origami.lang.OEnv;
 import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;

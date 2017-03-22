@@ -16,7 +16,7 @@
 
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 
 public class ONotCode extends OParamCode<Void> {
 

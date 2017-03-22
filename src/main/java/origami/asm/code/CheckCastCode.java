@@ -16,7 +16,7 @@
 
 package origami.asm.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class CheckCastCode extends OAsmCode<OType> {

@@ -16,7 +16,6 @@
 
 package origami.lang;
 
-import origami.OEnv;
 import origami.type.OType;
 import origami.util.ODebug;
 

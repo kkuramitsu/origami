@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import origami.code.OCode;
 import origami.code.OErrorCode;
+import origami.lang.OEnv;
 import origami.main.OOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;

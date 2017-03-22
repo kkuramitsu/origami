@@ -20,7 +20,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 
-import origami.OEnv;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 

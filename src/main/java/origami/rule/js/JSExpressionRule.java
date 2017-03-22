@@ -16,12 +16,12 @@
 
 package origami.rule.js;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.ODefaultValueCode;
 import origami.code.OEmptyCode;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.OVariable;

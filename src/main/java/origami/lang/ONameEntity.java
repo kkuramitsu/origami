@@ -16,7 +16,6 @@
 
 package origami.lang;
 
-import origami.OEnv;
 import origami.code.OCode;
 
 public interface ONameEntity {

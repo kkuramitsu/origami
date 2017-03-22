@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami;
+package origami.lang;
 
 import java.util.HashMap;
 import java.util.List;

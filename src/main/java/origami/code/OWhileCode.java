@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.util.OScriptUtils;
 
 public class OWhileCode extends OParamCode<Void> {

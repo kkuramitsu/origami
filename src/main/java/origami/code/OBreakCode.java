@@ -16,9 +16,9 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.asm.OrigamiBreakException;
 import origami.code.OLabelBlockCode.OBreakLabel;
+import origami.lang.OEnv;
 
 public class OBreakCode extends OJumpCode<String> {
 

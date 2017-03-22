@@ -16,11 +16,11 @@
 
 package origami.asm.code;
 
-import origami.OEnv;
 import origami.asm.OAsm;
 import origami.code.OCode;
 import origami.code.OGenerator;
 import origami.code.OParamCode;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class OAsmCode<T> extends OParamCode<T> {

@@ -16,9 +16,9 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.asm.OrigamiContinueException;
 import origami.code.OLabelBlockCode.OContinueLabel;
+import origami.lang.OEnv;
 
 public class OContinueCode extends OJumpCode<String> {
 

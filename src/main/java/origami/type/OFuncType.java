@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OClassLoader;
 import origami.asm.code.LoadArgCode;
@@ -29,6 +28,7 @@ import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.ffi.OrigamiFunction;
 import origami.lang.OClassDeclType;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.util.OArrayUtils;
 import origami.util.StringCombinator;

@@ -15,7 +15,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
-import origami.OEnv;
 import origami.asm.OGeneratorAdapter.VarEntry;
 import origami.asm.code.ArrayGetCode;
 import origami.asm.code.ArrayLengthCode;
@@ -59,6 +58,7 @@ import origami.code.OWarningCode;
 import origami.code.OWhileCode;
 import origami.code.OSetIndexCode;
 import origami.lang.OClassDecl;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
 import origami.lang.OMethodDecl;

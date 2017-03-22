@@ -19,8 +19,6 @@ package origami.lang;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
 import origami.asm.OAnno;
 import origami.asm.OCompilationUnit;
 import origami.asm.code.LoadArgCode;
@@ -30,6 +28,7 @@ import origami.code.OCode;
 import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.code.OValueCode;
+import origami.lang.OEnv.OListMatcher;
 import origami.nez.ast.Tree;
 import origami.rule.OSymbols;
 import origami.rule.TypeAnalysis;

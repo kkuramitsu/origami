@@ -21,7 +21,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OSetter;
 import origami.type.OType;

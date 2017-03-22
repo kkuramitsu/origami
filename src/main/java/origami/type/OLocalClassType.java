@@ -16,7 +16,7 @@
 
 package origami.type;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 
 public class OLocalClassType extends OClassType {
 	final String name;

@@ -18,10 +18,10 @@ package origami.code;
 
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
 import origami.asm.OCallSite;
 import origami.ffi.OCast;
+import origami.lang.OEnv;
+import origami.lang.OEnv.OListMatcher;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
 import origami.lang.callsite.OMethodCallSite;

@@ -20,9 +20,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
-import origami.OEnv;
 import origami.ffi.OCast;
 import origami.lang.ODynamicMethodHandle;
+import origami.lang.OEnv;
 import origami.lang.OMethod;
 import origami.lang.OMethodHandle;
 import origami.type.OType;

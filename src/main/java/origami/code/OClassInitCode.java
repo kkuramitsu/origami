@@ -18,9 +18,9 @@ package origami.code;
 
 import java.lang.reflect.Constructor;
 
-import origami.OEnv;
 import origami.ffi.OCast;
 import origami.lang.OConstructor;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
 

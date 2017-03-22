@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.asm.code.DupCode;
@@ -46,6 +45,7 @@ import origami.ffi.OrigamiObject;
 import origami.ffi.OrigamiPrimitiveGenerics;
 import origami.lang.OClassDecl;
 import origami.lang.OClassDeclType;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethod;

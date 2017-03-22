@@ -16,8 +16,8 @@
 
 package origami.asm.code;
 
-import origami.OEnv;
 import origami.code.OCode;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class DupCode extends OAsmCode<OCode> {

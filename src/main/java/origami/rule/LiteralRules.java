@@ -19,11 +19,11 @@ package origami.rule;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import origami.OEnv;
 import origami.code.ONullCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.nez.ast.Tree;
 import origami.util.OStringUtils;
 import origami.util.OTypeRule;

@@ -16,7 +16,7 @@
 
 package origami.asm.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 
 public class ArrayLengthCode extends OAsmCode<Object> {
 

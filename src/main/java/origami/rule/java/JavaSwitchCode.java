@@ -16,9 +16,9 @@
 
 package origami.rule.java;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OSugarCode;
+import origami.lang.OEnv;
 
 public class JavaSwitchCode extends OSugarCode {
 

@@ -1,7 +1,7 @@
 package origami.type;
 
-import origami.OEnv;
 import origami.code.OCode;
+import origami.lang.OEnv;
 import origami.util.ODebug;
 
 public class OVarType extends PhantomType {

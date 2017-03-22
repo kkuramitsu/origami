@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OBreakCode;
 import origami.code.OCode;
@@ -38,6 +37,7 @@ import origami.code.OReturnCode;
 import origami.code.OTryCode;
 import origami.code.OTryCode.CatchCode;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
 import origami.lang.OMethodHandle;

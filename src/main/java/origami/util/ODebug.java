@@ -18,7 +18,7 @@ package origami.util;
 
 import java.lang.reflect.Method;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.rule.OFmt;
 

@@ -18,8 +18,8 @@ package origami.rule.iroha;
 
 import java.util.Set;
 
-import origami.OEnv;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.lang.callsite.IrohaMethodCallSite;
 import origami.lang.callsite.OMethodCallSite;
 import origami.nez.ast.SourcePosition;

@@ -16,8 +16,8 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.code.OTryCode.CatchCode;
+import origami.lang.OEnv;
 import origami.type.OType;
 import origami.util.OScriptUtils;
 

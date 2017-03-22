@@ -18,8 +18,8 @@ package origami.code;
 
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
+import origami.lang.OEnv;
+import origami.lang.OEnv.OListMatcher;
 import origami.type.OType;
 import origami.util.OConsts;
 

@@ -16,7 +16,6 @@
 
 package origami.rule;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OGetSizeCode;
 import origami.code.OAndCode;
@@ -34,6 +33,7 @@ import origami.code.OValueCode;
 import origami.code.OWarningCode;
 import origami.ffi.OImportable;
 import origami.lang.OClassDecl;
+import origami.lang.OEnv;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.ONameEntity;

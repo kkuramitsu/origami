@@ -16,7 +16,7 @@
 
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.callsite.OFuncCallSite;
 import origami.type.OFuncType;

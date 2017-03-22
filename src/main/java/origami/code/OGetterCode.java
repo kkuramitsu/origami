@@ -20,7 +20,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.OField;
 import origami.lang.OGetter;
 import origami.rule.OFmt;

@@ -18,10 +18,10 @@ package origami.type;
 
 import java.lang.reflect.Array;
 
-import origami.OEnv;
 import origami.asm.code.ArrayLengthCode;
 import origami.code.OCode;
 import origami.code.OMultiCode;
+import origami.lang.OEnv;
 
 public class OArrayType extends OTypeImpl {
 	private final OType innerType;

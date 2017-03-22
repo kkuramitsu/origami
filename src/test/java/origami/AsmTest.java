@@ -18,6 +18,7 @@ package origami;
 
 import origami.code.OAssignCode;
 import origami.code.OCode;
+import origami.lang.OEnv;
 import origami.util.OScriptUtils;
 
 public class AsmTest {

@@ -18,7 +18,7 @@ package origami.code;
 
 import java.lang.reflect.Array;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 
 public class OGetSizeCode extends OMethodCode {

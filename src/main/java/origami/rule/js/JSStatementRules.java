@@ -16,11 +16,11 @@
 
 package origami.rule.js;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OEmptyCode;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.lang.OUntypedMethod;
 import origami.nez.ast.Tree;

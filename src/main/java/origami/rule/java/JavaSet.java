@@ -18,8 +18,8 @@ package origami.rule.java;
 
 import java.util.Set;
 
-import origami.OEnv;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.rule.ExpressionRules;
 import origami.rule.LiteralRules;

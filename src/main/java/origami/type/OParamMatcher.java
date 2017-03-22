@@ -16,11 +16,11 @@
 
 package origami.type;
 
-import origami.OEnv;
 import origami.code.OArrayCode;
 import origami.code.ODefaultValueCode;
 import origami.code.OCode;
 import origami.ffi.OCast;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.rule.TypeAnalysis;
 import origami.util.OArrayUtils;

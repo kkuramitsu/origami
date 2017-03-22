@@ -16,8 +16,8 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.OrigamiContext.LocalVariables;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class OAssignCode extends OParamCode<String> {

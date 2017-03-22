@@ -16,8 +16,8 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.OrigamiContext.LocalVariables;
+import origami.lang.OEnv;
 import origami.rule.OFmt;
 import origami.type.OType;
 

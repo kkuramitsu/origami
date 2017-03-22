@@ -16,7 +16,7 @@
 
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.util.OConsts;

@@ -18,13 +18,13 @@ package origami.rule;
 
 import java.util.Map;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.OUntypedCode;
 import origami.code.OValueCode;
 import origami.lang.OClassDecl;
+import origami.lang.OEnv;
 import origami.lang.OMethodDecl;
 import origami.lang.OTypeName;
 import origami.nez.ast.Symbol;

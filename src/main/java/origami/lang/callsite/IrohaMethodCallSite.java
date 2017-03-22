@@ -21,12 +21,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.List;
 
-import origami.OEnv;
-import origami.OEnv.OListMatcher;
 import origami.code.OCode;
 import origami.code.OMethodCode;
 import origami.code.OWarningCode;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
+import origami.lang.OEnv.OListMatcher;
 import origami.rule.OFmt;
 import origami.type.OType;
 

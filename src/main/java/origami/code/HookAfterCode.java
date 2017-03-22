@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.type.OType;
 
 public class HookAfterCode extends OMultiCode {

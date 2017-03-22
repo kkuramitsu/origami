@@ -16,10 +16,10 @@
 
 package origami.code;
 
-import origami.OEnv;
 import origami.ffi.OCast;
 import origami.lang.OConv.OConvCallSite;
 import origami.lang.ODynamicMethodHandle;
+import origami.lang.OEnv;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
 

@@ -16,7 +16,7 @@
 
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
 import origami.nez.ast.Tree;

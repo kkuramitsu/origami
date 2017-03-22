@@ -1,6 +1,6 @@
 package origami.code;
 
-import origami.OEnv;
+import origami.lang.OEnv;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.util.ODebug;

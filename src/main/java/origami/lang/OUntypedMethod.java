@@ -16,7 +16,6 @@
 
 package origami.lang;
 
-import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.code.OCode;

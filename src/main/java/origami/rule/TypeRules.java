@@ -16,11 +16,11 @@
 
 package origami.rule;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.OTypeCode;
 import origami.ffi.OImportable;
+import origami.lang.OEnv;
 import origami.lang.OTypeName;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;

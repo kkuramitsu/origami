@@ -19,9 +19,9 @@ package origami.rule;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.ffi.OrigamiPrimitiveGenerics;
+import origami.lang.OEnv;
 import origami.type.OType;
 import origami.util.StringCombinator;
 

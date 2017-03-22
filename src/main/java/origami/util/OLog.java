@@ -16,9 +16,9 @@
 
 package origami.util;
 
-import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OWarningCode;
+import origami.lang.OEnv;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
