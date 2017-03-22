@@ -3,13 +3,13 @@ package origami.code;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.asm.code.ArrayGetCode;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethod;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.ODebug;
 import origami.util.OTypeUtils;
 
 public class GenerativeCode extends OSugarCode {

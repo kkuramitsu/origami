@@ -16,7 +16,7 @@
 
 package origami.type;
 
-import origami.ODebug;
+import origami.util.ODebug;
 
 public class OUntypedType extends OTypeSystemType {
 

@@ -32,6 +32,7 @@ import origami.code.OOrCode;
 import origami.code.OTypeCode;
 import origami.code.OValueCode;
 import origami.code.OWarningCode;
+import origami.ffi.OImportable;
 import origami.lang.OClassDecl;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
@@ -44,7 +45,6 @@ import origami.rule.java.PreOpCode;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.util.OArrayUtils;
-import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils {

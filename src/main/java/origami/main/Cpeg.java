@@ -16,7 +16,7 @@
 
 package origami.main;
 
-import origami.ODebug;
+import origami.util.ODebug;
 
 public class Cpeg extends OCommand {
 

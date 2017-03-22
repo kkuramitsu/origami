@@ -16,11 +16,11 @@
 
 package origami.main;
 
-import origami.OConsole;
-import origami.ODebug;
 import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
 import origami.nez.peg.Grammar;
+import origami.util.OConsole;
+import origami.util.ODebug;
 
 public class Ocheck extends Orun {
 	@Override

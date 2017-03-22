@@ -16,7 +16,6 @@
 
 package origami.lang;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
@@ -25,6 +24,7 @@ import origami.code.OUntypedCode;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
+import origami.util.ODebug;
 
 public class OMethodDecl extends OCommonMethodHandle {
 	public final OType cbase; // class name

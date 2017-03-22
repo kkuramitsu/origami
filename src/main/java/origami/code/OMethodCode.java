@@ -28,7 +28,7 @@ import origami.lang.OMethodHandle;
 import origami.type.OType;
 import origami.util.OArrayUtils;
 
-public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicInvokable, OArrayUtils {
+public class OMethodCode extends OMatchedCode<OMethodHandle> implements ODyCode, OArrayUtils {
 
 	public OMethodCode(OMethodHandle method, OType ty, OCode[] nodes, int cost) {
 		super(method, ty, nodes, cost);

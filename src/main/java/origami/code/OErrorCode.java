@@ -17,15 +17,15 @@ package origami.code;
 
 import java.util.List;
 
-import origami.OConsts;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
-import origami.OLog;
 import origami.ffi.OCast;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OConsts;
+import origami.util.OLog;
 
 @SuppressWarnings("serial")
 public class OErrorCode extends RuntimeException implements OCode {

@@ -16,9 +16,9 @@
 
 package origami.code;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.type.OType;
+import origami.util.ODebug;
 
 public class OLocalCode<T> extends OParamCode<T> {
 

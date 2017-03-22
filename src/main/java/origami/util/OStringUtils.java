@@ -3,8 +3,6 @@ package origami.util;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import origami.OConsole;
-
 public abstract class OStringUtils {
 
 	private final static int E = 1;

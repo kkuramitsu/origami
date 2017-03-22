@@ -24,6 +24,7 @@ import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OUntypedCode;
 import origami.code.RunnableCode;
+import origami.ffi.OImportable;
 import origami.lang.OClassDecl;
 import origami.lang.OClassDeclType;
 import origami.lang.OMethodHandle;
@@ -38,7 +39,6 @@ import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OArrayType;
 import origami.type.OType;
-import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAnalysis {

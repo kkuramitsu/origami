@@ -1,10 +1,10 @@
 package origami.code;
 
-import origami.ODebug;
 import origami.OEnv;
-import origami.OLog;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourcePosition;
+import origami.util.ODebug;
+import origami.util.OLog;
 
 public class OWarningCode extends OParamCode<OLog> implements OWrapperCode {
 

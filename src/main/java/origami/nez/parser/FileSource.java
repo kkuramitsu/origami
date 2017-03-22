@@ -22,7 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import origami.OConsole;
+import origami.util.OConsole;
 
 public class FileSource extends ParserSource {
 	public final static int PageSize = 4096;

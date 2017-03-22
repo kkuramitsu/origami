@@ -1,7 +1,5 @@
 package origami.util;
 
-import origami.OConsole;
-
 public class OVerbose {
 	public static boolean enabled = true;
 

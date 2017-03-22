@@ -25,8 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import origami.OConsole;
-import origami.ODebug;
 import origami.OEnv;
 import origami.code.OValueCode;
 import origami.ffi.OrigamiObject;
@@ -35,6 +33,8 @@ import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
 import origami.type.OType;
+import origami.util.OConsole;
+import origami.util.ODebug;
 import origami.util.OTypeUtils;
 
 public class OClassLoader extends ClassLoader {

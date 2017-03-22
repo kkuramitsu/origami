@@ -23,18 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-//import nezgo.parser.ParserCode;
-//import nezgo.parser.ParserCode.MemoPoint;
-//import nezgo.parser.ParserFactory;
-//import nezgo.parser.ParserFactory.GrammarWriter;
-//import nezgo.peg.Expression;
-//import nezgo.peg.ExpressionVisitor;
-//import nezgo.peg.Grammar;
-//import nezgo.peg.NezFunc;
-//import nezgo.peg.Production;
-//import nezgo.peg.Production.Pmemo;
-//import nezgo.peg.Typestate;
-import origami.ODebug;
 import origami.main.CommonWriter;
 import origami.main.OOption;
 import origami.main.ParserOption;
@@ -50,6 +38,7 @@ import origami.nez.peg.NonEmpty;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
+import origami.util.ODebug;
 import origami.util.OStringUtils;
 import origami.util.OVerbose;
 

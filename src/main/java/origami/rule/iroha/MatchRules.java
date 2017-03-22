@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.code.GenerativeCode;
 import origami.code.OBreakCode;
@@ -35,6 +34,7 @@ import origami.code.OMultiCode;
 import origami.ffi.Case;
 import origami.ffi.FieldExtractable;
 import origami.ffi.ListExtractable;
+import origami.ffi.OImportable;
 import origami.ffi.ObjectExtractable;
 import origami.ffi.OrigamiException;
 import origami.ffi.SequenceExtractable;
@@ -50,7 +50,7 @@ import origami.type.NullableType;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
-import origami.util.OImportable;
+import origami.util.ODebug;
 import origami.util.OTypeRule;
 import origami.util.StringCombinator;
 

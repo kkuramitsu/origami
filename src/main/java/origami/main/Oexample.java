@@ -19,8 +19,6 @@ package origami.main;
 import java.io.IOException;
 import java.util.HashMap;
 
-import origami.OConsole;
-import origami.ODebug;
 import origami.main.Otest.Coverage;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
@@ -30,6 +28,8 @@ import origami.nez.parser.Parser;
 import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.GrammarParser;
+import origami.util.OConsole;
+import origami.util.ODebug;
 
 public class Oexample extends OCommand {
 	HashMap<String, Parser> parserMap = new HashMap<>();

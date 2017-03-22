@@ -18,7 +18,7 @@ package origami.type;
 
 import java.lang.reflect.TypeVariable;
 
-import origami.ODebug;
+import origami.util.ODebug;
 import origami.util.StringCombinator;
 
 public class OParamType extends OTypeImpl {

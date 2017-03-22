@@ -16,11 +16,11 @@
 
 package origami.rule.iroha;
 
-import origami.OConsole;
-import origami.ODebug;
 import origami.OEnv;
 import origami.ffi.OrigamiObject;
 import origami.rule.LayerRules;
+import origami.util.OConsole;
+import origami.util.ODebug;
 import origami.util.StringCombinator;
 
 public class IrohaAPIs implements OrigamiObject {

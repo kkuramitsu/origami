@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import origami.OConsole;
+import origami.util.OConsole;
 
 public abstract class CommonWriter {
 	protected String fileName = null;

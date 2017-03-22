@@ -16,9 +16,9 @@
 
 package origami.code;
 
-import origami.ODebug;
 import origami.asm.OBlock;
 import origami.type.OUntypedType;
+import origami.util.ODebug;
 
 public class OJumpBeforeCode extends OParamCode<OCode[]> implements OWrapperCode, OBlock {
 

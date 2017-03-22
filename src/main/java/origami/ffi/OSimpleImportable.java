@@ -1,4 +1,4 @@
-package origami.util;
+package origami.ffi;
 
 public interface OSimpleImportable {
 

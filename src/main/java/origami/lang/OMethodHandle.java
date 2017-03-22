@@ -20,7 +20,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.code.OCode;
@@ -29,6 +28,7 @@ import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
 import origami.util.OArrayUtils;
+import origami.util.ODebug;
 import origami.util.StringCombinator;
 import origami.type.OParamMatcher;
 

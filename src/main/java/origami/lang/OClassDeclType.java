@@ -21,13 +21,13 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.asm.OAnno;
 import origami.asm.OClassLoader;
 import origami.code.OCode;
 import origami.type.OTypeSystemType;
+import origami.util.ODebug;
 import origami.util.OTypeUtils;
 import origami.type.OType;
 import origami.type.OTypeSystem;

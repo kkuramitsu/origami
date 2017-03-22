@@ -20,6 +20,7 @@ import origami.OEnv;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OEmptyCode;
+import origami.ffi.OImportable;
 import origami.lang.OMethodHandle;
 import origami.lang.OUntypedMethod;
 import origami.nez.ast.Tree;
@@ -29,7 +30,6 @@ import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OType;
 import origami.util.OArrayUtils;
-import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalysis, OArrayUtils {

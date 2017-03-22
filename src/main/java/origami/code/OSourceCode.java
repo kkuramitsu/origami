@@ -1,10 +1,10 @@
 package origami.code;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.util.Handled;
+import origami.util.ODebug;
 import origami.util.StringCombinator;
 
 public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombinator {

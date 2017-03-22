@@ -19,10 +19,10 @@ package origami.main;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
-import origami.OConsole;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourceLogger;
 import origami.nez.ast.SourcePosition;
+import origami.util.OConsole;
 import origami.util.StringCombinator;
 
 public class OOption {

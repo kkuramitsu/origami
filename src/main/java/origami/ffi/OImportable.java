@@ -16,22 +16,32 @@
 
 package origami.ffi;
 
-import origami.util.OLog;
-import origami.util.StringCombinator;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Set;
 
-@SuppressWarnings("serial")
-public class OrigamiException extends RuntimeException {
+import origami.OEnv;
+import origami.nez.ast.SourcePosition;
+import origami.util.OTypeUtils;
 
-	public OrigamiException(OLog log) {
-		super(log.toString());
+public interface OImportable {
+	public default void importDefined(OEnv env, SourcePosition s, Set<String> names) {
+		boolean allSymbols = names == null || names.contains("*");
+		for (Field f : this.getClass().getDeclaredFields()) {
+			if (!Modifier.isPublic(f.getModifiers())) {
+				continue;
+			}
+			String name = definedName(f.getName());
+			if (!allSymbols && !names.contains(name)) {
+				continue;
+			}
+			env.add(s, name, OTypeUtils.valueField(f, this));
+		}
 	}
 
-	public OrigamiException(String fmt, Object... args) {
-		super(StringCombinator.format(fmt, args));
-	}
-
-	public OrigamiException(Throwable e, String fmt, Object... args) {
-		this(StringCombinator.format(fmt, args) + " by " + e);
+	public default String definedName(String name) {
+		int loc = name.lastIndexOf("__");
+		return loc == -1 ? name : name.substring(0, loc);
 	}
 
 }

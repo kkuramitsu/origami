@@ -16,10 +16,7 @@
 
 package origami.rule;
 
-//
-//import origami.nez.iroha.api.IMethod;
-
-import origami.OConsole;
+import origami.util.OConsole;
 import origami.util.StringCombinator;
 
 public class OrigamiDevelAPIs {

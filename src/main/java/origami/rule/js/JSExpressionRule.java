@@ -21,6 +21,7 @@ import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.ODefaultValueCode;
 import origami.code.OEmptyCode;
+import origami.ffi.OImportable;
 import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.OVariable;
@@ -31,7 +32,6 @@ import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OType;
 import origami.util.OArrayUtils;
-import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class JSExpressionRule implements OImportable, SyntaxAnalysis, TypeAnalysis, OArrayUtils {

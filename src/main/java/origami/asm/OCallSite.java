@@ -23,12 +23,11 @@ import java.lang.invoke.MutableCallSite;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.ODebug;
 //import origami.nez.iroha.ICallSite;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.code.OCastCode;
-import origami.code.DynamicInvokable;
+import origami.code.ODyCode;
 import origami.code.OErrorCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
@@ -37,6 +36,7 @@ import origami.ffi.OrigamiException;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
+import origami.util.ODebug;
 import origami.util.OTypeUtils;
 import origami.util.StringCombinator;
 
@@ -185,9 +185,9 @@ public abstract class OCallSite extends MutableCallSite {
 			params[i] = new OValueCode(args[i], env().t(OTypeUtils.unboxType(this.testTypes[i])));
 		}
 		OCode node = findParamCode2(env(), true, this.name, params);
-		if (node instanceof DynamicInvokable) {
+		if (node instanceof ODyCode) {
 			MethodHandles.Lookup lookup = MethodHandles.lookup();
-			MethodHandle mh = ((DynamicInvokable) node).getMethodHandle(env(), lookup);
+			MethodHandle mh = ((ODyCode) node).getMethodHandle(env(), lookup);
 			OCode[] p = node.getParams();
 			for (int i = 0; i < p.length; i++) {
 				if (p[i] instanceof OCastCode) {

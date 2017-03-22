@@ -18,10 +18,10 @@ package origami.code;
 
 import java.util.List;
 
-import origami.OConsts;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.type.OType;
+import origami.util.OConsts;
 
 public abstract class OParamCode<T> extends OSourceCode<T> {
 	protected final OCode[] nodes;

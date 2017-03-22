@@ -20,11 +20,11 @@ import origami.OEnv;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.OTypeCode;
+import origami.ffi.OImportable;
 import origami.lang.OTypeName;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
 import origami.type.OType;
-import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class TypeRules implements OImportable, OSymbols, TypeAnalysis {

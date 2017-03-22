@@ -33,7 +33,10 @@ import origami.nez.peg.Production;
 import origami.rule.OrigamiTypeSystem;
 import origami.rule.TypeAnalysis;
 import origami.type.OTypeSystem;
+import origami.util.OConsole;
+import origami.util.ODebug;
 import origami.util.OScriptUtils;
+import origami.util.OTree;
 import origami.util.StringCombinator;
 
 public class OrigamiContext extends OEnv.OBaseEnv {

@@ -23,15 +23,15 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-import origami.ODebug;
 import origami.OEnv;
-import origami.OTree;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
 import origami.code.OReturnCode;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
+import origami.ffi.OImportable;
+import origami.ffi.OSimpleImportable;
 import origami.lang.OClassDeclType;
 import origami.lang.OConv;
 import origami.lang.OField;

@@ -1,8 +1,8 @@
 package origami.type;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.code.OCode;
+import origami.util.ODebug;
 
 public class OVarType extends PhantomType {
 	private String varName;

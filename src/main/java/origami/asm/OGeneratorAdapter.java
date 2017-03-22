@@ -26,10 +26,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import origami.ODebug;
 import origami.code.OCode;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
+import origami.util.ODebug;
 
 public class OGeneratorAdapter extends GeneratorAdapter {
 	private final VarScopes varScopes;

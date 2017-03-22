@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
@@ -41,6 +40,7 @@ import origami.code.OSugarCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
 import origami.code.RunnableCode;
+import origami.ffi.OImportable;
 import origami.ffi.OMutable;
 import origami.ffi.OrigamiObject;
 import origami.ffi.OrigamiPrimitiveGenerics;
@@ -66,7 +66,7 @@ import origami.type.OParamType;
 import origami.type.OType;
 import origami.type.OTypeSystem;
 import origami.type.OUntypedType;
-import origami.util.OImportable;
+import origami.util.ODebug;
 import origami.util.OTypeRule;
 import origami.util.OTypeUtils;
 

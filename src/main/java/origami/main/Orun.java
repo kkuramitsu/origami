@@ -16,10 +16,10 @@
 
 package origami.main;
 
-import origami.ODebug;
 import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
 import origami.nez.peg.Grammar;
+import origami.util.ODebug;
 
 public class Orun extends origami.main.OCommand {
 

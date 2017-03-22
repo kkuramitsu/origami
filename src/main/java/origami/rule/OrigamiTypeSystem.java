@@ -16,7 +16,6 @@
 
 package origami.rule;
 
-import origami.OConsole;
 import origami.OEnv;
 import origami.lang.callsite.OFuncCallSite;
 import origami.lang.callsite.OGetterCallSite;
@@ -26,6 +25,7 @@ import origami.main.OOption.OptionalFactory;
 import origami.nez.ast.SourcePosition;
 import origami.rule.java.ClassRules;
 import origami.type.OTypeSystem;
+import origami.util.OConsole;
 import origami.util.OScriptUtils;
 
 public class OrigamiTypeSystem extends OTypeSystem implements OScriptUtils, OptionalFactory<OrigamiTypeSystem> {

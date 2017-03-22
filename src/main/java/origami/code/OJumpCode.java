@@ -16,10 +16,10 @@
 
 package origami.code;
 
-import origami.OConsts;
 import origami.OEnv;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OConsts;
 
 public class OJumpCode<T> extends OParamCode<T> {
 

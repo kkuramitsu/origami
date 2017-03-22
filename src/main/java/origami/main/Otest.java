@@ -18,13 +18,13 @@ package origami.main;
 
 import java.util.HashMap;
 
-import origami.OConsole;
 import origami.nez.parser.NZ86ParserContext;
 
 import origami.nez.parser.TrapAction;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
+import origami.util.OConsole;
 
 public class Otest extends Oexample {
 

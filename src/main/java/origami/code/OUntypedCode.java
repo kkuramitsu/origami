@@ -16,7 +16,6 @@
 
 package origami.code;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
@@ -26,6 +25,7 @@ import origami.rule.TypeAnalysis;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.type.OVarType;
+import origami.util.ODebug;
 
 public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis, TypeAnalysis {
 

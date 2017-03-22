@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import origami.OConsole;
-import origami.ODebug;
 import origami.OVersion;
 import origami.main.OOption.Key;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
 import origami.nez.parser.Parser;
 import origami.nez.peg.Grammar;
+import origami.util.OConsole;
+import origami.util.ODebug;
 import origami.util.StringCombinator;
 
 public abstract class OCommand extends OConsole {

@@ -18,7 +18,6 @@ package origami.rule.unit;
 
 import java.lang.reflect.Constructor;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.asm.OAnno;
 import origami.asm.OClassLoader;
@@ -33,6 +32,7 @@ import origami.code.OTypeCode;
 import origami.code.OWarningCode;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
+import origami.ffi.OImportable;
 import origami.lang.OClassDeclType;
 import origami.lang.OTypeName;
 import origami.nez.ast.Symbol;
@@ -46,7 +46,7 @@ import origami.type.OParamType;
 import origami.type.OType;
 import origami.type.OUntypedType;
 import origami.type.ThisType;
-import origami.util.OImportable;
+import origami.util.ODebug;
 import origami.util.OScriptUtils;
 import origami.util.OTypeRule;
 import origami.util.OTypeUtils;

@@ -1,6 +1,6 @@
 package origami.nez.ast;
 
-import origami.OConsole;
+import origami.util.OConsole;
 
 public interface SourceLogger {
 

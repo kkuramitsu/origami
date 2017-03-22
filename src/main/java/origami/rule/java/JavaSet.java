@@ -19,13 +19,13 @@ package origami.rule.java;
 import java.util.Set;
 
 import origami.OEnv;
+import origami.ffi.OImportable;
 import origami.nez.ast.SourcePosition;
 import origami.rule.ExpressionRules;
 import origami.rule.LiteralRules;
 import origami.rule.OrigamiAPIs;
 import origami.rule.StatementRules;
 import origami.rule.TypeRules;
-import origami.util.OImportable;
 import origami.util.OScriptUtils;
 
 public class JavaSet implements OImportable, OScriptUtils {

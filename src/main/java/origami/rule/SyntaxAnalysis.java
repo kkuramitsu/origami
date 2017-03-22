@@ -18,9 +18,7 @@ package origami.rule;
 
 import java.util.Map;
 
-import origami.ODebug;
 import origami.OEnv;
-import origami.OLog;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
@@ -33,6 +31,8 @@ import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.ODebug;
+import origami.util.OLog;
 
 public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 

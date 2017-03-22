@@ -14,10 +14,9 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami;
+package origami.util;
 
 import origami.nez.ast.LocaleFormat;
-import origami.util.StringCombinator;
 
 public class OConsole {
 

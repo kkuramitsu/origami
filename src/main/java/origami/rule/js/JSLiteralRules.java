@@ -20,19 +20,19 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import origami.OEnv;
-import origami.OLog.Messenger;
 import origami.code.OArrayCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
+import origami.ffi.OImportable;
 import origami.nez.ast.Tree;
 import origami.rule.TypeRule;
 import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OArrayType;
 import origami.type.OType;
-import origami.util.OImportable;
 import origami.util.OStringUtils;
 import origami.util.OTypeRule;
+import origami.util.OLog.Messenger;
 
 public class JSLiteralRules implements OImportable, TypeAnalysis {
 

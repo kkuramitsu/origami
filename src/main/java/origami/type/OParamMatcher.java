@@ -16,7 +16,6 @@
 
 package origami.type;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.code.OArrayCode;
 import origami.code.ODefaultValueCode;
@@ -25,6 +24,7 @@ import origami.ffi.OCast;
 import origami.lang.OMethodHandle;
 import origami.rule.TypeAnalysis;
 import origami.util.OArrayUtils;
+import origami.util.ODebug;
 
 public class OParamMatcher extends OVarDomain implements OArrayUtils, TypeAnalysis {
 

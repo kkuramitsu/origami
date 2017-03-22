@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import origami.ODebug;
 import origami.OEnv;
 import origami.OEnv.OBaseEnv;
 import origami.OEnv.OListMatcher;
@@ -32,6 +31,7 @@ import origami.asm.OClassLoader;
 import origami.code.NestedEnvCode;
 import origami.code.OCode;
 import origami.code.OErrorCode;
+import origami.ffi.OImportable;
 import origami.ffi.OrigamiException;
 import origami.lang.OGetter;
 import origami.lang.OGlobalVariable;
@@ -41,7 +41,7 @@ import origami.lang.OVariable;
 import origami.nez.ast.Tree;
 import origami.type.OType;
 import origami.type.OTypeSystem;
-import origami.util.OImportable;
+import origami.util.ODebug;
 import origami.util.OTypeRule;
 
 public class LayerRules implements OImportable, SyntaxAnalysis {

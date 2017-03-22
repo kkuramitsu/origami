@@ -15,9 +15,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
-import origami.ODebug;
 import origami.OEnv;
-import origami.OLog;
 import origami.asm.OGeneratorAdapter.VarEntry;
 import origami.asm.code.ArrayGetCode;
 import origami.asm.code.ArrayLengthCode;
@@ -69,6 +67,8 @@ import origami.rule.java.JavaSwitchCode;
 import origami.rule.java.JavaSwitchCode.CaseCode;
 import origami.type.OType;
 import origami.util.OArrayUtils;
+import origami.util.ODebug;
+import origami.util.OLog;
 import origami.util.OTypeUtils;
 
 //import origami.decl.ConstructorDecl;

@@ -19,6 +19,7 @@ package origami.rule.iroha;
 import java.util.Set;
 
 import origami.OEnv;
+import origami.ffi.OImportable;
 import origami.lang.callsite.IrohaMethodCallSite;
 import origami.lang.callsite.OMethodCallSite;
 import origami.nez.ast.SourcePosition;
@@ -39,7 +40,6 @@ import origami.rule.unit.OUnit;
 import origami.rule.unit.SecondUnit;
 import origami.rule.unit.UnitRules;
 import origami.type.OUntypedType;
-import origami.util.OImportable;
 import origami.util.OScriptUtils;
 
 public class IrohaSet implements OImportable, OScriptUtils {

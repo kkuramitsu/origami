@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami;
+package origami.util;
 
 import origami.code.OCode;
 

@@ -14,33 +14,14 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.util;
+package origami.code;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Set;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 
 import origami.OEnv;
-import origami.nez.ast.SourcePosition;
 
-public interface OImportable {
-	public default void importDefined(OEnv env, SourcePosition s, Set<String> names) {
-		boolean allSymbols = names == null || names.contains("*");
-		for (Field f : this.getClass().getDeclaredFields()) {
-			if (!Modifier.isPublic(f.getModifiers())) {
-				continue;
-			}
-			String name = definedName(f.getName());
-			if (!allSymbols && !names.contains(name)) {
-				continue;
-			}
-			env.add(s, name, OTypeUtils.valueField(f, this));
-		}
-	}
-
-	public default String definedName(String name) {
-		int loc = name.lastIndexOf("__");
-		return loc == -1 ? name : name.substring(0, loc);
-	}
+public interface ODyCode extends OCode {
+	public MethodHandle getMethodHandle(OEnv env, MethodHandles.Lookup lookup) throws Throwable;
 
 }

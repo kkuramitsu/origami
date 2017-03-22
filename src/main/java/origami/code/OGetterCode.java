@@ -27,7 +27,7 @@ import origami.rule.OFmt;
 import origami.type.OType;
 import origami.util.OTypeUtils;
 
-public class OGetterCode extends OParamCode<OField> implements DynamicInvokable {
+public class OGetterCode extends OParamCode<OField> implements ODyCode {
 
 	public OGetterCode(OType ret, OField field, OCode recv) {
 		super(field, ret, recv);

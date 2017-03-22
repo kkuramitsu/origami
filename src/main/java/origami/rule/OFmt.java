@@ -16,8 +16,8 @@
 
 package origami.rule;
 
-import origami.OConsole;
 import origami.nez.ast.LocaleFormat;
+import origami.util.OConsole;
 
 public enum OFmt implements LocaleFormat {
 	welcome, error, warning, notice, info, //

@@ -17,7 +17,6 @@
 package origami.lang;
 
 import origami.OEnv;
-import origami.OLog;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.code.OCode;
@@ -25,6 +24,7 @@ import origami.code.OWarningCode;
 import origami.rule.OFmt;
 import origami.type.OType;
 import origami.type.OUntypedType;
+import origami.util.OLog;
 
 public class OUntypedMethod extends OMethod {
 	private OEnv definedEnv;

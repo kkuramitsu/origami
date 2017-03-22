@@ -14,14 +14,13 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami;
+package origami.util;
 
 import java.lang.reflect.Method;
 
+import origami.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.rule.OFmt;
-import origami.util.OTypeUtils;
-import origami.util.StringCombinator;
 
 public class ODebug extends OConsole {
 

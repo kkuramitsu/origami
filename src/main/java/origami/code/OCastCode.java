@@ -17,12 +17,12 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.OLog;
 import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OMethodHandle;
 import origami.rule.OFmt;
 import origami.type.OType;
+import origami.util.OLog;
 
 public class OCastCode extends OMethodCode {
 
