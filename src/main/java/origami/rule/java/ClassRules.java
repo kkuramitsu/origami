@@ -31,7 +31,7 @@ import origami.lang.OMethodHandle;
 import origami.lang.OPartialFunc;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
@@ -46,7 +46,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 	public static final String DefaultSuperType = " DefaultSuperType";
 
-	public OTypeRule ClassDecl = new AbstractTypeRule() {
+	public OTypeRule ClassDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -106,7 +106,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 	// return false;
 	// }
 
-	public OTypeRule FieldDecl = new AbstractTypeRule() {
+	public OTypeRule FieldDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -137,7 +137,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 	};
 
-	public OTypeRule MethodDecl = new AbstractTypeRule() {
+	public OTypeRule MethodDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -164,7 +164,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 	};
 
-	public OTypeRule ConstructorDecl = new AbstractTypeRule() {
+	public OTypeRule ConstructorDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -184,7 +184,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 	};
 
-	public OTypeRule NewExpr = new AbstractTypeRule() {
+	public OTypeRule NewExpr = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -196,7 +196,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 	};
 
-	public OTypeRule ExplicitConstructorInvocation = new AbstractTypeRule() {
+	public OTypeRule ExplicitConstructorInvocation = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return null;

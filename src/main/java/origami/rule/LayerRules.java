@@ -46,7 +46,7 @@ import origami.util.OTypeRule;
 
 public class LayerRules implements OImportable, SyntaxAnalysis {
 
-	public OTypeRule LayerDecl = new AbstractTypeRule() {
+	public OTypeRule LayerDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.getText(_name, "");
@@ -69,7 +69,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule WithExpr = new AbstractTypeRule() {
+	public OTypeRule WithExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String[] names = parseNames(env, t.get(_name));
@@ -91,7 +91,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule WithoutExpr = new AbstractTypeRule() {
+	public OTypeRule WithoutExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String[] names = parseNames(env, t.get(_name));

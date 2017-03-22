@@ -25,7 +25,7 @@ import origami.code.OArrayCode;
 import origami.code.OCode;
 import origami.code.OValueCode;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
 import origami.type.OArrayType;
@@ -50,14 +50,14 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule CharExpr = new Number(float.class); // FIXME: importing
 															// from
 	// CharExpr
-	public OTypeRule StringExpr = new AbstractTypeRule() {
+	public OTypeRule StringExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return new OValueCode(OStringUtils.unquoteString(t.toText()), env.t(String.class));
 		}
 	};
 
-	public static class Value extends AbstractTypeRule {
+	public static class Value extends TypeRule {
 		public final Object value;
 		public final Class<?> baseType;
 
@@ -72,7 +72,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 		}
 	}
 
-	public static class Number extends AbstractTypeRule implements TypeAnalysis {
+	public static class Number extends TypeRule implements TypeAnalysis {
 		public final Class<?> baseType;
 
 		public Number(Class<?> baseType) {
@@ -150,7 +150,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 
 	}
 
-	public OTypeRule ArrayExpr = new AbstractTypeRule() {
+	public OTypeRule ArrayExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType innerType = null;

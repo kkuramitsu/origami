@@ -18,6 +18,6 @@ package origami.rule;
 
 import origami.util.OTypeRule;
 
-public abstract class AbstractTypeRule implements OTypeRule {
+public abstract class TypeRule implements OTypeRule {
 
 }

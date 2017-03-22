@@ -56,7 +56,7 @@ import origami.lang.OTypeName;
 import origami.lang.callsite.OFuncCallSite;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.OrigamiIterator;
@@ -72,7 +72,7 @@ import origami.util.OTypeUtils;
 
 public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 
-	public OTypeRule ExportDecl = new AbstractTypeRule() {
+	public OTypeRule ExportDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			for (OEnv cur = env.getParent(); cur != null; cur = cur.getParent()) {
@@ -84,7 +84,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule AssumeDecl = new AbstractTypeRule() {
+	public OTypeRule AssumeDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> a) {
 			OEnv defineEnv = IrohaRules.this.getDefiningEnv(env);
@@ -101,7 +101,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 
 	// assert(expr)
 
-	public OTypeRule AssertExpr = new AbstractTypeRule() {
+	public OTypeRule AssertExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String msg = ODebug.assertMessage(env, t.get(_cond));
@@ -118,7 +118,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule AssertGtExpr = new InlineAssertRule(">");
 	public OTypeRule AssertGteExpr = new InlineAssertRule(">=");
 
-	public class InlineAssertRule extends AbstractTypeRule {
+	public class InlineAssertRule extends TypeRule {
 		final String op;
 
 		public InlineAssertRule(String op) {
@@ -136,7 +136,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	}
 
-	public OTypeRule MutableExpr = new AbstractTypeRule() {
+	public OTypeRule MutableExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = IrohaRules.this.typeExpr(env, t.get(_expr));
@@ -159,7 +159,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule TweetExpr = new AbstractTypeRule() {
+	public OTypeRule TweetExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = IrohaRules.this.typeExpr(env, t.get(_expr));
@@ -171,7 +171,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule EnvExpr = new AbstractTypeRule() {
+	public OTypeRule EnvExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Class<?> c = env.findEntryPoint();
@@ -179,7 +179,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule EmptyExpr = new AbstractTypeRule() {
+	public OTypeRule EmptyExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType ty = null;
@@ -192,7 +192,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public class ArrayRule extends AbstractTypeRule {
+	public class ArrayRule extends TypeRule {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType ctype = env.t(OUntypedType.class);
@@ -260,7 +260,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule DictExpr = new DictRule(false);
 	public OTypeRule MutDictExpr = new DictRule(true);
 
-	public class DictRule extends AbstractTypeRule {
+	public class DictRule extends TypeRule {
 		final boolean isMutable;
 
 		DictRule(boolean isMutable) {
@@ -332,7 +332,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule TreeExpr = new TreeRule(false);
 	public OTypeRule MutTreeExpr = new TreeRule(true);
 
-	public class TreeRule extends AbstractTypeRule {
+	public class TreeRule extends TypeRule {
 		final boolean isMutable;
 
 		TreeRule(boolean isMutable) {
@@ -379,7 +379,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule RangeUntilExpr = new RangeRule(false);
 	public OTypeRule RangeExpr = new RangeRule(true);
 
-	class RangeRule extends AbstractTypeRule {
+	class RangeRule extends TypeRule {
 		boolean inclusive;
 
 		public RangeRule(boolean inclusive) {
@@ -398,7 +398,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 
 	/* mutable */
 
-	public OTypeRule ForEachExpr = new AbstractTypeRule() {
+	public OTypeRule ForEachExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.getText(_name, null);
@@ -546,7 +546,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	}
 
-	public OTypeRule ClassDecl = new AbstractTypeRule() {
+	public OTypeRule ClassDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			/* annotations */
@@ -589,7 +589,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	public OTypeRule MethodDecl = new AbstractTypeRule() {
+	public OTypeRule MethodDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {

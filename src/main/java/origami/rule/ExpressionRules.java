@@ -49,7 +49,7 @@ import origami.util.OTypeRule;
 
 public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils {
 
-	public OTypeRule NameExpr = new AbstractTypeRule() {
+	public OTypeRule NameExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.toText();
@@ -61,7 +61,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	class VarRule extends AbstractTypeRule {
+	class VarRule extends TypeRule {
 		final boolean isReadOnly;
 
 		VarRule(boolean isReadOnly) {
@@ -105,7 +105,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule VarDecl = new VarRule(false);
 	public OTypeRule LetDecl = new VarRule(true);
 
-	public OTypeRule ThisExpr = new AbstractTypeRule() {
+	public OTypeRule ThisExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl defined = ExpressionRules.this.getClassContext(env);
@@ -116,7 +116,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule AssignExpr = new AbstractTypeRule() {
+	public OTypeRule AssignExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
@@ -125,7 +125,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule AssignStmt = new AbstractTypeRule() {
+	public OTypeRule AssignStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
@@ -135,7 +135,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule CastExpr = new AbstractTypeRule() {
+	public OTypeRule CastExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = ExpressionRules.this.typeExpr(env, t.get(_expr));
@@ -155,7 +155,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule InstanceOfExpr = new AbstractTypeRule() {
+	public OTypeRule InstanceOfExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
@@ -180,7 +180,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule ApplyExpr = new AbstractTypeRule() {
+	public OTypeRule ApplyExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode[] params = ExpressionRules.this.typeParams(env, t);
@@ -189,7 +189,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule MethodExpr = new AbstractTypeRule() {
+	public OTypeRule MethodExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode[] params = ExpressionRules.this.typeParams(env, t);
@@ -199,7 +199,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule GetExpr = new AbstractTypeRule() {
+	public OTypeRule GetExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.getText(_name, "");
@@ -208,7 +208,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule SizeOfExpr = new AbstractTypeRule() {
+	public OTypeRule SizeOfExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = ExpressionRules.this.typeExpr(env, t.get(_expr));
@@ -221,7 +221,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule IndexExpr = new AbstractTypeRule() {
+	public OTypeRule IndexExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode recv = ExpressionRules.this.typeExpr(env, t.get(_recv));
@@ -230,7 +230,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule NewArrayExpr = new AbstractTypeRule() {
+	public OTypeRule NewArrayExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType type = ExpressionRules.this.parseType(env, t.get(_type), null);
@@ -249,7 +249,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 	/* IfExpr */
 
-	public OTypeRule IfExpr = new AbstractTypeRule() {
+	public OTypeRule IfExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode condCode = ExpressionRules.this.typeCondition(env, t.get(_cond));
@@ -262,7 +262,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 	/* AndExpr */
 
-	public OTypeRule AndExpr = new AbstractTypeRule() {
+	public OTypeRule AndExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
@@ -271,7 +271,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	};
 
-	public OTypeRule OrExpr = new AbstractTypeRule() {
+	public OTypeRule OrExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
@@ -307,7 +307,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 	// TODO add unary operator TypeRules
 
-	class Binary extends AbstractTypeRule {
+	class Binary extends TypeRule {
 
 		final String op;
 		final String name;
@@ -331,7 +331,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	}
 
-	class Unary extends AbstractTypeRule {
+	class Unary extends TypeRule {
 
 		final String op;
 		final String name;
@@ -369,7 +369,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	// public OTypeRule PostIncExpr = new PostOpExpr("+");
 	// public OTypeRule PostDecExpr = new PostOpExpr("-");
 
-	class SelfAssign extends AbstractTypeRule {
+	class SelfAssign extends TypeRule {
 		String name;
 		OCode expr;
 
@@ -417,7 +417,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		}
 	}
 
-	class PostOpExpr extends AbstractTypeRule {
+	class PostOpExpr extends TypeRule {
 		String name;
 		OCode expr;
 

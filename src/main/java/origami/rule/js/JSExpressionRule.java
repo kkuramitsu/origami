@@ -25,7 +25,7 @@ import origami.lang.OGlobalVariable;
 import origami.lang.OLocalVariable;
 import origami.lang.OVariable;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
@@ -35,7 +35,7 @@ import origami.util.OImportable;
 import origami.util.OTypeRule;
 
 public class JSExpressionRule implements OImportable, SyntaxAnalysis, TypeAnalysis, OArrayUtils {
-	class VarRule extends AbstractTypeRule {
+	class VarRule extends TypeRule {
 		final boolean isReadOnly;
 
 		VarRule(boolean isReadOnly) {

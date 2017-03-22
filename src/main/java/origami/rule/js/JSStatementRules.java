@@ -23,7 +23,7 @@ import origami.code.OEmptyCode;
 import origami.lang.OMethodHandle;
 import origami.lang.OUntypedMethod;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.SyntaxAnalysis;
 import origami.rule.TypeAnalysis;
 import origami.type.AnyType;
@@ -34,7 +34,7 @@ import origami.util.OTypeRule;
 
 public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalysis, OArrayUtils {
 
-	public OTypeRule FuncDecl = new AbstractTypeRule() {
+	public OTypeRule FuncDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OAnno anno = parseAnno(env, "public,static", t.get(_anno, null));

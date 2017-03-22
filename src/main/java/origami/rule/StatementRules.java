@@ -57,7 +57,7 @@ import origami.util.OTypeUtils;
 
 public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis, OArrayUtils {
 
-	public OTypeRule MultiExpr = new AbstractTypeRule() {
+	public OTypeRule MultiExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			if (t.size() == 0) {
@@ -75,7 +75,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule BlockExpr = new AbstractTypeRule() {
+	public OTypeRule BlockExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode[] nodes = new OCode[t.size()];
@@ -91,7 +91,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule MultiStmt = new AbstractTypeRule() {
+	public OTypeRule MultiStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			if (t.size() == 0) {
@@ -106,7 +106,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule BlockStmt = new AbstractTypeRule() {
+	public OTypeRule BlockStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode[] nodes = new OCode[t.size()];
@@ -129,7 +129,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		return sj.toString();
 	}
 
-	public OTypeRule ImportDecl = new AbstractTypeRule() {
+	public OTypeRule ImportDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Set<String> option = NoSubSymbols;
@@ -164,7 +164,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule FuncDecl = new AbstractTypeRule() {
+	public OTypeRule FuncDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OAnno anno = StatementRules.this.parseAnno(env, "public,static,final", t.get(_anno, null));
@@ -183,7 +183,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule DyFuncDecl = new AbstractTypeRule() {
+	public OTypeRule DyFuncDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OAnno anno = StatementRules.this.parseAnno(env, "public,static", t.get(_anno, null));
@@ -203,14 +203,14 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule EmptyStmt = new AbstractTypeRule() {
+	public OTypeRule EmptyStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return new OEmptyCode(env);
 		}
 	};
 
-	public OTypeRule ReturnStmt = new AbstractTypeRule() {
+	public OTypeRule ReturnStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
@@ -223,7 +223,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule ThrowStmt = new AbstractTypeRule() {
+	public OTypeRule ThrowStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
@@ -235,7 +235,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule BreakStmt = new AbstractTypeRule() {
+	public OTypeRule BreakStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
@@ -250,7 +250,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule ContinueStmt = new AbstractTypeRule() {
+	public OTypeRule ContinueStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
@@ -266,7 +266,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule LabelStmt = new AbstractTypeRule() {
+	public OTypeRule LabelStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode body = StatementRules.this.typeStmt(env, t.get(_body));
@@ -274,7 +274,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule IfStmt = new AbstractTypeRule() {
+	public OTypeRule IfStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
@@ -284,7 +284,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule ForStmt = new AbstractTypeRule() {
+	public OTypeRule ForStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode initCode = StatementRules.this.typeStmt(env, t.get(_init, null));
@@ -295,7 +295,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule WhileStmt = new AbstractTypeRule() {
+	public OTypeRule WhileStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode initCode = new OEmptyCode(env);
@@ -321,7 +321,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	// }
 	// };
 
-	public OTypeRule SwitchStmt = new AbstractTypeRule() {
+	public OTypeRule SwitchStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode condCode = StatementRules.this.typeExpr(env, t.get(_cond));
@@ -347,14 +347,14 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule TryStmt = new AbstractTypeRule() {
+	public OTypeRule TryStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return StatementRules.this.typeTry(env, t);
 		}
 	};
 
-	public OTypeRule JavaTryWithResource = new AbstractTypeRule() {
+	public OTypeRule JavaTryWithResource = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return StatementRules.this.typeTry(env, t);
@@ -407,7 +407,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		return new OTryCode(env, tryCode, catchCodes, finallyCode);
 	}
 
-	public OTypeRule AssertStmt = new AbstractTypeRule() {
+	public OTypeRule AssertStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode cond = StatementRules.this.typeCondition(env, t.get(_cond));

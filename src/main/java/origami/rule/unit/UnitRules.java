@@ -37,7 +37,7 @@ import origami.lang.OClassDeclType;
 import origami.lang.OTypeName;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
@@ -52,7 +52,7 @@ import origami.util.OTypeRule;
 import origami.util.OTypeUtils;
 
 public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScriptUtils {
-	public OTypeRule UnitType = new AbstractTypeRule() {
+	public OTypeRule UnitType = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -65,7 +65,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		}
 	};
 
-	public OTypeRule UnitLiteral = new AbstractTypeRule() {
+	public OTypeRule UnitLiteral = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -89,7 +89,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 	public final static Symbol _scale = Symbol.unique("scale");
 	public final static Symbol _iscale = Symbol.unique("iscale");
 
-	public OTypeRule UnitDecl = new AbstractTypeRule() {
+	public OTypeRule UnitDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {

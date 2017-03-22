@@ -38,7 +38,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 
 	}
 
-	public OTypeRule ClassType = new AbstractTypeRule() {
+	public OTypeRule ClassType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType type = parseType(env, t);
@@ -61,7 +61,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		}
 	};
 
-	public OTypeRule ArrayType = new AbstractTypeRule() {
+	public OTypeRule ArrayType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType ty = parseType(env, t.get(_base));
@@ -70,7 +70,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 
 	};
 
-	public OTypeRule FuncType = new AbstractTypeRule() {
+	public OTypeRule FuncType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType returnType = parseType(env, t.get(_base));
@@ -84,7 +84,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		}
 	};
 
-	public OTypeRule CurryFuncType = new AbstractTypeRule() {
+	public OTypeRule CurryFuncType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType p = parseType(env, t.get(_base));
@@ -94,7 +94,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		}
 	};
 
-	public OTypeRule NullableType = new AbstractTypeRule() {
+	public OTypeRule NullableType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType p = parseType(env, t.get(_base));

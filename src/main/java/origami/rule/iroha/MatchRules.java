@@ -41,7 +41,7 @@ import origami.ffi.SequenceExtractable;
 import origami.lang.OLocalVariable;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.rule.AbstractTypeRule;
+import origami.rule.TypeRule;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.SyntaxAnalysis;
@@ -246,7 +246,7 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	}
 
-	public OTypeRule MatchExpr = new AbstractTypeRule() {
+	public OTypeRule MatchExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode expr = typeExpr(env, t.get(_expr));

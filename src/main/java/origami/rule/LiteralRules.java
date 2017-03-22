@@ -31,7 +31,7 @@ import origami.util.OTypeRule;
 
 public class LiteralRules implements OImportable, TypeAnalysis {
 
-	public OTypeRule NullExpr = new AbstractTypeRule() {
+	public OTypeRule NullExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return new ONullCode(env);
@@ -49,7 +49,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule FloatExpr = new NumberRule(float.class);
 	public OTypeRule DoubleExpr = new NumberRule(double.class);
 
-	public OTypeRule CharExpr = new AbstractTypeRule() {
+	public OTypeRule CharExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String s = OStringUtils.unquoteString(t.toText());
@@ -64,7 +64,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 
 	};
 
-	public OTypeRule StringExpr = new AbstractTypeRule() {
+	public OTypeRule StringExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			return env.v(OStringUtils.unquoteString(t.toText()));
@@ -72,7 +72,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 
 	};
 
-	public static class ValueRule extends AbstractTypeRule {
+	public static class ValueRule extends TypeRule {
 		public final Object value;
 		public final Class<?> baseType;
 
@@ -87,7 +87,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 		}
 	}
 
-	public static class NumberRule extends AbstractTypeRule implements TypeAnalysis {
+	public static class NumberRule extends TypeRule implements TypeAnalysis {
 		public final Class<?> baseType;
 
 		public NumberRule(Class<?> baseType) {
