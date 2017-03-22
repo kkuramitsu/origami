@@ -19,7 +19,6 @@ package origami.main;
 import origami.ODebug;
 import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
-import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 
 public class Orun extends origami.main.OCommand {
@@ -31,21 +30,21 @@ public class Orun extends origami.main.OCommand {
 			if (files.length > 0) {
 				String ext = SourcePosition.extractFileExtension(files[0]);
 				options.set(ParserOption.GrammarFile, ext + ".nez");
-			} 
+			}
 		}
-		Grammar g = getGrammar(options, "iroha.nez");
+		Grammar g = this.getGrammar(options, "iroha.nez");
 		OrigamiContext env = new OrigamiContext(g, options);
 		ODebug.setDebug(this.isDebug());
 
 		for (String file : files) {
 			env.loadScriptFile(file);
 		}
-		if (files.length == 0 || isDebug()) {
+		if (files.length == 0 || this.isDebug()) {
 			displayVersion(g.getName());
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 			p("");
 
-			int startline = linenum;
+			int startline = this.linenum;
 			String prompt = bold(">>> ");
 			String input = null;
 			while ((input = this.readMulti(prompt)) != null) {
@@ -53,7 +52,7 @@ public class Orun extends origami.main.OCommand {
 					continue;
 				}
 				env.shell("<stdin>", startline, input);
-				startline = linenum;
+				startline = this.linenum;
 			}
 		}
 	}

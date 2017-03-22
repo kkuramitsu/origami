@@ -20,7 +20,6 @@ import origami.OConsole;
 import origami.ODebug;
 import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
-import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 
 public class Ocheck extends Orun {

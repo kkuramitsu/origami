@@ -38,10 +38,11 @@ public interface Source {
 
 	public int column(long pos);
 
-//	//
-//	
-//	public String getLineString(long pos);
-//
-//	public String formatPositionLine(String messageType, long pos, String message);
+	// //
+	//
+	// public String getLineString(long pos);
+	//
+	// public String formatPositionLine(String messageType, long pos, String
+	// message);
 
 }

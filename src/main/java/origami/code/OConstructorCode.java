@@ -19,7 +19,6 @@ package origami.code;
 import java.lang.reflect.Constructor;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.ffi.OCast;
 import origami.lang.OConstructor;
 import origami.lang.OMethodHandle;
@@ -38,12 +37,6 @@ public class OConstructorCode extends OMethodCode {
 	public OConstructorCode(OMethodHandle handled, OCode... nodes) {
 		this(handled, handled.getReturnType(), nodes, OCast.SAME);
 	}
-
-	// public ConstructorCode(Constructor<?> handled, OType ret, OCode[] nodes,
-	// int matchCost) {
-	// this(new OConstructor(ret.getTypeSystem(), handled), ret, nodes,
-	// matchCost);
-	// }
 
 	public OConstructorCode(OEnv env, Constructor<?> c, OCode... nodes) {
 		this(new OConstructor(env, c), null, nodes, OCast.SAME);

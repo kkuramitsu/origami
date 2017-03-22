@@ -20,7 +20,6 @@ import java.util.List;
 
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
-import origami.asm.OAsm;
 import origami.asm.OCallSite;
 import origami.ffi.OCast;
 import origami.lang.callsite.OFuncCallSite;
@@ -121,13 +120,9 @@ public interface OCode {
 	}
 
 	// Code = right
-	public default OCode newAssignCode(OEnv env, OType type, OCode right) {
+	public default OCode newAssignCode(OEnv env, OCode right) {
 		throw new OErrorCode(env, OFmt.YY0_is_not_assignable, this.getClass().getSimpleName());
 	}
-
-	// public default OCode newIteratorCode(OEnv env) {
-	// return OrigamiIterator.newIteratorCode(env, this);
-	// }
 
 	// (t)Code
 	public default OCode newCastCode(OEnv env, OType t) {

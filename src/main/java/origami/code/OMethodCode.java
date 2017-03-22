@@ -21,7 +21,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.ffi.OCast;
 import origami.lang.ODynamicMethodHandle;
 import origami.lang.OMethod;
@@ -70,8 +69,8 @@ public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicI
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		Object[] values = evalParams(env, nodes);
-		return getHandled().eval(env, values);
+		Object[] values = this.evalParams(env, this.nodes);
+		return this.getHandled().eval(env, values);
 	}
 
 	/* Asm interface */
@@ -86,7 +85,7 @@ public class OMethodCode extends OMatchedCode<OMethodHandle> implements DynamicI
 		if (this.getMethod() == null) {
 			return null;
 		}
-		return getMethod().getMethodHandle(env, lookup);
+		return this.getMethod().getMethodHandle(env, lookup);
 	}
 
 }

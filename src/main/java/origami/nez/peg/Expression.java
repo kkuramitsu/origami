@@ -71,13 +71,13 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		this.ref = e.getExternalReference();
 	}
 
-//	public String formatSourceMessage(String type, String msg) {
-//		SourcePosition s = getSourceLocation();
-//		if (s != null) {
-//			return s.formatSourceMessage(type, msg);
-//		}
-//		return "(" + type + ") " + msg;
-//	}
+	// public String formatSourceMessage(String type, String msg) {
+	// SourcePosition s = getSourceLocation();
+	// if (s != null) {
+	// return s.formatSourceMessage(type, msg);
+	// }
+	// return "(" + type + ") " + msg;
+	// }
 
 	// term, unary, binary, array
 
@@ -128,7 +128,8 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			}
 			String pre = "(";
 			String post = ")";
-			if (inner instanceof PNonTerminal || inner instanceof PTerm || inner instanceof PTree || Expression.isString(inner)) {
+			if (inner instanceof PNonTerminal || inner instanceof PTerm || inner instanceof PTree
+					|| Expression.isString(inner)) {
 				pre = "";
 				post = "";
 			}
@@ -994,7 +995,8 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Symbol tag = null; // optimization parameter
 		public String value = null; // optimization parameter
 
-		public PTree(boolean folding, Symbol label, int beginShift, Expression inner, Symbol tag, String value, int endShift, Object ref) {
+		public PTree(boolean folding, Symbol label, int beginShift, Expression inner, Symbol tag, String value,
+				int endShift, Object ref) {
 			super(inner, ref);
 			this.folding = folding;
 			this.label = label;
@@ -1012,7 +1014,8 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public final boolean equals(Object o) {
 			if (o instanceof Expression.PTree) {
 				Expression.PTree t = (Expression.PTree) o;
-				if (t.beginShift != this.beginShift || t.endShift != this.endShift || t.tag != this.tag || t.value != this.value) {
+				if (t.beginShift != this.beginShift || t.endShift != this.endShift || t.tag != this.tag
+						|| t.value != this.value) {
 					return false;
 				}
 				return t.get(0).equals(this.get(0));

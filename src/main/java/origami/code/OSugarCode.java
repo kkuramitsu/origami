@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public abstract class OSugarCode extends OParamCode<OEnv> {
@@ -38,12 +37,12 @@ public abstract class OSugarCode extends OParamCode<OEnv> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		return desugar().eval(env);
+		return this.desugar().eval(env);
 	}
 
 	@Override
-	public void generate(OGenerator gen) {
-		desugar().generate(gen);
+	public final void generate(OGenerator gen) {
+		gen.pushSugar(this);
 	}
 
 }

@@ -83,7 +83,8 @@ public class TreePass extends CommonPass {
 			foundReplace = tree.value;
 		}
 		Expression inner = Expression.newSequence(inners, ref(tree));
-		Expression.PTree newTree = new Expression.PTree(tree.folding, tree.label, beginShift, inner, foundTag, foundReplace, tree.endShift, ref(tree));
+		Expression.PTree newTree = new Expression.PTree(tree.folding, tree.label, beginShift, inner, foundTag,
+				foundReplace, tree.endShift, ref(tree));
 		return optimized(tree, Expression.newSequence(Expression.newSequence(factored, ref(tree)), newTree, null));
 	}
 
@@ -185,8 +186,10 @@ public class TreePass extends CommonPass {
 			for (; i < l.size(); i++) {
 				remained.add(l.get(i));
 			}
-			tree = new Expression.PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners, null), tree.tag, tree.value, endShift, null);
-			return optimized(pair, Expression.newSequence(visitTree(tree, a), Expression.newSequence(remained, null), null));
+			tree = new Expression.PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners, null),
+					tree.tag, tree.value, endShift, null);
+			return optimized(pair,
+					Expression.newSequence(visitTree(tree, a), Expression.newSequence(remained, null), null));
 		}
 		return super.visitPair(pair, a);
 	}

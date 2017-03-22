@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public class OInstanceOfCode extends OParamCode<OType> {

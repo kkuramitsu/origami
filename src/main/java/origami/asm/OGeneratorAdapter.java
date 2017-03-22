@@ -18,6 +18,7 @@ package origami.asm;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Stack;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -26,6 +27,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import origami.ODebug;
+import origami.code.OCode;
 import origami.lang.OMethodHandle;
 import origami.type.OType;
 
@@ -95,27 +97,27 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 
 	public final void dup(OType t) {
 		if (t.is(long.class) || t.is(double.class)) {
-			dup2();
+			this.dup2();
 		} else if (!t.is(void.class)) {
-			dup();
+			this.dup();
 		}
 		this.useStackSlots(t);
 	}
 
 	public void dupX1(OType t) {
 		if (t.is(long.class) || t.is(double.class)) {
-			dup2X1();
+			this.dup2X1();
 		} else if (!t.is(void.class)) {
-			dupX1();
+			this.dupX1();
 		}
 		this.useStackSlots(t);
 	}
 
 	public void dupX2(OType t) {
 		if (t.is(long.class) || t.is(double.class)) {
-			dup2X2();
+			this.dup2X2();
 		} else if (!t.is(void.class)) {
-			dupX2();
+			this.dupX2();
 		}
 		this.useStackSlots(t);
 	}
@@ -149,42 +151,42 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 	}
 
 	private Class<?> checkMath(OMethodHandle mh) {
-		if (checkBinary(mh, int.class, int.class)) {
+		if (this.checkBinary(mh, int.class, int.class)) {
 			return int.class;
 		}
-		if (checkBinary(mh, double.class, double.class)) {
+		if (this.checkBinary(mh, double.class, double.class)) {
 			return double.class;
 		}
-		if (checkBinary(mh, long.class, long.class)) {
+		if (this.checkBinary(mh, long.class, long.class)) {
 			return long.class;
 		}
-		if (checkBinary(mh, float.class, float.class)) {
+		if (this.checkBinary(mh, float.class, float.class)) {
 			return float.class;
 		}
 		return null;
 	}
 
 	private final Class<?> checkBitwise(OMethodHandle mh) {
-		if (checkBinary(mh, int.class, int.class)) {
+		if (this.checkBinary(mh, int.class, int.class)) {
 			return int.class;
 		}
-		if (checkBinary(mh, long.class, long.class)) {
+		if (this.checkBinary(mh, long.class, long.class)) {
 			return long.class;
 		}
 		return null;
 	}
 
 	private Class<?> checkMath1(OMethodHandle mh) {
-		if (checkUnary(mh, int.class, int.class)) {
+		if (this.checkUnary(mh, int.class, int.class)) {
 			return int.class;
 		}
-		if (checkUnary(mh, double.class, double.class)) {
+		if (this.checkUnary(mh, double.class, double.class)) {
 			return double.class;
 		}
-		if (checkUnary(mh, long.class, long.class)) {
+		if (this.checkUnary(mh, long.class, long.class)) {
 			return long.class;
 		}
-		if (checkUnary(mh, float.class, float.class)) {
+		if (this.checkUnary(mh, float.class, float.class)) {
 			return float.class;
 		}
 		return null;
@@ -198,71 +200,71 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 			switch (mh.getLocalName()) {
 			case "+":
 				op = ADD;
-				type = checkMath(mh);
+				type = this.checkMath(mh);
 				break;
 			case "-":
 				op = SUB;
-				type = checkMath(mh);
+				type = this.checkMath(mh);
 				break;
 			case "*":
 				op = MUL;
-				type = checkMath(mh);
+				type = this.checkMath(mh);
 				break;
 			case "/":
 				op = DIV;
-				type = checkMath(mh);
+				type = this.checkMath(mh);
 				break;
 			case "%":
 				op = REM;
-				type = checkMath(mh);
+				type = this.checkMath(mh);
 				break;
 			case "||":
 				op = OR;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			case "&&":
 				op = AND;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			case "^":
 				op = XOR;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			case "<<":
 				op = SHL;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			case ">>":
 				op = SHR;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			case ">>>":
 				op = USHR;
-				type = checkBitwise(mh);
+				type = this.checkBitwise(mh);
 				break;
 			default:
 			}
 			if (type != null) {
-				math(op, Type.getType(type));
+				this.math(op, Type.getType(type));
 				return true;
 			}
 		}
 		if (mh.getThisParamSize() == 1) {
 			switch (mh.getLocalName()) {
 			case "!":
-				if (checkUnary(mh, boolean.class, boolean.class)) {
-					not();
+				if (this.checkUnary(mh, boolean.class, boolean.class)) {
+					this.not();
 					return true;
 				}
 				return false;
 			case "-":
-				type = checkMath1(mh);
+				type = this.checkMath1(mh);
 				op = NEG;
 				break;
 			default:
 			}
 			if (type != null) {
-				math(op, Type.getType(type));
+				this.math(op, Type.getType(type));
 				return true;
 			}
 		}
@@ -301,7 +303,7 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 
 	public VarEntry defineArgument(String name, OType t) {
 		assert this.varScopes.size() == 1;
-		countLocalSlots(t);
+		this.countLocalSlots(t);
 		return this.varScopes.peek().newVarEntry(name, t);
 	}
 
@@ -313,7 +315,7 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 	 */
 
 	public VarEntry createNewVar(String varName, OType t) {
-		countLocalSlots(t);
+		this.countLocalSlots(t);
 		return this.varScopes.peek().newVarEntry(varName, t);
 	}
 
@@ -328,7 +330,7 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 
 	public VarEntry createNewVarAndStore(String varName, OType t) {
 		VarEntry entry = this.varScopes.peek().newVarEntry(varName, t);
-		countLocalSlots(t);
+		this.countLocalSlots(t);
 		Type typeDesc = Type.getType(t.typeDesc(0));
 		this.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), entry.getVarIndex());
 		return entry;
@@ -541,16 +543,25 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 		this.checkCast(type.asmType());
 	}
 
-	private OBlock blockTop = null;
+	private Stack<OBlock> blockStack = new Stack<>();
 
 	public <T extends OBlock> T pushBlock(T block) {
-		block.push(blockTop);
-		this.blockTop = block;
+		this.blockStack.push(block);
 		return block;
 	}
 
-	public void popBlock() {
-		this.blockTop = blockTop.pop();
+	public OBlock popBlock() {
+		return this.blockStack.pop();
+	}
+
+	public OBlock[] stackBlock() {
+		OBlock[] b = new OBlock[this.blockStack.size()];
+		int c = 0;
+		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
+			b[c] = this.blockStack.get(i);
+			c++;
+		}
+		return b;
 	}
 
 	public interface BlockMatcher<X> {
@@ -559,7 +570,8 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 
 	@SuppressWarnings("unchecked")
 	public <X extends OBlock> X findBlock(Class<X> c, BlockMatcher<X> f) {
-		for (OBlock b = this.blockTop; b != null; b = b.pop()) {
+		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
+			OBlock b = this.blockStack.get(i);
 			if (c.isInstance(b) && f.match((X) b)) {
 				return (X) b;
 			}
@@ -567,10 +579,28 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 		return null;
 	}
 
-	public <X extends OAspectBlock> void weaveBlock(OAsm asm, Class<X> c, OBlock toBlock) {
-		for (OBlock b = this.blockTop; b != toBlock; b = b.pop()) {
-			if (c.isInstance(b)) {
-				((OAspectBlock) b).weave(asm);
+	void weaveBefore(OCode code, OBlock until, OAsm gen) {
+		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
+			OBlock b = this.blockStack.get(i);
+			if (b == until) {
+				return;
+			}
+			OCode weaveCode = b.getBeforeCode(code);
+			if (weaveCode != null) {
+				weaveCode.generate(gen);
+			}
+		}
+	}
+
+	void weaveAfter(OCode code, OBlock until, OAsm gen) {
+		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
+			OBlock b = this.blockStack.get(i);
+			if (b == until) {
+				return;
+			}
+			OCode weaveCode = b.getBeforeCode(code);
+			if (weaveCode != null) {
+				weaveCode.generate(gen);
 			}
 		}
 	}

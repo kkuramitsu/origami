@@ -90,7 +90,8 @@ public class OFieldDecl {
 			if (this.isStatic()) {
 				initCode = new OSetterCode(this.field, env.t(void.class), initValue);
 			} else {
-				initCode = new OSetterCode(this.field, env.t(void.class), new ThisCode(this.getDeclaringClass()), initValue);
+				initCode = new OSetterCode(this.field, env.t(void.class), new ThisCode(this.getDeclaringClass()),
+						initValue);
 			}
 			this.initValue = null;
 			return initCode;

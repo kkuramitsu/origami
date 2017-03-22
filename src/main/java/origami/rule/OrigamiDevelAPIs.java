@@ -16,14 +16,10 @@
 
 package origami.rule;
 
-import java.lang.reflect.Array;
 //
 //import origami.nez.iroha.api.IMethod;
-import java.util.Objects;
 
 import origami.OConsole;
-import origami.ffi.OAlias;
-import origami.ffi.OCast;
 import origami.util.StringCombinator;
 
 public class OrigamiDevelAPIs {
@@ -42,6 +38,5 @@ public class OrigamiDevelAPIs {
 	public final static void printf(String fmt, Object... args) {
 		OConsole.print(StringCombinator.format(fmt, args));
 	}
-
 
 }

@@ -84,11 +84,11 @@ public class OLog implements StringCombinator {
 	public OLog next() {
 		return this.next;
 	}
-	
+
 	@Override
 	public void strOut(StringBuilder sb) {
 		String mtype = (level == Error ? format.error() : format.warning());
-		SourcePosition.appendFormatMessage(sb, s, mtype, format, args);		
+		SourcePosition.appendFormatMessage(sb, s, mtype, format, args);
 	}
 
 	@Override
@@ -169,6 +169,5 @@ public class OLog implements StringCombinator {
 		}
 
 	}
-
 
 }

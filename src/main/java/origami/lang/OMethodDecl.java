@@ -37,7 +37,8 @@ public class OMethodDecl extends OCommonMethodHandle {
 	public OType returnType;
 	public OCode body;
 
-	public OMethodDecl(OType cbase, OAnno anno, OType returnType, String name, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public OMethodDecl(OType cbase, OAnno anno, OType returnType, String name, String[] paramNames, OType[] paramTypes,
+			OType[] exceptions, OCode body) {
 		this.cbase = cbase;
 		this.anno = anno;
 		this.returnType = returnType;

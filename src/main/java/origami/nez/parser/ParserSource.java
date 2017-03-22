@@ -44,8 +44,8 @@ public abstract class ParserSource implements Source {
 		return new StringSource(this.getResourceName(), this.linenum(startIndex), subByte(startIndex, endIndex), false);
 	}
 
-//	@Override
-//	public abstract long linenum(long pos);
+	// @Override
+	// public abstract long linenum(long pos);
 
 	@Override
 	public final int column(long pos) {
@@ -68,7 +68,7 @@ public abstract class ParserSource implements Source {
 	public final static Source newStringSource(String resource, long linenum, String str) {
 		return new StringSource(resource, linenum, str);
 	}
-	
+
 	public final static Source newFileSource(String fileName, String[] paths) throws IOException {
 		return newFileSource(ParserSource.class, fileName, paths);
 	}
@@ -76,7 +76,7 @@ public abstract class ParserSource implements Source {
 	public final static Source newFileSource(Class<?> c, String fileName, String[] paths) throws IOException {
 		File f = new File(fileName);
 		if (!f.isFile()) {
-			if(paths != null) {
+			if (paths != null) {
 				for (String path : paths) {
 					path += path.endsWith("/") ? fileName : "/" + fileName;
 					InputStream stream = c.getResourceAsStream(path);
@@ -84,8 +84,7 @@ public abstract class ParserSource implements Source {
 						return newStringSource(fileName, stream);
 					}
 				}
-			}
-			else {
+			} else {
 				InputStream stream = c.getResourceAsStream(fileName);
 				if (stream != null) {
 					return newStringSource(fileName, stream);

@@ -26,16 +26,16 @@ public interface SourcePosition {
 
 	public long getSourcePosition();
 
-//	public int getLineNum();
-//
-//	public int getColumn();
-//
-//	public String formatSourceMessage(String type, String msg);
+	// public int getLineNum();
+	//
+	// public int getColumn();
+	//
+	// public String formatSourceMessage(String type, String msg);
 
 	// Utils
-	
+
 	public static SourcePosition UnknownPosition = new UnknownSourcePosition();
-	
+
 	public default boolean isUnknownPosition() {
 		return this == UnknownPosition;
 	}
@@ -52,7 +52,7 @@ public interface SourcePosition {
 			return 0;
 		}
 	}
-	
+
 	static class UnknownSource implements Source {
 
 		@Override
@@ -104,7 +104,7 @@ public interface SourcePosition {
 		public int column(long pos) {
 			return 0;
 		}
-		
+
 	}
 
 	public static String getLineString(Source s, long pos) {
@@ -123,15 +123,15 @@ public interface SourcePosition {
 		return s.subString(start, end);
 	}
 
-	
-	public static void appendFormatMessage(StringBuilder sb, SourcePosition s, String mtype, LocaleFormat format, Object... args) {
+	public static void appendFormatMessage(StringBuilder sb, SourcePosition s, String mtype, LocaleFormat format,
+			Object... args) {
 		appendFileLine(sb, s.getSource(), s.getSourcePosition(), mtype);
 		StringCombinator.appendFormat(sb, format, args);
-		if(!s.isUnknownPosition()) {
+		if (!s.isUnknownPosition()) {
 			sb.append(getTextAround(s.getSource(), s.getSourcePosition(), "\n"));
 		}
 	}
-	
+
 	static void appendFileLine(StringBuilder sb, Source s, long pos, String mtype) {
 		String file = extractFileName(s.getResourceName());
 		sb.append("(");
@@ -145,24 +145,24 @@ public interface SourcePosition {
 		sb.append("] ");
 	}
 
-	public static String formatMessage(SourcePosition s, String mtype, LocaleFormat fmt, Object ... args) {
+	public static String formatMessage(SourcePosition s, String mtype, LocaleFormat fmt, Object... args) {
 		StringBuilder sb = new StringBuilder();
 		appendFormatMessage(sb, s, mtype, fmt, args);
 		return sb.toString();
 	}
 
-	public static String formatErrorMessage(SourcePosition s, LocaleFormat fmt, Object ... args) {
+	public static String formatErrorMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
 		return formatMessage(s, fmt.error(), fmt, args);
 	}
 
-	public static String formatWarningMessage(SourcePosition s, LocaleFormat fmt, Object ... args) {
+	public static String formatWarningMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
 		return formatMessage(s, fmt.warning(), fmt, args);
 	}
 
-	public static String formatNoticeMessage(SourcePosition s, LocaleFormat fmt, Object ... args) {
+	public static String formatNoticeMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
 		return formatMessage(s, fmt.notice(), fmt, args);
 	}
-	
+
 	public static String getTextAround(Source s, long pos, String delim) {
 		int ch = 0;
 		if (pos < 0) {
@@ -194,7 +194,7 @@ public interface SourcePosition {
 		} else {
 			endIndex = s.length();
 		}
-		
+
 		ArrayList<Byte> source = new ArrayList<>();
 		// ByteBuffer source = new ByteBuffer();
 		// ByteBuilder source = new StringBuilder();

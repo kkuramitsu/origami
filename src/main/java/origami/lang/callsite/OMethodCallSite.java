@@ -36,12 +36,14 @@ public class OMethodCallSite extends OCallSite {
 		super(env, name, sig, methodType);
 	}
 
-	public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry, String sig) throws Throwable {
+	public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
+			String sig) throws Throwable {
 		return new OMethodCallSite(loadEnv(entry), name, sig, type);
 	}
 
 	@Override
-	public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> mat) {
+	public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l,
+			OListMatcher<OMethodHandle> mat) {
 		env.findList(name, OMethodHandle.class, l, mat); /* open class */
 		if (base != null) {
 			for (OType c = base; c != null; c = c.getSupertype()) {

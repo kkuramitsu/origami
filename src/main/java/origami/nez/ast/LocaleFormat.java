@@ -22,7 +22,9 @@ import java.util.ResourceBundle;
 public interface LocaleFormat {
 
 	public String error();
+
 	public String warning();
+
 	public String notice();
 
 	public default String stringfy(String name) {
@@ -42,6 +44,7 @@ public interface LocaleFormat {
 		class SimpleFormat implements LocaleFormat {
 
 			private final String fmt;
+
 			SimpleFormat(String fmt) {
 				this.fmt = fmt;
 			}

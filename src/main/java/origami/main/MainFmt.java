@@ -13,7 +13,7 @@ public enum MainFmt implements LocaleFormat {
 	parse_files, display_examples_in_a_grammar, //
 	test_a_grammar_file, run_an_interactive_parser, //
 	no_specified_inputs, no_specified_grammar; //
-	
+
 	@Override
 	public String error() {
 		return error.toString();
@@ -28,7 +28,7 @@ public enum MainFmt implements LocaleFormat {
 	public String notice() {
 		return notice.toString();
 	}
-	
+
 	public String toString() {
 		return stringfy(name());
 	}

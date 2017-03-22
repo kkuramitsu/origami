@@ -19,7 +19,6 @@ package origami.code;
 import java.lang.reflect.Array;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.rule.TypeAnalysis;
 import origami.type.OType;
 import origami.type.OUntypedType;
@@ -37,10 +36,10 @@ public class OArrayCode extends OParamCode<Void> implements TypeAnalysis {
 	@Override
 	public OCode refineType(OEnv env, OType req) {
 		// ODebug.trace("refining array %s %s", this.getType(), req);
-		if (isUntyped() && req.isArray()) {
+		if (this.isUntyped() && req.isArray()) {
 			OType ctype = req.getParamTypes()[0];
-			for (int i = 0; i < nodes.length; i++) {
-				nodes[i] = nodes[i].asType(env, ctype);
+			for (int i = 0; i < this.nodes.length; i++) {
+				this.nodes[i] = this.nodes[i].asType(env, ctype);
 			}
 			this.setType(req);
 		}
@@ -61,9 +60,9 @@ public class OArrayCode extends OParamCode<Void> implements TypeAnalysis {
 		Class<?> arrType = this.getType().unwrap(env);
 		// ODebug.trace("array type=%s desc=%s", this.getType(),
 		// this.getType().typeDesc());
-		Object array = Array.newInstance(arrType.getComponentType(), nodes.length);
-		for (int i = 0; i < nodes.length; i++) {
-			Object value = nodes[i].eval(env);
+		Object array = Array.newInstance(arrType.getComponentType(), this.nodes.length);
+		for (int i = 0; i < this.nodes.length; i++) {
+			Object value = this.nodes[i].eval(env);
 			Array.set(array, i, value);
 		}
 		return array;

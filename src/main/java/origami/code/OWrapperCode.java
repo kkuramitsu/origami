@@ -152,8 +152,8 @@ public interface OWrapperCode extends OCode {
 
 	// Code = right
 	@Override
-	public default OCode newAssignCode(OEnv env, OType type, OCode right) {
-		return wrapped().newAssignCode(env, type, right);
+	public default OCode newAssignCode(OEnv env, OCode right) {
+		return wrapped().newAssignCode(env, right);
 	}
 
 	// (t)Code

@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public class OIfCode extends OParamCode<OEnv> {
@@ -28,51 +27,54 @@ public class OIfCode extends OParamCode<OEnv> {
 
 	@Override
 	public boolean hasReturnCode() {
-		if (nodes.length == 2) {
-			return nodes[1].hasReturnCode() && nodes[2].hasReturnCode();
+		if (this.nodes.length == 2) {
+			return this.nodes[1].hasReturnCode() && this.nodes[2].hasReturnCode();
 		}
 		return false;
 	}
 
-	public OCode condition() {
-		return nodes[0];
+	public OCode condCode() {
+		return this.nodes[0];
 	}
 
-	public OCode thenClause() {
-		return nodes[1];
+	public OCode thenCode() {
+		return this.nodes[1];
 	}
 
-	public OCode elseClause() {
-		return nodes[2];
+	public OCode elseCode() {
+		return this.nodes[2];
 	}
 
 	@Override
 	public OType getType() {
-		return nodes[1].getType();
+		return this.nodes[1].getType();
 	}
 
 	@Override
 	public OCode refineType(OEnv env, OType t) {
-		nodes[1] = nodes[1].refineType(env, t);
-		nodes[2] = nodes[2].refineType(env, t).asType(env, nodes[1].getType());
+		this.nodes[1] = this.nodes[1].refineType(env, t);
+		this.nodes[2] = this.nodes[2].refineType(env, t).asType(env, this.nodes[1].getType());
 		return this;
 	}
 
-	// @Override
-	// public boolean isUntyped() {
-	// return nodes[1].isUntyped() || nodes[2].isUntyped();
-	// }
-
 	@Override
 	public OCode retypeLocal() {
-		if (!isUntyped() && !nodes[1].getType().eq(nodes[2].getType())) {
-			if (!nodes[1].isUntyped()) {
-				nodes[2] = nodes[2].asType(this.getHandled(), nodes[1].getType());
+		if (!this.isUntyped() && !this.nodes[1].getType().eq(this.nodes[2].getType())) {
+			if (!this.nodes[1].isUntyped()) {
+				this.nodes[2] = this.nodes[2].asType(this.getHandled(), this.nodes[1].getType());
 			} else {
-				nodes[1] = nodes[1].asType(this.getHandled(), nodes[2].getType());
+				this.nodes[1] = this.nodes[1].asType(this.getHandled(), this.nodes[2].getType());
 			}
 		}
 		return this;
+	}
+
+	@Override
+	public Object eval(OEnv env) throws Throwable {
+		if ((Boolean) this.condCode().eval(env)) {
+			return this.thenCode().eval(env);
+		}
+		return this.elseCode().eval(env);
 	}
 
 	@Override

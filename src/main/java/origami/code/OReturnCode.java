@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 
 public class OReturnCode extends OJumpCode<Void> {
 
@@ -28,11 +27,6 @@ public class OReturnCode extends OJumpCode<Void> {
 	public OReturnCode(OEnv env) {
 		this(env, new OEmptyCode(env));
 	}
-
-	// public ReturnCode(OEnv env, OType t) {
-	// super(env, "return", t.is(void.class) ? OConst.emptyNodes : new OCode[] {
-	// new DefaultValueCode(t) });
-	// }
 
 	@Override
 	public void generate(OGenerator gen) {

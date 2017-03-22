@@ -66,15 +66,16 @@ public final class Parser {
 	/* --------------------------------------------------------------------- */
 
 	final <T> T performNull(ParserContext<T> ctx, Source s) {
-//		ParserExecutable code = this.getExecutable();
-//		code.initContext(ctx);
+		// ParserExecutable code = this.getExecutable();
+		// code.initContext(ctx);
 		ctx.start();
 		T matched = code.exec(ctx);
 		ctx.end();
 		return matched;
 	}
 
-	public final <T> T parse(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) throws IOException {
+	public final <T> T parse(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree)
+			throws IOException {
 		ParserExecutable parser = this.getExecutable();
 		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
 		T matched = performNull(ctx, s);
@@ -120,28 +121,27 @@ public final class Parser {
 
 	/* Errors */
 
-//	private boolean PartialFailure = false;
-//	private boolean PrintingParserError = false;
-//	private boolean ThrowingParserError = true;
-//
-//	public void setPartialFailure(boolean b) {
-//		this.PartialFailure = b;
-//	}
-//
-//	public void setThrowingException(boolean b) {
-//		this.ThrowingParserError = b;
-//	}
-//
-//	public void setPrintingException(boolean b) {
-//		this.PrintingParserError = b;
-//	}
+	// private boolean PartialFailure = false;
+	// private boolean PrintingParserError = false;
+	// private boolean ThrowingParserError = true;
+	//
+	// public void setPartialFailure(boolean b) {
+	// this.PartialFailure = b;
+	// }
+	//
+	// public void setThrowingException(boolean b) {
+	// this.ThrowingParserError = b;
+	// }
+	//
+	// public void setPrintingException(boolean b) {
+	// this.PrintingParserError = b;
+	// }
 
 	private void perror(SourcePosition s, LocaleFormat message) throws IOException {
 		if (options.is(ParserOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
-		}
-		else {
-			options.reportError(s, message);			
+		} else {
+			options.reportError(s, message);
 		}
 	}
 
@@ -157,7 +157,7 @@ public final class Parser {
 
 		@Override
 		public final String toString() {
-			return SourcePosition.formatErrorMessage(s,  message);
+			return SourcePosition.formatErrorMessage(s, message);
 		}
 	}
 

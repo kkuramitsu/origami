@@ -20,8 +20,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import origami.util.OVerbose;
-
 public class TreeVisitorMap<V> {
 	private static boolean OnWhenDebugging = false;
 
@@ -31,12 +29,12 @@ public class TreeVisitorMap<V> {
 	protected void init(Class<?> baseClass, V defualtAccepter) {
 		this.defaultAcceptor = defualtAccepter;
 		this.visitors = new HashMap<>();
-		visitors.put(defualtAccepter.getClass().getSimpleName(), defaultAcceptor);
+		this.visitors.put(defualtAccepter.getClass().getSimpleName(), this.defaultAcceptor);
 		if (OnWhenDebugging) {
 			System.out.println("base: " + baseClass);
 		}
 		for (Class<?> c : baseClass.getClasses()) {
-			load(baseClass, c);
+			this.load(baseClass, c);
 		}
 	}
 
@@ -45,7 +43,7 @@ public class TreeVisitorMap<V> {
 		try {
 			Constructor<?> cc = c.getConstructor(baseClass);
 			Object v = cc.newInstance(this);
-			if (check(defaultAcceptor.getClass(), v.getClass())) {
+			if (this.check(this.defaultAcceptor.getClass(), v.getClass())) {
 				String n = c.getSimpleName();
 				if (n.startsWith("_")) {
 					n = n.substring(1);
@@ -53,10 +51,11 @@ public class TreeVisitorMap<V> {
 				if (OnWhenDebugging) {
 					System.out.println(" #" + n);
 				}
-				visitors.put(n, (V) v);
+				this.visitors.put(n, (V) v);
 			}
-		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException | InstantiationException | IllegalArgumentException e) {
-			//OConsole.exit(1, e);
+		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalAccessException
+				| InstantiationException | IllegalArgumentException e) {
+			// OConsole.exit(1, e);
 		}
 	}
 
@@ -65,31 +64,32 @@ public class TreeVisitorMap<V> {
 	}
 
 	public final void add(String name, V visitor) {
-		visitors.put(name, visitor);
+		this.visitors.put(name, visitor);
 	}
 
 	protected final V find(String name) {
-		V v = visitors.get(name);
-		return v == null ? defaultAcceptor : v;
+		V v = this.visitors.get(name);
+		return v == null ? this.defaultAcceptor : v;
 	}
 
-//	protected final void undefined(Tree<?> node) {
-//		OVerbose.println("undefined: " + node);
-//		throw new UndefinedException(node, this.getClass().getName() + ": undefined " + node);
-//	}
-//
-//	@SuppressWarnings("serial")
-//	public static class UndefinedException extends RuntimeException {
-//		Tree<?> node;
-//
-//		public UndefinedException(Tree<?> node, String msg) {
-//			super(node.formatSourceMessage("error", msg));
-//			this.node = node;
-//		}
-//
-//		public UndefinedException(Tree<?> node, String fmt, Object... args) {
-//			super(node.formatSourceMessage("error", String.format(fmt, args)));
-//			this.node = node;
-//		}
-//	}
+	// protected final void undefined(Tree<?> node) {
+	// OVerbose.println("undefined: " + node);
+	// throw new UndefinedException(node, this.getClass().getName() + ":
+	// undefined " + node);
+	// }
+	//
+	// @SuppressWarnings("serial")
+	// public static class UndefinedException extends RuntimeException {
+	// Tree<?> node;
+	//
+	// public UndefinedException(Tree<?> node, String msg) {
+	// super(node.formatSourceMessage("error", msg));
+	// this.node = node;
+	// }
+	//
+	// public UndefinedException(Tree<?> node, String fmt, Object... args) {
+	// super(node.formatSourceMessage("error", String.format(fmt, args)));
+	// this.node = node;
+	// }
+	// }
 }

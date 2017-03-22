@@ -165,7 +165,8 @@ public class CParserGenerator extends ParserGenerator {
 	protected void generateFooter(Grammar g) {
 		importFileContent("cnez-utils.txt");
 		//
-		BeginDecl("void* " + _ns() + "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		BeginDecl("void* " + _ns()
+				+ "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
 			VarDecl("void*", "result", _Null());
 			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
@@ -176,7 +177,8 @@ public class CParserGenerator extends ParserGenerator {
 				VarAssign("result", _Field(_state(), _tree()));
 				If("result == NULL");
 				{
-					Statement("result = c->fnew(0, (const unsigned char*)text, (c->pos - (const unsigned char*)text), 0, c->thunk)");
+					Statement(
+							"result = c->fnew(0, (const unsigned char*)text, (c->pos - (const unsigned char*)text), 0, c->thunk)");
 				}
 				EndIf();
 			}
@@ -249,7 +251,8 @@ public class CParserGenerator extends ParserGenerator {
 			c++;
 		}
 		L("#define MAXLABEL " + c);
-		Statement("void* " + _ns() + "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
+		Statement("void* " + _ns()
+				+ "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		Statement("long " + _ns() + "match(const char *text, size_t len)");
 		Statement("const char* " + _ns() + "tag(symbol_t n)");
 		Statement("const char* " + _ns() + "label(symbol_t n)");

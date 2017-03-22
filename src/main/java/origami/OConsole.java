@@ -31,7 +31,7 @@ public class OConsole {
 		System.exit(status);
 	}
 
-	//static boolean isColored = (System.getenv("CLICOLOR") != null);
+	// static boolean isColored = (System.getenv("CLICOLOR") != null);
 	static boolean isColored = (System.getenv("TERM") != null);
 
 	// 31 :red 32 green, 34 blue, 37 gray
@@ -118,8 +118,7 @@ public class OConsole {
 		}
 		System.out.println();
 	}
-	
+
 	// reporting
-	
 
 }

@@ -71,29 +71,29 @@ public class ParserCombinator {
 	}
 
 	private SourcePosition src() {
-//		Exception e = new Exception();
-//		StackTraceElement[] stacks = e.getStackTrace();
+		// Exception e = new Exception();
+		// StackTraceElement[] stacks = e.getStackTrace();
 		// System.out.println("^0 " + stacks[0]);
 		// System.out.println("^1 " + stacks[1]);
 		// System.out.println("^2 " + stacks[2]);
-//		class JavaSourcePosition implements SourcePosition {
-//			StackTraceElement e;
-//
-//			JavaSourcePosition(StackTraceElement e) {
-//				this.e = e;
-//			}
-//
-//			@Override
-//			public Source getSource() {
-//				return null;
-//			}
-//
-//			@Override
-//			public long getSourcePosition() {
-//				return 0;
-//			}
-//		}
-//		return new JavaSourcePosition(stacks[2]);
+		// class JavaSourcePosition implements SourcePosition {
+		// StackTraceElement e;
+		//
+		// JavaSourcePosition(StackTraceElement e) {
+		// this.e = e;
+		// }
+		//
+		// @Override
+		// public Source getSource() {
+		// return null;
+		// }
+		//
+		// @Override
+		// public long getSourcePosition() {
+		// return 0;
+		// }
+		// }
+		// return new JavaSourcePosition(stacks[2]);
 		return SourcePosition.UnknownPosition;
 	}
 

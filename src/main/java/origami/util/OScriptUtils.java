@@ -18,26 +18,31 @@ package origami.util;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
 import origami.ODebug;
 import origami.OEnv;
-import origami.nez.ast.SourcePosition;
 import origami.OTree;
+import origami.asm.OAnno;
+import origami.code.OCode;
 import origami.code.OErrorCode;
+import origami.code.OReturnCode;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
+import origami.lang.OClassDeclType;
 import origami.lang.OConv;
 import origami.lang.OField;
 import origami.lang.OGlobalVariable;
 import origami.lang.OMethod;
 import origami.lang.OTypeName;
 import origami.nez.ast.Source;
+import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
-import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserSource;
 import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
 import origami.rule.OFmt;
@@ -58,14 +63,14 @@ public interface OScriptUtils {
 		env.set(InteractiveMode, Boolean.class, (Boolean) t);
 	}
 
-//	public default Parser getParser(OEnv env) {
-//		return env.get(Parser.class);
-//	}
-//
-//	public default void setParser(OEnv env, Parser p) {
-//		env.add(Parser.class, p);
-//		assert (p == getParser(env));
-//	}
+	// public default Parser getParser(OEnv env) {
+	// return env.get(Parser.class);
+	// }
+	//
+	// public default void setParser(OEnv env, Parser p) {
+	// env.add(Parser.class, p);
+	// assert (p == getParser(env));
+	// }
 
 	public static Set<String> symbols(String... names) {
 		Set<String> set = new HashSet<>();
@@ -219,6 +224,21 @@ public interface OScriptUtils {
 
 	public default Tree<?> loadScriptFile(OEnv env, String file) throws IOException {
 		return loadScriptFile(env, null, file);
+	}
+
+	public static Object eval(OEnv env, OCode code) throws Throwable {
+		OClassDeclType ct = OClassDeclType.currentType(env);
+		ct.addMethod(new OAnno("public,static"), code.getType(), "f", OType.emptyNames, OType.emptyTypes,
+				OType.emptyTypes, new OReturnCode(env, code));
+		ODebug.setDebug(true);
+		Class<?> c = ct.unwrap(env);
+		ODebug.setDebug(false);
+		Method m = OTypeUtils.loadMethod(c, "f");
+		try {
+			return m.invoke(null);
+		} catch (InvocationTargetException e) {
+			throw e.getCause();
+		}
 	}
 
 }

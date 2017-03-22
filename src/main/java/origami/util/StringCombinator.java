@@ -92,10 +92,9 @@ public interface StringCombinator {
 	public static void appendFormat(StringBuilder sb, String fmt, Object... args) {
 		assert (fmt != null);
 		try {
-			if(fmt.indexOf("$0") >= 0) {
+			if (fmt.indexOf("$0") >= 0) {
 				formatIndexedFormat(sb, fmt, args);
-			}
-			else {
+			} else {
 				sb.append(String.format(fmt, args));
 			}
 		} catch (Exception e) {
@@ -107,19 +106,17 @@ public interface StringCombinator {
 	static void formatIndexedFormat(StringBuilder sb, String fmt2, Object[] args) {
 		String[] tokens = fmt2.split("\\$", -1);
 		sb.append(tokens[0]);
-		for(int i = 1; i < tokens.length; i++) {
+		for (int i = 1; i < tokens.length; i++) {
 			String t = tokens[i];
-			if(t.length() > 0 && Character.isDigit(t.charAt(0))) {
+			if (t.length() > 0 && Character.isDigit(t.charAt(0))) {
 				int index = t.charAt(0) - '0';
 				StringCombinator.append(sb, args[index]);
 				sb.append(t.substring(1));
-			}
-			else {
+			} else {
 				sb.append("$");
-				sb.append(t);				
+				sb.append(t);
 			}
 		}
 	}
-	
 
 }

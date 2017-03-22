@@ -111,12 +111,14 @@ public class FileSource extends ParserSource {
 				}
 				return false;
 			case 3:
-				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] && text[2] == this.buffer[offset + 2]) {
+				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1]
+						&& text[2] == this.buffer[offset + 2]) {
 					return true;
 				}
 				return false;
 			case 4:
-				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1] && text[2] == this.buffer[offset + 2] && text[3] == this.buffer[offset + 3]) {
+				if (text[0] == this.buffer[offset] && text[1] == this.buffer[offset + 1]
+						&& text[2] == this.buffer[offset + 2] && text[3] == this.buffer[offset + 3]) {
 					return true;
 				}
 				return false;
@@ -148,7 +150,8 @@ public class FileSource extends ParserSource {
 						this.buffer_offset = off_s;
 						this.readMainBuffer(this.buffer_offset);
 					}
-					return new String(this.buffer, (int) (startIndex - this.buffer_offset), (int) (endIndex - startIndex), "UTF8");
+					return new String(this.buffer, (int) (startIndex - this.buffer_offset),
+							(int) (endIndex - startIndex), "UTF8");
 				} else {
 					byte[] b = new byte[(int) (endIndex - startIndex)];
 					this.readStringBuffer(startIndex, b);
@@ -238,7 +241,7 @@ public class FileSource extends ParserSource {
 				b[i] = 0;
 			}
 		} catch (IOException e) {
-			//ODebug.traceException(e);
+			// ODebug.traceException(e);
 		}
 	}
 

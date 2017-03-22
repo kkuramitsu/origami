@@ -121,7 +121,8 @@ class FuncType$ implements OArrayUtils { /* Companions */
 		Class<?> c = cl.getCompiledClass(cname);
 		if (c == null) {
 			OTypeSystem ts = returnType.getTypeSystem();
-			OClassDeclType ct = cl.newType(env, A("public,abstract,interface"), cname, emptyTypes, env.t(Object.class), funcInterface(returnType, paramTypes));
+			OClassDeclType ct = cl.newType(env, A("public,abstract,interface"), cname, emptyTypes, env.t(Object.class),
+					funcInterface(returnType, paramTypes));
 			ct.addMethod(A("public,abstract"), returnType, "apply", emptyNames, paramTypes, emptyTypes, (OCode) null);
 			c = ct.unwrap(env);
 			return ts.define(new OFuncType(ts, c));
@@ -205,7 +206,8 @@ class FuncType$ implements OArrayUtils { /* Companions */
 			codes[i] = new LoadArgCode(i, paramTypes[i]);
 		}
 		OCode code = new OMultiCode(new OReturnCode(env, mh.newMethodCode(env, codes)));
-		ct.addMethod(A("public,final"), mh.getReturnType(), "apply", mh.getParamNames(), mh.getParamTypes(), emptyTypes, code);
+		ct.addMethod(A("public,final"), mh.getReturnType(), "apply", mh.getParamNames(), mh.getParamTypes(), emptyTypes,
+				code);
 		// ct.getDecl().addDefaultConstructors();
 		Class<?> c = ct.unwrap(env);
 		ft = env.getTypeSystem().newType(c);

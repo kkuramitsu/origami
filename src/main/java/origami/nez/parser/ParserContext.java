@@ -36,13 +36,14 @@ public abstract class ParserContext<T> {
 		this.source = s;
 		inputs = null;
 		length = 0;
-		this.pos = (int)pos;
+		this.pos = (int) pos;
 		this.left = null;
 		this.newTree = newTree;
 		this.linkTree = linkTree;
 	}
 
-	public abstract <K> ParserContext<K> newInstance(Source s, long pos, TreeConstructor<K> newTree, TreeConnector<K> linkTree);
+	public abstract <K> ParserContext<K> newInstance(Source s, long pos, TreeConstructor<K> newTree,
+			TreeConnector<K> linkTree);
 
 	public abstract long getPosition();
 

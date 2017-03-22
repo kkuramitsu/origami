@@ -38,7 +38,8 @@ public class OClassDeclType extends OTypeSystemType {
 	private Class<?> wrapped;
 	private OClassDecl cdecl;
 
-	public OClassDeclType(OEnv env, OAnno anno, String cname, OType[] paramTypes, OType superType, OType... interfaces) {
+	public OClassDeclType(OEnv env, OAnno anno, String cname, OType[] paramTypes, OType superType,
+			OType... interfaces) {
 		super(env.getTypeSystem());
 		this.wrapped = null;
 		this.cdecl = new OClassDecl(env, this, anno, cname, paramTypes, superType, interfaces);
@@ -244,9 +245,11 @@ public class OClassDeclType extends OTypeSystemType {
 
 	// Utilties
 
-	public OMethodHandle addConstructor(OAnno anno, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public OMethodHandle addConstructor(OAnno anno, String[] paramNames, OType[] paramTypes, OType[] exceptions,
+			OCode body) {
 		OTypeSystem ts = this.getTypeSystem();
-		OMethodDecl mdecl = new OMethodDecl(this, anno, ts.newType(void.class), "<init>", paramNames, paramTypes, exceptions, body);
+		OMethodDecl mdecl = new OMethodDecl(this, anno, ts.newType(void.class), "<init>", paramNames, paramTypes,
+				exceptions, body);
 		OMethodHandle mh = new OConstructor(mdecl.getTypeSystem(), null, null, mdecl);
 		this.getDecl().add(mh);
 		return mh;
@@ -258,7 +261,8 @@ public class OClassDeclType extends OTypeSystemType {
 		return f;
 	}
 
-	public OMethodHandle addMethod(OAnno anno, OType ret, String name, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public OMethodHandle addMethod(OAnno anno, OType ret, String name, String[] paramNames, OType[] paramTypes,
+			OType[] exceptions, OCode body) {
 		OMethodDecl mdecl = new OMethodDecl(this, anno, ret, name, paramNames, paramTypes, exceptions, body);
 		OMethodHandle mh = new OMethod(mdecl.getTypeSystem(), null, null, mdecl);
 		this.getDecl().add(mh);
@@ -266,7 +270,8 @@ public class OClassDeclType extends OTypeSystemType {
 	}
 
 	public OMethodHandle addTest(OEnv env, String name, OCode body) {
-		OMethodDecl mdecl = new OMethodDecl(this, new OAnno("public,static"), body.getType(), name, null, OType.emptyTypes, OType.emptyTypes, body);
+		OMethodDecl mdecl = new OMethodDecl(this, new OAnno("public,static"), body.getType(), name, null,
+				OType.emptyTypes, OType.emptyTypes, body);
 		OMethodHandle mh = new OMethod(mdecl.getTypeSystem(), null, null, mdecl);
 		this.getDecl().add(mh);
 		return mh;

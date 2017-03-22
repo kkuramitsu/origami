@@ -17,14 +17,13 @@ package origami.code;
 
 import java.util.List;
 
-import origami.nez.ast.LocaleFormat;
-import origami.nez.ast.SourcePosition;
 import origami.OConsts;
 import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.OLog;
-import origami.asm.OAsm;
 import origami.ffi.OCast;
+import origami.nez.ast.LocaleFormat;
+import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.type.OUntypedType;
 
@@ -36,7 +35,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 
 	public OErrorCode(OEnv env, SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
-		log = new OLog(s, OLog.Error, fmt, args);
+		this.log = new OLog(s, OLog.Error, fmt, args);
 		this.ret = env != null ? env.t(OUntypedType.class) : null;
 	}
 
@@ -100,7 +99,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 
 	@Override
 	public OType getType() {
-		return ret;
+		return this.ret;
 	}
 
 	@Override
@@ -110,7 +109,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 
 	@Override
 	public OCode refineType(OEnv env, OType t) {
-		ret = t;
+		this.ret = t;
 		return this;
 	}
 
@@ -122,7 +121,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 
 	@Override
 	public SourcePosition getSourcePosition() {
-		return log.s;
+		return this.log.s;
 	}
 
 	@Override
@@ -144,7 +143,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 
 	@Override
 	public OCode asType(OEnv env, OType t) {
-		ret = t;
+		this.ret = t;
 		return this;
 	}
 
@@ -174,7 +173,7 @@ public class OErrorCode extends RuntimeException implements OCode {
 	}
 
 	@Override
-	public OCode newAssignCode(OEnv env, OType type, OCode right) {
+	public OCode newAssignCode(OEnv env, OCode right) {
 		return this;
 	}
 

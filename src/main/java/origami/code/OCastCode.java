@@ -18,7 +18,6 @@ package origami.code;
 
 import origami.OEnv;
 import origami.OLog;
-import origami.asm.OAsm;
 import origami.ffi.OCast;
 import origami.lang.OConv;
 import origami.lang.OMethodHandle;
@@ -57,30 +56,32 @@ public class OCastCode extends OMethodCode {
 	}
 
 	public boolean isStupidCast() {
-		return getMatchCost() >= OCast.STUPID && this.getHandled() == null;
+		return this.getMatchCost() >= OCast.STUPID && this.getHandled() == null;
 	}
 
 	public OErrorCode newErrorCode(OEnv env) {
-		return new OErrorCode(env, this.getSourcePosition(), OFmt.studpid_cast__YY0_to_YY1, this.getFromType(), this.getType());
+		return new OErrorCode(env, this.getSourcePosition(), OFmt.studpid_cast__YY0_to_YY1, this.getFromType(),
+				this.getType());
 	}
 
 	public boolean isDownCast() {
-		return getMatchCost() >= OCast.DOWNCAST;
+		return this.getMatchCost() >= OCast.DOWNCAST;
 	}
 
 	public OLog log() {
-		return new OLog(this.getSourcePosition(), OLog.Warning, OFmt.implicit_conversion__YY0_to_YY1, this.getFromType(), this.getType());
+		return new OLog(this.getSourcePosition(), OLog.Warning, OFmt.implicit_conversion__YY0_to_YY1,
+				this.getFromType(), this.getType());
 	}
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
 		if (this.isStupidCast()) {
-			throw newErrorCode(env);
+			throw this.newErrorCode(env);
 		}
 		if (this.isDownCast()) {
-			OLog.report(env, log());
+			OLog.report(env, this.log());
 		}
-		OMethodHandle method = getHandled();
+		OMethodHandle method = this.getHandled();
 		if (method != null) {
 			// ODebug.trace("cost=%d %s=>%s", this.getMatchCost(),
 			// this.getFromType(), this.getType());
@@ -94,8 +95,9 @@ public class OCastCode extends OMethodCode {
 		gen.pushCast(this);
 	}
 
-//	@Override
-//	protected void strOutInner(StringBuilder sb) {
-//		sb.append(StringCombinator.format(" %s=>%s %s", this.getFromType(), this.getType(), this.getHandled()));
-//	}
+	// @Override
+	// protected void strOutInner(StringBuilder sb) {
+	// sb.append(StringCombinator.format(" %s=>%s %s", this.getFromType(),
+	// this.getType(), this.getHandled()));
+	// }
 }

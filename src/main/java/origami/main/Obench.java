@@ -22,12 +22,12 @@ import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
 
 public class Obench extends OCommand {
-	
+
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);		
+		options.set(ParserOption.ThrowingParserError, false);
 	}
-	
+
 	@Override
 	public void exec(OOption options) throws Throwable {
 		if (options.value(ParserOption.InlineGrammar, null) != null) {

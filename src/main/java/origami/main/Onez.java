@@ -28,10 +28,10 @@ import origami.nez.peg.GrammarParser;
 import origami.nez.peg.Grammar;
 
 public class Onez extends OCommand {
-	
+
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);		
+		options.set(ParserOption.ThrowingParserError, false);
 	}
 
 	@Override
@@ -42,9 +42,9 @@ public class Onez extends OCommand {
 		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
 		Parser nezParser = GrammarParser.NezParser;
-		//nezParser.setPrintingException(false);
-		//nezParser.setThrowingException(false);
-		
+		// nezParser.setPrintingException(false);
+		// nezParser.setThrowingException(false);
+
 		Grammar g = getGrammar(options);
 		Parser p = newParser(g, options);
 		TreeWriter tw = options.newInstance(TreeWriter.class);
@@ -67,7 +67,7 @@ public class Onez extends OCommand {
 					continue;
 				}
 			} catch (Exception e) {
-				//ODebug.traceException(e);
+				// ODebug.traceException(e);
 			}
 			Tree<?> node = p.parse(sc);
 			if (node == null) {

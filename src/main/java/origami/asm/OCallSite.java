@@ -94,7 +94,8 @@ public abstract class OCallSite extends MutableCallSite {
 		}
 	}
 
-	private MethodHandle initLoad(Class<?> ret, String name, MethodType methodType) throws NoSuchMethodException, IllegalAccessException {
+	private MethodHandle initLoad(Class<?> ret, String name, MethodType methodType)
+			throws NoSuchMethodException, IllegalAccessException {
 		MethodType mt = MethodType.methodType(ret, new Class[] { Object[].class });
 		return MethodHandles.lookup().findVirtual(this.getClass(), name, mt);
 	}
@@ -230,7 +231,8 @@ public abstract class OCallSite extends MutableCallSite {
 		List<OMethodHandle> l = new ArrayList<>(8);
 		if (mt.parameterCount() > 0) {
 			Class<?> orig = mt.parameterType(0);
-			for (Class<?> callee = args[0] == null ? orig : args[0].getClass(); callee != null; callee = callee.getSuperclass()) {
+			for (Class<?> callee = args[0] == null ? orig : args[0].getClass(); callee != null; callee = callee
+					.getSuperclass()) {
 				mt.changeParameterType(0, callee);
 				listMatchedMethods(env(), env().t(callee), name, l, (mh) -> mh.isMethodType(mt));
 				if (l.size() > 0) {
@@ -275,12 +277,14 @@ public abstract class OCallSite extends MutableCallSite {
 
 	public final OCode findParamCode2(OEnv env, boolean isRuntime, String name, OCode[] params) {
 		List<OMethodHandle> l = new ArrayList<>(8);
-		listMatchedMethods(env, params.length == 0 ? null : params[0].getType(), name, l, (mh) -> mh.isPublic() && mh.isThisParamSize(params.length));
+		listMatchedMethods(env, params.length == 0 ? null : params[0].getType(), name, l,
+				(mh) -> mh.isPublic() && mh.isThisParamSize(params.length));
 		// ODebug.trace("l = %s", l);
 		return matchParamCode(env, isRuntime ? null : this, name, params, l);
 	}
 
-	public final static OCode matchParamCode(OEnv env, OCallSite site, String name, OCode[] params, List<OMethodHandle> l) {
+	public final static OCode matchParamCode(OEnv env, OCallSite site, String name, OCode[] params,
+			List<OMethodHandle> l) {
 		if (l.size() == 0) {
 			throw new OErrorCode(env, "undefined %s(%s)", name, params);
 		}
@@ -303,7 +307,8 @@ public abstract class OCallSite extends MutableCallSite {
 		return matched;
 	}
 
-	public abstract void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> mat);
+	public abstract void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l,
+			OListMatcher<OMethodHandle> mat);
 
 	// public void listMatchedMethods(OEnv env, String name, params,
 	// List<OMethodHandle> l, OListMatcher<OMethodHandle> mat) {

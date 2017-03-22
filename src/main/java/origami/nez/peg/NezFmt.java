@@ -3,7 +3,7 @@ package origami.nez.peg;
 import origami.nez.ast.LocaleFormat;
 
 public enum NezFmt implements LocaleFormat {
-	error, warning, notice,//
+	error, warning, notice, //
 	syntax_error, unconsumed, //
 	YY0_is_duplicated_name;
 

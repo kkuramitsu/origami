@@ -111,7 +111,8 @@ public class GenerativeCode extends OSugarCode {
 	public OCode desugar() {
 		OCode multiCode = multiCode();
 		if (label != null) {
-			OCode initCode = resultName != null ? new OAssignCode(env().t(void.class), true, resultName, initRightCode) : _empty();
+			OCode initCode = resultName != null ? new OAssignCode(env().t(void.class), true, resultName, initRightCode)
+					: _empty();
 			OCode thusCode = resultName != null ? new ONameCode(resultName, initRightCode.getType()) : _empty();
 			// ODebug.trace("thusCode=%s", thusCode);
 			return new OLabelBlockCode(label, initCode, multiCode, thusCode);

@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 
 public class OThrowCode extends OJumpCode<Void> {
 	public OThrowCode(OEnv env, OCode expr) {

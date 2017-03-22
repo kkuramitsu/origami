@@ -18,7 +18,6 @@ package origami.code;
 
 import origami.OEnv;
 import origami.OrigamiContext.LocalVariables;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public class OAssignCode extends OParamCode<String> {
@@ -30,9 +29,14 @@ public class OAssignCode extends OParamCode<String> {
 		this.defined = defined;
 	}
 
+	public OAssignCode(boolean defined, String name, OCode right) {
+		super(name, right.getType(), right);
+		this.defined = defined;
+	}
+
 	@Override
 	public boolean isDefined() {
-		return defined;
+		return this.defined;
 	}
 
 	public String getName() {
@@ -40,7 +44,7 @@ public class OAssignCode extends OParamCode<String> {
 	}
 
 	public OType getDefinedType() {
-		return rightCode().getType();
+		return this.rightCode().getType();
 	}
 
 	public OCode rightCode() {
@@ -49,7 +53,7 @@ public class OAssignCode extends OParamCode<String> {
 
 	@Override
 	public OCode refineType(OEnv env, OType req) {
-		if(req.is(void.class)) {
+		if (req.is(void.class)) {
 			this.setType(req);
 		}
 		return this;
@@ -57,7 +61,7 @@ public class OAssignCode extends OParamCode<String> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		Object v = rightCode().eval(env);
+		Object v = this.rightCode().eval(env);
 		LocalVariables vars = env.get(LocalVariables.class);
 		vars.put(this.getName(), v);
 		return v;

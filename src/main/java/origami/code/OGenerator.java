@@ -26,9 +26,9 @@ public interface OGenerator {
 
 	public void pushNot(ONotCode code);
 
-	public void pushGetSize(GetSizeCode code);
+	public void pushGetSize(OGetSizeCode code);
 
-	public void pushSetIndex(SetIndexCode code);
+	public void pushSetIndex(OSetIndexCode code);
 
 	public void pushGetIndex(OGetIndexCode code);
 
@@ -58,12 +58,15 @@ public interface OGenerator {
 
 	public void pushThis();
 
-	public void pushLoop(ForCode code);
+	// public void pushLoop(ForCode code);
 
-	public void pushUndefined(OCode node);
+	public void pushSugar(OSugarCode oSugarCode);
+	// public void pushUndefined(OCode node);
 
 	public void pushError(OErrorCode node);
 
 	public void pushWarning(OWarningCode node);
+
+	void pushJumpBefore(OJumpBeforeCode code);
 
 }

@@ -1,7 +1,20 @@
-package origami.rule;
+/***********************************************************************
+ * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***********************************************************************/
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+package origami.rule;
 
 import origami.OConsole;
 import origami.nez.ast.LocaleFormat;
@@ -10,7 +23,7 @@ public enum OFmt implements LocaleFormat {
 	welcome, error, warning, notice, info, //
 	// syntax analysis
 	syntax_error, //
-//	not_assignable,
+	// not_assignable,
 	// name analysis
 	undefined, mismatched, read_only__YY0, //
 	unfound, stupid, //
@@ -28,25 +41,25 @@ public enum OFmt implements LocaleFormat {
 	YY0_is_not_assignable, YY0_is_not_throwable, YY0_is_not_interface, //
 	undefined_static_field__YY0_YY1, undefined_field__YY0_YY1;
 
-//	public static String fmt(String fmt, OFmt... m) {
-//		StringBuilder sb = new StringBuilder();
-//		for (int i = 0; i < m.length; i++) {
-//			if (i > 0) {
-//				sb.append(__.toString());
-//			}
-//			sb.append(m[i].toString());
-//		}
-//		if (fmt != null) {
-//			sb.append(" ");
-//			sb.append(fmt);
-//		}
-//		return sb.toString();
-//	}
+	// public static String fmt(String fmt, OFmt... m) {
+	// StringBuilder sb = new StringBuilder();
+	// for (int i = 0; i < m.length; i++) {
+	// if (i > 0) {
+	// sb.append(__.toString());
+	// }
+	// sb.append(m[i].toString());
+	// }
+	// if (fmt != null) {
+	// sb.append(" ");
+	// sb.append(fmt);
+	// }
+	// return sb.toString();
+	// }
 
-//	public static String fmt(OFmt... m) {
-//		return fmt(null, m);
-//	}
-	
+	// public static String fmt(OFmt... m) {
+	// return fmt(null, m);
+	// }
+
 	public static String quote(Object o) {
 		return OConsole.bold("'" + o + "'");
 	}
@@ -68,7 +81,7 @@ public enum OFmt implements LocaleFormat {
 
 	@Override
 	public String toString() {
-		return stringfy(name());
+		return this.stringfy(this.name());
 	}
 
 }

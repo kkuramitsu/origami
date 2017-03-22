@@ -240,7 +240,8 @@ public class NezGrammar extends ParserCombinator {
 	public Expression pCHAR() {
 		return Choice(//
 				Expr(S("\\u"), ("@HEX"), ("@HEX"), ("@HEX"), ("@HEX")), //
-				Expr(S("\\x"), ("@HEX"), ("@HEX")), S("\\n"), S("\\t"), S("\\\\"), S("\\r"), S("\\v"), S("\\f"), S("\\-"), S("\\]"), //
+				Expr(S("\\x"), ("@HEX"), ("@HEX")), S("\\n"), S("\\t"), S("\\\\"), S("\\r"), S("\\v"), S("\\f"),
+				S("\\-"), S("\\]"), //
 				Expr(Not(S("]")), AnyChar())//
 		);
 	}
@@ -311,7 +312,8 @@ public class NezGrammar extends ParserCombinator {
 	}
 
 	Expression pOnFunc() {
-		return Expr(Choice(S("on"), S("with")), "@_", Link("$name", "@FlagName"), "@_", Link("$expr", "@Expression"), ("#On"));
+		return Expr(Choice(S("on"), S("with")), "@_", Link("$name", "@FlagName"), "@_", Link("$expr", "@Expression"),
+				("#On"));
 	}
 
 	Expression pFlagName() {

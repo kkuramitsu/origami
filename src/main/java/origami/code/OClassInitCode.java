@@ -16,26 +16,28 @@
 
 package origami.code;
 
+import java.lang.reflect.Constructor;
+
 import origami.OEnv;
+import origami.ffi.OCast;
+import origami.lang.OConstructor;
+import origami.lang.OMethodHandle;
+import origami.type.OType;
 
-public class OAndCode extends OParamCode<Void> {
+public class OClassInitCode extends OMethodCode {
 
-	public OAndCode(OEnv env, OCode left, OCode right) {
-		super(null, env.t(boolean.class), new OCode[] { left, right });
+	public OClassInitCode(OMethodHandle method, OCode... nodes) {
+		super(method, nodes, OCast.SAME);
+		assert (method.isSpecial());
+	}
+
+	public OClassInitCode(OEnv env, Constructor<?> c, OCode... nodes) {
+		super(new OConstructor(env, c), nodes, OCast.SAME);
 	}
 
 	@Override
-	public Object eval(OEnv env) throws Throwable {
-		Boolean b = (Boolean) this.getParams()[0].eval(env);
-		if (b) {
-			return this.getParams()[1].eval(env);
-		}
-		return b;
-	}
-
-	@Override
-	public void generate(OGenerator gen) {
-		gen.pushAnd(this);
+	public OType getType() {
+		return nodes[0].getTypeSystem().newType(void.class);
 	}
 
 }

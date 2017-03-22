@@ -129,7 +129,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		}
 		return l.toArray(new Production[l.size()]);
 	}
-	
+
 	@Override
 	public final String toString() {
 		return StringCombinator.stringfy(this);
@@ -221,7 +221,7 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 
 	public Parser newParser(OOption options) {
 		String start = options.value(ParserOption.Start, null);
-		if(start == null) {
+		if (start == null) {
 			return new Parser(this.getStartProduction(), options);
 		}
 		return new Parser(this.getProduction(start), options);

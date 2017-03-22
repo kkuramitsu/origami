@@ -26,24 +26,24 @@ import origami.asm.code.DupCode;
 import origami.asm.code.LoadArgCode;
 import origami.asm.code.LoadThisCode;
 import origami.asm.code.OAsmCode;
-import origami.code.ClassInitCode;
-import origami.code.ForCode;
-import origami.code.OGetIndexCode;
-import origami.code.GetSizeCode;
-import origami.code.OGetterCode;
+import origami.code.OGetSizeCode;
 import origami.code.OAndCode;
 import origami.code.OArrayCode;
 import origami.code.OAssignCode;
 import origami.code.OBreakCode;
 import origami.code.OCastCode;
+import origami.code.OClassInitCode;
 import origami.code.OCode;
 import origami.code.OConstructorCode;
 import origami.code.OContinueCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OGenerator;
+import origami.code.OGetIndexCode;
+import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
+import origami.code.OJumpBeforeCode;
 import origami.code.OLabelBlockCode;
 import origami.code.OMethodCode;
 import origami.code.OMultiCode;
@@ -52,15 +52,16 @@ import origami.code.ONotCode;
 import origami.code.OOrCode;
 import origami.code.OReturnCode;
 import origami.code.OSetterCode;
+import origami.code.OSugarCode;
 import origami.code.OThrowCode;
+import origami.code.OTryCode;
+import origami.code.OTryCode.CatchCode;
 import origami.code.OValueCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
-import origami.code.SetIndexCode;
+import origami.code.OSetIndexCode;
 import origami.code.SwitchCode;
 import origami.code.SwitchCode.CaseCode;
-import origami.code.OTryCode;
-import origami.code.OTryCode.CatchCode;
 import origami.lang.OClassDecl;
 import origami.lang.OField;
 import origami.lang.OFieldDecl;
@@ -120,7 +121,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 
 		if (fieldInits.size() > 0) {
 			OMultiCode body = new OMultiCode(fieldInits);
-			this.env.add(ClassInitCode.class, body);
+			this.env.add(OClassInitCode.class, body);
 		}
 		/* if isInterface(), then unnecessary */
 		boolean hasConstructor = cdecl.getType().isInterface();
@@ -160,7 +161,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 		// mdecl.getSignature());
 		this.mBuilder = cw.newGeneratorAdapter(mdecl);
 		if (mdecl.getName().equals("<init>")) {
-			this.mBuilder.pushBlock(new OClassFieldInitBlock(this.env.get(ClassInitCode.class)));
+			this.mBuilder.pushBlock(new OClassFieldInitBlock(this.env.get(OClassInitCode.class)));
 		}
 		if (mdecl.body != null) {
 			this.mBuilder.enterScope();
@@ -239,15 +240,15 @@ public class OAsm implements OGenerator, OArrayUtils {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
-		this.pushIfFalse(node.condition(), elseLabel);
+		this.pushIfFalse(node.condCode(), elseLabel);
 
 		// then
-		node.thenClause().generate(this);
+		node.thenCode().generate(this);
 		this.mBuilder.goTo(mergeLabel);
 
 		// else
 		this.mBuilder.mark(elseLabel);
-		node.elseClause().generate(this);
+		node.elseCode().generate(this);
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
@@ -304,7 +305,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 
 	@Override
 	public void pushReturn(OReturnCode node) {
-		this.mBuilder.weaveBlock(this, OFinallyBlock.class, null);
+		this.mBuilder.weaveBefore(node, null, this);
 		OCode[] params = node.getParams();
 		if (params.length == 1) {
 			this.push(null, params[0]);
@@ -315,65 +316,30 @@ public class OAsm implements OGenerator, OArrayUtils {
 
 	@Override
 	public void pushTry(OTryCode code) {
-		this.mBuilder.pushBlock(new OFinallyBlock(code.finallyClause()));
+		OCode finallyCode = code.finallyCode();
+		// this.mBuilder.pushBlock(new OFinallyBlock(code.finallyClause()));
 
 		Label mergeLabel = this.mBuilder.newLabel();
-		// Label firstCatchEndLabel = null;
 		Label tryStartLabel = this.mBuilder.newLabel();
 		Label tryEndLabel = this.mBuilder.newLabel();
-		Label tryFinallyLabel = this.mBuilder.newLabel();
-
-		// String finallyVarName = " finally";
-		// String exceptionVarName1 = " exceptionVarName1";
-		// String exceptionVarName2 = " exceptionVarName2";
-
-		/* initialize exception variables */
-		// mBuilder.mark(labels.getStartLabel());
-
-		// mBuilder.pushNull();
-		// VarEntry excpVar1 = mBuilder.createNewVarAndStore(exceptionVarName1,
-		// t(Throwable.class));
-		// mBuilder.pushNull();
-		// VarEntry excpVar2 = mBuilder.createNewVarAndStore(exceptionVarName2,
-		// t(Throwable.class));
-
-		/* insert resource block */
-		// ResourceInfo[] resources = null;
-		// if (code.withResourses().isPresent()) {
-		// OCode[] resCode = code.withResourses().get();
-		// resources = new ResourceInfo[resCode.length];
-		// for (int i = 0; i < resCode.length; i++) {
-		// WithResourceCode res = (WithResourceCode) resCode[i];
-		// Label resDeclLabel = mBuilder.newLabel();
-		// mBuilder.mark(resDeclLabel);
-		// ODebug.NotAvailable();
-		// // res.varDecl().generate(this);
-		// OGeneratorAdapter.VarEntry resoVarEntry =
-		// mBuilder.getVar(res.varDecl().getName());
-		// resources[i] = new ResourceInfo(resoVarEntry, res.callClose(),
-		// resDeclLabel, (i > 0) ? resources[i - 1] : null);
-		// }
-		// }
 
 		/* try block */
 		this.mBuilder.mark(tryStartLabel);
-		code.tryClasuse().generate(this);
+		if (finallyCode instanceof OEmptyCode) {
+			code.tryCode().generate(this);
+		} else {
+			OJumpBeforeCode aspect = new OJumpBeforeCode(code.tryCode());
+			aspect.setBeforeContinueCode(finallyCode);
+			aspect.setBeforeBreakCode(finallyCode);
+			aspect.setBeforeReturnCode(finallyCode);
+			aspect.generate(this);
+		}
 		this.mBuilder.mark(tryEndLabel);
-		code.finallyClause().generate(this);
+		finallyCode.generate(this);
 		this.mBuilder.goTo(mergeLabel);
 
-		/* invoke close method */
-		// for (int i = resources.length - 1; i >= 0; i--) {
-		// ResourceInfo res = resources[i];
-		// mBuilder.mark(res.closeLabel);
-		// pushResourceCloseBlock(excpVar1, excpVar2, res, (res.prev != null) ?
-		// res.prev.closeLabel : labels.getFinallyLabel(), tryStartLabel);
-		// }
-
 		/* catch blocks */
-		for (CatchCode catchNode : code.catchClauses()) {
-
-			// OVariable v = catchNode.parameter();
+		for (CatchCode catchNode : code.catchCode()) {
 			OType exceptionType = catchNode.getType();
 			Label catchStartLabel = this.mBuilder.newLabel();
 			// Label catchEndLabel = mBuilder.newLabel();
@@ -385,33 +351,21 @@ public class OAsm implements OGenerator, OArrayUtils {
 			this.mBuilder.mark(catchStartLabel);
 			this.mBuilder.createNewVarAndStore(catchNode.getName(), exceptionType);
 
-			catchNode.catchClause().generate(this);
-			code.finallyClause().generate(this);
-
-			/* end the current catch block Label */
-			// mBuilder.mark(catchEndLabel);
+			catchNode.bodyCode().generate(this);
+			code.finallyCode().generate(this);
 
 			this.mBuilder.exitScope();
 			this.mBuilder.goTo(mergeLabel);
 		}
 
-		if (!(code.finallyClause() instanceof OEmptyCode)) {
+		if (!(finallyCode instanceof OEmptyCode)) {
+			Label tryFinallyLabel = this.mBuilder.newLabel();
 			this.mBuilder.mark(tryFinallyLabel);
 			this.mBuilder.catchException(tryStartLabel, tryEndLabel, null);
-			// VarEntry fentry = mBuilder.createNewVarAndStore(finallyVarName,
-			// t(Throwable.class));
-			code.finallyClause().generate(this);
-			// mBuilder.loadFromVar(fentry);
+			finallyCode.generate(this);
 			this.mBuilder.throwException();
 		}
 		this.mBuilder.mark(mergeLabel);
-		this.mBuilder.popBlock();
-	}
-
-	@Override
-	public void pushUndefined(OCode node) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -503,6 +457,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 		this.mBuilder.getStatic(this.cBuilder.getTypeDesc(), name, Type.getType(v.getClass()));
 	}
 
+	@Override
 	public void pushAnd(OAndCode code) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
@@ -518,6 +473,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 		this.mBuilder.mark(mergeLabel);
 	}
 
+	@Override
 	public void pushOr(OOrCode code) {
 		Label thenLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
@@ -533,10 +489,12 @@ public class OAsm implements OGenerator, OArrayUtils {
 		this.mBuilder.mark(mergeLabel);
 	}
 
+	@Override
 	public void pushNot(ONotCode code) {
 		// TODO Auto-generated method stub
 	}
 
+	@Override
 	public void pushInstanceOf(OInstanceOfCode code) {
 		Type type = OAsmUtils.asmType(code.getInstanceOfType());
 		code.getParams()[0].boxCode(this.env).generate(this);
@@ -711,8 +669,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 		}
 		//
 		this.mBuilder.checkCast(node.getType(), m.getReturnType());
-		if (node instanceof ClassInitCode) {
-			this.mBuilder.weaveBlock(this, OClassFieldInitBlock.class, null);
+		if (node instanceof OClassInitCode) {
+			this.mBuilder.weaveBefore(node, null, this);
 		}
 	}
 
@@ -789,7 +747,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 		this.mBuilder.useStackSlots(1);
 	}
 
-	public void pushGetSize(GetSizeCode code) {
+	@Override
+	public void pushGetSize(OGetSizeCode code) {
 		if (code.getMethod() == null) {
 			this.pushParams(code.getType(), code);
 			this.mBuilder.arrayLength();
@@ -809,7 +768,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushSetIndex(SetIndexCode code) {
+	public void pushSetIndex(OSetIndexCode code) {
 		if (code.getMethod() == null) {
 			this.pushParams(code.getType(), code);
 			this.mBuilder.arrayStore(code.getType().asmType());
@@ -825,24 +784,32 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
+	public void pushJumpBefore(OJumpBeforeCode code) {
+		this.mBuilder.pushBlock(code);
+		code.getFirst().generate(this);
+		this.mBuilder.popBlock();
+	}
+
+	@Override
 	public void pushBreak(OBreakCode code) {
-		OBreakBlock block = this.mBuilder.findBlock(OBreakBlock.class, (b) -> b.matchLabel(code.getLabel()));
-		this.mBuilder.weaveBlock(this, OFinallyBlock.class, block);
-		if (block == null) {
+		OBreakBlock untilBlock = this.mBuilder.findBlock(OBreakBlock.class, (b) -> b.matchLabel(code.getLabel()));
+		this.mBuilder.weaveBefore(code, untilBlock, this);
+		if (untilBlock == null) {
 			ODebug.trace("no block label=%s", code.getLabel());
 			/* Throwing new OrigamiBreakException() ; */
 			OType t = this.t(OrigamiBreakException.class);
 			this.push(null, t.newConstructorCode(this.env));
 			this.mBuilder.throwException();
 		} else {
-			this.mBuilder.goTo(block.endLabel);
+			this.mBuilder.goTo(untilBlock.endLabel);
 		}
 	}
 
 	@Override
 	public void pushContinue(OContinueCode code) {
-		OContinueBlock block = this.mBuilder.findBlock(OContinueBlock.class, (b) -> b.matchLabel(code.getLabel()));
-		this.mBuilder.weaveBlock(this, OFinallyBlock.class, block);
+		OBreakContinueBlock block = this.mBuilder.findBlock(OBreakContinueBlock.class,
+				(b) -> b.matchLabel(code.getLabel()));
+		this.mBuilder.weaveBefore(code, block, this);
 		if (block == null) {
 			ODebug.trace("no block label=%s", code.getLabel());
 			/* Throwing new OrigamiContinueException() ; */
@@ -858,7 +825,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	public void pushBlockCode(OLabelBlockCode code) {
 		// ODebug.trace("begin block label=%s", code.getLabel());
 		this.mBuilder.enterScope();
-		OContinueBlock block = this.mBuilder.pushBlock(new OContinueBlock(this.mBuilder, code.getLabel()));
+		OBreakContinueBlock block = this.mBuilder.pushBlock(new OBreakContinueBlock(this.mBuilder, code.getLabel()));
 		this.push(code.initCode());
 		this.mBuilder.mark(block.startLabel);
 		this.push(code.bodyCode()); // void
@@ -868,48 +835,28 @@ public class OAsm implements OGenerator, OArrayUtils {
 		this.mBuilder.exitScope();
 	}
 
-	public void pushWhile(OWhileCode code) {
-		Label startLabel = this.mBuilder.newLabel();
-		Label exitLabel = this.mBuilder.newLabel();
-
-		this.mBuilder.mark(startLabel);
-		this.pushIfFalse(code.cond(), exitLabel);
-		this.push(code.body());
-		this.mBuilder.goTo(startLabel);
-		this.mBuilder.mark(exitLabel);
-	}
-
 	@Override
-	public void pushLoop(ForCode code) {
-		OContinueBlock block = this.mBuilder.pushBlock(new OContinueBlock(this.mBuilder, null));
-
-		Label loopLabel = this.mBuilder.newLabel();
-		Label condLabel = this.mBuilder.newLabel();
-		Label returnLabel = block.endLabel;
-		Label continueLabel = block.startLabel;
-
-		code.initClause().ifPresent((c) -> {
-			c.generate(this);
-		});
-
-		this.mBuilder.goTo(condLabel);
-		this.mBuilder.mark(loopLabel);
-
-		code.bodyClause().generate(this);
-
-		this.mBuilder.mark(continueLabel);
-		code.iterClause().ifPresent((c) -> {
-			c.generate(this);
-		});
-
-		this.mBuilder.mark(condLabel);
-
-		code.condition().ifPresent((c) -> {
-			this.pushIfTrue(c, loopLabel);
-		});
-
-		this.mBuilder.mark(returnLabel);
-		this.mBuilder.popBlock();
+	public void pushWhile(OWhileCode code) {
+		OCode nextCode = code.nextCode();
+		if (nextCode instanceof OEmptyCode) {
+			OBreakContinueBlock block = this.mBuilder.pushBlock(new OBreakContinueBlock(this.mBuilder, null));
+			this.mBuilder.mark(block.startLabel);
+			this.pushIfFalse(code.condCode(), block.endLabel);
+			this.push(code.bodyCode());
+			this.mBuilder.goTo(block.startLabel);
+			this.mBuilder.mark(block.endLabel);
+		} else {
+			OBreakContinueBlock block = this.mBuilder.pushBlock(new OBreakContinueBlock(this.mBuilder, null));
+			Label startLabel0 = this.mBuilder.newLabel();
+			this.mBuilder.mark(startLabel0);
+			this.pushIfFalse(code.condCode(), block.endLabel);
+			this.push(code.bodyCode());
+			this.mBuilder.goTo(block.startLabel);
+			this.mBuilder.mark(block.startLabel);
+			this.push(nextCode);
+			this.mBuilder.goTo(startLabel0);
+			this.mBuilder.mark(block.endLabel);
+		}
 	}
 
 	@Override
@@ -982,5 +929,10 @@ public class OAsm implements OGenerator, OArrayUtils {
 	public void pushWarning(OWarningCode node) {
 		OLog.report(this.env, node.getHandled());
 		this.push(node.getFirst());
+	}
+
+	@Override
+	public void pushSugar(OSugarCode code) {
+		code.desugar().generate(this);
 	}
 }

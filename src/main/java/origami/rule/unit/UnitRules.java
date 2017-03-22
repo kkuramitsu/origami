@@ -24,7 +24,7 @@ import origami.asm.OAnno;
 import origami.asm.OClassLoader;
 import origami.asm.code.LoadArgCode;
 import origami.asm.code.LoadThisCode;
-import origami.code.ClassInitCode;
+import origami.code.OClassInitCode;
 import origami.code.OCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
@@ -185,19 +185,23 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		// Unit(double value) { super(value); }
 		String[] paramNames = { "value" };
 		OType[] paramTypes = { env.t(double.class) };
-		OCode init1 = new ClassInitCode(env, unitConstructor1, new LoadThisCode(ct), new LoadArgCode(0, paramTypes[0]));
+		OCode init1 = new OClassInitCode(env, unitConstructor1, new LoadThisCode(ct),
+				new LoadArgCode(0, paramTypes[0]));
 		ct.addConstructor(A("public"), paramNames, paramTypes, OType.emptyTypes, new OReturnCode(env, init1));
 		// Unit() { super(); }
-		OCode init0 = new ClassInitCode(env, unitConstructor0, new LoadThisCode(ct));
+		OCode init0 = new OClassInitCode(env, unitConstructor0, new LoadThisCode(ct));
 		ct.addConstructor(A("public"), emptyNames, OType.emptyTypes, OType.emptyTypes, new OReturnCode(env, init0));
 		// Unit newValue(double d) { return new Unit(d); }
 		OCode new1 = ct.newConstructorCode(env, new LoadArgCode(0, paramTypes[0]));
-		ct.addMethod(A("public,final"), env.t(OUnit.class), "newValue", paramNames, paramTypes, OType.emptyTypes, new OReturnCode(env, new1));
+		ct.addMethod(A("public,final"), env.t(OUnit.class), "newValue", paramNames, paramTypes, OType.emptyTypes,
+				new OReturnCode(env, new1));
 		// String unit() { return unit; }
-		ct.addMethod(A("public,final"), env.t(String.class), "unit", emptyNames, OType.emptyTypes, null, new OReturnCode(env, env.v(unit)));
+		ct.addMethod(A("public,final"), env.t(String.class), "unit", emptyNames, OType.emptyTypes, null,
+				new OReturnCode(env, env.v(unit)));
 	}
 
-	private void addUnitConv(OEnv env, OClassDeclType ct, OType targetUnit, OType baseUnit, double scale, double shift) {
+	private void addUnitConv(OEnv env, OClassDeclType ct, OType targetUnit, OType baseUnit, double scale,
+			double shift) {
 		OCode base = new LoadArgCode(0, baseUnit).newMethodCode(env, "doubleValue");
 		base = base.newBinaryCode(env, "*", env.v(scale));
 		// ODebug.trace("base type=%s", base.getType());

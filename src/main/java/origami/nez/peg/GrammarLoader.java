@@ -16,65 +16,68 @@
 
 package origami.nez.peg;
 
-
 public class GrammarLoader {
 
-//	public final static OGrammar load(String path, String[] paths) throws IOException {
-//		return load(CommonSource.newFileSource(path, paths);
-//	}
-//
-//	public final static OGrammar load(Source s) throws IOException {
-//		OGrammar g = new OGrammar(s.getResourceName());
-//		ExpressionParser ep = new ExpressionParser(null, g);
-//		importFile(ep, g, s);
-//		return g;
-//	}
-//
-//	public final static void importFile(ParserFactory factory, ExpressionParser ep, OGrammar g, Source s) throws IOException {
-//		Tree<?> t = OGrammar.NezParser.parse(s);
-//		update(factory, ep, g, t);
-//	}
-//
-//	public final static void update(ParserFactory factory, ExpressionParser ep, OGrammar g, Tree<?> node) throws IOException {
-//		if (node.is(_Source)) {
-//			for (Tree<?> sub : node) {
-//				parse(factory, ep, g, sub);
-//			}
-//		}
-//	}
-//
-//	static void parse(ParserFactory factory, ExpressionParser ep, OGrammar g, Tree<?> node) throws IOException {
-//		if (node.is(_Production)) {
-//			parseProduction(factory, g, ep, node);
-//			return;
-//		}
-//		if (node.is(_Grammar)) {
-//		}
-//		if (node.is(_Import)) {
-//			String name = node.getText(_name, null);
-//			String path = name;
-//			if (!name.startsWith("/") && !name.startsWith("\\")) {
-//				path = extractFilePath(node.getSource().getResourceName()) + "/" + name;
-//			}
-//			importFile(factory, ep, g, CommonSource.newFileSource(path, null));
-//			return;
-//		}
-//	}
-//
-//	static void parseProduction(ParserFactory factory, OGrammar g, ExpressionParser ep, Tree<?> node) {
-//		Tree<?> nameNode = node.get(_name);
-//		boolean isPublic = node.get(_public, null) != null;
-//		String name = nameNode.toText();
-//		if (nameNode.is(_String)) {
-//			name = OProduction.terminalName(name);
-//		}
-//		Expression rule = g.getLocalExpression(name);
-//		if (rule != null) {
-//			factory.reportWarning(node, "duplicated production: " + name);
-//			return;
-//		}
-//		g.addProduction(name, ep.newInstance(node.get(_expr)));
-//	}
-
+	// public final static OGrammar load(String path, String[] paths) throws
+	// IOException {
+	// return load(CommonSource.newFileSource(path, paths);
+	// }
+	//
+	// public final static OGrammar load(Source s) throws IOException {
+	// OGrammar g = new OGrammar(s.getResourceName());
+	// ExpressionParser ep = new ExpressionParser(null, g);
+	// importFile(ep, g, s);
+	// return g;
+	// }
+	//
+	// public final static void importFile(ParserFactory factory,
+	// ExpressionParser ep, OGrammar g, Source s) throws IOException {
+	// Tree<?> t = OGrammar.NezParser.parse(s);
+	// update(factory, ep, g, t);
+	// }
+	//
+	// public final static void update(ParserFactory factory, ExpressionParser
+	// ep, OGrammar g, Tree<?> node) throws IOException {
+	// if (node.is(_Source)) {
+	// for (Tree<?> sub : node) {
+	// parse(factory, ep, g, sub);
+	// }
+	// }
+	// }
+	//
+	// static void parse(ParserFactory factory, ExpressionParser ep, OGrammar g,
+	// Tree<?> node) throws IOException {
+	// if (node.is(_Production)) {
+	// parseProduction(factory, g, ep, node);
+	// return;
+	// }
+	// if (node.is(_Grammar)) {
+	// }
+	// if (node.is(_Import)) {
+	// String name = node.getText(_name, null);
+	// String path = name;
+	// if (!name.startsWith("/") && !name.startsWith("\\")) {
+	// path = extractFilePath(node.getSource().getResourceName()) + "/" + name;
+	// }
+	// importFile(factory, ep, g, CommonSource.newFileSource(path, null));
+	// return;
+	// }
+	// }
+	//
+	// static void parseProduction(ParserFactory factory, OGrammar g,
+	// ExpressionParser ep, Tree<?> node) {
+	// Tree<?> nameNode = node.get(_name);
+	// boolean isPublic = node.get(_public, null) != null;
+	// String name = nameNode.toText();
+	// if (nameNode.is(_String)) {
+	// name = OProduction.terminalName(name);
+	// }
+	// Expression rule = g.getLocalExpression(name);
+	// if (rule != null) {
+	// factory.reportWarning(node, "duplicated production: " + name);
+	// return;
+	// }
+	// g.addProduction(name, ep.newInstance(node.get(_expr)));
+	// }
 
 }

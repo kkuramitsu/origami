@@ -17,20 +17,20 @@
 package origami.main;
 
 import origami.ODebug;
-import origami.nez.parser.Parser;
 
 public class Cpeg extends OCommand {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
 		ODebug.TODO(this);
-//		GrammarWriter grammarWriter = options.newGrammarWriter(origami.main.tool.PEGWriter.class);
-//		if (options.is("raw", false)) {
-//			grammarWriter.writeGrammar(options, options.getGrammar());
-//		} else {
-//			Parser p = options.newParser();
-//			grammarWriter.writeGrammar(options, p.getGrammar());
-//		}
+		// GrammarWriter grammarWriter =
+		// options.newGrammarWriter(origami.main.tool.PEGWriter.class);
+		// if (options.is("raw", false)) {
+		// grammarWriter.writeGrammar(options, options.getGrammar());
+		// } else {
+		// Parser p = options.newParser();
+		// grammarWriter.writeGrammar(options, p.getGrammar());
+		// }
 	}
 
 }

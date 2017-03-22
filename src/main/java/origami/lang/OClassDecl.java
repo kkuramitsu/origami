@@ -25,7 +25,7 @@ import origami.asm.OAnno;
 import origami.asm.OCompilationUnit;
 import origami.asm.code.LoadArgCode;
 import origami.asm.code.LoadThisCode;
-import origami.code.ClassInitCode;
+import origami.code.OClassInitCode;
 import origami.code.OCode;
 import origami.code.OMultiCode;
 import origami.code.OReturnCode;
@@ -49,7 +49,8 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 
 	private Tree<?> body = null;
 
-	public OClassDecl(OEnv env, OClassDeclType thisType, OAnno anno, String cname, OType[] paramTypes, OType superType, OType... interfaces) {
+	public OClassDecl(OEnv env, OClassDeclType thisType, OAnno anno, String cname, OType[] paramTypes, OType superType,
+			OType... interfaces) {
 		this.definedClassEnv = env.newEnv();
 		this.thisType = thisType;
 		this.anno = anno;
@@ -303,8 +304,9 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 			for (int i = 0; i < p.length; i++) {
 				args[i + 1] = new LoadArgCode(i, p[i]);
 			}
-			OCode body = new OMultiCode(new ClassInitCode(m, args), new OReturnCode(env()));
-			thisType.addConstructor(new OAnno("public"), m.getParamNames(), m.getParamTypes(), m.getExceptionTypes(), body);
+			OCode body = new OMultiCode(new OClassInitCode(m, args), new OReturnCode(env()));
+			thisType.addConstructor(new OAnno("public"), m.getParamNames(), m.getParamTypes(), m.getExceptionTypes(),
+					body);
 		}
 	}
 
@@ -312,11 +314,13 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 		return this.getType().addField(anno, type, name, body);
 	}
 
-	public OMethodHandle addConstructorCode(OAnno anno, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public OMethodHandle addConstructorCode(OAnno anno, String[] paramNames, OType[] paramTypes, OType[] exceptions,
+			OCode body) {
 		return this.getType().addConstructor(anno, paramNames, paramTypes, exceptions, body);
 	}
 
-	public OMethodHandle addMethod(OAnno anno, OType ret, String name, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public OMethodHandle addMethod(OAnno anno, OType ret, String name, String[] paramNames, OType[] paramTypes,
+			OType[] exceptions, OCode body) {
 		return this.getType().addMethod(anno, ret, name, paramNames, paramTypes, exceptions, body);
 	}
 

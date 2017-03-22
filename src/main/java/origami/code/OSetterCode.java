@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.lang.OField;
 import origami.lang.OSetter;
 import origami.type.OType;
@@ -35,9 +34,17 @@ public class OSetterCode extends OParamCode<OField> implements DynamicInvokable 
 	}
 
 	@Override
+	public OCode refineType(OEnv env, OType ty) {
+		if (ty.is(void.class)) {
+			this.setType(env.t(void.class));
+		}
+		return this;
+	}
+
+	@Override
 	public Object eval(OEnv env) throws Throwable {
 		Field field = this.getHandled().unwrap(env);
-		Object[] values = evalParams(env, nodes);
+		Object[] values = this.evalParams(env, this.nodes);
 		if (OTypeUtils.isStatic(field)) {
 			field.set(null, values[0]);
 			return values[0];
@@ -62,7 +69,7 @@ public class OSetterCode extends OParamCode<OField> implements DynamicInvokable 
 
 	@Override
 	public MethodHandle getMethodHandle(OEnv env, MethodHandles.Lookup lookup) throws Throwable {
-		return new OSetter(getHandled()).getMethodHandle(env, lookup);
+		return new OSetter(this.getHandled()).getMethodHandle(env, lookup);
 	}
 
 }

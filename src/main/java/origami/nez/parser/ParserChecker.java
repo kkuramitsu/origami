@@ -98,21 +98,20 @@ public class ParserChecker {
 
 	private Class<?>[] loadPassClass(String[] pass) {
 		ArrayList<Class<?>> l = new ArrayList<>();
-		for(String p: pass) {
+		for (String p : pass) {
 			try {
 				l.add(options.loadClass(p, options.list(ParserOption.PassPath)));
-			}
-			catch(ClassNotFoundException e) {
+			} catch (ClassNotFoundException e) {
 				ODebug.traceException(e);
 			}
 		}
 		return l.toArray(new Class<?>[l.size()]);
 	}
-	
+
 	private Grammar applyPass(Grammar g, Class<?>... classes) {
 		for (Class<?> c : classes) {
 			try {
-				ParserPass pass = (ParserPass)c.newInstance();
+				ParserPass pass = (ParserPass) c.newInstance();
 				long t1 = options.nanoTime(null, 0);
 				g = pass.perform(g, options);
 				options.nanoTime("Pass: " + pass, t1);
@@ -139,7 +138,8 @@ public class ParserChecker {
 			if (p == null) {
 				if (n.getLocalName().startsWith("\"")) {
 					options.reportError(e.getSourceLocation(), "undefined terminal: %s", n.getLocalName());
-					n.getGrammar().addProduction(n.getLocalName(), Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null));
+					n.getGrammar().addProduction(n.getLocalName(),
+							Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null));
 				} else {
 					options.reportError(e.getSourceLocation(), "undefined %s", n.getLocalName());
 					n.getGrammar().addProduction(n.getLocalName(), Expression.defaultFailure);

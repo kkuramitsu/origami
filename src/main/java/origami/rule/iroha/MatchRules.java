@@ -206,9 +206,11 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 				}
 			}
 			pushAssign("case_", _geti(_var("cases_"), index));
-			pushAssign("matched_", _method(_var("case_"), "match0", _var("input_"), _var("workingList_", ArrayList.class)));
+			pushAssign("matched_",
+					_method(_var("case_"), "match0", _var("input_"), _var("workingList_", ArrayList.class)));
 
-			pushIf(_bin(_var("matched_"), "!=", _null()), new MatchGuardCode(env(), this, iCase, lvarMap, this.getFirst(), this.getParams()[1]), _empty());
+			pushIf(_bin(_var("matched_"), "!=", _null()),
+					new MatchGuardCode(env(), this, iCase, lvarMap, this.getFirst(), this.getParams()[1]), _empty());
 			return super.desugar();
 		}
 
@@ -220,7 +222,8 @@ public class MatchRules implements OImportable, OSymbols, SyntaxAnalysis {
 		final OCode condCode;
 		final OCode thenCode;
 
-		public MatchGuardCode(OEnv env, GenerativeCode parent, ICase c, HashMap<String, OType> lvarMap, OCode condCode, OCode thenCode) {
+		public MatchGuardCode(OEnv env, GenerativeCode parent, ICase c, HashMap<String, OType> lvarMap, OCode condCode,
+				OCode thenCode) {
 			super(env, parent);
 			this.iCase = c;
 			this.condCode = condCode;

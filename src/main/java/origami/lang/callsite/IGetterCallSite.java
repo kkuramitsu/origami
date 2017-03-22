@@ -37,12 +37,14 @@ public class IGetterCallSite extends OGetterCallSite {
 		super(env, name, sig, methodType);
 	}
 
-	public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry, String sig) throws Throwable {
+	public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
+			String sig) throws Throwable {
 		return new IGetterCallSite(loadEnv(entry), name, sig, type);
 	}
 
 	@Override
-	public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> mat) {
+	public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l,
+			OListMatcher<OMethodHandle> mat) {
 		int found = l.size();
 		if (base == null) {
 			return;

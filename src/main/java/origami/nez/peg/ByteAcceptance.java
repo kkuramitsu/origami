@@ -167,7 +167,8 @@ public enum ByteAcceptance {
 		@Override
 		public ByteAcceptance visitNot(Expression.PNot e, Integer ch) {
 			Expression inner = e.get(0);
-			if (inner instanceof Expression.PByte || inner instanceof Expression.PByteSet || inner instanceof Expression.PAny) {
+			if (inner instanceof Expression.PByte || inner instanceof Expression.PByteSet
+					|| inner instanceof Expression.PAny) {
 				return accept(inner, ch) == Accept ? Reject : Unconsumed;
 			}
 			/* The code below works only if a single character in !(e) */

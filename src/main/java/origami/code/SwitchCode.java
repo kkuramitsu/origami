@@ -1,30 +1,41 @@
+/***********************************************************************
+ * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***********************************************************************/
+
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 
-/**
- * <pre>
- * Params 0 : Condition (OCode) 1 : Case Clauses(CaseCode[])
- **/
-public class SwitchCode extends StmtCode {
+public class SwitchCode extends OSugarCode {
 
 	public SwitchCode(OEnv env, OCode... nodes) {
-		super(env, "switch", nodes);
+		super(env, env.t(void.class), nodes);
 	}
 
-	@Override
-	public void generate(OGenerator gen) {
-		gen.pushSwitch(this);
-	}
+	// @Override
+	// public void generate(OGenerator gen) {
+	// gen.pushSwitch(this);
+	// }
 
 	public OCode condition() {
-		return nodes[0];
+		return this.nodes[0];
 	}
 
 	public OCode[] caseCode() {
-		if (nodes[1] != null) {
-			return nodes[1].getParams();
+		if (this.nodes[1] != null) {
+			return this.nodes[1].getParams();
 		}
 		return null;
 	}
@@ -33,22 +44,34 @@ public class SwitchCode extends StmtCode {
 	 * <pre>
 	 * Params 0 : Condition (OCode) 1 : Case Clause(MultiCode)
 	 **/
-	public static class CaseCode extends StmtCode {
+	public static class CaseCode extends OSugarCode {
 
 		public Object value;
 
 		public CaseCode(OEnv env, Object value, OCode... nodes) {
-			super(env, "case", nodes);
+			super(env, env.t(void.class), nodes);
 			this.value = value;
 		}
 
 		public OCode condition() {
-			return nodes[0];
+			return this.nodes[0];
 		}
 
 		public OCode caseClause() {
-			return nodes[1];
+			return this.nodes[1];
 		}
 
+		@Override
+		public OCode desugar() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
+	@Override
+	public OCode desugar() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

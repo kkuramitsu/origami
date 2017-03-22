@@ -53,7 +53,8 @@ import origami.nez.peg.Typestate;
 import origami.util.OStringUtils;
 import origami.util.OVerbose;
 
-public abstract class ParserGenerator extends CommonWriter /*implements GrammarWriter*/ {
+public abstract class ParserGenerator
+		extends CommonWriter /* implements GrammarWriter */ {
 
 	protected boolean verboseMode = true;
 	protected boolean Optimization = true;
@@ -305,8 +306,10 @@ public abstract class ParserGenerator extends CommonWriter /*implements GrammarW
 	}
 
 	final void DeclMatchText(byte[] text) {
-		if ((SupportedMatch2 && isMatchText(text, 2)) || (SupportedMatch3 && isMatchText(text, 3)) || (SupportedMatch4 && isMatchText(text, 4)) || (SupportedMatch5 && isMatchText(text, 5)) || (SupportedMatch6 && isMatchText(text, 6))
-				|| (SupportedMatch7 && isMatchText(text, 7)) || (SupportedMatch8 && isMatchText(text, 8))) {
+		if ((SupportedMatch2 && isMatchText(text, 2)) || (SupportedMatch3 && isMatchText(text, 3))
+				|| (SupportedMatch4 && isMatchText(text, 4)) || (SupportedMatch5 && isMatchText(text, 5))
+				|| (SupportedMatch6 && isMatchText(text, 6)) || (SupportedMatch7 && isMatchText(text, 7))
+				|| (SupportedMatch8 && isMatchText(text, 8))) {
 			return;
 		}
 		DeclText(text);
@@ -1085,7 +1088,8 @@ public abstract class ParserGenerator extends CommonWriter /*implements GrammarW
 			if (SupportedRange) {
 				int[] range = range(byteMap);
 				if (range != null) {
-					String s = "(" + _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(), _Binary(c, "<", _byte(range[1]))) + ")";
+					String s = "(" + _Binary(_Binary(_byte(range[0]), "<=", _Func("prefetch")), _And(),
+							_Binary(c, "<", _byte(range[1]))) + ")";
 					// System.out.println(s);
 					return s;
 				}
@@ -1836,10 +1840,12 @@ public abstract class ParserGenerator extends CommonWriter /*implements GrammarW
 			return _Func("match6", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]));
 		}
 		if (SupportedMatch4 && isMatchText(t, 7)) {
-			return _Func("match7", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]), _byte(t[6]));
+			return _Func("match7", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]),
+					_byte(t[6]));
 		}
 		if (SupportedMatch4 && isMatchText(t, 8)) {
-			return _Func("match8", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]), _byte(t[6]), _byte(t[7]));
+			return _Func("match8", _byte(t[0]), _byte(t[1]), _byte(t[2]), _byte(t[3]), _byte(t[4]), _byte(t[5]),
+					_byte(t[6]), _byte(t[7]));
 		}
 		return _Func("match", _text(t));
 	}

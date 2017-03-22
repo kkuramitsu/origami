@@ -9,7 +9,8 @@ import origami.nez.parser.TreeConnector;
 import origami.nez.parser.TreeConstructor;
 import origami.util.OStringUtils;
 
-public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements SourcePosition, TreeConstructor<E>, TreeConnector<E> {
+public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
+		implements SourcePosition, TreeConstructor<E>, TreeConnector<E> {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -336,7 +337,8 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E> implements
 	 */
 
 	public final Source toSource() {
-		return ParserSource.newStringSource(this.getSource().getResourceName(), this.getSource().linenum(this.getSourcePosition()), this.toText());
+		return ParserSource.newStringSource(this.getSource().getResourceName(),
+				this.getSource().linenum(this.getSourcePosition()), this.toText());
 	}
 
 	public final boolean containsToken(String token) {

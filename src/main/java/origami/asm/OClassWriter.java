@@ -72,7 +72,8 @@ public class OClassWriter extends ClassWriter implements OStackable<OClassWriter
 		fn.accept(this);
 	}
 
-	public final OGeneratorAdapter newGeneratorAdapter(OAnno anno, OType returnType, String name, String signature, OType... paramTypes) {
+	public final OGeneratorAdapter newGeneratorAdapter(OAnno anno, OType returnType, String name, String signature,
+			OType... paramTypes) {
 		// String desc = (new MethodDeclSignatureWriter(returnType,
 		// paramTypes)).getDesc();
 		String desc = getDesc(returnType, paramTypes);
@@ -86,7 +87,8 @@ public class OClassWriter extends ClassWriter implements OStackable<OClassWriter
 	}
 
 	public final OGeneratorAdapter newGeneratorAdapter(OMethodDecl mdecl) {
-		return newGeneratorAdapter(mdecl.getAnno(), mdecl.getReturnType(), mdecl.getName(), mdecl.getSignature(), mdecl.getParamTypes());
+		return newGeneratorAdapter(mdecl.getAnno(), mdecl.getReturnType(), mdecl.getName(), mdecl.getSignature(),
+				mdecl.getParamTypes());
 	}
 
 	public String getDesc(OType ret, OType[] p) {

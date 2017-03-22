@@ -18,7 +18,7 @@ package origami.rule;
 
 import origami.OEnv;
 import origami.asm.OAnno;
-import origami.code.GetSizeCode;
+import origami.code.OGetSizeCode;
 import origami.code.OAndCode;
 import origami.code.OArrayCode;
 import origami.code.OCastCode;
@@ -71,33 +71,33 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.getText(_name, "");
-			OAnno anno = parseAnno(env, "public,static", t.get(_anno, null));
+			OAnno anno = ExpressionRules.this.parseAnno(env, "public,static", t.get(_anno, null));
 			anno.setReadOnly(this.isReadOnly);
 			OCode right = null;
 			OType type = env.t(Object.class);
 			if (t.has(_expr)) {
-				right = typeExpr(env, t.get(_expr));
+				right = ExpressionRules.this.typeExpr(env, t.get(_expr));
 				if (t.has(_type)) {
-					type = parseType(env, t.get(_type, null), type);
+					type = ExpressionRules.this.parseType(env, t.get(_type, null), type);
 				} else {
 					type = right.valueType();
 				}
-				type = parseTypeArity(env, type, t);
-				right = typeCheck(env, type, right);
+				type = ExpressionRules.this.parseTypeArity(env, type, t);
+				right = ExpressionRules.this.typeCheck(env, type, right);
 				// ODebug.trace("right %s", right);
 			} else {
-				type = parseType(env, t.get(_type, null), type);
-				type = parseTypeArity(env, type, t);
+				type = ExpressionRules.this.parseType(env, t.get(_type, null), type);
+				type = ExpressionRules.this.parseTypeArity(env, type, t);
 				right = new ODefaultValueCode(type);
 			}
 
-			if (isTopLevel(env)) {
+			if (ExpressionRules.this.isTopLevel(env)) {
 				OVariable var = new OGlobalVariable(env, anno, name, type, right);
-				defineName(env, t, var);
+				ExpressionRules.this.defineName(env, t, var);
 				return new OEmptyCode(env);
 			}
 			OVariable var = new OLocalVariable(this.isReadOnly, name, type);
-			defineName(env, t, var);
+			ExpressionRules.this.defineName(env, t, var);
 			return var.defineCode(env, right);
 		}
 	}
@@ -108,7 +108,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule ThisExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OClassDecl defined = getClassContext(env);
+			OClassDecl defined = ExpressionRules.this.getClassContext(env);
 			if (defined != null) {
 				return new ThisCode(defined.getType());
 			}
@@ -119,27 +119,28 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule AssignExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeExpr(env, t.get(_left));
-			OCode right = typeExpr(env, t.get(_right));
-			return left.newAssignCode(env, left.getType(), typeCheck(env, left.getType(), right));
+			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeExpr(env, t.get(_right));
+			return left.newAssignCode(env, ExpressionRules.this.typeCheck(env, left.getType(), right));
 		}
 	};
 
 	public OTypeRule AssignStmt = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeExpr(env, t.get(_left));
-			OCode right = typeExpr(env, t.get(_right));
-			return left.newAssignCode(env, env.t(void.class), typeCheck(env, left.getType(), right));
+			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeExpr(env, t.get(_right));
+			OCode code = left.newAssignCode(env, ExpressionRules.this.typeCheck(env, left.getType(), right));
+			return code.asType(env, void.class);
 		}
 	};
 
 	public OTypeRule CastExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode expr = typeExpr(env, t.get(_expr));
+			OCode expr = ExpressionRules.this.typeExpr(env, t.get(_expr));
 			if (t.has(_type)) {
-				OType type = parseType(env, t.get(_type));
+				OType type = ExpressionRules.this.parseType(env, t.get(_type));
 				expr = expr.asType(env, type);
 				if (expr instanceof OCastCode) {
 					OCastCode node = (OCastCode) expr;
@@ -157,8 +158,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule InstanceOfExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeExpr(env, t.get(_left));
-			OCode right = typeExpr(env, t.get(_right));
+			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeExpr(env, t.get(_right));
 			OType ty = (right instanceof OTypeCode) ? ((OTypeCode) right).getTypeValue() : right.getType();
 			OType lty = left.getType();
 			if (ty.isPrimitive()) {
@@ -182,8 +183,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule ApplyExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode[] params = typeParams(env, t);
-			OCode recv = typeExpr(env, t.get(_recv));
+			OCode[] params = ExpressionRules.this.typeParams(env, t);
+			OCode recv = ExpressionRules.this.typeExpr(env, t.get(_recv));
 			return recv.newApplyCode(env, params);
 		}
 	};
@@ -191,9 +192,9 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule MethodExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode[] params = typeParams(env, t);
+			OCode[] params = ExpressionRules.this.typeParams(env, t);
 			String name = t.getText(_name, "");
-			OCode recv = typeExpr(env, t.get(_recv));
+			OCode recv = ExpressionRules.this.typeExpr(env, t.get(_recv));
 			return recv.newMethodCode(env, name, params);
 		}
 	};
@@ -202,7 +203,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			String name = t.getText(_name, "");
-			OCode recv = typeExpr(env, t.get(_recv));
+			OCode recv = ExpressionRules.this.typeExpr(env, t.get(_recv));
 			return recv.newGetterCode(env, name);
 		}
 	};
@@ -210,10 +211,10 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule SizeOfExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode expr = typeExpr(env, t.get(_expr));
+			OCode expr = ExpressionRules.this.typeExpr(env, t.get(_expr));
 			OType recvType = expr.getType();
 			if (recvType.isArray()) {
-				return new GetSizeCode(env, null, expr);
+				return new OGetSizeCode(env, null, expr);
 			}
 			String name = recvType.rename("size");
 			return expr.newMethodCode(env, name);
@@ -223,8 +224,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule IndexExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode recv = typeExpr(env, t.get(_recv));
-			OCode[] params = typeParams(env, t);
+			OCode recv = ExpressionRules.this.typeExpr(env, t.get(_recv));
+			OCode[] params = ExpressionRules.this.typeParams(env, t);
 			return recv.newMethodCode(env, "get", params);
 		}
 	};
@@ -232,13 +233,13 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule NewArrayExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType type = parseType(env, t.get(_type), null);
+			OType type = ExpressionRules.this.parseType(env, t.get(_type), null);
 			OCode[] expr = null;
 			if (t.has(_expr)) {
 				Tree<?> exprs = t.get(_expr);
 				expr = new OCode[exprs.size()];
 				for (int i = 0; i < expr.length; i++) {
-					expr[i] = typeExpr(env, exprs.get(i));
+					expr[i] = ExpressionRules.this.typeExpr(env, exprs.get(i));
 				}
 			}
 
@@ -251,9 +252,10 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule IfExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode condCode = typeCondition(env, t.get(_cond));
-			OCode thenCode = typeExprOrErrorCode(env, t.get(_then));
-			OCode elseCode = t.has(_else) ? typeExprOrErrorCode(env, t.get(_else)) : new OEmptyCode(env);
+			OCode condCode = ExpressionRules.this.typeCondition(env, t.get(_cond));
+			OCode thenCode = ExpressionRules.this.typeExprOrErrorCode(env, t.get(_then));
+			OCode elseCode = t.has(_else) ? ExpressionRules.this.typeExprOrErrorCode(env, t.get(_else))
+					: new OEmptyCode(env);
 			return new OIfCode(env, condCode, thenCode, elseCode).retypeLocal();
 		}
 	};
@@ -263,8 +265,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule AndExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeCondition(env, t.get(_left));
-			OCode right = typeCondition(env, t.get(_left));
+			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeCondition(env, t.get(_left));
 			return new OAndCode(env, left, right);
 		}
 	};
@@ -272,8 +274,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	public OTypeRule OrExpr = new AbstractTypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeCondition(env, t.get(_left));
-			OCode right = typeCondition(env, t.get(_left));
+			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeCondition(env, t.get(_left));
 			return new OOrCode(env, left, right);
 		}
 	};
@@ -322,10 +324,10 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode left = typeExpr(env, t.get(_left));
-			OCode right = typeExpr(env, t.get(_right));
-			syncType(env, left, right);
-			return left.newBinaryCode(env, name, right);
+			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
+			OCode right = ExpressionRules.this.typeExpr(env, t.get(_right));
+			ExpressionRules.this.syncType(env, left, right);
+			return left.newBinaryCode(env, this.name, right);
 		}
 	}
 
@@ -346,8 +348,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode value = typeExpr(env, t.get(_expr));
-			return value.newUnaryCode(env, name);
+			OCode value = ExpressionRules.this.typeExpr(env, t.get(_expr));
+			return value.newUnaryCode(env, this.name);
 		}
 	}
 
@@ -383,20 +385,17 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left;
-			if (expr == null) {
+			if (this.expr == null) {
 				Tree<?> l = t.get(_left);
-				left = typeExpr(env, l);
-				OCode expr = typeExpr(env, t.get(_right));
+				left = ExpressionRules.this.typeExpr(env, l);
+				OCode expr = ExpressionRules.this.typeExpr(env, t.get(_right));
 				OCode op = left.newBinaryCode(env, this.name, expr);
-				return left.newAssignCode(env, left.getType(), op);
+				return left.newAssignCode(env, op);
 			} else {
 				Tree<?> tree = t.get(_expr);
-				left = typeExpr(env, tree);
+				left = ExpressionRules.this.typeExpr(env, tree);
 				OCode op = left.newBinaryCode(env, this.name, this.expr);
-				OCode setter = left.newAssignCode(env, left.getType(), op);
-				if (setter instanceof OErrorCode) {
-					return op;
-				}
+				OCode setter = left.newAssignCode(env, op);
 				return setter;
 			}
 
@@ -413,7 +412,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left;
 			Tree<?> tree = t.get(_expr);
-			left = typeExpr(env, tree);
+			left = ExpressionRules.this.typeExpr(env, tree);
 			return new PreOpCode(this.name, left.getType(), left, this.expr, env);
 		}
 	}
@@ -430,12 +429,9 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Tree<?> tree = t.get(_expr);
-			OCode expr = typeExpr(env, tree);
+			OCode expr = ExpressionRules.this.typeExpr(env, tree);
 			OCode op = expr.newBinaryCode(env, this.name, this.expr);
-			OCode setter = expr.newAssignCode(env, expr.getType(), op);
-			if (setter instanceof OErrorCode) {
-				return expr;
-			}
+			OCode setter = expr.newAssignCode(env, op);
 			return new PostOpCode(this.name, expr.getType(), expr, setter);
 		}
 	}

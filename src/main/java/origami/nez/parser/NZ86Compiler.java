@@ -33,7 +33,7 @@ import origami.util.OStringUtils;
 public class NZ86Compiler implements ParserCompiler {
 
 	public NZ86Compiler() {
-		
+
 	}
 
 	@Override
@@ -54,7 +54,6 @@ public class NZ86Compiler implements ParserCompiler {
 		this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
 		this.enableMemo = options.is(ParserOption.PackratParsing, true);
 	}
-
 
 	@Override
 	public NZ86Code compile(Grammar grammar) {

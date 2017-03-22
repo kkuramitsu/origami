@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public class OValueCode extends OParamCode<Object> {
@@ -31,7 +30,7 @@ public class OValueCode extends OParamCode<Object> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		Object v = getHandled();
+		Object v = this.getHandled();
 		if (v instanceof OType) {
 			try {
 				return env.getClassLoader().loadClass(((OType) v).getName());

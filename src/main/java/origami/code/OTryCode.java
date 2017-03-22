@@ -17,9 +17,9 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.code.OTryCode.CatchCode;
 import origami.type.OType;
+import origami.util.OScriptUtils;
 
 public class OTryCode extends OParamCode<CatchCode[]> {
 
@@ -27,34 +27,21 @@ public class OTryCode extends OParamCode<CatchCode[]> {
 		super(catchCodes, tryCode.getType(), tryCode, finallyCode);
 	}
 
-	public OCode tryClasuse() {
-		return nodes[0];
+	public OCode tryCode() {
+		return this.nodes[0];
 	}
 
-	public CatchCode[] catchClauses() {
+	public CatchCode[] catchCode() {
 		return this.getHandled();
 	}
 
-	public OCode finallyClause() {
-		return nodes[1];
+	public OCode finallyCode() {
+		return this.nodes[1];
 	}
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		try {
-			Object val = nodes[0].eval(env);
-			this.finallyClause().eval(env);
-			return val;
-		} catch (Throwable e) {
-			for (CatchCode catchCode : this.catchClauses()) {
-				if (catchCode.getType().isInstance(e)) {
-					this.finallyClause().eval(env);
-					return catchCode.catchClause().eval(env);
-				}
-			}
-			this.finallyClause().eval(env);
-			throw e;
-		}
+		return OScriptUtils.eval(env, this);
 	}
 
 	@Override
@@ -72,8 +59,8 @@ public class OTryCode extends OParamCode<CatchCode[]> {
 			return this.getHandled();
 		}
 
-		public OCode catchClause() {
-			return nodes[0];
+		public OCode bodyCode() {
+			return this.nodes[0];
 		}
 
 	}

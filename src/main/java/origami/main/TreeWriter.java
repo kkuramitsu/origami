@@ -13,7 +13,7 @@ public class TreeWriter extends CommonWriter implements OOption.OptionalFactory<
 	public TreeWriter clone() {
 		return new TreeWriter();
 	}
-	
+
 	public void init(OOption options) {
 
 	}

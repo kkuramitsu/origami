@@ -17,25 +17,34 @@
 package origami.code;
 
 import origami.OEnv;
+import origami.lang.OMethodHandle;
+import origami.lang.callsite.OFuncCallSite;
+import origami.type.OFuncType;
 
-public class OAndCode extends OParamCode<Void> {
+public class OFuncNameCode extends OParamCode<String> {
+	OEnv env;
+	final OMethodHandle mh;
 
-	public OAndCode(OEnv env, OCode left, OCode right) {
-		super(null, env.t(boolean.class), new OCode[] { left, right });
+	public OFuncNameCode(OEnv env, String name, OMethodHandle mh) {
+		super(name, env.t(void.class));
+		this.env = env;
+		this.mh = mh;
 	}
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		Boolean b = (Boolean) this.getParams()[0].eval(env);
-		if (b) {
-			return this.getParams()[1].eval(env);
-		}
-		return b;
+		return OFuncType.newFuncCode(this.env, this.mh).eval(env);
 	}
 
 	@Override
 	public void generate(OGenerator gen) {
-		gen.pushAnd(this);
+		OFuncType.newFuncCode(this.env, this.mh).generate(gen);
+	}
+
+	@Override
+	public OCode newApplyCode(OEnv env, OCode... params) {
+		String name = this.getHandled();
+		return env.get(OFuncCallSite.class).findParamCode(env, name, params);
 	}
 
 }

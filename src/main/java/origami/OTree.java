@@ -39,7 +39,8 @@ public class OTree extends Tree<OTree> {
 
 	@Override
 	protected OTree dupImpl() {
-		OTree t = new OTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
+		OTree t = new OTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
+				getValue());
 		// t.rule = this.rule;
 		return t;
 	}

@@ -1,5 +1,7 @@
 package origami.code;
 
+import origami.ODebug;
+import origami.OEnv;
 import origami.nez.ast.SourcePosition;
 import origami.type.OType;
 import origami.util.Handled;
@@ -16,7 +18,7 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 
 	@Override
 	public T getHandled() {
-		return handled;
+		return this.handled;
 	}
 
 	protected void setHandled(T t) {
@@ -32,9 +34,8 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 		this.rtype = t;
 	}
 
-
 	private SourcePosition s = SourcePosition.UnknownPosition;
-	
+
 	@Override
 	public OCode setSourcePosition(SourcePosition s) {
 		if (this.s == SourcePosition.UnknownPosition) {
@@ -63,7 +64,7 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 		sb.append("(");
 		sb.append(this.getCodeName());
 		Object handled = this.getHandled();
-		if(handled != null) {
+		if (handled != null) {
 			sb.append("[");
 			StringCombinator.append(sb, handled);
 			sb.append("]");
@@ -71,10 +72,9 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 		for (OCode c : this.getParams()) {
 			sb.append(" ");
 			SourcePosition cs = c.getSourcePosition();
-			if(cs == this.getSourcePosition()) {
+			if (cs == this.getSourcePosition()) {
 				StringCombinator.append(sb, c);
-			}
-			else {
+			} else {
 				sb.append(this.getCodeName());
 				sb.append(":");
 				StringCombinator.append(sb, c.getType());
@@ -82,19 +82,72 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 		}
 		sb.append("):");
 		StringCombinator.append(sb, this.getType());
-//		if (this.getMatchCost() > 0) {
-//			sb.append("<");
-//			sb.append(this.getMatchCost());
-//			sb.append(">");
-//		}
+		// if (this.getMatchCost() > 0) {
+		// sb.append("<");
+		// sb.append(this.getMatchCost());
+		// sb.append(">");
+		// }
 	}
 
 	protected String getCodeName() {
 		return this.getClass().getSimpleName().replace("Code", "").toLowerCase();
 	}
 
-//	protected void strOutInner(StringBuilder sb) {
-//		// sb.append(" ");
-//	}
+	// protected void strOutInner(StringBuilder sb) {
+	// // sb.append(" ");
+	// }
+
+	/* common */
+
+	@Override
+	public int getMatchCost() {
+		return 0;
+	}
+
+	@Override
+	public boolean isUntyped() {
+		return this.getType().isUntyped();
+	}
+
+	@Override
+	public OCode retypeLocal() {
+		return this;
+	}
+
+	@Override
+	public OType valueType() {
+		return this.getType().valueType();
+	}
+
+	@Override
+	public boolean isDefined() {
+		return false;
+	}
+
+	@Override
+	public boolean hasReturnCode() {
+		return false;
+	}
+
+	@Override
+	public OCode thisCode() {
+		return this;
+	}
+
+	@Override
+	public OCode refineType(OEnv env, OType req) {
+		return this;
+	}
+
+	@Override
+	public void generate(OGenerator gen) {
+		ODebug.NotAvailable(this);
+	}
+
+	@Override
+	public Object eval(OEnv env) throws Throwable {
+		ODebug.NotAvailable(this);
+		return null;
+	}
 
 }

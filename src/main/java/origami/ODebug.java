@@ -122,7 +122,8 @@ public class ODebug extends OConsole {
 	private static int testCount = 0;
 	private static int passCount = 0;
 
-	public static final Method AssertMethod = OTypeUtils.loadMethod(ODebug.class, "assertTest", boolean.class, String.class);
+	public static final Method AssertMethod = OTypeUtils.loadMethod(ODebug.class, "assertTest", boolean.class,
+			String.class);
 
 	public static String assertMessage(OEnv env, SourcePosition s) {
 		return SourcePosition.formatErrorMessage(s, OFmt.assertion_failed);

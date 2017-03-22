@@ -23,7 +23,7 @@ import origami.OEnv;
 import origami.OEnv.OListMatcher;
 import origami.type.OType;
 
-public abstract class OParamCode<T> extends OSourceCode<T> implements CommonCode {
+public abstract class OParamCode<T> extends OSourceCode<T> {
 	protected final OCode[] nodes;
 
 	protected OParamCode(T handled, OType ret, OCode... nodes) {
@@ -37,16 +37,16 @@ public abstract class OParamCode<T> extends OSourceCode<T> implements CommonCode
 
 	@Override
 	public final OCode[] getParams() {
-		return nodes;
+		return this.nodes;
 	}
 
 	public final OCode getFirst() {
-		return nodes[0];
+		return this.nodes[0];
 	}
 
 	public final void boxParams(OEnv env) {
-		for (int i = 0; i < nodes.length; i++) {
-			nodes[i] = nodes[i].boxCode(env);
+		for (int i = 0; i < this.nodes.length; i++) {
+			this.nodes[i] = this.nodes[i].boxCode(env);
 		}
 	}
 
@@ -55,18 +55,18 @@ public abstract class OParamCode<T> extends OSourceCode<T> implements CommonCode
 		if (mat.isMatched(this)) {
 			l.add(this);
 		}
-		for (int i = 0; i < nodes.length; i++) {
-			nodes[i].find(l, mat);
+		for (int i = 0; i < this.nodes.length; i++) {
+			this.nodes[i].find(l, mat);
 		}
 	}
 
 	@Override
 	public OCode retypeAll(int[] c) {
-		for (int i = 0; i < nodes.length; i++) {
-			nodes[i] = nodes[i].retypeAll(c);
+		for (int i = 0; i < this.nodes.length; i++) {
+			this.nodes[i] = this.nodes[i].retypeAll(c);
 		}
 		if (this.isUntyped()) {
-			OCode node = retypeLocal();
+			OCode node = this.retypeLocal();
 			if (c != null && node.isUntyped()) {
 				c[0]++;
 			}

@@ -23,16 +23,16 @@ import origami.nez.parser.Parser;
 //import origami.nez.tool.LineTreeWriter;
 
 public class Oparse extends OCommand {
-	
+
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);		
+		options.set(ParserOption.ThrowingParserError, false);
 	}
 
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
-		
+
 		TreeWriter treeWriter = options.newInstance(TreeWriter.class);
 		treeWriter.init(options);
 		if (options.value(ParserOption.InlineGrammar, null) != null) {

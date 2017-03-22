@@ -170,7 +170,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	public default OType getDefaultParamType(OEnv env) {
 		return env.get(OUntypedType.class);
 	}
-	
+
 	public default OType[] parseParamTypes(OEnv env, String[] paramNames, Tree<?> params, OType defaultType) {
 		if (params == null) {
 			return OType.emptyTypes;

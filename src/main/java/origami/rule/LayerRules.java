@@ -179,7 +179,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 
 		public void addContextVariable(String name, OMethodHandle mh) {
 			OType[] p = mh.getThisParamTypes();
-			OMethodHandle cmh = super.getLocal(name, false, OMethodHandle.class, (d, c) -> d.matchThisParams(p) ? d : null);
+			OMethodHandle cmh = super.getLocal(name, false, OMethodHandle.class,
+					(d, c) -> d.matchThisParams(p) ? d : null);
 			if (cmh == null) {
 				ODebug.trace("adding context method: %s on %s", name, this);
 				cmh = new OContextMethod(this.getName(), mh);
@@ -382,7 +383,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 			super(null, null, null, null);
 		}
 
-		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry, String context) throws Throwable {
+		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
+				String context) throws Throwable {
 			OEnv env = OEnv.resolve(entry);
 			OContextGroup share = env.get(context, OContextGroup.class);
 			OContextVariableCallSite site = new OContextVariableCallSite(env, name, OCallSite.Virtual, type);
@@ -401,7 +403,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		// }
 
 		@Override
-		public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> mat) {
+		public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l,
+				OListMatcher<OMethodHandle> mat) {
 			OGlobalVariable g = env.get(name, OGlobalVariable.class);
 			if (g != null) {
 				l.add(new OGetter(g.getField()));
@@ -414,7 +417,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 			super(null, null, null, null);
 		}
 
-		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry, String context) throws Throwable {
+		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
+				String context) throws Throwable {
 			OEnv env = OEnv.resolve(entry);
 			OContextGroup share = env.get(context, OContextGroup.class);
 			OContextMethodCallSite site = new OContextMethodCallSite(env, name, OCallSite.Virtual, type);
@@ -427,7 +431,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 
 		@Override
-		public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> mat) {
+		public void listMatchedMethods(OEnv env, OType base, String name, List<OMethodHandle> l,
+				OListMatcher<OMethodHandle> mat) {
 			ODebug.TODO();
 		}
 

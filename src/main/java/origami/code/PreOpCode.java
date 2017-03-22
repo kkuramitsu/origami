@@ -1,7 +1,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.asm.code.DupCode;
 import origami.type.OType;
 
@@ -11,7 +10,7 @@ public class PreOpCode extends OParamCode<String> {
 	public PreOpCode(String handled, OType returnType, OCode left, OCode expr, OEnv env) {
 		super(handled, returnType);
 		OCode op = new OMultiCode(left.newBinaryCode(env, handled, expr), new DupCode(left));
-		this.setter = left.newAssignCode(env, left.getType(), op);
+		this.setter = left.newAssignCode(env, op);
 	}
 
 	@Override
@@ -21,7 +20,7 @@ public class PreOpCode extends OParamCode<String> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		return setter.eval(env);
+		return this.setter.eval(env);
 	}
 
 	public OCode setter() {

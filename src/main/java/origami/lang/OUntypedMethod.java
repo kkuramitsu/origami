@@ -34,9 +34,11 @@ public class OUntypedMethod extends OMethod {
 		this.definedEnv = env;
 	}
 
-	public static OMethodHandle newFunc(OEnv env, OAnno anno, OType ret, String name, String[] paramNames, OType[] paramTypes, OType[] exceptions, OCode body) {
+	public static OMethodHandle newFunc(OEnv env, OAnno anno, OType ret, String name, String[] paramNames,
+			OType[] paramTypes, OType[] exceptions, OCode body) {
 		if (hasUntypedParams(paramTypes)) {
-			OMethodDecl mdecl = new OMethodDecl(env.t(OUntypedType.class), anno, ret, name, paramNames, paramTypes, exceptions, body);
+			OMethodDecl mdecl = new OMethodDecl(env.t(OUntypedType.class), anno, ret, name, paramNames, paramTypes,
+					exceptions, body);
 			return new OUntypedMethod(env, mdecl);
 		} else {
 			OClassDeclType ct = OClassDeclType.currentType(env);

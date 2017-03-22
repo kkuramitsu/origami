@@ -23,13 +23,14 @@ public class Ccode extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		ODebug.TODO(this);
-//		GrammarWriter grammarWriter = options.newGrammarWriter(origami.main.tool.CParserGenerator.class);
-//		if (options.is("raw", false)) {
-//			grammarWriter.writeGrammar(options, options.getGrammar());
-//		} else {
-//			Parser p = options.newParser();
-//			grammarWriter.writeGrammar(options, p.getGrammar());
-//		}
+		// GrammarWriter grammarWriter =
+		// options.newGrammarWriter(origami.main.tool.CParserGenerator.class);
+		// if (options.is("raw", false)) {
+		// grammarWriter.writeGrammar(options, options.getGrammar());
+		// } else {
+		// Parser p = options.newParser();
+		// grammarWriter.writeGrammar(options, p.getGrammar());
+		// }
 	}
 
 }

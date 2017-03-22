@@ -3,7 +3,6 @@ package origami.code;
 import java.util.List;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.type.OType;
 
 public class OMultiCode extends OParamCode<Void> {
@@ -21,8 +20,8 @@ public class OMultiCode extends OParamCode<Void> {
 	}
 
 	public final boolean hasDefinedLocalVariables() {
-		for (int i = 0; i < nodes.length; i++) {
-			if (nodes[i].isDefined()) {
+		for (int i = 0; i < this.nodes.length; i++) {
+			if (this.nodes[i].isDefined()) {
 				return true;
 			}
 		}
@@ -45,7 +44,7 @@ public class OMultiCode extends OParamCode<Void> {
 	@Override
 	public boolean hasReturnCode() {
 		for (int i = 0; i < this.nodes.length; i++) {
-			if (nodes[i].hasReturnCode()) {
+			if (this.nodes[i].hasReturnCode()) {
 				return true;
 			}
 		}
@@ -54,12 +53,12 @@ public class OMultiCode extends OParamCode<Void> {
 
 	@Override
 	public OType getType() {
-		return nodes[nodes.length - 1].getType();
+		return this.nodes[this.nodes.length - 1].getType();
 	}
 
 	@Override
 	public OCode refineType(OEnv env, OType t) {
-		nodes[nodes.length - 1] = nodes[nodes.length - 1].refineType(env, t);
+		this.nodes[this.nodes.length - 1] = this.nodes[this.nodes.length - 1].refineType(env, t);
 		return this;
 	}
 
@@ -67,7 +66,7 @@ public class OMultiCode extends OParamCode<Void> {
 	public Object eval(OEnv env) throws Throwable {
 		Object evaled = null; // new OEmpty();
 		for (int i = 0; i < this.nodes.length; i++) {
-			evaled = nodes[i].eval(env);
+			evaled = this.nodes[i].eval(env);
 		}
 		return evaled;
 	}

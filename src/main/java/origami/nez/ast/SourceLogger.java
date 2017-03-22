@@ -5,7 +5,9 @@ import origami.OConsole;
 public interface SourceLogger {
 
 	public void reportError(SourcePosition s, LocaleFormat fmt, Object... args);
+
 	public void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args);
+
 	public void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args);
 
 	public static class SimpleSourceLogger implements SourceLogger {
@@ -23,15 +25,15 @@ public interface SourceLogger {
 		public final void reportError(SourcePosition s, LocaleFormat fmt, Object... args) {
 			report(Error, SourcePosition.formatErrorMessage(s, fmt, args));
 		}
-	
+
 		public final void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args) {
 			report(Warning, SourcePosition.formatWarningMessage(s, fmt, args));
 		}
-	
+
 		public final void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args) {
 			report(Notice, SourcePosition.formatNoticeMessage(s, fmt, args));
 		}
-	
+
 	}
 
 }

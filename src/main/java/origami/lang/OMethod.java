@@ -24,7 +24,7 @@ import java.lang.reflect.Modifier;
 import origami.OEnv;
 import origami.asm.OCallSite;
 import origami.asm.OClassLoader;
-import origami.code.FuncNameCode;
+import origami.code.OFuncNameCode;
 import origami.code.OCode;
 import origami.code.OMethodCode;
 import origami.ffi.OMutable;
@@ -143,7 +143,7 @@ public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeNa
 
 	@Override
 	public OCode nameCode(OEnv env, String name) {
-		return new FuncNameCode(env, name, this);
+		return new OFuncNameCode(env, name, this);
 	}
 
 	/* OTypeName */

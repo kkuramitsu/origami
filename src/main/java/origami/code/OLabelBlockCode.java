@@ -3,7 +3,6 @@ package origami.code;
 import java.util.Objects;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.asm.OrigamiBreakException;
 import origami.asm.OrigamiContinueException;
 import origami.type.OType;
@@ -36,12 +35,12 @@ public class OLabelBlockCode extends OParamCode<String> {
 
 	@Override
 	public OType getType() {
-		return thusCode().getType();
+		return this.thusCode().getType();
 	}
 
 	@Override
 	public OCode refineType(OEnv env, OType t) {
-		nodes[0] = thusCode().refineType(env, t);
+		this.nodes[0] = this.thusCode().refineType(env, t);
 		return this;
 	}
 
@@ -49,12 +48,12 @@ public class OLabelBlockCode extends OParamCode<String> {
 	public Object eval(OEnv env) throws Throwable {
 		while (true) {
 			try {
-				bodyCode().eval(env);
-				return thusCode();
+				this.bodyCode().eval(env);
+				return this.thusCode();
 			} catch (OrigamiContinueException e) {
 
 			} catch (OrigamiBreakException e) {
-				return thusCode();
+				return this.thusCode();
 			}
 		}
 	}

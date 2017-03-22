@@ -47,16 +47,15 @@ public abstract class OTypeSystem {
 	}
 
 	/* class loader */
-	
+
 	public final OClassLoader getClassLoader() {
 		return this.classLoader;
 	}
 
 	/* env */
-	
+
 	public abstract void init(OEnv env, SourcePosition s);
-	
-	
+
 	/* configuration */
 
 	protected OType createClassType(Class<?> c) {

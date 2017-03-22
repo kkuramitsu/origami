@@ -60,7 +60,8 @@ public class OClassLoader extends ClassLoader {
 		this.uncompiledMap.put(classname, cdecl);
 	}
 
-	public OClassDeclType newType(OEnv env, OAnno anno, String cname, OType[] paramTypes, OType superType, OType... interfaces) {
+	public OClassDeclType newType(OEnv env, OAnno anno, String cname, OType[] paramTypes, OType superType,
+			OType... interfaces) {
 		OClassDeclType t = new OClassDeclType(env, anno, cname, paramTypes, superType, interfaces);
 		addClassDecl(t.getDecl());
 		return t;
@@ -72,7 +73,8 @@ public class OClassLoader extends ClassLoader {
 	public OClassDecl currentClassDecl(OEnv env) {
 		if (currentDecl == null) {
 			String cname = "$C" + currentId++;
-			OClassDeclType t = newType(env, new OAnno("public,abstract"), cname, null, env.t(Object.class), env.t(OrigamiObject.class));
+			OClassDeclType t = newType(env, new OAnno("public,abstract"), cname, null, env.t(Object.class),
+					env.t(OrigamiObject.class));
 			this.currentDecl = t.getDecl();
 		}
 		return this.currentDecl;

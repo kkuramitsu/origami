@@ -18,7 +18,6 @@ package origami.code;
 
 import origami.ODebug;
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.lang.OLocalVariable;
 import origami.lang.OMethodDecl;
 import origami.nez.ast.Tree;
@@ -43,19 +42,14 @@ public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis,
 		return this.getHandled();
 	}
 
-	@Override
-	public void generate(OGenerator gen) {
-		ODebug.NotAvailable();
-	}
-
 	public OCode typeCheck(OEnv env, OType type) {
-		return typeCheck(env, type, this.getSyntaxTree());
+		return this.typeCheck(env, type, this.getSyntaxTree());
 	}
 
 	public OCode typeCheck(OEnv env0, OMethodDecl mdecl) {
 		// ODebug.trace("typing body: %s", mdecl);
 		OEnv env = env0.newEnv();
-		setFunctionContext(env, mdecl);
+		this.setFunctionContext(env, mdecl);
 		OType[] op = mdecl.getThisParamTypes();
 		String[] names = mdecl.getThisParamNames();
 		for (int i = 0; i < op.length; i++) {
@@ -67,11 +61,11 @@ public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis,
 		Tree<?> t = this.getSyntaxTree();
 		if (mdecl.returnType.isUntyped()) {
 			mdecl.returnType = new OVarType("return", mdecl.returnType);
-			typedCode = typeBlock(env, mdecl, t);
+			typedCode = this.typeBlock(env, mdecl, t);
 			ODebug.trace("varType=%s", mdecl.returnType);
 			mdecl.returnType = ((OVarType) mdecl.returnType).thisType();
 		} else {
-			typedCode = typeBlock(env, mdecl, t);
+			typedCode = this.typeBlock(env, mdecl, t);
 		}
 		// ODebug.trace("code %s : %s => %s", t, codeType, code);
 		ODebug.trace("typed method: %s", this);
@@ -79,8 +73,8 @@ public class OUntypedCode extends OParamCode<Tree<?>> implements SyntaxAnalysis,
 	}
 
 	private OCode typeBlock(OEnv env, OMethodDecl mdecl, Tree<?> t) {
-		OCode code = typeExprOrErrorCode(env, t);
-		code = typeCheck(env, mdecl.getReturnType(), code);
+		OCode code = this.typeExprOrErrorCode(env, t);
+		code = this.typeCheck(env, mdecl.getReturnType(), code);
 		if (!code.hasReturnCode()) {
 			code = new OReturnCode(env, code);
 		}

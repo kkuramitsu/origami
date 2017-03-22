@@ -37,7 +37,8 @@ public class CommonTree extends Tree<CommonTree> {
 
 	@Override
 	protected CommonTree dupImpl() {
-		return new CommonTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(), getValue());
+		return new CommonTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
+				getValue());
 	}
 
 }

@@ -201,6 +201,7 @@ public abstract class ParserCode<I> implements ParserExecutable {
 		}
 
 		protected OOption options;
+
 		@Override
 		public void init(OOption options) {
 			this.options = options;
@@ -212,7 +213,8 @@ public abstract class ParserCode<I> implements ParserExecutable {
 			options.verbose("ID\tPEG\tCount\tHit\tFail\tMean");
 			for (String key : this.memoPointMap.keySet()) {
 				MemoPoint p = this.memoPointMap.get(key);
-				options.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(), p.meanLength());
+				options.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(),
+						p.meanLength());
 			}
 			options.verbose("");
 		}

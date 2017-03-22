@@ -18,33 +18,29 @@ package origami.asm;
 
 import org.objectweb.asm.Label;
 
+import origami.code.OClassInitCode;
 import origami.code.OCode;
-import origami.util.OStackable;
 
-class OBlock implements OStackable<OBlock> {
-	OBlock onstack = null;
+public interface OBlock {
 
-	OBlock() {
+	public default boolean matchLabel(String label) {
+		return false;
 	}
 
-	@Override
-	public OBlock push(OBlock onstack) {
-		this.onstack = onstack;
-		return onstack;
+	public default OCode getBeforeCode(OCode code) {
+		return null;
 	}
 
-	@Override
-	public OBlock pop() {
-		return this.onstack;
+	public default OCode getAfterCode(OCode code) {
+		return null;
 	}
 
 }
 
-class OBreakBlock extends OBlock {
+class OBreakBlock implements OBlock {
 	final String name;
 	final Label startLabel;
 	final Label endLabel;
-	OBlock onstack = null;
 
 	OBreakBlock(OGeneratorAdapter mBuilder, String name) {
 		this.name = name;
@@ -52,50 +48,38 @@ class OBreakBlock extends OBlock {
 		this.endLabel = mBuilder.newLabel();
 	}
 
+	@Override
 	public boolean matchLabel(String label) {
 		if (label == null) {
 			return true;
 		}
-		return (name != null && name.equals(label));
+		return (this.name != null && this.name.equals(label));
 	}
 
 }
 
-class OContinueBlock extends OBreakBlock {
+class OBreakContinueBlock extends OBreakBlock {
 
-	OContinueBlock(OGeneratorAdapter mBuilder, String name) {
+	OBreakContinueBlock(OGeneratorAdapter mBuilder, String name) {
 		super(mBuilder, name);
 	}
 
 }
 
-class OAspectBlock extends OBlock {
-	OCode code;
+class OClassFieldInitBlock implements OBlock {
 
-	OAspectBlock(OCode code) {
-		this.code = code;
-	}
-
-	public void weave(OAsm asm) {
-		if (code != null) {
-			code.generate(asm);
-		}
-	}
-
-}
-
-class OFinallyBlock extends OAspectBlock {
-
-	OFinallyBlock(OCode code) {
-		super(code);
-	}
-
-}
-
-class OClassFieldInitBlock extends OAspectBlock {
+	private final OCode weaveCode;
 
 	OClassFieldInitBlock(OCode code) {
-		super(code);
+		this.weaveCode = code;
+	}
+
+	@Override
+	public OCode getAfterCode(OCode code) {
+		if (code instanceof OClassInitCode) {
+			return this.weaveCode;
+		}
+		return null;
 	}
 
 }

@@ -26,7 +26,6 @@ import java.util.HashMap;
 
 import origami.OConsole;
 
-
 public abstract class CommonWriter {
 	protected String fileName = null;
 	boolean firstLine = true;

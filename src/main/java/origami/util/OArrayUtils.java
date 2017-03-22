@@ -60,13 +60,15 @@ public interface OArrayUtils {
 	}
 
 	public default <T> T[] ltrim(T[] values) {
-		@SuppressWarnings("unchecked") T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
+		@SuppressWarnings("unchecked")
+		T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
 		System.arraycopy(values, 1, v, 0, v.length);
 		return v;
 	}
 
 	public default <T> T[] rtrim(T[] values) {
-		@SuppressWarnings("unchecked") T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
+		@SuppressWarnings("unchecked")
+		T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
 		System.arraycopy(values, 0, v, 0, v.length);
 		return v;
 	}

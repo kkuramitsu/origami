@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 
 public class OOrCode extends OParamCode<Void> {
 

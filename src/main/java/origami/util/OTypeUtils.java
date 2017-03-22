@@ -235,7 +235,8 @@ public class OTypeUtils {
 		return defined.equals(pattern);
 	}
 
-	public static void listMatchedMethods(OTypeSystem ts, Class<?> c, String name, List<OMethodHandle> l, OListMatcher<OMethodHandle> f) {
+	public static void listMatchedMethods(OTypeSystem ts, Class<?> c, String name, List<OMethodHandle> l,
+			OListMatcher<OMethodHandle> f) {
 		if (name.equals("<init>")) {
 			Constructor<?>[] constructors = c.getConstructors();
 			for (int i = 0; i < constructors.length; i++) {

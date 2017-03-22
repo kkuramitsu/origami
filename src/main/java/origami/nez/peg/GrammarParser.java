@@ -62,7 +62,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		this.grammar = grammar;
 		init(GrammarParser.class, new SyntaxRule());
 	}
-	
+
 	/**
 	 * NezParser
 	 */
@@ -72,7 +72,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	static {
 		Grammar grammar = new Grammar("nez");
 		OOption options = new OOption();
-		//options.setVerboseMode(false);
+		// options.setVerboseMode(false);
 		new NezGrammar().load(grammar, "Start", options);
 		// grammar.dump();
 		NezParser = grammar.newParser(options);
@@ -82,11 +82,11 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		Tree<?> t = NezParser.parse(s);
 		this.find(key(t)).accept(t, null);
 	}
-	
+
 	public class SyntaxRule implements ExpressionTransducer {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
-			//undefined(node);
+			// undefined(node);
 			return null;
 		}
 	}
@@ -96,11 +96,11 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	}
 
 	/* Expression */
-	
+
 	public Expression newExpression(Tree<?> node) throws IOException {
 		return this.find(key(node)).accept(node, null);
 	}
-	
+
 	public class _NonTerminal extends SyntaxRule {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
@@ -418,7 +418,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Local extends SyntaxRule {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
-			return new Expression.PSymbolScope(NezFunc.local, Symbol.unique(node.getText(_name, "")), newExpression(node.get(_expr)), node);
+			return new Expression.PSymbolScope(NezFunc.local, Symbol.unique(node.getText(_name, "")),
+					newExpression(node.get(_expr)), node);
 		}
 	}
 
@@ -526,14 +527,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	// return Expressions.newDispatch(inners, indexMap);
 	// }
 	// }
-	
+
 	/* nez construction */
-	
+
 	public class _Production extends SyntaxRule {
 		@Override
 		public Expression accept(Tree<?> node, Expression e) throws IOException {
 			Tree<?> nameNode = node.get(_name);
-			//boolean isPublic = node.get(_public, null) != null;
+			// boolean isPublic = node.get(_public, null) != null;
 			String name = nameNode.toText();
 			if (nameNode.is(_String)) {
 				name = Production.terminalName(name);
@@ -600,34 +601,33 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		}
 		return path;
 	}
-//
-//	public final static String extractFileName(String path) {
-//		int loc = path.lastIndexOf('/');
-//		if (loc > 0) {
-//			return path.substring(loc + 1);
-//		}
-//		loc = path.lastIndexOf('\\');
-//		if (loc > 0) {
-//			return path.substring(loc + 1);
-//		}
-//		return path;
-//	}
-//
-//	public final static String extractFileExtension(String path) {
-//		int loc = path.lastIndexOf('.');
-//		if (loc > 0) {
-//			return path.substring(loc + 1);
-//		}
-//		return path;
-//	}
-//
-//	public final static String changeFileExtension(String path, String ext) {
-//		int loc = path.lastIndexOf('.');
-//		if (loc > 0) {
-//			return path.substring(0, loc + 1) + ext;
-//		}
-//		return path + "." + ext;
-//	}
-
+	//
+	// public final static String extractFileName(String path) {
+	// int loc = path.lastIndexOf('/');
+	// if (loc > 0) {
+	// return path.substring(loc + 1);
+	// }
+	// loc = path.lastIndexOf('\\');
+	// if (loc > 0) {
+	// return path.substring(loc + 1);
+	// }
+	// return path;
+	// }
+	//
+	// public final static String extractFileExtension(String path) {
+	// int loc = path.lastIndexOf('.');
+	// if (loc > 0) {
+	// return path.substring(loc + 1);
+	// }
+	// return path;
+	// }
+	//
+	// public final static String changeFileExtension(String path, String ext) {
+	// int loc = path.lastIndexOf('.');
+	// if (loc > 0) {
+	// return path.substring(0, loc + 1) + ext;
+	// }
+	// return path + "." + ext;
+	// }
 
 }

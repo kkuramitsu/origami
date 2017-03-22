@@ -28,7 +28,7 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 	public NZ86Code(Grammar grammar, OOption options) {
 		super(grammar, options, new NZ86Instruction[1034]);
 	}
-	
+
 	List<NZ86Instruction> codeList() {
 		return this.codeList;
 	}
@@ -37,11 +37,10 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 		return -1;
 	}
 
-	
 	@Override
 	public <T> ParserContext<T> newContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		NZ86ParserContext<T> ctx = new NZ86ParserContext<>(s, pos, newTree, linkTree);
-		ctx.setTrap((TrapAction[])options.get(ParserOption.TrapActions));
+		ctx.setTrap((TrapAction[]) options.get(ParserOption.TrapActions));
 		int w = options.intValue(ParserOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
 			ctx.initMemoTable(w, this.getMemoPointSize());
@@ -94,6 +93,5 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 			}
 		}
 	}
-
 
 }

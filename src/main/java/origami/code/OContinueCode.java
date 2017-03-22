@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.OEnv;
-import origami.asm.OAsm;
 import origami.asm.OrigamiContinueException;
 import origami.code.OLabelBlockCode.OContinueLabel;
 
@@ -40,18 +39,18 @@ public class OContinueCode extends OJumpCode<String> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		if (nodes.length == 1) {
-			throw new OrigamiContinueException(nodes[0].eval(env));
+		if (this.nodes.length == 1) {
+			throw new OrigamiContinueException(this.nodes[0].eval(env));
 		}
 		throw new OrigamiContinueException();
 	}
 
 	public OCode hookCode() {
-		if (nodes.length == 1) {
-			OContinueLabel label = localEnv.get(OContinueLabel.class);
-			return label.newHookCode(localEnv, nodes[0]);
+		if (this.nodes.length == 1) {
+			OContinueLabel label = this.localEnv.get(OContinueLabel.class);
+			return label.newHookCode(this.localEnv, this.nodes[0]);
 		}
-		return new OEmptyCode(localEnv);
+		return new OEmptyCode(this.localEnv);
 	}
 
 	@Override

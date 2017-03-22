@@ -21,10 +21,11 @@ import origami.nez.ast.Symbol;
 
 public final class NZ86ParserContext<T> extends ParserContext<T> {
 
-//	public NZ86ParserContext(String s, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-//		super(s, newTree, linkTree);
-//		initVM();
-//	}
+	// public NZ86ParserContext(String s, TreeConstructor<T> newTree,
+	// TreeConnector<T> linkTree) {
+	// super(s, newTree, linkTree);
+	// initVM();
+	// }
 
 	public NZ86ParserContext(Source source, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		super(source, pos, newTree, linkTree);
@@ -32,7 +33,8 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 	}
 
 	@Override
-	public <E> NZ86ParserContext<E> newInstance(Source source, long pos, TreeConstructor<E> newTree, TreeConnector<E> linkTree) {
+	public <E> NZ86ParserContext<E> newInstance(Source source, long pos, TreeConstructor<E> newTree,
+			TreeConnector<E> linkTree) {
 		return new NZ86ParserContext<>(source, pos, newTree, linkTree);
 	}
 

@@ -49,7 +49,7 @@ public class Otest extends Oexample {
 			this.names = new String[prods.length];
 			this.enterCounts = new int[prods.length];
 			this.exitCounts = new int[prods.length];
-			options.add(ParserOption.TrapActions, new TrapAction[]{this.newEnterAction(), this.newExitAction()});
+			options.add(ParserOption.TrapActions, new TrapAction[] { this.newEnterAction(), this.newExitAction() });
 			int enterId = 0;
 			int exitId = 1;
 			int uid = 0;

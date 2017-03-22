@@ -16,32 +16,25 @@
 
 package origami;
 
-import java.lang.reflect.Method;
-
-import origami.asm.OAnno;
+import origami.code.OAssignCode;
 import origami.code.OCode;
-import origami.code.OReturnCode;
-import origami.lang.OClassDeclType;
-import origami.type.OType;
-import origami.util.OTypeUtils;
+import origami.util.OScriptUtils;
 
 public class AsmTest {
 
 	public Object eval(OEnv env, OCode code) throws Throwable {
-		OClassDeclType ct = OClassDeclType.currentType(env);
-		ct.addMethod(new OAnno("public,static"), code.getType(), "f", OType.emptyNames, OType.emptyTypes,
-				OType.emptyTypes, new OReturnCode(env, code));
-		ODebug.setDebug(true);
-		Class<?> c = ct.unwrap(env);
-		ODebug.setDebug(false);
-		Method m = OTypeUtils.loadMethod(c, "f");
-		return m.invoke(null);
+		return OScriptUtils.eval(env, code);
 	}
 
 	// public void testNull() throws Throwable {
 	// OEnv env = new OrigamiContext();
 	// assert this.eval(env, new ONullCode(env)) == null;
 	// }
+
+	public void testBool() throws Throwable {
+		OEnv env = new OrigamiContext();
+		assert this.eval(env, env.v(true)).equals(true);
+	}
 
 	public void testInt() throws Throwable {
 		OEnv env = new OrigamiContext();
@@ -56,6 +49,12 @@ public class AsmTest {
 	public void testString() throws Throwable {
 		OEnv env = new OrigamiContext();
 		assert this.eval(env, env.v("hoge")).equals("hoge");
+	}
+
+	public void testLocalVariable() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OAssignCode body = new OAssignCode(true, "v", env.v(1));
+		assert this.eval(env, body).equals(1);
 	}
 
 }
