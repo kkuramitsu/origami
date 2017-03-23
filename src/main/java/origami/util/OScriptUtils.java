@@ -26,6 +26,7 @@ import java.util.Set;
 import origami.asm.OAnno;
 import origami.code.OCode;
 import origami.code.OErrorCode;
+import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.ffi.OAlias;
 import origami.ffi.OCast;
@@ -226,8 +227,9 @@ public interface OScriptUtils {
 		return loadScriptFile(env, null, file);
 	}
 
-	public static Object eval(OEnv env, OCode code) throws Throwable {
+	public static Object eval(OEnv env, OCode... codes) throws Throwable {
 		OClassDeclType ct = OClassDeclType.currentType(env);
+		OCode code = codes.length == 0 ? codes[0] : new OMultiCode(codes);
 		ct.addMethod(new OAnno("public,static"), code.getType(), "f", OType.emptyNames, OType.emptyTypes,
 				OType.emptyTypes, new OReturnCode(env, code));
 		ODebug.setDebug(true);

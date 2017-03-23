@@ -21,16 +21,9 @@ import origami.lang.type.OType;
 
 public class OIfCode extends OParamCode<OEnv> {
 
-	public OIfCode(OEnv env, OCode cond, OCode then, OCode elsec) {
-		super(env, null, cond, then, elsec);
-	}
-
-	@Override
-	public boolean hasReturnCode() {
-		if (this.nodes.length == 2) {
-			return this.nodes[1].hasReturnCode() && this.nodes[2].hasReturnCode();
-		}
-		return false;
+	public OIfCode(OEnv env, OCode condCode, OCode thenCode, OCode elseCode) {
+		super(env, null, condCode, thenCode, elseCode);
+		this.retypeLocal();
 	}
 
 	public OCode condCode() {
@@ -43,6 +36,14 @@ public class OIfCode extends OParamCode<OEnv> {
 
 	public OCode elseCode() {
 		return this.nodes[2];
+	}
+
+	@Override
+	public boolean hasReturnCode() {
+		if (this.nodes.length == 2) {
+			return this.nodes[1].hasReturnCode() && this.nodes[2].hasReturnCode();
+		}
+		return false;
 	}
 
 	@Override

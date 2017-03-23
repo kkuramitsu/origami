@@ -17,7 +17,6 @@
 package origami.rule;
 
 import origami.asm.OAnno;
-import origami.code.OGetSizeCode;
 import origami.code.OAndCode;
 import origami.code.OArrayCode;
 import origami.code.OCastCode;
@@ -25,6 +24,7 @@ import origami.code.OCode;
 import origami.code.ODefaultValueCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
+import origami.code.OGetSizeCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
 import origami.code.OOrCode;
@@ -256,7 +256,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			OCode thenCode = ExpressionRules.this.typeExprOrErrorCode(env, t.get(_then));
 			OCode elseCode = t.has(_else) ? ExpressionRules.this.typeExprOrErrorCode(env, t.get(_else))
 					: new OEmptyCode(env);
-			return new OIfCode(env, condCode, thenCode, elseCode).retypeLocal();
+			return new OIfCode(env, condCode, thenCode, elseCode);
 		}
 	};
 

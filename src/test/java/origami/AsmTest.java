@@ -18,14 +18,16 @@ package origami;
 
 import origami.code.OAssignCode;
 import origami.code.OCode;
+import origami.code.OIfCode;
+import origami.code.ONameCode;
 import origami.code.ONullCode;
 import origami.lang.OEnv;
 import origami.util.OScriptUtils;
 
 public class AsmTest {
 
-	public Object eval(OEnv env, OCode code) throws Throwable {
-		return OScriptUtils.eval(env, code);
+	public Object eval(OEnv env, OCode... codes) throws Throwable {
+		return OScriptUtils.eval(env, codes);
 	}
 
 	public void testNull() throws Throwable {
@@ -56,6 +58,24 @@ public class AsmTest {
 	public void testLocalVariable() throws Throwable {
 		OEnv env = new OrigamiContext();
 		OAssignCode body = new OAssignCode(true, "v", env.v(1));
+		assert this.eval(env, body).equals(1);
+	}
+
+	public void testLocalAssign() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OAssignCode body = new OAssignCode(true, "v", env.v(1));
+		assert this.eval(env, body, new ONameCode("v", env.t(int.class))).equals(1);
+	}
+
+	public void testIf() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OIfCode body = new OIfCode(env, env.v(true), env.v(1), env.v(2));
+		assert this.eval(env, body).equals(1);
+	}
+
+	public void testIfElse() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OIfCode body = new OIfCode(env, env.v(false), env.v(2), env.v(1));
 		assert this.eval(env, body).equals(1);
 	}
 
