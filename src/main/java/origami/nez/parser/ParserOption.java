@@ -1,4 +1,4 @@
-package origami.main;
+package origami.nez.parser;
 
 import origami.util.OOption.Key;
 

@@ -26,6 +26,7 @@ import origami.OVersion;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserOption;
 import origami.nez.peg.Grammar;
 import origami.util.OConsole;
 import origami.util.ODebug;

@@ -18,6 +18,7 @@ package origami.main;
 
 import origami.OrigamiContext;
 import origami.nez.ast.SourcePosition;
+import origami.nez.parser.ParserOption;
 import origami.nez.peg.Grammar;
 import origami.util.ODebug;
 import origami.util.OOption;

@@ -18,7 +18,6 @@ package origami.nez.parser;
 
 import java.util.List;
 
-import origami.main.ParserOption;
 import origami.nez.ast.Source;
 import origami.nez.peg.Grammar;
 import origami.util.OOption;

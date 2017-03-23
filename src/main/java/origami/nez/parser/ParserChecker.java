@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import origami.main.ParserOption;
 import origami.nez.parser.pass.DispatchPass;
 import origami.nez.parser.pass.InlinePass;
 import origami.nez.parser.pass.NotCharPass;

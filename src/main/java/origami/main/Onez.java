@@ -22,7 +22,7 @@ import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.ParserSource;
 import origami.nez.parser.Parser;
-
+import origami.nez.parser.ParserOption;
 import origami.nez.peg.GrammarParser;
 import origami.util.OConsole;
 import origami.util.OOption;

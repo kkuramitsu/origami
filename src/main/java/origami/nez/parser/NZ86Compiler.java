@@ -19,7 +19,6 @@ package origami.nez.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.main.ParserOption;
 import origami.nez.parser.ParserCode.MemoPoint;
 import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;

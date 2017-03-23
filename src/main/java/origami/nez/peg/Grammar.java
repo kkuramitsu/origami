@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import origami.main.ParserOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
 import origami.nez.parser.ParserSource;
@@ -15,6 +14,7 @@ import origami.util.OConsole;
 import origami.util.OOption;
 import origami.util.StringCombinator;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserOption;
 
 public class Grammar extends AbstractList<Production> implements StringCombinator {
 

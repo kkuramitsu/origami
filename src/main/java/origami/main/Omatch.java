@@ -22,6 +22,7 @@ import origami.nez.ast.Source;
 import origami.nez.parser.ParserSource;
 import origami.util.OOption;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserOption;
 
 public class Omatch extends OCommand {
 	protected void initOption(OOption options) {

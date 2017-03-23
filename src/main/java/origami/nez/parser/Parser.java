@@ -18,7 +18,6 @@ package origami.nez.parser;
 
 import java.io.IOException;
 
-import origami.main.ParserOption;
 import origami.nez.ast.CommonTree;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Source;

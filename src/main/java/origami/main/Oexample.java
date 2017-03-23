@@ -25,6 +25,7 @@ import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.parser.Parser;
+import origami.nez.parser.ParserOption;
 import origami.nez.parser.ParserSource;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.GrammarParser;

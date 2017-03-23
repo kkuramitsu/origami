@@ -23,10 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import origami.main.ParserOption;
 import origami.nez.ast.Symbol;
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserCode;
+import origami.nez.parser.ParserOption;
 import origami.nez.parser.ParserCode.MemoPoint;
 import origami.nez.peg.Expression;
 import origami.nez.peg.ExpressionVisitor;

@@ -22,6 +22,7 @@ import origami.nez.parser.ParserSource;
 import origami.util.OOption;
 import origami.nez.parser.Parser;
 //import origami.nez.tool.LineTreeWriter;
+import origami.nez.parser.ParserOption;
 
 public class Oparse extends OCommand {
 
