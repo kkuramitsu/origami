@@ -18,6 +18,7 @@ package origami;
 
 import origami.code.OAssignCode;
 import origami.code.OCode;
+import origami.code.ONullCode;
 import origami.lang.OEnv;
 import origami.util.OScriptUtils;
 
@@ -27,10 +28,10 @@ public class AsmTest {
 		return OScriptUtils.eval(env, code);
 	}
 
-	// public void testNull() throws Throwable {
-	// OEnv env = new OrigamiContext();
-	// assert this.eval(env, new ONullCode(env)) == null;
-	// }
+	public void testNull() throws Throwable {
+		OEnv env = new OrigamiContext();
+		assert this.eval(env, new ONullCode(env)) == null;
+	}
 
 	public void testBool() throws Throwable {
 		OEnv env = new OrigamiContext();

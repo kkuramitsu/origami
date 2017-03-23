@@ -16,8 +16,6 @@
 
 package origami.lang.type;
 
-import origami.util.ODebug;
-
 public class OUntypedType extends OTypeSystemType {
 
 	OUntypedType(OTypeSystem ts) {
@@ -41,8 +39,7 @@ public class OUntypedType extends OTypeSystemType {
 
 	@Override
 	public void typeDesc(StringBuilder sb, int levelGeneric) {
-		ODebug.NotAvailable(this);
-		sb.append("Ljava.lang.Object;");
+		sb.append("Ljava/lang/Object;");
 	}
 
 }
