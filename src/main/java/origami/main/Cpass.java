@@ -16,6 +16,8 @@
 
 package origami.main;
 
+import origami.util.OOption;
+
 public class Cpass extends OCommand {
 
 	@Override

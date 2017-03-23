@@ -1,8 +1,8 @@
 package origami.code;
 
-import origami.rule.java.JavaSwitchCode;
-
 public interface OGenerator {
+
+	public void push(OCode node);
 
 	public void pushValue(OValueCode node);
 
@@ -44,8 +44,6 @@ public interface OGenerator {
 
 	public void pushTry(OTryCode code);
 
-	public void pushSwitch(JavaSwitchCode code);
-
 	public void pushReturn(OReturnCode node);
 
 	public void pushThrow(OThrowCode code);
@@ -69,6 +67,6 @@ public interface OGenerator {
 
 	public void pushWarning(OWarningCode node);
 
-	void pushJumpBefore(OJumpBeforeCode code);
+	public void pushJumpBefore(OJumpBeforeCode code);
 
 }

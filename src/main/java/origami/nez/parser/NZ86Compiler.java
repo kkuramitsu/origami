@@ -19,7 +19,6 @@ package origami.nez.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.parser.ParserCode.MemoPoint;
 import origami.nez.peg.Expression;
@@ -28,6 +27,7 @@ import origami.nez.peg.NezFunc;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
+import origami.util.OOption;
 import origami.util.OStringUtils;
 
 public class NZ86Compiler implements ParserCompiler {

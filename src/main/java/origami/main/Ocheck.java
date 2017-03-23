@@ -21,6 +21,7 @@ import origami.nez.ast.SourcePosition;
 import origami.nez.peg.Grammar;
 import origami.util.OConsole;
 import origami.util.ODebug;
+import origami.util.OOption;
 
 public class Ocheck extends Orun {
 	@Override

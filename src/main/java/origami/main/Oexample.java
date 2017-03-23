@@ -30,11 +30,12 @@ import origami.nez.peg.Grammar;
 import origami.nez.peg.GrammarParser;
 import origami.util.OConsole;
 import origami.util.ODebug;
+import origami.util.OOption;
 
 public class Oexample extends OCommand {
 	HashMap<String, Parser> parserMap = new HashMap<>();
 	HashMap<String, Long> timeMap = new HashMap<>();
-	TreeWriter treeWriter = null;
+	OTreeWriter treeWriter = null;
 
 	Coverage cov = null;
 	String desc = "";
@@ -52,7 +53,7 @@ public class Oexample extends OCommand {
 	public void exec(OOption options) throws Throwable {
 		Grammar g = this.getGrammar(options);
 		g.dump();
-		this.treeWriter = options.newInstance(TreeWriter.class);
+		this.treeWriter = options.newInstance(OTreeWriter.class);
 		if (options.is(ParserOption.Coverage, false)) {
 			this.cov = new Coverage();
 			this.cov.init(options, g);

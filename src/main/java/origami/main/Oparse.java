@@ -19,6 +19,7 @@ package origami.main;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.ParserSource;
+import origami.util.OOption;
 import origami.nez.parser.Parser;
 //import origami.nez.tool.LineTreeWriter;
 
@@ -33,7 +34,7 @@ public class Oparse extends OCommand {
 	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
 
-		TreeWriter treeWriter = options.newInstance(TreeWriter.class);
+		OTreeWriter treeWriter = options.newInstance(OTreeWriter.class);
 		treeWriter.init(options);
 		if (options.value(ParserOption.InlineGrammar, null) != null) {
 			Source input = ParserSource.newStringSource(options.value(ParserOption.InlineGrammar, null));

@@ -18,10 +18,10 @@ package origami.nez.parser;
 
 import java.util.List;
 
-import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.ast.Source;
 import origami.nez.peg.Grammar;
+import origami.util.OOption;
 
 public class NZ86Code extends ParserCode<NZ86Instruction> {
 

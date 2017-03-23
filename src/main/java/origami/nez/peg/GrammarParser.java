@@ -19,13 +19,13 @@ package origami.nez.peg;
 import java.io.IOException;
 import java.util.List;
 
-import origami.main.OOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourceLogger;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
 import origami.nez.ast.TreeVisitorMap;
 import origami.nez.parser.ParserSource;
+import origami.util.OOption;
 import origami.util.OStringUtils;
 import origami.nez.parser.Parser;
 

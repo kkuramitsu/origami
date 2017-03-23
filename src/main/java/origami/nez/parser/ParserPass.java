@@ -16,9 +16,9 @@
 
 package origami.nez.parser;
 
-import origami.main.OOption;
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
+import origami.util.OOption;
 
 public abstract class ParserPass extends Expression.Rewriter<Void> {
 	public abstract Grammar perform(Grammar g, OOption options);

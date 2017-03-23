@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.main;
+package origami.util;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -24,70 +24,127 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import origami.util.OConsole;
+import origami.nez.ast.LocaleFormat;
 
 public abstract class CommonWriter {
 	protected String fileName = null;
-	boolean firstLine = true;
 	private PrintStream out;
 
 	public CommonWriter() {
 		this.out = System.out;
-		this.firstLine = true;
+		this.lastChar = '\n';
+		this.isColor = true;
 	}
+
+	/* IO management */
 
 	protected void open(String path) throws IOException {
-		close();
+		this.close();
 		if (path != null) {
 			this.out = new PrintStream(new FileOutputStream(path));
+			this.isColor = false;
 		} else {
 			this.out = System.out;
+			this.isColor = true;
 		}
-		this.firstLine = true;
-	}
-
-	public void setPath(String path) {
-
-	}
-
-	public final void print(String text) {
-		out.print(text);
-		this.firstLine = false;
-	}
-
-	public final void printf(String fmt, Object... args) {
-		out.printf(fmt, args);
-		this.firstLine = false;
-	}
-
-	public final void flush() {
-		out.flush();
+		this.lastChar = '\n';
 	}
 
 	public final void close() {
-		L();
-		if (out != System.out) {
-			out.close();
+		this.println();
+		if (this.out != System.out) {
+			this.out.close();
 		}
 	}
 
+	public final void flush() {
+		this.out.flush();
+	}
+
+	/* print */
+
+	private char lastChar = '\n';
+
+	public final void print(String text) {
+		this.out.print(text);
+		if (text.length() > 0) {
+			this.lastChar = text.charAt(text.length() - 1);
+		}
+	}
+
+	public final void println() {
+		if (this.lastChar == '\n') {
+			return;
+		}
+		this.out.println();
+		this.lastChar = '\n';
+	}
+
+	public final void printf(String fmt, Object... args) {
+		this.print(StringCombinator.format(fmt, args));
+	}
+
+	public final void printf(LocaleFormat fmt, Object... args) {
+		this.print(StringCombinator.format(fmt, args));
+	}
+
+	public final void println(String fmt, Object... args) {
+		this.printf(fmt, args);
+		this.println();
+	}
+
+	public final void println(LocaleFormat fmt, Object... args) {
+		this.printf(fmt, args);
+		this.println();
+	}
+
+	public final void p(Object text) {
+		this.print(text.toString());
+	}
+
+	public final void p(String fmt, Object... args) {
+		this.printf(fmt, args);
+	}
+
+	protected final void pSpace() { // space
+		if (this.lastChar == '\n' || this.lastChar == ' ' || this.lastChar == '\t') {
+			return;
+		}
+		this.print(" ");
+	}
+
+	/* symbol management */
+
 	private HashMap<String, String> symMap = new HashMap<>();
 
-	protected final String Symbol(String key) {
-		return _symbol(key, key);
+	protected final String s(String key) {
+		return this.s(key, key);
 	}
 
-	protected final String _symbol(String key, String def) {
-		String s = symMap.get(key);
-		return (s == null) ? def : s;
+	protected final String s(String key, String def) {
+		return this.symMap.getOrDefault(key, def);
 	}
 
-	public final void setSymbol(String key, String s) {
-		symMap.put(key, s);
+	public final void defineSymbol(String key, String s) {
+		this.symMap.put(key, s);
 	}
 
-	int IndentLevel = 0;
-	String currentIndentString = "";
+	/* color */
+
+	private boolean isColor = true;
+
+	public final String bold(String s) {
+		return this.isColor ? OConsole.bold(s) : s;
+	}
+
+	public final String red(String s) {
+		return this.isColor ? OConsole.color(OConsole.Red, s) : s;
+	}
+
+	/* indent management */
+
+	private int IndentLevel = 0;
+	private String currentIndentString = "";
 
 	public final void incIndent() {
 		this.IndentLevel = this.IndentLevel + 1;
@@ -100,8 +157,8 @@ public abstract class CommonWriter {
 		this.currentIndentString = null;
 	}
 
-	private final String _indent() {
-		String tab = _symbol("\t", "   ");
+	private final String sIndent() {
+		String tab = this.s("\t", "   ");
 		if (this.currentIndentString == null) {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < this.IndentLevel; ++i) {
@@ -112,60 +169,44 @@ public abstract class CommonWriter {
 		return this.currentIndentString;
 	}
 
-	public final void L() {
-		if (this.firstLine) {
-			this.firstLine = false;
-			return;
-		}
-		out.println();
-	}
-
 	public final void L(Object text) {
-		L();
-		print(_indent());
-		print(text.toString());
+		this.println();
+		this.print(this.sIndent());
+		this.print(text.toString());
 	}
 
 	public final void L(String fmt, Object... args) {
-		L();
-		print(_indent());
-		printf(fmt, args);
+		this.println();
+		this.print(this.sIndent());
+		this.printf(fmt, args);
 	}
 
-	public final void _L(Object text) {
-		print(text.toString());
+	public final void pBegin() {
+		this.pBegin(this.s("{"));
 	}
 
-	public final void _L(String fmt, Object... args) {
-		printf(fmt, args);
-	}
-
-	public final void Begin() {
-		Begin(Symbol("{"));
-	}
-
-	public final void Begin(String s) {
-		print(s);
+	public final void pBegin(String s) {
+		this.print(s);
 		this.incIndent();
 	}
 
-	public final void End() {
-		End(Symbol("}"));
+	public final void pEnd() {
+		this.pEnd(this.s("}"));
 	}
 
-	public final void End(String s) {
+	public final void pEnd(String s) {
 		this.decIndent();
 		if (!(s == null || s.length() == 0)) {
-			L(s);
+			this.L(s);
 		}
 	}
 
-	public void Comment(String fmt, Object... args) {
+	public void pComment(String fmt, Object... args) {
 
 	}
 
 	public void Verbose(String fmt, Object... args) {
-		Comment(fmt, args);
+		this.pComment(fmt, args);
 	}
 
 	// public final void writeIndent(String fmt, Object... args) {
@@ -193,10 +234,10 @@ public abstract class CommonWriter {
 	// }
 
 	public final void importFileContent(String path) {
-		importFileContent(path, null);
+		this.importResourceContent(path);
 	}
 
-	public final void importFileContent(String path, String[] re) {
+	public final void importResourceContent(String path, String... stringReplacements) {
 		try {
 			if (!path.startsWith("/")) {
 				path = "/nez/include/" + path;
@@ -205,12 +246,10 @@ public abstract class CommonWriter {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
-				if (re != null) {
-					for (int i = 0; i < re.length; i += 2) {
-						line = line.replace(re[i], re[i + 1]);
-					}
+				for (int i = 0; i < stringReplacements.length; i += 2) {
+					line = line.replace(stringReplacements[i], stringReplacements[i + 1]);
 				}
-				L(line);
+				this.L(line);
 			}
 			reader.close();
 		} catch (Exception e) {
@@ -218,23 +257,14 @@ public abstract class CommonWriter {
 		}
 	}
 
-	public final void showFileContent(String path) {
-		importFileContent(path, null);
-	}
-
-	public final void showFileContent(String path, String[] re) {
+	public final void showResourceContent(String path, String... stringReplacements) {
 		try {
-			if (!path.startsWith("/")) {
-				path = "/nez/include/" + path;
-			}
 			InputStream s = CommonWriter.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
-				if (re != null) {
-					for (int i = 0; i < re.length; i += 2) {
-						line = line.replace(re[i], re[i + 1]);
-					}
+				for (int i = 0; i < stringReplacements.length; i += 2) {
+					line = line.replace(stringReplacements[i], stringReplacements[i + 1]);
 				}
 				OConsole.println(line);
 			}
@@ -244,24 +274,19 @@ public abstract class CommonWriter {
 		}
 	}
 
-	public final void showManual(String path, String[] re) {
-		OConsole.println("Here are some useful commands:");
-		showFileContent(path, re);
-	}
-
+	// //
+	// protected final void Verbose(String stmt) {
+	// // if (strategy.VerboseCode) {
+	// // LineComment(stmt);
+	// // }
+	// }
 	//
-	protected final void Verbose(String stmt) {
-		// if (strategy.VerboseCode) {
-		// LineComment(stmt);
-		// }
-	}
-
-	protected String _LineComment() {
-		return "//";
-	}
-
-	protected void LineComment(String stmt) {
-		L(_LineComment() + " " + stmt);
-	}
+	// protected String _LineComment() {
+	// return "//";
+	// }
+	//
+	// protected void LineComment(String stmt) {
+	// this.L(this._LineComment() + " " + stmt);
+	// }
 
 }

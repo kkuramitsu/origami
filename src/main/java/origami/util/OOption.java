@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.main;
+package origami.util;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
@@ -22,8 +22,6 @@ import java.util.HashMap;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.SourceLogger;
 import origami.nez.ast.SourcePosition;
-import origami.util.OConsole;
-import origami.util.StringCombinator;
 
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();

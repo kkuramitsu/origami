@@ -23,7 +23,6 @@ import origami.asm.code.DupCode;
 import origami.asm.code.LoadArgCode;
 import origami.asm.code.LoadThisCode;
 import origami.asm.code.OAsmCode;
-import origami.code.OGetSizeCode;
 import origami.code.OAndCode;
 import origami.code.OArrayCode;
 import origami.code.OAssignCode;
@@ -37,6 +36,7 @@ import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OGenerator;
 import origami.code.OGetIndexCode;
+import origami.code.OGetSizeCode;
 import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
@@ -48,6 +48,7 @@ import origami.code.ONameCode;
 import origami.code.ONotCode;
 import origami.code.OOrCode;
 import origami.code.OReturnCode;
+import origami.code.OSetIndexCode;
 import origami.code.OSetterCode;
 import origami.code.OSugarCode;
 import origami.code.OThrowCode;
@@ -56,7 +57,6 @@ import origami.code.OTryCode.CatchCode;
 import origami.code.OValueCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
-import origami.code.OSetIndexCode;
 import origami.lang.OClassDecl;
 import origami.lang.OEnv;
 import origami.lang.OField;
@@ -525,7 +525,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 	// }
 	// }
 
-	private void push(OCode node) {
+	@Override
+	public void push(OCode node) {
 		this.push(node.getType(), node);
 	}
 
@@ -859,7 +860,6 @@ public class OAsm implements OGenerator, OArrayUtils {
 		}
 	}
 
-	@Override
 	public void pushSwitch(JavaSwitchCode code) {
 		OBreakBlock block = this.mBuilder.pushBlock(new OBreakBlock(this.mBuilder, null));
 		Label condLabel = this.mBuilder.newLabel();

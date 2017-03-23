@@ -1,7 +1,7 @@
 package origami.nez.parser;
 
-import origami.main.OOption;
 import origami.nez.peg.Grammar;
+import origami.util.OOption;
 
 public interface ParserCompiler extends OOption.OptionalFactory<ParserCompiler> {
 	public ParserExecutable compile(Grammar grammar);

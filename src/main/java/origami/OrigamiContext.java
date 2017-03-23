@@ -21,10 +21,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import origami.code.OCode;
+import origami.code.OCodeWriter;
 import origami.code.OErrorCode;
 import origami.lang.OEnv;
 import origami.lang.type.OTypeSystem;
-import origami.main.OOption;
+import origami.main.ParserOption;
 import origami.nez.ast.Source;
 import origami.nez.ast.SourcePosition;
 import origami.nez.ast.Tree;
@@ -36,50 +37,66 @@ import origami.rule.OrigamiTypeSystem;
 import origami.rule.TypeAnalysis;
 import origami.util.OConsole;
 import origami.util.ODebug;
+import origami.util.OOption;
 import origami.util.OScriptUtils;
 import origami.util.OTree;
-import origami.util.StringCombinator;
 
 public class OrigamiContext extends OEnv.OBaseEnv {
+	final OOption options;
 	final OrigamiRuntime runtime = new OrigamiRuntime();
 
+	OrigamiContext(OTypeSystem ts, OOption options) {
+		super(ts == null ? options.newInstance(OrigamiTypeSystem.class) : ts);
+		this.getTypeSystem().init(this, SourcePosition.UnknownPosition);
+		this.options = options;
+	}
+
 	public OrigamiContext() {
-		this(new OrigamiTypeSystem());
+		this((OTypeSystem) null);
 	}
 
 	public OrigamiContext(OTypeSystem ts) {
-		super(ts);
-		ts.init(this, SourcePosition.UnknownPosition);
-	}
-
-	public OrigamiContext(Grammar grammar, OTypeSystem ts) {
-		this(ts);
-		Parser p = grammar.newParser();
-		this.add(Parser.class, p);
-		this.add(Grammar.class, grammar);
+		this(ts, new OOption());
 	}
 
 	public OrigamiContext(Grammar grammar) throws ClassNotFoundException {
-		this(grammar, loadTypeSystem(grammar, null));
+		this(grammar, new OOption());
 	}
 
 	public OrigamiContext(Grammar grammar, OOption options) throws ClassNotFoundException {
-		this(grammar, loadTypeSystem(grammar, options));
+		this(loadTypeSystem(grammar), options);
+		this.setGrammar(grammar);
 	}
 
-	static OTypeSystem loadTypeSystem(Grammar g, OOption options) throws ClassNotFoundException {
+	static OTypeSystem loadTypeSystem(Grammar g) throws ClassNotFoundException {
 		Production pp = g.getProduction("ORIGAMI");
 		if (pp != null) {
 			String cpath = pp.getExpression().toString().replaceAll("'", "");
 			// ODebug.trace("ORIGAMI=%s", cpath);
 			try {
 				return (OTypeSystem) Class.forName(cpath).newInstance();
+			} catch (ClassNotFoundException e) {
+				throw e;
 			} catch (Exception e) {
-				ODebug.traceException(e);
+				OConsole.exit(1, e);
 			}
-			// return null;
 		}
-		return new OrigamiTypeSystem();
+		return null;
+	}
+
+	public OrigamiContext(OOption options) throws IOException, ClassNotFoundException {
+		this(loadGrammar(options), options);
+	}
+
+	static Grammar loadGrammar(OOption options) throws IOException {
+		String file = options.value(ParserOption.GrammarFile, "iroha.nez");
+		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
+	}
+
+	public void setGrammar(Grammar grammar) {
+		Parser p = grammar.newParser();
+		this.add(Parser.class, p);
+		this.add(Grammar.class, grammar);
 	}
 
 	public void importClass(Class<?> c) throws IOException {
@@ -139,6 +156,7 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 
 	class OrigamiRuntime extends OConsole implements OScriptUtils, TypeAnalysis {
 		OTree defaultTree = new OTree();
+		OCodeWriter eval = new OCodeWriter();
 
 		public void load(OEnv env, Source sc) throws Throwable {
 			Parser p = env.get(Parser.class);
@@ -170,19 +188,21 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 					endColor();
 				}
 				OCode code = this.typeExpr(env, node);
-				env.add(LocalVariables.class, new LocalVariables());
-				Object value = code.eval(env);
-				if (!code.getType().is(void.class)) {
-					String t2 = code.getType().toString();
-					StringBuilder sb = new StringBuilder();
-					sb.append(color(Gray, " => "));
-					StringCombinator.appendQuoted(sb, value);
-					beginColor(sb, Cyan);
-					sb.append(" :");
-					StringCombinator.append(sb, t2);
-					endColor(sb);
-					println(sb.toString());
-				}
+				// env.add(LocalVariables.class, new LocalVariables());
+				OCodeWriter eval = OrigamiContext.this.options.newInstance(OCodeWriter.class);
+				eval.writeln(env, code);
+				// Object value = code.eval(env);
+				// if (!code.getType().is(void.class)) {
+				// String t2 = code.getType().toString();
+				// StringBuilder sb = new StringBuilder();
+				// sb.append(color(Gray, " => "));
+				// StringCombinator.appendQuoted(sb, value);
+				// beginColor(sb, Cyan);
+				// sb.append(" :");
+				// StringCombinator.append(sb, t2);
+				// endColor(sb);
+				// println(sb.toString());
+				// }
 				return true;
 			} catch (Throwable e) {
 				OrigamiContext.this.showThrowable(e);

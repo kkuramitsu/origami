@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import origami.nez.ast.Source;
 import origami.nez.parser.ParserSource;
+import origami.util.OOption;
 import origami.nez.parser.Parser;
 
 public class Omatch extends OCommand {

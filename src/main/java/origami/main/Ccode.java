@@ -17,6 +17,7 @@
 package origami.main;
 
 import origami.util.ODebug;
+import origami.util.OOption;
 
 public class Ccode extends OCommand {
 

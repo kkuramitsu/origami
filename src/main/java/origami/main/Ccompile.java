@@ -18,6 +18,7 @@ package origami.main;
 
 import origami.nez.parser.Parser;
 import origami.nez.parser.ParserCode;
+import origami.util.OOption;
 
 public class Ccompile extends OCommand {
 	@Override

@@ -25,6 +25,7 @@ import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.util.OConsole;
+import origami.util.OOption;
 
 public class Otest extends Oexample {
 

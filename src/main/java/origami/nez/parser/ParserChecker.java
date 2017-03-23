@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import origami.main.OOption;
 import origami.main.ParserOption;
 import origami.nez.parser.pass.DispatchPass;
 import origami.nez.parser.pass.InlinePass;
@@ -31,6 +30,7 @@ import origami.nez.peg.Expression;
 import origami.nez.peg.Expression.PNonTerminal;
 import origami.nez.peg.Expression.PTrap;
 import origami.util.ODebug;
+import origami.util.OOption;
 import origami.util.OStringUtils;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.GrammarFlag;

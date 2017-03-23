@@ -23,14 +23,15 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import origami.OVersion;
-import origami.main.OOption.Key;
 import origami.nez.ast.LocaleFormat;
 import origami.nez.ast.Tree;
 import origami.nez.parser.Parser;
 import origami.nez.peg.Grammar;
 import origami.util.OConsole;
 import origami.util.ODebug;
+import origami.util.OOption;
 import origami.util.StringCombinator;
+import origami.util.OOption.Key;
 
 public abstract class OCommand extends OConsole {
 
@@ -199,7 +200,7 @@ public abstract class OCommand extends OConsole {
 		endColor();
 	}
 
-	public final static void display(TreeWriter w, Tree<?> t) {
+	public final static void display(OTreeWriter w, Tree<?> t) {
 		beginColor(Blue);
 		println("-----------");
 		w.writeln(t);

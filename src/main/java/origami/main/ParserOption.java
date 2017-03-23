@@ -1,6 +1,6 @@
 package origami.main;
 
-import origami.main.OOption.Key;
+import origami.util.OOption.Key;
 
 public enum ParserOption implements Key {
 	WindowSize, Pass, Unoptimized, PassPath, StrictChecker, TrapActions, //

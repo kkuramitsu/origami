@@ -19,6 +19,7 @@ package origami.main;
 import origami.nez.ast.Source;
 import origami.nez.ast.Tree;
 import origami.nez.parser.ParserSource;
+import origami.util.OOption;
 import origami.nez.parser.Parser;
 
 public class Obench extends OCommand {

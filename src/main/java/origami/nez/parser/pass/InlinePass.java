@@ -19,8 +19,6 @@ package origami.nez.parser.pass;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import origami.main.OOption;
-
 import origami.nez.peg.Expression;
 import origami.nez.peg.Expression.PAnd;
 import origami.nez.peg.Expression.PAny;
@@ -48,6 +46,7 @@ import origami.nez.peg.Expression.PSymbolScope;
 import origami.nez.peg.Expression.PTag;
 import origami.nez.peg.Expression.PTrap;
 import origami.nez.peg.Expression.PTree;
+import origami.util.OOption;
 import origami.nez.peg.ExpressionVisitor;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;

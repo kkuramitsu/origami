@@ -33,42 +33,42 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.addType("$string", "String[]");
 
 		this.addType("memo", "int");
-		this.addType(_set(), "boolean[]");
-		this.addType(_index(), "byte[]");
-		this.addType(_temp(), "boolean");
-		this.addType(_pos(), "int");
-		this.addType(_tree(), "T");
-		this.addType(_log(), "int");
-		this.addType(_table(), "int");
-		this.addType(_state(), "ParserContext<T>");
+		this.addType(this._set(), "boolean[]");
+		this.addType(this._index(), "byte[]");
+		this.addType(this._temp(), "boolean");
+		this.addType(this._pos(), "int");
+		this.addType(this._tree(), "T");
+		this.addType(this._log(), "int");
+		this.addType(this._table(), "int");
+		this.addType(this._state(), "ParserContext<T>");
 	}
 
 	@Override
 	protected void generateHeader(Grammar g) {
-		Statement("import java.io.IOException");
-		Statement("import java.nio.charset.StandardCharsets");
-		Statement("import java.nio.file.*");
-		BeginDecl("public class " + _basename());
-		importFileContent("java-parser-runtime.txt");
+		this.Statement("import java.io.IOException");
+		this.Statement("import java.nio.charset.StandardCharsets");
+		this.Statement("import java.nio.file.*");
+		this.BeginDecl("public class " + this._basename());
+		this.importFileContent("java-parser-runtime.txt");
 	}
 
 	@Override
 	protected void generateFooter(Grammar g) {
-		BeginDecl("public final static void main(String[] a)");
+		this.BeginDecl("public final static void main(String[] a)");
 		{
-			Statement("jnez_main(a)");
+			this.Statement("jnez_main(a)");
 			// Statement("SimpleTree t = parse(a[0])");
 			// Statement("System.out.println(t)");
 		}
-		EndDecl();
-		BeginDecl("public final static boolean start(ParserContext<?> c)");
+		this.EndDecl();
+		this.BeginDecl("public final static boolean start(ParserContext<?> c)");
 		{
-			Return(_funccall(_funcname(g.getStartProduction())));
+			this.Return(this._funccall(this._funcname(g.getStartProduction())));
 		}
-		EndDecl();
-		EndDecl(); // end of class
-		L("/*EOF*/");
-		this.showManual("jnez-man.txt", new String[] { "$cmd$", _basename() });
+		this.EndDecl();
+		this.EndDecl(); // end of class
+		this.L("/*EOF*/");
+		this.showResourceContent("jnez-man.txt", new String[] { "$cmd$", this._basename() });
 	}
 
 	@Override

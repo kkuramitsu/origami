@@ -16,13 +16,13 @@
 
 package origami.nez.parser.pass;
 
-import origami.main.OOption;
 import origami.nez.ast.SourcePosition;
 
 import origami.nez.peg.Expression;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
+import origami.util.OOption;
 
 public class TreeCheckerPass extends CommonPass {
 

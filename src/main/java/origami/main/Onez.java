@@ -25,6 +25,7 @@ import origami.nez.parser.Parser;
 
 import origami.nez.peg.GrammarParser;
 import origami.util.OConsole;
+import origami.util.OOption;
 import origami.nez.peg.Grammar;
 
 public class Onez extends OCommand {
@@ -47,7 +48,7 @@ public class Onez extends OCommand {
 
 		Grammar g = getGrammar(options);
 		Parser p = newParser(g, options);
-		TreeWriter tw = options.newInstance(TreeWriter.class);
+		OTreeWriter tw = options.newInstance(OTreeWriter.class);
 		String prompt = getPrompt(g);
 		String input = null;
 		while ((input = this.readMulti(prompt)) != null) {

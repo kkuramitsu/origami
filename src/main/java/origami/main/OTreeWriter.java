@@ -14,18 +14,37 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.util;
+package origami.main;
 
-public class AbstractHandled<T> implements Handled<T> {
-	protected final T handled;
+import origami.nez.ast.Tree;
+import origami.util.CommonWriter;
+import origami.util.OOption;
 
-	protected AbstractHandled(T handled) {
-		this.handled = handled;
+public class OTreeWriter extends CommonWriter implements OOption.OptionalFactory<OTreeWriter> {
+
+	@Override
+	public Class<?> entryClass() {
+		return OTreeWriter.class;
 	}
 
 	@Override
-	public T getHandled() {
-		return handled;
+	public OTreeWriter clone() {
+		return new OTreeWriter();
+	}
+
+	@Override
+	public void init(OOption options) {
+
+	}
+
+	public void write(Tree<?> t) {
+		this.print(t.toString());
+	}
+
+	public void writeln(Tree<?> t) {
+		this.write(t);
+		this.println();
+		this.flush();
 	}
 
 }

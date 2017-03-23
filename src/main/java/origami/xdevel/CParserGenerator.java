@@ -28,14 +28,14 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	protected void initLanguageSpec() {
-		SupportedRange = true;
-		SupportedMatch2 = true;
-		SupportedMatch3 = true;
-		SupportedMatch4 = true;
-		SupportedMatch5 = true;
-		SupportedMatch6 = true;
-		SupportedMatch7 = true;
-		SupportedMatch8 = true;
+		this.SupportedRange = true;
+		this.SupportedMatch2 = true;
+		this.SupportedMatch3 = true;
+		this.SupportedMatch4 = true;
+		this.SupportedMatch5 = true;
+		this.SupportedMatch6 = true;
+		this.SupportedMatch7 = true;
+		this.SupportedMatch8 = true;
 
 		this.addType("$parse", "int");
 		this.addType("$tag", "int");
@@ -44,7 +44,7 @@ public class CParserGenerator extends ParserGenerator {
 		this.addType("$arity", "int");
 		this.addType("$text", "const unsigned char");
 		this.addType("$index", "const unsigned char");
-		if (UsingBitmap) {
+		if (this.UsingBitmap) {
 			this.addType("$set", "int");
 		} else {
 			this.addType("$set", "const unsigned char");
@@ -53,18 +53,18 @@ public class CParserGenerator extends ParserGenerator {
 		this.addType("$string", "const char *");
 
 		this.addType("memo", "int");
-		if (UsingBitmap) {
-			this.addType(_set(), "int");
+		if (this.UsingBitmap) {
+			this.addType(this._set(), "int");
 		} else {
-			this.addType(_set(), "const unsigned char *");/* boolean */
+			this.addType(this._set(), "const unsigned char *");/* boolean */
 		}
-		this.addType(_index(), "const unsigned char *");
-		this.addType(_temp(), "int");/* boolean */
-		this.addType(_pos(), "const unsigned char *");
-		this.addType(_tree(), "size_t");
-		this.addType(_log(), "size_t");
-		this.addType(_table(), "size_t");
-		this.addType(_state(), "ParserContext *");
+		this.addType(this._index(), "const unsigned char *");
+		this.addType(this._temp(), "int");/* boolean */
+		this.addType(this._pos(), "const unsigned char *");
+		this.addType(this._tree(), "size_t");
+		this.addType(this._log(), "size_t");
+		this.addType(this._table(), "size_t");
+		this.addType(this._state(), "ParserContext *");
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class CParserGenerator extends ParserGenerator {
 		sb.append("ParserContext_");
 		sb.append(name);
 		sb.append("(");
-		sb.append(_state());
+		sb.append(this._state());
 		for (int i = 0; i < args.length; i++) {
 			sb.append(",");
 			sb.append(args[i]);
@@ -106,15 +106,15 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String _text(byte[] text) {
-		return super._text(text) + ", " + _int(text.length);
+		return super._text(text) + ", " + this._int(text.length);
 	}
 
 	@Override
 	protected String _text(String key) {
 		if (key == null) {
-			return _Null() + ", 0";
+			return this._Null() + ", 0";
 		}
-		return nameMap.get(key) + ", " + _int(OStringUtils.utf8(key).length);
+		return this.nameMap.get(key) + ", " + this._int(OStringUtils.utf8(key).length);
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class CParserGenerator extends ParserGenerator {
 		if (this.crossRefNames.contains(name)) {
 			return type + " " + name;
 		}
-		return "static inline " + type + " " + _rename(name);
+		return "static inline " + type + " " + this._rename(name);
 	}
 
 	@Override
@@ -143,88 +143,88 @@ public class CParserGenerator extends ParserGenerator {
 
 	@Override
 	protected void DeclConst(String type, String name, String expr) {
-		Statement("static " + type + " " + name + " = " + expr);
+		this.Statement("static " + type + " " + name + " = " + expr);
 	}
 
 	// Grammar Generator
 
 	@Override
 	protected void generateHeader(Grammar g) {
-		importFileContent("cnez-runtime.txt");
+		this.importFileContent("cnez-runtime.txt");
 	}
 
 	@Override
 	protected void generatePrototypes() {
-		LineComment("Prototypes");
+		this.pComment("Prototypes");
 		for (String name : this.crossRefNames) {
-			Statement(_defun("int", name) + "(ParserContext *c)");
+			this.Statement(this._defun("int", name) + "(ParserContext *c)");
 		}
 	}
 
 	@Override
 	protected void generateFooter(Grammar g) {
-		importFileContent("cnez-utils.txt");
+		this.importFileContent("cnez-utils.txt");
 		//
-		BeginDecl("void* " + _ns()
+		this.BeginDecl("void* " + this._ns()
 				+ "parse(const char *text, size_t len, void *thunk, void* (*fnew)(symbol_t, const unsigned char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
 		{
-			VarDecl("void*", "result", _Null());
-			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
-			Statement(_Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
+			this.VarDecl("void*", "result", this._Null());
+			this.VarDecl(this._state(), "ParserContext_new((const unsigned char*)text, len)");
+			this.Statement(this._Func("initTreeFunc", "thunk", "fnew", "fset", "fgc"));
 			this.InitMemoPoint();
-			If(_funccall(_funcname(g.getStartProduction())));
+			this.If(this._funccall(this._funcname(g.getStartProduction())));
 			{
-				VarAssign("result", _Field(_state(), _tree()));
-				If("result == NULL");
+				this.VarAssign("result", this._Field(this._state(), this._tree()));
+				this.If("result == NULL");
 				{
-					Statement(
+					this.Statement(
 							"result = c->fnew(0, (const unsigned char*)text, (c->pos - (const unsigned char*)text), 0, c->thunk)");
 				}
-				EndIf();
+				this.EndIf();
 			}
-			EndIf();
-			Statement(_Func("free"));
-			Return("result");
+			this.EndIf();
+			this.Statement(this._Func("free"));
+			this.Return("result");
 		}
-		EndDecl();
-		BeginDecl("static void* cnez_parse(const char *text, size_t len)");
+		this.EndDecl();
+		this.BeginDecl("static void* cnez_parse(const char *text, size_t len)");
 		{
-			Return(_ns() + "parse(text, len, NULL, NULL, NULL, NULL)");
+			this.Return(this._ns() + "parse(text, len, NULL, NULL, NULL, NULL)");
 		}
-		EndDecl();
-		BeginDecl("long " + _ns() + "match(const char *text, size_t len)");
+		this.EndDecl();
+		this.BeginDecl("long " + this._ns() + "match(const char *text, size_t len)");
 		{
-			VarDecl("long", "result", "-1");
-			VarDecl(_state(), "ParserContext_new((const unsigned char*)text, len)");
-			Statement(_Func("initNoTreeFunc"));
+			this.VarDecl("long", "result", "-1");
+			this.VarDecl(this._state(), "ParserContext_new((const unsigned char*)text, len)");
+			this.Statement(this._Func("initNoTreeFunc"));
 			this.InitMemoPoint();
-			If(_funccall(_funcname(g.getStartProduction())));
+			this.If(this._funccall(this._funcname(g.getStartProduction())));
 			{
-				VarAssign("result", _cpos() + "-" + _Field(_state(), "inputs"));
+				this.VarAssign("result", this._cpos() + "-" + this._Field(this._state(), "inputs"));
 			}
-			EndIf();
-			Statement(_Func("free"));
-			Return("result");
+			this.EndIf();
+			this.Statement(this._Func("free"));
+			this.Return("result");
 		}
-		EndDecl();
-		BeginDecl("const char* " + _ns() + "tag(symbol_t n)");
+		this.EndDecl();
+		this.BeginDecl("const char* " + this._ns() + "tag(symbol_t n)");
 		{
-			Return("_tags[n]");
+			this.Return("_tags[n]");
 		}
-		EndDecl();
-		BeginDecl("const char* " + _ns() + "label(symbol_t n)");
+		this.EndDecl();
+		this.BeginDecl("const char* " + this._ns() + "label(symbol_t n)");
 		{
-			Return("_labels[n]");
+			this.Return("_labels[n]");
 		}
-		EndDecl();
-		L("#ifndef UNUSE_MAIN");
-		BeginDecl("int main(int ac, const char **argv)");
+		this.EndDecl();
+		this.L("#ifndef UNUSE_MAIN");
+		this.BeginDecl("int main(int ac, const char **argv)");
 		{
-			Return("cnez_main(ac, argv, cnez_parse)");
+			this.Return("cnez_main(ac, argv, cnez_parse)");
 		}
-		EndDecl();
-		L("#endif/*MAIN*/");
-		L("// End of File");
+		this.EndDecl();
+		this.L("#endif/*MAIN*/");
+		this.L("// End of File");
 		// generateHeaderFile();
 		// this.showManual("cnez-man.txt", new String[] { "$cmd$", _basename()
 		// });
@@ -232,30 +232,30 @@ public class CParserGenerator extends ParserGenerator {
 
 	private void generateHeaderFile() {
 		// FIXME : this.setFileBuilder(".h");
-		Statement("typedef unsigned long int symbol_t");
+		this.Statement("typedef unsigned long int symbol_t");
 		int c = 1;
 		for (String s : this.tagList) {
 			if (s.equals("")) {
 				continue;
 			}
-			L("#define _" + s + " ((symbol_t)" + c + ")");
+			this.L("#define _" + s + " ((symbol_t)" + c + ")");
 			c++;
 		}
-		L("#define MAXTAG " + c);
+		this.L("#define MAXTAG " + c);
 		c = 1;
 		for (String s : this.labelList) {
 			if (s.equals("")) {
 				continue;
 			}
-			L("#define _" + s + " ((symbol_t)" + c + ")");
+			this.L("#define _" + s + " ((symbol_t)" + c + ")");
 			c++;
 		}
-		L("#define MAXLABEL " + c);
-		Statement("void* " + _ns()
+		this.L("#define MAXLABEL " + c);
+		this.Statement("void* " + this._ns()
 				+ "parse(const char *text, size_t len, void *, void* (*fnew)(symbol_t, const char *, size_t, size_t, void *), void  (*fset)(void *, size_t, symbol_t, void *, void *), void  (*fgc)(void *, int, void *))");
-		Statement("long " + _ns() + "match(const char *text, size_t len)");
-		Statement("const char* " + _ns() + "tag(symbol_t n)");
-		Statement("const char* " + _ns() + "label(symbol_t n)");
+		this.Statement("long " + this._ns() + "match(const char *text, size_t len)");
+		this.Statement("const char* " + this._ns() + "tag(symbol_t n)");
+		this.Statement("const char* " + this._ns() + "label(symbol_t n)");
 		this.close();
 	}
 

@@ -20,11 +20,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import origami.main.OOption;
-import origami.main.OOption.OptionalFactory;
 import origami.nez.peg.Grammar;
 import origami.nez.peg.Production;
 import origami.nez.peg.Typestate;
+import origami.util.OOption;
+import origami.util.OOption.OptionalFactory;
 
 public abstract class ParserCode<I> implements ParserExecutable {
 
