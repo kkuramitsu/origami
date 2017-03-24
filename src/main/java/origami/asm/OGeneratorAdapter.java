@@ -582,12 +582,12 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 	void weaveBefore(OCode code, OBlock until, OAsm gen) {
 		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
 			OBlock b = this.blockStack.get(i);
-			if (b == until) {
-				return;
-			}
 			OCode weaveCode = b.getBeforeCode(code);
 			if (weaveCode != null) {
 				weaveCode.generate(gen);
+			}
+			if (b == until) {
+				return;
 			}
 		}
 	}
@@ -595,12 +595,12 @@ public class OGeneratorAdapter extends GeneratorAdapter {
 	void weaveAfter(OCode code, OBlock until, OAsm gen) {
 		for (int i = this.blockStack.size() - 1; i >= 0; i--) {
 			OBlock b = this.blockStack.get(i);
-			if (b == until) {
-				return;
-			}
 			OCode weaveCode = b.getBeforeCode(code);
 			if (weaveCode != null) {
 				weaveCode.generate(gen);
+			}
+			if (b == until) {
+				return;
 			}
 		}
 	}

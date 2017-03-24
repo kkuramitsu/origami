@@ -22,7 +22,7 @@ import origami.lang.type.OType;
 public class OIfCode extends OParamCode<OEnv> {
 
 	public OIfCode(OEnv env, OCode condCode, OCode thenCode, OCode elseCode) {
-		super(env, null, condCode, thenCode, elseCode);
+		super(env, null/* unused */, condCode, thenCode, elseCode);
 		this.retypeLocal();
 	}
 
@@ -46,6 +46,12 @@ public class OIfCode extends OParamCode<OEnv> {
 		return false;
 	}
 
+	private OEnv env() {
+		return this.getHandled();
+	}
+
+	/* type dependency */
+
 	@Override
 	public OType getType() {
 		return this.nodes[1].getType();
@@ -53,19 +59,33 @@ public class OIfCode extends OParamCode<OEnv> {
 
 	@Override
 	public OCode refineType(OEnv env, OType t) {
-		this.nodes[1] = this.nodes[1].refineType(env, t);
-		this.nodes[2] = this.nodes[2].refineType(env, t).asType(env, this.nodes[1].getType());
+		this.nodes[1] = this.nodes[1].refineType(this.env(), t);
+		this.nodes[2] = this.nodes[2].refineType(this.env(), t);
+		return this;
+	}
+
+	@Override
+	public OCode asType(OEnv env, OType t) {
+		this.nodes[1] = this.nodes[1].asType(this.env(), t);
+		this.nodes[2] = this.nodes[2].asType(this.env(), t);
+		return this;
+	}
+
+	@Override
+	public OCode asAssign(OEnv env, String name) {
+		this.nodes[1] = this.nodes[1].asAssign(this.env(), name);
+		this.nodes[2] = this.nodes[2].asAssign(this.env(), name);
 		return this;
 	}
 
 	@Override
 	public OCode retypeLocal() {
-		if (!this.isUntyped() && !this.nodes[1].getType().eq(this.nodes[2].getType())) {
-			if (!this.nodes[1].isUntyped()) {
-				this.nodes[2] = this.nodes[2].asType(this.getHandled(), this.nodes[1].getType());
-			} else {
-				this.nodes[1] = this.nodes[1].asType(this.getHandled(), this.nodes[2].getType());
-			}
+		OType t = this.nodes[1].getType();
+		if (t.isUntyped()) {
+			t = this.nodes[2].getType();
+		}
+		if (!t.isUntyped()) {
+			this.asType(this.env(), t);
 		}
 		return this;
 	}

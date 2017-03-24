@@ -9,7 +9,6 @@ import origami.code.OCode;
 import origami.code.OConstructorCode;
 import origami.code.OContinueCode;
 import origami.code.OEmptyCode;
-import origami.code.OErrorCode;
 import origami.code.OGenerator;
 import origami.code.OGetIndexCode;
 import origami.code.OGetSizeCode;
@@ -18,7 +17,7 @@ import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
 import origami.code.OJumpBeforeCode;
 import origami.code.OLabelBlockCode;
-import origami.code.OMethodCode;
+import origami.code.OLambdaCode;
 import origami.code.OMultiCode;
 import origami.code.ONameCode;
 import origami.code.ONotCode;
@@ -26,13 +25,13 @@ import origami.code.OOrCode;
 import origami.code.OReturnCode;
 import origami.code.OSetIndexCode;
 import origami.code.OSetterCode;
-import origami.code.OSugarCode;
 import origami.code.OThrowCode;
 import origami.code.OTryCode;
 import origami.code.OValueCode;
-import origami.code.OWarningCode;
 import origami.code.OWhileCode;
 import origami.lang.OField;
+import origami.rule.OFmt;
+import origami.util.OStringUtils;
 
 public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 
@@ -56,17 +55,27 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	@Override
 	public void pushValue(OValueCode node) {
 		Object value = node.getValue();
+		if (node.getType().is(void.class)) {
+			this.p("pass");
+			return;
+		}
 		if (value == null) {
 			this.p(this.s("null", "None"));
 			return;
 		}
 		if (value instanceof Boolean) {
 			this.p((Boolean) value ? "True" : "False");
+			return;
 		}
 		if (value instanceof Number) {
 			this.p(value);
+			return;
 		}
-
+		if (value instanceof String) {
+			// FIXME
+			this.p(OStringUtils.quoteString('"', value.toString(), '"'));
+			return;
+		}
 	}
 
 	@Override
@@ -74,7 +83,12 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 		this.p("[");
 		this.pushParam(node, ",");
 		this.p("]");
+	}
 
+	@Override
+	public void pushLambda(OLambdaCode node) {
+		String[] names = node.getParamNames();
+		node.getFirst();
 	}
 
 	@Override
@@ -84,38 +98,31 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 
 	@Override
 	public void pushConstructor(OConstructorCode node) {
-		// TODO Auto-generated method stub
-
+		this.pushCons(node.getDeclaringClass(), node.getParams());
 	}
 
-	@Override
-	public void pushMethod(OMethodCode node) {
-		// TODO Auto-generated method stub
-
-	}
+	// @Override
+	// public void pushMethod(OMethodCode node) {
+	// // TODO Auto-generated method stub
+	//
+	// }
 
 	@Override
 	public void pushCast(OCastCode node) {
-		this.push(node.getFirst());
+		if (node.getHandled() != null) {
+			this.pushMethod(node);
+		} else {
+			this.push(node.getFirst());
+		}
 	}
 
 	@Override
 	public void pushSetter(OSetterCode node) {
 		OField f = node.getHandled();
 		if (f.isStatic()) {
-			this.p(f.getName());
-			this.pSpace();
-			this.p(this.s("=", "="));
-			this.pSpace();
-			this.push(node.getFirst());
+			this.pushSetter(f.getDeclaringClass(), f.getName(), node.getFirst());
 		} else {
-			this.push(node.getFirst());
-			this.p(this.s("."));
-			this.p(f.getName());
-			this.pSpace();
-			this.p(this.s("=", "="));
-			this.pSpace();
-			this.push(node.getParams()[1]);
+			this.pushSetter(node.getFirst(), f.getName(), node.getParams()[1]);
 		}
 	}
 
@@ -123,11 +130,9 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	public void pushGetter(OGetterCode node) {
 		OField f = node.getHandled();
 		if (f.isStatic()) {
-			this.p(f.getName());
+			this.pushGetter(f.getDeclaringClass(), f.getName());
 		} else {
-			this.push(node.getFirst());
-			this.p(this.s("."));
-			this.p(f.getName());
+			this.pushGetter(node.getFirst(), f.getName());
 		}
 	}
 
@@ -139,26 +144,23 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 
 	@Override
 	public void pushAnd(OAndCode code) {
-		// TODO Auto-generated method stub
-
+		this.pushBinary(code.getFirst(), "and", code.getParams()[1]);
 	}
 
 	@Override
 	public void pushOr(OOrCode code) {
-		// TODO Auto-generated method stub
-
+		this.pushBinary(code.getFirst(), "or", code.getParams()[1]);
 	}
 
 	@Override
 	public void pushNot(ONotCode code) {
-		// TODO Auto-generated method stub
+		this.pushUnary("not", code.getFirst());
 
 	}
 
 	@Override
 	public void pushGetSize(OGetSizeCode code) {
-		// TODO Auto-generated method stub
-
+		this.pushApply("len", code.getFirst());
 	}
 
 	@Override
@@ -209,7 +211,19 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 
 	@Override
 	public void pushWhile(OWhileCode code) {
-
+		// if(code.nextCode() instanceof OEmptyCode) {
+		//
+		// }
+		// else {
+		this.p(this.s("while", "while"));
+		this.pSpace();
+		this.push(code.condCode());
+		this.pBegin(":");
+		{
+			this.push(code.bodyCode());
+		}
+		this.pEnd("");
+		// }
 	}
 
 	@Override
@@ -221,27 +235,33 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	@Override
 	public void pushReturn(OReturnCode node) {
 		this.p(this.s("return", "return"));
+		if (!(node.getFirst() instanceof OEmptyCode)) {
+			this.pSpace();
+			this.push(node.getFirst());
+		}
 	}
 
 	@Override
 	public void pushThrow(OThrowCode code) {
 		this.p(this.s("throw", "raise"));
+		this.pSpace();
+		this.push(code.getFirst());
 	}
 
 	@Override
 	public void pushBreak(OBreakCode code) {
+		if (code.getLabel() != null) {
+			this.reportError(code.getSourcePosition(), OFmt.label_is_unsupported);
+		}
 		this.p(this.s("break", "break"));
 	}
 
 	@Override
 	public void pushContinue(OContinueCode code) {
+		if (code.getLabel() != null) {
+			this.reportError(code.getSourcePosition(), OFmt.label_is_unsupported);
+		}
 		this.p(this.s("continue", "continue"));
-	}
-
-	@Override
-	public void pushBlockCode(OLabelBlockCode code) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -250,20 +270,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushSugar(OSugarCode oSugarCode) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void pushError(OErrorCode node) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void pushWarning(OWarningCode node) {
-		// TODO Auto-generated method stub
+	public void pushBlockCode(OLabelBlockCode code) {
 
 	}
 

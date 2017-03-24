@@ -16,15 +16,18 @@
 
 package origami.code;
 
-import origami.code.OTryCode.CatchCode;
 import origami.lang.OEnv;
 import origami.lang.type.OType;
 import origami.util.OScriptUtils;
 
-public class OTryCode extends OParamCode<CatchCode[]> {
+public class OTryCode extends OParamCode<OEnv> {
 
-	public OTryCode(OEnv env, OCode tryCode, CatchCode[] catchCodes, OCode finallyCode) {
-		super(catchCodes, tryCode.getType(), tryCode, finallyCode);
+	final CatchCode[] catchCode;
+
+	public OTryCode(OEnv env, OCode tryCode, OCode finallyCode, CatchCode... catchCodes) {
+		super(env, null/* unused */, tryCode, finallyCode);
+		this.catchCode = catchCodes;
+		this.retypeLocal();
 	}
 
 	public OCode tryCode() {
@@ -32,11 +35,69 @@ public class OTryCode extends OParamCode<CatchCode[]> {
 	}
 
 	public CatchCode[] catchCode() {
-		return this.getHandled();
+		return this.catchCode;
 	}
 
 	public OCode finallyCode() {
 		return this.nodes[1];
+	}
+
+	private OEnv env() {
+		return this.getHandled();
+	}
+
+	@Override
+	public OType getType() {
+		return this.nodes[0].getType();
+	}
+
+	@Override
+	public OTryCode refineType(OEnv env, OType t) {
+		this.nodes[0] = this.nodes[0].refineType(this.env(), t);
+		for (CatchCode catchCode : this.catchCode()) {
+			catchCode.refineType(this.env(), t);
+		}
+		return this;
+	}
+
+	@Override
+	public OTryCode asType(OEnv env, OType t) {
+		this.nodes[0] = this.nodes[0].asType(this.env(), t);
+		for (CatchCode catchCode : this.catchCode()) {
+			catchCode.asType(this.env(), t);
+		}
+		return this;
+	}
+
+	@Override
+	public OTryCode asAssign(OEnv env, String name) {
+		this.nodes[0] = this.nodes[0].asAssign(this.env(), name);
+		for (CatchCode catchCode : this.catchCode()) {
+			catchCode.asAssign(this.env(), name);
+		}
+		return this;
+	}
+
+	private OType findType() {
+		if (!this.nodes[0].isUntyped()) {
+			return this.nodes[0].getType();
+		}
+		for (CatchCode catchCode : this.catchCode()) {
+			OType t = catchCode.bodyCode().getType();
+			if (!t.isUntyped()) {
+				return t;
+			}
+		}
+		return this.nodes[0].getType(); // UntypedType
+	}
+
+	@Override
+	public OCode retypeLocal() {
+		OType t = this.findType();
+		if (!t.isUntyped()) {
+			this.asType(this.env(), t);
+		}
+		return this;
 	}
 
 	@Override
@@ -50,9 +111,15 @@ public class OTryCode extends OParamCode<CatchCode[]> {
 	}
 
 	public static class CatchCode extends OLocalCode<String> {
+		private final OType exceptionType;
 
-		public CatchCode(OType type, String name, OCode clause) {
-			super(name, type, clause);
+		public CatchCode(OType type, String name, OCode body) {
+			super(name, null/* unused */, body);
+			this.exceptionType = type;
+		}
+
+		public OType getExceptionType() {
+			return this.exceptionType;
 		}
 
 		public String getName() {
@@ -61,6 +128,29 @@ public class OTryCode extends OParamCode<CatchCode[]> {
 
 		public OCode bodyCode() {
 			return this.nodes[0];
+		}
+
+		@Override
+		public OType getType() {
+			return this.nodes[0].getType();
+		}
+
+		@Override
+		public OCode refineType(OEnv env, OType t) {
+			this.nodes[0] = this.nodes[0].refineType(env, t);
+			return this;
+		}
+
+		@Override
+		public OCode asType(OEnv env, OType t) {
+			this.nodes[0] = this.nodes[0].asType(env, t);
+			return this;
+		}
+
+		@Override
+		public OCode asAssign(OEnv env, String name) {
+			this.nodes[0] = this.nodes[0].asAssign(env, name);
+			return this;
 		}
 
 	}

@@ -114,6 +114,11 @@ public class OErrorCode extends RuntimeException implements OCode {
 	}
 
 	@Override
+	public OCode asAssign(OEnv env, String name) {
+		return this;
+	}
+
+	@Override
 	public OCode setSourcePosition(SourcePosition s) {
 		this.log.setSourcePosition(s);
 		return this;

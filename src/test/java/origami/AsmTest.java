@@ -16,11 +16,15 @@
 
 package origami;
 
+import java.io.IOException;
+
 import origami.code.OAssignCode;
 import origami.code.OCode;
+import origami.code.OEmptyCode;
 import origami.code.OIfCode;
 import origami.code.ONameCode;
 import origami.code.ONullCode;
+import origami.code.OTryCode;
 import origami.lang.OEnv;
 import origami.util.OScriptUtils;
 
@@ -76,6 +80,45 @@ public class AsmTest {
 	public void testIfElse() throws Throwable {
 		OEnv env = new OrigamiContext();
 		OIfCode body = new OIfCode(env, env.v(false), env.v(2), env.v(1));
+		assert this.eval(env, body).equals(1);
+	}
+
+	public void testTry() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OTryCode body = new OTryCode(env, env.v(1), new OEmptyCode(env));
+		assert this.eval(env, body).equals(1);
+	}
+
+	public void testTryFinally() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OCode init = new OAssignCode(true, "v", env.v(1)).asType(env, env.t(void.class));
+		OCode finl = new OAssignCode(false, "v", env.v(2)).asType(env, env.t(void.class));
+		OTryCode body = new OTryCode(env, env.v(2), finl);
+		assert this.eval(env, init, body).equals(2);
+	}
+
+	public void testTryCatchFinally() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OCode init = new OAssignCode(true, "v", env.v(1)).asType(env, env.t(void.class));
+		OCode finl = new OAssignCode(false, "v", env.v(2)).asType(env, env.t(void.class));
+		OTryCode.CatchCode c = new OTryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
+
+		OTryCode body = new OTryCode(env, env.v(2), finl, c);
+		assert this.eval(env, init, body).equals(2);
+	}
+
+	public void testTryCatch() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OTryCode.CatchCode c = new OTryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
+		OTryCode body = new OTryCode(env, env.v(1), new OEmptyCode(env), c);
+		assert this.eval(env, body).equals(1);
+	}
+
+	public void testTryCatch2() throws Throwable {
+		OEnv env = new OrigamiContext();
+		OTryCode.CatchCode c = new OTryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
+		OTryCode.CatchCode c2 = new OTryCode.CatchCode(env.t(NullPointerException.class), "e", env.v(2));
+		OTryCode body = new OTryCode(env, env.v(1), new OEmptyCode(env), c, c2);
 		assert this.eval(env, body).equals(1);
 	}
 

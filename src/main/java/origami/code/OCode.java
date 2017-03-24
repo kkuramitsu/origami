@@ -38,9 +38,11 @@ public interface OCode {
 
 	public OCode retypeAll(int[] c);
 
+	public OType getType();
+
 	public OCode refineType(OEnv env, OType req);
 
-	public OType getType();
+	public OCode asAssign(OEnv env, String name);
 
 	public OCode[] getParams();
 
@@ -142,10 +144,6 @@ public interface OCode {
 			// OConv conv = OConv.getConv(env, f, t);
 			return new OCastCode(t, OCast.SAME, this);
 		}
-		return this;
-	}
-
-	public default OCode checkAcc(OEnv env) {
 		return this;
 	}
 

@@ -174,9 +174,4 @@ public interface OWrapperCode extends OCode {
 		return wrapped().boxCode(env);
 	}
 
-	@Override
-	public default OCode checkAcc(OEnv env) {
-		return wrapped().checkAcc(env);
-	}
-
 }

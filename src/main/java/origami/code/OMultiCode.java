@@ -8,27 +8,10 @@ import origami.lang.type.OType;
 public class OMultiCode extends OParamCode<Void> {
 
 	public OMultiCode(OCode... nodes) {
-		super(null, nodes[nodes.length - 1].getType(), checkReturn(nodes));
+		super(null, null/* unused */, checkReturn(nodes));
 	}
 
-	public OMultiCode(List<OCode> l) {
-		this(l.toArray(new OCode[l.size()]));
-	}
-
-	protected OMultiCode(int dummy, OCode... nodes) {
-		super(null, nodes[nodes.length - 1].getType(), nodes);
-	}
-
-	public final boolean hasDefinedLocalVariables() {
-		for (int i = 0; i < this.nodes.length; i++) {
-			if (this.nodes[i].isDefined()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static OCode[] checkReturn(OCode[] nodes) {
+	static OCode[] checkReturn(OCode[] nodes) {
 		for (int i = 0; i < nodes.length; i++) {
 			if (nodes[i].hasReturnCode()) {
 				if (i < nodes.length - 1) {
@@ -39,6 +22,23 @@ public class OMultiCode extends OParamCode<Void> {
 			}
 		}
 		return nodes;
+	}
+
+	public OMultiCode(List<OCode> l) {
+		this(l.toArray(new OCode[l.size()]));
+	}
+
+	// protected OMultiCode(int dummy, OCode... nodes) {
+	// super(null, nodes[nodes.length - 1].getType(), nodes);
+	// }
+
+	public final boolean hasDefinedLocalVariables() {
+		for (int i = 0; i < this.nodes.length; i++) {
+			if (this.nodes[i].isDefined()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -59,6 +59,18 @@ public class OMultiCode extends OParamCode<Void> {
 	@Override
 	public OCode refineType(OEnv env, OType t) {
 		this.nodes[this.nodes.length - 1] = this.nodes[this.nodes.length - 1].refineType(env, t);
+		return this;
+	}
+
+	@Override
+	public OCode asType(OEnv env, OType t) {
+		this.nodes[this.nodes.length - 1] = this.nodes[this.nodes.length - 1].asType(env, t);
+		return this;
+	}
+
+	@Override
+	public OCode asAssign(OEnv env, String name) {
+		this.nodes[this.nodes.length - 1] = this.nodes[this.nodes.length - 1].asAssign(env, name);
 		return this;
 	}
 

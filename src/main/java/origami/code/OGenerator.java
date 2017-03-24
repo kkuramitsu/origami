@@ -8,6 +8,8 @@ public interface OGenerator {
 
 	public void pushArray(OArrayCode node);
 
+	public void pushLambda(OLambdaCode node);
+
 	public void pushName(ONameCode node);
 
 	public void pushConstructor(OConstructorCode node);

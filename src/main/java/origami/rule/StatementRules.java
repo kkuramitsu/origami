@@ -404,7 +404,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		/* Finally Clause */
 		OCode finallyCode = this.typeStmt(env, t.get(_finally, null));
 
-		return new OTryCode(env, tryCode, catchCodes, finallyCode);
+		return new OTryCode(env, tryCode, finallyCode, catchCodes);
 	}
 
 	public OTypeRule AssertStmt = new TypeRule() {

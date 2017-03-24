@@ -39,7 +39,7 @@ public enum OFmt implements LocaleFormat {
 	undefined_name__YY0, type_inferred__YY0, YY0_does_not_exist, undefined_syntax__YY0, //
 	unfound_class__YY0_by_YY1, undefined_type__YY0, no_typing_hint__YY0, //
 	YY0_is_not_assignable, YY0_is_not_throwable, YY0_is_not_interface, //
-	undefined_static_field__YY0_YY1, undefined_field__YY0_YY1;
+	undefined_static_field__YY0_YY1, undefined_field__YY0_YY1, label_is_unsupported;
 
 	// public static String fmt(String fmt, OFmt... m) {
 	// StringBuilder sb = new StringBuilder();

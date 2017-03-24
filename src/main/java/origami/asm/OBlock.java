@@ -18,8 +18,11 @@ package origami.asm;
 
 import org.objectweb.asm.Label;
 
+import origami.code.OBreakCode;
 import origami.code.OClassInitCode;
 import origami.code.OCode;
+import origami.code.OContinueCode;
+import origami.code.OReturnCode;
 
 public interface OBlock {
 
@@ -32,6 +35,29 @@ public interface OBlock {
 	}
 
 	public default OCode getAfterCode(OCode code) {
+		return null;
+	}
+
+}
+
+class OFinallyBlock implements OBlock {
+	final OCode weaving;
+
+	OFinallyBlock(OCode weaving) {
+		this.weaving = weaving;
+	}
+
+	@Override
+	public OCode getBeforeCode(OCode code) {
+		if (code instanceof OContinueCode) {
+			return this.weaving;
+		}
+		if (code instanceof OBreakCode) {
+			return this.weaving;
+		}
+		if (code instanceof OReturnCode) {
+			return this.weaving;
+		}
 		return null;
 	}
 
@@ -60,8 +86,19 @@ class OBreakBlock implements OBlock {
 
 class OBreakContinueBlock extends OBreakBlock {
 
-	OBreakContinueBlock(OGeneratorAdapter mBuilder, String name) {
+	final OCode weaving;
+
+	OBreakContinueBlock(OGeneratorAdapter mBuilder, String name, OCode weaving) {
 		super(mBuilder, name);
+		this.weaving = weaving;
+	}
+
+	@Override
+	public OCode getBeforeCode(OCode code) {
+		if (code instanceof OContinueCode) {
+			return this.weaving;
+		}
+		return null;
 	}
 
 }

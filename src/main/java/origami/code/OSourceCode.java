@@ -140,6 +140,14 @@ public abstract class OSourceCode<T> implements OCode, Handled<T>, StringCombina
 	}
 
 	@Override
+	public OCode asAssign(OEnv env, String name) {
+		if (!this.getType().is(void.class)) {
+			return new OAssignCode(false, name, this).asType(env, void.class);
+		}
+		return this;
+	}
+
+	@Override
 	public void generate(OGenerator gen) {
 		ODebug.NotAvailable(this);
 	}
