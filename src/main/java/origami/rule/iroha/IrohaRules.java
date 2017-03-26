@@ -23,7 +23,7 @@ import java.util.HashSet;
 import origami.asm.OAnno;
 import origami.asm.OCallSite;
 import origami.asm.code.DupCode;
-import origami.code.GenerativeCode;
+import origami.code.BlockGen;
 import origami.code.HookAfterCode;
 import origami.code.MutableCode;
 import origami.code.OArrayCode;
@@ -33,8 +33,6 @@ import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OGetterCode;
 import origami.code.OLabelBlockCode;
-import origami.code.OLabelBlockCode.OBreakLabel;
-import origami.code.OLabelBlockCode.OContinueLabel;
 import origami.code.OSugarCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
@@ -60,12 +58,12 @@ import origami.lang.type.OTypeSystem;
 import origami.lang.type.OUntypedType;
 import origami.nez.ast.Symbol;
 import origami.nez.ast.Tree;
-import origami.rule.TypeRule;
-import origami.rule.java.JavaThisCode;
 import origami.rule.OFmt;
 import origami.rule.OSymbols;
 import origami.rule.OrigamiIterator;
 import origami.rule.SyntaxAnalysis;
+import origami.rule.TypeRule;
+import origami.rule.java.JavaThisCode;
 import origami.util.ODebug;
 import origami.util.OTypeRule;
 import origami.util.OTypeUtils;
@@ -416,7 +414,6 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	static class ForEachCode extends OSugarCode {
 		final String name;
 		final OType nextType;
-		// final OCode nextCode;
 
 		protected ForEachCode(OEnv env, String name, OType nextType, OCode iterCode, OCode bodyCode) {
 			super(env, null, iterCode, bodyCode);
@@ -457,46 +454,40 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 
 		public OCode desugarStmtCode() {
-			GenerativeCode outer = new GenerativeCode(this.env(), null);
-			outer.pushDefine("it", this.iterCode());
+			BlockGen block0 = new BlockGen(this.env());
+			block0.pushDefine("it_", this.iterCode());
 			//
-			outer.pushDefine(this.name, this.nextType);
-			OCode hasNext = outer._var("it").newMethodCode(this.env(), "hasNext");
+			block0.pushDefine(this.name, this.nextType);
+			OCode hasNext = block0.eVar("it_").newMethodCode(this.env(), "hasNext");
 
-			GenerativeCode loop = new GenerativeCode(this.env(), outer);
+			BlockGen block1 = new BlockGen(block0);
 			// ODebug.trace("nextCode=%s", nextCode(outer.name("it")));
 
-			loop.pushAssign(this.name, nextCode(this.env(), outer._var("it")));
+			block1.pushAssign(this.name, nextCode(this.env(), block0.eVar("it_")));
 			// loop.p(outer.name(name));
-			loop.push(this.bodyCode());
+			block1.push(this.bodyCode());
 
-			OLabelBlockCode block = new OLabelBlockCode(null, new OWhileCode(this.env(), hasNext, loop), loop._empty());
-			this.env().add(OBreakLabel.class, new OBreakLabel(block));
-			this.env().add(OContinueLabel.class, new OContinueLabel(block));
-			outer.push(block);
-			return outer;
+			block0.push(new OWhileCode(block0.env(), hasNext, block1.desugar()));
+			return block0.desugar();
 		}
 
 		public OCode desugarExprCode() {
-			GenerativeCode outer = new GenerativeCode(this.env(), null);
-			outer.pushDefine("it", this.iterCode());
-			outer.pushDefine(this.name, this.nextType);
+			BlockGen block0 = new BlockGen(this.env());
+			block0.pushDefine("it_", this.iterCode());
+			block0.pushDefine(this.name, this.nextType);
 
 			OType listType = OrigamiList.newListType(this.nextType);
-			outer.pushDefine("a", listType.newConstructorCode(this.env()));
-			OCode hasNext = outer._var("it").newMethodCode(this.env(), "hasNext");
+			block0.pushDefine("a_", listType.newConstructorCode(this.env()));
+			OCode hasNext = block0.eVar("it_").newMethodCode(this.env(), "hasNext");
 
-			GenerativeCode loop = new GenerativeCode(this.env(), outer);
-			loop.pushAssign(this.name, nextCode(this.env(), outer._var("it")));
-			loop.push(outer._var("a").newMethodCode(this.env(), "add", this.bodyCode()).asType(this.env(), void.class));
+			BlockGen block1 = new BlockGen(block0);
+			block1.pushAssign(this.name, nextCode(this.env(), block0.eVar("it_")));
+			block1.push(
+					block0.eVar("a_").newMethodCode(this.env(), "add", this.bodyCode()).asType(this.env(), void.class));
 
-			OLabelBlockCode block = new OLabelBlockCode(null, new OWhileCode(this.env(), hasNext, loop),
-					loop._var("a"));
-			this.env().add(OBreakLabel.class, new ForEachBreak(outer._var("a"), block));
-			this.env().add(OContinueLabel.class, new ForEachContinue(outer._var("a"), block));
-			outer.push(block);
-			outer.push(outer._var("a").asType(this.env(), this.getType()));
-			return outer;
+			block0.push(new OWhileCode(block0.env(), hasNext, block1.desugar()));
+			block0.push(block0.eVar("a_").asType(this.env(), this.getType()));
+			return block0.desugar();
 		}
 
 		// private static OType nextType(OCode iterCode) {

@@ -16,8 +16,9 @@
 
 package origami.rule;
 
+import origami.util.OArrayUtils;
 import origami.util.OTypeRule;
 
-public abstract class TypeRule implements OTypeRule {
+public abstract class TypeRule implements OTypeRule, OSymbols, OArrayUtils, SyntaxAnalysis, TypeAnalysis {
 
 }

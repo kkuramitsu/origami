@@ -69,6 +69,4 @@ public interface OGenerator {
 
 	public void pushWarning(OWarningCode node);
 
-	public void pushJumpBefore(OJumpBeforeCode code);
-
 }

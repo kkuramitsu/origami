@@ -30,11 +30,15 @@ import origami.util.OTypeUtils;
 
 public interface OEnv {
 
-	public default void dump() {
-		for (OEnv e = this; e != null; e = e.getParent()) {
-			System.out.print(e.getName());
-		}
-		System.out.println();
+	// public default void dump() {
+	// for (OEnv e = this; e != null; e = e.getParent()) {
+	// System.out.print(e.getName());
+	// }
+	// System.out.println();
+	// }
+
+	public default OEnv env() {
+		return this;
 	}
 
 	public String getName();
@@ -98,8 +102,12 @@ public interface OEnv {
 		add(SourcePosition.UnknownPosition, name, value);
 	}
 
+	default String key(Class<?> c) {
+		return c.getName();
+	}
+
 	public default void add(Class<?> cname, Object value) {
-		add(cname.getName(), value);
+		add(key(cname), value);
 	}
 
 	public default <X> void set(String name, Class<X> c, X value) {
@@ -201,6 +209,10 @@ public interface OEnv {
 				}
 			}
 		}
+	}
+
+	public default <X> void findList(Class<?> cname, Class<X> c, List<X> l, OListMatcher<X> f) {
+		findList(key(cname), c, l, f);
 	}
 
 	@FunctionalInterface

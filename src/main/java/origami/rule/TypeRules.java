@@ -41,14 +41,15 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 	public OTypeRule ClassType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType type = parseType(env, t);
+			OType type = this.parseType(env, t);
 			if (type == null) {
 				throw new TypeNotFoundException(env, t, OFmt.undefined_type__YY0, t.toText());
 			}
 			return new OTypeCode(type);
 		}
 
-		private OType parseType(OEnv env, Tree<?> t) {
+		@Override
+		public OType parseType(OEnv env, Tree<?> t) {
 			String name = t.toText();
 			if (name.indexOf('.') > 0) {
 				try {
@@ -64,7 +65,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 	public OTypeRule ArrayType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType ty = parseType(env, t.get(_base));
+			OType ty = this.parseType(env, t.get(_base));
 			return new OTypeCode(new origami.lang.type.OArrayType(ty));
 		}
 
@@ -73,11 +74,11 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 	public OTypeRule FuncType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType returnType = parseType(env, t.get(_base));
+			OType returnType = this.parseType(env, t.get(_base));
 			Tree<?> params = t.get(_param);
 			OType[] a = new OType[params.size()];
 			for (int i = 0; i < params.size(); i++) {
-				a[i] = parseType(env, params.get(i));
+				a[i] = this.parseType(env, params.get(i));
 			}
 			OType ty = origami.lang.type.OFuncType.newType(env, returnType, a);
 			return new OTypeCode(ty);
@@ -87,8 +88,8 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 	public OTypeRule CurryFuncType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType p = parseType(env, t.get(_base));
-			OType ret = parseType(env, t.get(_param));
+			OType p = this.parseType(env, t.get(_base));
+			OType ret = this.parseType(env, t.get(_param));
 			OType ty = origami.lang.type.OFuncType.newType(env, ret, p);
 			return new OTypeCode(ty);
 		}
@@ -97,7 +98,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 	public OTypeRule NullableType = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType p = parseType(env, t.get(_base));
+			OType p = this.parseType(env, t.get(_base));
 			// OType ty = env.getTypeSystem().newNullableType(p);
 			return new OTypeCode(p);
 		}

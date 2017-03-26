@@ -15,7 +15,6 @@ import origami.code.OGetSizeCode;
 import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
-import origami.code.OJumpBeforeCode;
 import origami.code.OLabelBlockCode;
 import origami.code.OLambdaCode;
 import origami.code.OMultiCode;
@@ -271,12 +270,6 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 
 	@Override
 	public void pushBlockCode(OLabelBlockCode code) {
-
-	}
-
-	@Override
-	public void pushJumpBefore(OJumpBeforeCode code) {
-		// TODO Auto-generated method stub
 
 	}
 

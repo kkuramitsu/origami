@@ -41,7 +41,6 @@ import origami.code.OGetSizeCode;
 import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
-import origami.code.OJumpBeforeCode;
 import origami.code.OLabelBlockCode;
 import origami.code.OLambdaCode;
 import origami.code.OMethodCode;
@@ -797,13 +796,6 @@ public class OAsm implements OGenerator, OArrayUtils {
 	public void pushThrow(OThrowCode code) {
 		this.pushParams(null, code);
 		this.mBuilder.throwException();
-	}
-
-	@Override
-	public void pushJumpBefore(OJumpBeforeCode code) {
-		this.mBuilder.pushBlock(code);
-		code.getFirst().generate(this);
-		this.mBuilder.popBlock();
 	}
 
 	@Override
