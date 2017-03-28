@@ -9,12 +9,21 @@
  *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
  *   Kohei Moriya
  */
-File           = _ {
+ 
+File = _ {
 	 $(PackageDeclaration)? 
 	 $(ImportDeclaration)* 
-	 $(TypeDeclaration)* 
+	 $(TypeDeclaration / OrigamiTopLevel)* 
 	 #Source 
 } _ EOT
+
+// ORIGAMI 
+
+ORIGAMI = 'origami.rule.java.JavaTypeSystem'
+
+OrigamiTopLevel = AssertStatement
+                / BlockStatement
+                / ";" { #MultiStmt }
 
 /* Code Layout (Whitespace) */
 _            = ( S / BLOCKCOMMENT / LINECOMMENT )*
@@ -132,6 +141,7 @@ EOT          = !.
 "void"         = 'void' !W _
 "volatile"     = 'volatile' !W _
 "while"        = 'while' !W _
+
 KEYWORD        = "abstract"
                / "assert"
                / "boolean"
@@ -186,17 +196,7 @@ KEYWORD        = "abstract"
                / "volatile"
                / "while"
 
-/* Modifiers, Annotation */
-
-AModifiers = { $(AModifier)+ #Modifiers }
-AModifier = Annotation
-          / "public"    { #Public }
-          / "protected" { #Protected }
-          / "private"   { #Private }
-          / "abstract"  { #Abstract }
-          / "final"     { #Final }
-          / "static"    { #Static }
-          / "strictfp"  { #Strictfp }
+/* Annotation, Modifiers */
 
 Annotations = { 
 	$(Annotation)+ 
@@ -219,22 +219,40 @@ Annotation = { "@"
 ElementValuePairList = { 
 	$(ElementValuePair) ( "," $(ElementValuePair) )* 
 }
+
 ElementValuePair = { 
 	$name(Identifier) 
 	"=" 
 	$value(ElementValue) 
 	#KeyValue 
 }
+
 ElementValue = ElementValueArrayInitializer
              / ConditionalExpression
              / Annotation
+
 ElementValueArrayInitializer = {
 	"{" 
 	($(ElementValue) ( "," $(ElementValue) )*)? 
 	","? "}" 
 } 
 
-// Annotation
+AModifiers = { $(AModifier)+ #Modifiers }
+AModifier = Annotation
+          / "public"    { #Public }
+          / "protected" { #Protected }
+          / "private"   { #Private }
+          / "abstract"  { #Abstract }
+          / "final"     { #Final }
+          / "static"    { #Static }
+          / "synchronized" { #Synchronized }
+          / "native"       { #Native }
+          / "strictfp"  { #Strictfp }
+          / "transient" { #Transient }
+          / "volatile"  { #Volatile }
+          / "default"   { #Default }
+          
+
 example File '''
 @Entity                                             // Declares this an entity bean
 @Table(name = "people")                             // Maps the bean to SQL table "people"
@@ -248,7 +266,6 @@ public class Person implements Serializable {
 }
 '''
 
-
 /* Declaration */
 // package
 PackageDeclaration = { 
@@ -261,15 +278,10 @@ PackageDeclaration = {
 // import
 ImportDeclaration = {
 	"import" ("static" #StaticImportDecl / #ImportDecl) 
-	$path(PackageName) 
+	$path(PackageName) _
 } ";"
-PackageName = QualifiedName {$ "." "*" #WildCardName }?
 
-// top-level
-
-OrigamiTopLevel = AssertStatement
-                / BlockStatement
-                / ";" { #MultiStmt }
+PackageName = QualifiedName {$ "." '*' #WildCardName }?
 
 AssertStatement = {
 	"assert"
@@ -363,23 +375,30 @@ AnnotationTypeElementDefaultValue = "default" ElementValue
 
 // local variable
 VariableDeclaration = { 
-	$anno(VariableModifiers)? 
+	$anno(AModifiers)? 
 	$type(Type) 
-	addVariableDeclarations 
+	VARDECL 
 }
-VariableModifiers = { 
-	$(VariableModifier)+ #Modifiers 
-}
-VariableModifier = Annotation
-                 / "final" { #Final }
-addVariableDeclarations = $name(VarName) ( "=" $expr(Initializer) )? !',' #VarDecl
-                        / $list(InitDeclList) #MultiVarDecl
 
-InitDecl = { $name(VarName) ( "=" $expr(Initializer) )? #VarDecl }
-InitDeclList = { $(InitDecl) ( "," $(InitDecl) )* #List }
+VARDECL = $name(VarName) ( "=" $expr(Initializer) )? !',' #VarDecl
+        / $list(InitDeclList) #MultiVarDecl
+
+InitDeclList = {
+	$(InitDecl) 
+	( "," $(InitDecl) )* 
+	#List 
+}
+
+InitDecl = { 
+	$name(VarName) ( "=" $expr(Initializer) )? 
+	#VarDecl 
+}
+
 VarName = Identifier {$name "[" $param(ConstantExpression)? "]" #ArrayName }*
+
 Initializer = Expression
             / ArrayInitializer
+
 ArrayInitializer = { 
 	"{" 
 	( $(Initializer) ( "," $(Initializer) )* )? ","? 
@@ -388,84 +407,116 @@ ArrayInitializer = {
 }
 
 //field
-FieldDeclaration = { $anno(FieldModifiers)? $type(Type) $list(InitDeclList) #FieldDecl } ";"
-FieldModifiers = { $(FieldModifier)+ #Modifiers }
-FieldModifier = Annotation
-              / "public"    { #Public }
-              / "protected" { #Protected }
-              / "private"   { #Private }
-              / "final"     { #Final }
-              / "static"    { #Static }
-              / "transient" { #Transient }
-              / "volatile"  { #Volatile }
+FieldDeclaration = { 
+	$anno(AModifiers)? 
+	$type(Type) 
+	$list(InitDeclList) 
+	#FieldDecl 
+} ";"
 
 //constant
-ConstantDeclaration = { $anno(ConstantModifiers)? $type(Type) $list(InitDeclList) #JavaInterfaceConstantDecl } ";"
-ConstantModifiers = { $(ConstantModifier)+ #Modifiers }
-ConstantModifier = Annotation
-                 / "public" { #Public }
-                 / "final"  { #Final }
-                 / "static" { #Static }
+ConstantDeclaration = { 
+	$anno(AModifiers)? 
+	$type(Type) 
+	$list(InitDeclList) 
+	#ConstDecl 
+} ";"
 
 //method
-MethodDeclaration = { $anno(MethodModifiers)? ( $(TypeParameters) $anno(Annotations)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(MethodParamList) ")" $throws(Throws)? ($body(Block) / ";") #MethodDecl }
-MethodModifiers = { $(MethodModifier)+ #Modifiers }
-MethodModifier = Annotation
-               / "public"       { #Public }
-               / "protected"    { #Protected }
-               / "private"      { #Private }
-               / "abstract"     { #Abstract }
-               / "final"        { #Final }
-               / "static"       { #Static }
-               / "synchronized" { #Synchronized }
-               / "native"       { #Native }
-               / "strictfp"     { #Strictfp }
 
-InterfaceMethodDeclaration = { $anno(InterfaceMethodModifiers)? ( $(TypeParameters) $anno(Annotations)? )? $type(TypeOrVoid) $name(Identifier) "(" $param(MethodParamList) ")" $throws(Throws)? ($body(Block) / ";") #MethodDecl }
-InterfaceMethodModifier = Annotation
-                        / "public"   { #Public }
-                        / "abstract" { #Abstract }
-                        / "default"  { #Default }
-                        / "static"   { #Static }
-                        / "strictfp" { #Strictfp }
-InterfaceMethodModifiers = { $(InterfaceMethodModifier)+ #Modifiers }
-MethodParamList = { ( $(MethodParam) "," )* $(VarParam) #List }
-                / { ( $(MethodParam) ( "," $(MethodParam) )* )? #List }
-MethodParam = { $anno(VariableModifiers)? $type(Type) $name(VarName) #Param }
-VarParam = { $anno(VariableModifiers)? $(Type) "..." $(VarName) #VarParam }
+MethodDeclaration = { 
+	$anno(AModifiers)? 
+	( $(TypeParameters) $anno(Annotations)? )? 
+	$type(TypeOrVoid) 
+	$name(Identifier) 
+	"(" $param(MethodParamList) ")" 
+	$throws(Throws)? 
+	($body(Block) / ";") 
+	#MethodDecl 
+}
+
+InterfaceMethodDeclaration = { 
+	$anno(AModifiers)? 
+	( $(TypeParameters) $anno(Annotations)? )? 
+	$type(TypeOrVoid) 
+	$name(Identifier) 
+	"(" $param(MethodParamList) ")" 
+	$throws(Throws)? 
+	($body(Block) / ";") 
+	#MethodDecl 
+}
+
+MethodParamList = { 
+	( $(MethodParam) "," )* 
+	$(VarParam) 
+} / { 
+	( $(MethodParam) ( "," $(MethodParam) )* )? 
+}
+MethodParam = { 
+	$anno(AModifiers)? 
+	$type(Type) 
+	$name(VarName) 
+	#Param 
+}
+VarParam = { 
+	$anno(AModifiers)? 
+	$type(Type) "..." 
+	$name(VarName) 
+	#VarParam 
+}
 Throws = "throws" { $(ClassOrInterfaceTypes) #Throws }
 
 //constructor
-ConstructorDeclaration = { $anno(ConstructorModifiers)? $type(ReferenceType) "(" $param(MethodParamList) ")" $throws(Throws)? $body(ConstructorBody) #ConstructorDecl }
-ConstructorModifiers = { $(ConstructorModifier)+ #Modifiers }
-ConstructorModifier = Annotation
-                                   / "public"    { #Public }
-                                   / "protected" { #Protected }
-                                   / "private"   { #Private }
-ConstructorBody                    = "{" { $(ExplicitConstructorInvocation)? $(BlockStatement)* #BlockStmt } "}"
-ExplicitConstructorInvocation      = { $type(TypeArguments)? $name(This) $param({ "(" addArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } ";"
-                                   / { $type(TypeArguments)? $name(Super) $param({ "(" addArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } ";"
-                                   / { $recv(PostfixExpression) "." $type(TypeArguments)? $name(Super) $param({ "(" addArgumentExpressionList? ")" #List }) #ExplicitConstructorInvocation } ";"
+ConstructorDeclaration = { 
+	$anno(AModifiers)? 
+	$type(ReferenceType) 
+	"(" $param(MethodParamList) ")" 
+	$throws(Throws)? 
+	$body(ConstructorBody) 
+	#ConstructorDecl 
+}
+
+ConstructorBody = { 
+	"{"  
+	$(ExplicitConstructorInvocation ";")? 
+	$(BlockStatement)* 
+	#BlockStmt  
+	"}"
+}
+
+ExplicitConstructorInvocation = { 
+	$type(TypeArguments)? 
+	$name(This) 
+	$param({ "(" addArgumentExpressionList? ")" #List }) 
+	#ConstructorInvocation 
+} / { 
+	$type(TypeArguments)? 
+	$name(Super) 
+	$param({ "(" addArgumentExpressionList? ")" #List }) 
+	#ConstructorInvocation 
+} / { 
+	$recv(PostfixExpression) "." 
+	$type(TypeArguments)? 
+	$name(Super) 
+	$param({ "(" addArgumentExpressionList? ")" #List }) 
+	#ConstructorInvocation 
+}
 
 /* Types, Values, Variables */
 Type                = ReferenceType
                     / PrimitiveType
-PrimitiveType       = { $anno(Annotations) $(UnannoPrimitiveType) #Annotated }
+PrimitiveType       = { $anno(Annotations) $type(UnannoPrimitiveType) #AnnotatedType }
                     / UnannoPrimitiveType
+
 UnannoPrimitiveType = NumericType
                     / BooleanType
+
 NumericType         = IntegralType
                     / FloatingPointType
-IntegralType        = {( 'byte'
-                    / 'char'
-                    / 'short'
-                    / 'int'
-                    / 'long') #ClassType }
-                                   !W _
-FloatingPointType   = {( 'float'
-                    / 'double') #ClassType }
-                                   !W _
+IntegralType        = { ( 'byte' / 'char' / 'short' / 'int' / 'long') #ClassType } !W _
+FloatingPointType   = { ( 'float' / 'double') #ClassType } !W _
 BooleanType         = {'boolean' #ClassType } !W _
+
 ReferenceType       = ArrayType
                     / ClassOrInterfaceType
                     / TypeVariable
@@ -473,9 +524,9 @@ ArrayType           = (PrimitiveType / ClassOrInterfaceType / TypeVariable) {$ba
 ClassOrInterfaceType= ClassType
                     / InterfaceType
 ClassType           = SimpleClassType {$prefix "." $name(SimpleClassType) #PackageClassType }*
-SimpleClassType     = { $anno(Annotations) $(UnannoSimpleClassType) #Annotated }
+SimpleClassType     = { $anno(Annotations) $type(UnannoSimpleClassType) #AnnotatedType }
                     / UnannoSimpleClassType
-UnannoSimpleClassType              = ClassIdentifier {$base $param(TypeArguments) #GenericType }?
+UnannoSimpleClassType = ClassIdentifier {$base $param(TypeArguments) #GenericType }?
 ClassIdentifier     = { NAME #ClassType } _
 InterfaceType       = ClassType
 TypeVariable        = { $anno(Annotations) $(Identifier) #Annotated }
@@ -492,10 +543,15 @@ TypeOrVoid          = Type
                     / Void
 NonArrayType        = ClassOrInterfaceType
                     / PrimitiveType
-ClassOrInterfaceTypes              = { $(ClassOrInterfaceType) ( "," $(ClassOrInterfaceType) )* #List }
+
+ClassOrInterfaceTypes = {
+	$(ClassOrInterfaceType) 
+	( "," $(ClassOrInterfaceType) )* 
+}
 
 // Block, Statement
 //===================
+
 Block = {
 	"{" 
 	$(BlockStatement)* 
@@ -515,7 +571,7 @@ Statement = Block
           / { "do" $body(Statement) "while" "(" $cond(Expression) ")" #DoWhileStmt } ";"
           / { "for" "(" $init(Expressions)? ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #ForStmt }
           / { "for" "(" $init(VariableDeclaration) ";" $cond(Expression)? ";" $iter(Expressions)? ")" $body(Statement) #ForStmt }
-          / { "for" "(" $anno(VariableModifiers)? $type(Type) $name(Identifier) ":" $iter(Expression) ")" $body(Statement) #ForEachStmt }
+          / { "for" "(" $anno(AModifiers)? $type(Type) $name(Identifier) ":" $iter(Expression) ")" $body(Statement) #ForEachStmt }
           / { "continue" $label(Identifier)? `` #ContinueStmt } ";"
           / { "break" $label(Identifier)? `` #BreakStmt } ";"
           / { "return" $expr(Expression)? #ReturnStmt } ";"
@@ -531,10 +587,10 @@ TryStatement = { "try" $list(ResourceList) $try(Block) $catch({ $(Catch)* #List 
              / { "try" $try(Block) $catch({ $(Catch)* #List }) "finally" $finally(Block) #TryStmt }
              / { "try" $try(Block) $catch({ $(Catch)+ #List }) #TryStmt }
 ResourceList = "(" { $(Resource) ( ";" $(Resource) )* #JavaResourceList } ";"? ")"
-Resource     = { $anno(VariableModifiers)? $type(Type) $name(Identifier) "=" $expr(Expression) #VarDecl }
+Resource     = { $anno(AModifiers)? $type(Type) $name(Identifier) "=" $expr(Expression) #VarDecl }
 Catch        = { "catch" "(" CATCH_PARAM ")" $body(Block) #CatchClause }
-CATCH_PARAM  = $anno(VariableModifiers)? $type(ClassOrInterfaceType) $name(Identifier)
-             / $anno(VariableModifiers)? $type({ $(ClassOrInterfaceType) ( "|" $(ClassOrInterfaceType) )+ #JavaMultiExceptions }) $name(Identifier)
+CATCH_PARAM  = $anno(AModifiers)? $type(ClassOrInterfaceType) $name(Identifier)
+             / $anno(AModifiers)? $type({ $(ClassOrInterfaceType) ( "|" $(ClassOrInterfaceType) )+ #JavaMultiExceptions }) $name(Identifier)
 
 // switch
 SwitchStatement = { "switch" "(" $cond(Expression) ")" $body(SwitchBlock) #SwitchStmt }
@@ -619,21 +675,53 @@ PrimaryExpression = Constant
                   / MethodReference
                   / Identifier
 
-ClassLiteral = { $(TypeOrVoid) "." "class" #TypeLiteralExpr }
 This         = "this" { #ThisExpr }
 Super        = "super" { #SuperExpr }
-MethodInvocationExpression = { $recv(Identifier) $param(ArgumentExpressionList) #ApplyExpr }
-InstanceCreationExpression = { "new" $({ $(TypeArguments) #JavaTypeArgs })? $(Annotations)? $type(ClassOrInterfaceType) $param(ArgumentExpressionList) $body(ClassBody)? #NewExpr }
-ArrayCreationExpression  = { "new" $(Annotations)? $type(NonArrayType {$base $(Annotations)? "[" $size(Expression) "]" #ArrayType }+ {$base $(Annotations)? "[" "]" #ArrayType }*) #NewArrayExpr }
-                         / { "new" $(Annotations)? $type(NonArrayType {$base $(Annotations)? "[" "]" #ArrayType }+) $expr(ArrayInitializer) #NewArrayExpr }
-MethodReference = { $(ReferenceType) "::" $(TypeArguments)? $(Identifier / { "new" #Name }) #JavaMethodReference }
+
+ClassLiteral = { 
+	$type(TypeOrVoid) "." "class" 
+	#TypeExpr 
+}
+
+MethodInvocationExpression = {
+	$recv(Identifier) 
+	$param(ArgumentExpressionList) 
+	#ApplyExpr 
+}
+
+InstanceCreationExpression = { 
+	"new" $({ $(TypeArguments) #JavaTypeArgs })? 
+	$(Annotations)? 
+	$type(ClassOrInterfaceType) 
+	$param(ArgumentExpressionList) 
+	$body(ClassBody)? #NewExpr 
+}
+
+ArrayCreationExpression = { 
+	"new" $(Annotations)? 
+	$type(NonArrayType {$base $(Annotations)? "[" $size(Expression) "]" #ArrayType }+ 
+	{$base $(Annotations)? "[" "]" #ArrayType }*) 
+	#NewArrayExpr 
+} / { 
+	"new" $(Annotations)? 
+	$type(NonArrayType {$base $(Annotations)? "[" "]" #ArrayType }+) 
+	$expr(ArrayInitializer) #NewArrayExpr 
+}
+MethodReference = { 
+	$(ReferenceType) "::" $(TypeArguments)? 
+	$(Identifier / { "new" #Name }) 
+	#JavaMethodReference 
+}
 
 /* Lambda */
-LambdaExpression = { $param(LambdaParameters) "->" $body(LambdaBody) #FuncExpr }
-LambdaParameters = Identifier
-                 / "(" MethodParamList ")"
-                 / "(" InferredParamList ")"
-InferredParamList = { $(Identifier) ( "," $(Identifier) )* #List }
+LambdaExpression = {
+	$param(LambdaParameters) 
+	"->" 
+	$body(LambdaBody) #FuncExpr 
+}
+LambdaParameters = "(" (MethodParamList / UntypedParamList) ")"
+                 / { $(Identifier) }
+UntypedParamList = { $(Identifier) ( "," $(Identifier) )* }
 LambdaBody = !'{' { $({ $expr(Expression) #ReturnStmt }) #BlockStmt }
            / Block
 
@@ -644,17 +732,23 @@ W = [a-zA-Z0-9_$]
 NAME = !DIGIT !KEYWORD W+
 
 /* Literal, Constant */
+Constant       = Literal
+
 Literal        = FloatingPointLiteral
                / IntegerLiteral
                / BooleanLiteral
                / CharacterLiteral
                / StringLiteral
                / NullLiteral
-Constant       = Literal
+
+/* null */
 NullLiteral    = "null" { #NullExpr }
+
+/* true,false*/
 BooleanLiteral = "true" { #TrueExpr }
                / "false" { #FalseExpr }
 
+/* int */
 IntegerLiteral = { (DECIMAL / HEXADECIMAL / BINARY / OCTAL) (INT_SUFFIX #LongExpr / #IntExpr) } _
 DIGIT          = [0-9]
 DIGITS         = DIGIT ( '_'* DIGIT )*
@@ -669,7 +763,9 @@ BINARY         = '0' [bB] BINARYDIGITS
 OCTALDIGIT     = [0-7]
 OCTAL          = '0' ( '_'* OCTALDIGIT )*
 INT_SUFFIX     = [lL]
-FloatingPointLiteral               = { FLOAT (FLOAT_SUFFIX #FloatExpr / DOUBLE_SUFFIX? #DoubleExpr) } _
+
+/* float, double */
+FloatingPointLiteral = { FLOAT (FLOAT_SUFFIX #FloatExpr / DOUBLE_SUFFIX? #DoubleExpr) } _
                / { DIGITS (FLOAT_SUFFIX #FloatExpr / DOUBLE_SUFFIX #DoubleExpr) } _
 FLOAT_SUFFIX   = [fF]
 DOUBLE_SUFFIX  = [dD]
@@ -682,8 +778,11 @@ FRACTION       = '.' DIGITS
                / DIGITS '.' DIGITS?
 HEXFRACTION    = '0' [xX] '.' HEXDIGITS
                / HEXADECIMAL ( '.' HEXDIGITS? )?
+               
+/* String, Character */
+
 StringLiteral  = '"' { STRING_CONTENT* #StringExpr } '"' _
-CharacterLiteral                   = '\'' { CHAR_CONTENT #CharExpr } '\'' _
+CharacterLiteral = '\'' { CHAR_CONTENT #CharExpr } '\'' _
 STRING_CONTENT = ESCAPE
                / ![\"\n\\] .
 CHAR_CONTENT   = ESCAPE
