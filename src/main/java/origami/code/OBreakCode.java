@@ -17,7 +17,6 @@
 package origami.code;
 
 import origami.asm.OrigamiBreakException;
-import origami.code.OLabelBlockCode.OBreakLabel;
 import origami.lang.OEnv;
 
 public class OBreakCode extends OJumpCode<String> {
@@ -49,13 +48,13 @@ public class OBreakCode extends OJumpCode<String> {
 		throw new OrigamiBreakException();
 	}
 
-	public OCode hookCode() {
-		if (this.nodes.length == 1) {
-			OBreakLabel label = this.localEnv.get(OBreakLabel.class);
-			return label.newHookCode(this.localEnv, this.nodes[0]);
-		}
-		return new OEmptyCode(this.localEnv);
-	}
+	// public OCode hookCode() {
+	// if (this.nodes.length == 1) {
+	// OBreakLabel label = this.localEnv.get(OBreakLabel.class);
+	// return label.newHookCode(this.localEnv, this.nodes[0]);
+	// }
+	// return new OEmptyCode(this.localEnv);
+	// }
 
 	@Override
 	public void generate(OGenerator gen) {

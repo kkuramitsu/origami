@@ -41,7 +41,6 @@ import origami.code.OGetSizeCode;
 import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
-import origami.code.OLabelBlockCode;
 import origami.code.OLambdaCode;
 import origami.code.OMethodCode;
 import origami.code.OMultiCode;
@@ -829,20 +828,21 @@ public class OAsm implements OGenerator, OArrayUtils {
 		}
 	}
 
-	@Override
-	public void pushBlockCode(OLabelBlockCode code) {
-		// ODebug.trace("begin block label=%s", code.getLabel());
-		this.mBuilder.enterScope();
-		OBreakContinueBlock block = this.mBuilder
-				.pushBlock(new OBreakContinueBlock(this.mBuilder, code.getLabel(), null));
-		this.push(code.initCode());
-		this.mBuilder.mark(block.startLabel);
-		this.push(code.bodyCode()); // void
-		this.mBuilder.mark(block.endLabel);
-		this.push(code.thusCode());
-		this.mBuilder.popBlock();
-		this.mBuilder.exitScope();
-	}
+	// @Override
+	// public void pushBlockCode(OLabelBlockCode code) {
+	// // ODebug.trace("begin block label=%s", code.getLabel());
+	// this.mBuilder.enterScope();
+	// OBreakContinueBlock block = this.mBuilder
+	// .pushBlock(new OBreakContinueBlock(this.mBuilder, code.getLabel(),
+	// null));
+	// this.push(code.initCode());
+	// this.mBuilder.mark(block.startLabel);
+	// this.push(code.bodyCode()); // void
+	// this.mBuilder.mark(block.endLabel);
+	// this.push(code.thusCode());
+	// this.mBuilder.popBlock();
+	// this.mBuilder.exitScope();
+	// }
 
 	@Override
 	public void pushWhile(OWhileCode code) {

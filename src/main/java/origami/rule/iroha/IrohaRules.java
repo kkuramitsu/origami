@@ -32,7 +32,6 @@ import origami.code.OConstructorCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OGetterCode;
-import origami.code.OLabelBlockCode;
 import origami.code.OSugarCode;
 import origami.code.OWarningCode;
 import origami.code.OWhileCode;
@@ -504,37 +503,39 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			return base.newMethodCode(env, "next");
 		}
 
-		class ForEachBreak extends OLabelBlockCode.OBreakLabel {
-			OCode list;
-
-			public ForEachBreak(OCode list, OLabelBlockCode block) {
-				super(block);
-				this.list = list;
-			}
-
-			@Override
-			public OCode newHookCode(OEnv env, OCode expr) {
-				OType t = this.block.getType().getParamTypes()[0];
-				return this.list.newMethodCode(env, "add", expr.asType(env, t)).asType(env, env.t(void.class));
-			}
-
-		}
-
-		class ForEachContinue extends OLabelBlockCode.OContinueLabel {
-			OCode list;
-
-			public ForEachContinue(OCode list, OLabelBlockCode block) {
-				super(block);
-				this.list = list;
-			}
-
-			@Override
-			public OCode newHookCode(OEnv env, OCode expr) {
-				OType t = this.block.getType().getParamTypes()[0];
-				return this.list.newMethodCode(env, "add", expr.asType(env, t)).asType(env, env.t(void.class));
-			}
-
-		}
+		// class ForEachBreak extends OLabelBlockCode.OBreakLabel {
+		// OCode list;
+		//
+		// public ForEachBreak(OCode list, OLabelBlockCode block) {
+		// super(block);
+		// this.list = list;
+		// }
+		//
+		// @Override
+		// public OCode newHookCode(OEnv env, OCode expr) {
+		// OType t = this.block.getType().getParamTypes()[0];
+		// return this.list.newMethodCode(env, "add", expr.asType(env,
+		// t)).asType(env, env.t(void.class));
+		// }
+		//
+		// }
+		//
+		// class ForEachContinue extends OLabelBlockCode.OContinueLabel {
+		// OCode list;
+		//
+		// public ForEachContinue(OCode list, OLabelBlockCode block) {
+		// super(block);
+		// this.list = list;
+		// }
+		//
+		// @Override
+		// public OCode newHookCode(OEnv env, OCode expr) {
+		// OType t = this.block.getType().getParamTypes()[0];
+		// return this.list.newMethodCode(env, "add", expr.asType(env,
+		// t)).asType(env, env.t(void.class));
+		// }
+		//
+		// }
 	}
 
 	public OTypeRule ClassDecl = new TypeRule() {

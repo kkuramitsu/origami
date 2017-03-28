@@ -15,7 +15,6 @@ import origami.code.OGetSizeCode;
 import origami.code.OGetterCode;
 import origami.code.OIfCode;
 import origami.code.OInstanceOfCode;
-import origami.code.OLabelBlockCode;
 import origami.code.OLambdaCode;
 import origami.code.OMultiCode;
 import origami.code.ONameCode;
@@ -266,11 +265,6 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	@Override
 	public void pushThis() {
 		this.p(this.s("this", "self"));
-	}
-
-	@Override
-	public void pushBlockCode(OLabelBlockCode code) {
-
 	}
 
 }

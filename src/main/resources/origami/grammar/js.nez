@@ -1,6 +1,5 @@
 /**
  * JavaScript 4.0 (ECMA262)
- *
  *  Based on grammar from ECMA-262[1] and javascript.pegjs[2]
  *
  * [1] http://www.ecma-international.org/publications/standards/Ecma-262.htm
@@ -12,9 +11,17 @@
  *   Kensuke Tamura (https://github.com/kensuketamura)
  *   Kimio Kuramitsu (https://github.com/kkuramitsu)
  */
-File                            = { ( __ $(SourceElement) )* __ #Source }
+
+/* Start Expression */
+
+File = { ( __ $(SourceElement) )* __ #Source }
+
+/* Origami Settings */
+
+ORIGAMI = 'origami.rule.js.JsTypeSystem'
 
 /* Code Layout : Line-sensitive */
+
 SPACE                           = [\t\v\f \u00A0\uFEFF]
 LINE_TERMINATOR_SEQUENCE        = '\n'
                                 / '\r\n'
@@ -612,93 +619,3 @@ v = 2;
 getValue(); // 1
 '''
 
-
-
-/* Formatter */
-format #Source[*] `$[0 `${NL}` -1]`
-format #FuncDecl[*] `function $[0] $[1]`
-format #FuncDecl[*] `function $[0] $[1] $[2]`
-format #Block[*] `{}`
-format #Block[*] `{${inc}${NL}$[0 `${NL}` -1]${dec}}`
-format #Empty[*] `;`
-format #MultiVarDecl[*] `var $[0]`
-format #VarDecl[*] `var $[0]`
-format #VarDecl[*] `var $[0] = $[1]`
-format #If[*] `if ($[0]) $[1]`
-format #If[*] `if ($[0]) $[1]{$NL}else $[2]`
-format #While[*] `while ($[0]) $[1]`
-format #DoWhile[*] `do $[1]{$NL}while ($[0])`
-format #For[*] `for ($[0]; $[1]; $[2]) $[3]`
-format #ForEach[*] `for ($[0] in $[1]) $[2]`
-format #Continue[*] `continue;`
-format #Continue[*] `continue $[0];`
-format #Break[*] `break;`
-format #Break[*] `break $[0];`
-format #Return[*] `return;`
-format #Return[*] `return $[0];`
-format #JSWith[*] `with ($[0]) $[1]`
-format #JSLabeledStatement[*] `$[0]:${NL}$[1]`
-format #JSComma[*] `$[0], $[1]`
-format #Assign[*] `$[0] = $[1]`
-format #AssignMul[*] `$[0] *= $[1]`
-format #AssignDiv[*] `$[0] /= $[1]`
-format #AssignMod[*] `$[0] %= $[1]`
-format #AssignAdd[*] `$[0] += $[1]`
-format #AssignSub[*] `$[0] -= $[1]`
-format #AssignLeftShift[*] `$[0] <<= $[1]`
-format #AssignRightShift[*] `$[0] >>= $[1]`
-format #AssignLogicalRightShift[*] `$[0] >>>= $[1]`
-format #AssignBitwiseAnd[*] `$[0] &= $[1]`
-format #AssignBitwiseXOr[*] `$[0] ^= $[1]`
-format #AssignBitwiseOr[*] `$[0] != $[1]`
-format #Conditional[*] `$[0] ? $[1] : $[2]`
-format #And[*] `$[0] && $[1]`
-format #Or[*] `$[0] || $[1]`
-format #BitwiseOr[*] `($[0] | $[1])`
-format #BitwiseXor[*] `($[0] ^ $[1])`
-format #BitwiseAnd[*] `($[0] & $[1])`
-format #Equals[*] `$[0] == $[1]`
-format #NotEquals[*] `$[0] != $[1]`
-format #LessThanEquals[*] `$[0] <= $[1]`
-format #LessThan[*] `$[0] < $[1]`
-format #GreaterThanEquals[*] `$[0] >= $[1]`
-format #GreaterThan[*] `$[0] > $[1]`
-format #InstanceOf[*] `$[0] instanceof $[1]`
-format #JSHashIn[*] `$[0] in $[1]`
-format #LeftShift[*] `($[0] << $[1])`
-format #RightShift[*] `($[0] >> $[1])`
-format #LogicalRightShift[*] `($[0] >>> $[1])`
-format #Add[*] `($[0] + $[1])`
-format #Sub[*] `($[0] - $[1])`
-format #Mul[*] `($[0] * $[1])`
-format #Div[*] `($[0] / $[1])`
-format #Mod[*] `($[0] % $[1])`
-format #PreInc[*] `++$[0]`
-format #PreDec[*] `--$[0]`
-format #Plus[*] `+$[0]`
-format #Minus[*] `-$[0]`
-format #Compl[*] `~$[0]`
-format #Not[*] `!$[0]`
-format #JSDeleteProperty[*] `delete($[0])`
-format #JSVoidExpression[*] `void($[0])`
-format #TypeOf[*] `typeof($[0])`
-format #Inc[*] `$[0]++`
-format #Dec[*] `$[0]--`
-format #This[*] `this`
-format #Field[*] `$[0].$[1]`
-format #Indexer[*] `$[0][$[1]]`
-format #List[*] `($[0 `, ` -1])`
-format #Array[*] `[$[0 `, ` -1]]`
-format #Object[*] `{$[0 `, ` -1]}`
-format #$[*] `$[0]: $[1]`
-format #GetterProperty[*] `get $[0]() $[1]`
-format #SetterProperty[*] `set $[0]($[1]) $[2]`
-format #Name[*] `${text}`
-format #Null[*] `null`
-format #True[*] `true`
-format #False[*] `false`
-format #Integer[*] `${text}`
-format #Double[*] `${text}`
-format #String[*] `"${text}"`
-format #Character[*] `'${text}'`
-format #JSRegExpLiteral[*] `${text}`

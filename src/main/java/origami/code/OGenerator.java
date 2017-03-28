@@ -54,7 +54,7 @@ public interface OGenerator {
 
 	public void pushContinue(OContinueCode code);
 
-	public void pushBlockCode(OLabelBlockCode code);
+	// public void pushBlockCode(OLabelBlockCode code);
 
 	/*--------*/
 

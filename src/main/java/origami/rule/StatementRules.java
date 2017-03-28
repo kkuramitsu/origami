@@ -30,7 +30,6 @@ import origami.code.ODefaultValueCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OIfCode;
-import origami.code.OLabelBlockCode;
 import origami.code.OMethodCode;
 import origami.code.OMultiCode;
 import origami.code.OReturnCode;
@@ -266,13 +265,14 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		}
 	};
 
-	public OTypeRule LabelStmt = new TypeRule() {
-		@Override
-		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode body = StatementRules.this.typeStmt(env, t.get(_body));
-			return new OLabelBlockCode(t.getText(_label, null), new OEmptyCode(env), body, new OEmptyCode(env));
-		}
-	};
+	// public OTypeRule LabelStmt = new TypeRule() {
+	// @Override
+	// public OCode typeRule(OEnv env, Tree<?> t) {
+	// OCode body = StatementRules.this.typeStmt(env, t.get(_body));
+	// return new OLabelBlockCode(t.getText(_label, null), new OEmptyCode(env),
+	// body, new OEmptyCode(env));
+	// }
+	// };
 
 	public OTypeRule IfStmt = new TypeRule() {
 		@Override
