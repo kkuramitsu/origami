@@ -30,7 +30,6 @@ import origami.code.ODefaultValueCode;
 import origami.code.OEmptyCode;
 import origami.code.OErrorCode;
 import origami.code.OIfCode;
-import origami.code.OMethodCode;
 import origami.code.OMultiCode;
 import origami.code.OReturnCode;
 import origami.code.OTryCode;
@@ -48,13 +47,9 @@ import origami.nez.ast.Tree;
 import origami.rule.java.JavaForCode;
 import origami.rule.java.JavaSwitchCode;
 import origami.rule.java.JavaSwitchCode.CaseCode;
-import origami.util.OArrayUtils;
-import origami.util.ODebug;
-import origami.util.OScriptUtils;
 import origami.util.OTypeRule;
-import origami.util.OTypeUtils;
 
-public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis, OArrayUtils {
+public class StatementRules implements OImportable {
 
 	public OTypeRule MultiExpr = new TypeRule() {
 		@Override
@@ -65,10 +60,10 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			OCode[] nodes = new OCode[t.size()];
 			int last = t.size() - 1;
 			for (int i = 0; i < last; i++) {
-				nodes[i] = StatementRules.this.typeStmt(env, t.get(i));
+				nodes[i] = this.typeStmt(env, t.get(i));
 			}
 			if (last >= 0) {
-				nodes[last] = StatementRules.this.typeExpr(env, t.get(last));
+				nodes[last] = this.typeExpr(env, t.get(last));
 			}
 			return new OMultiCode(nodes);
 		}
@@ -81,10 +76,10 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			OEnv lenv = env.newEnv();
 			int last = t.size() - 1;
 			for (int i = 0; i < last; i++) {
-				nodes[i] = StatementRules.this.typeStmt(lenv, t.get(i));
+				nodes[i] = this.typeStmt(lenv, t.get(i));
 			}
 			if (last >= 0) {
-				nodes[last] = StatementRules.this.typeExpr(lenv, t.get(last));
+				nodes[last] = this.typeExpr(lenv, t.get(last));
 			}
 			return new OMultiCode(nodes);
 		}
@@ -99,7 +94,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			OCode[] nodes = new OCode[t.size()];
 			int last = t.size();
 			for (int i = 0; i < last; i++) {
-				nodes[i] = StatementRules.this.typeStmt(env, t.get(i));
+				nodes[i] = this.typeStmt(env, t.get(i));
 			}
 			return new OMultiCode(nodes);
 		}
@@ -112,7 +107,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			int last = t.size();
 			OEnv lenv = env.newEnv();
 			for (int i = 0; i < last; i++) {
-				nodes[i] = StatementRules.this.typeStmt(lenv, t.get(i));
+				nodes[i] = this.typeStmt(lenv, t.get(i));
 			}
 			return new OMultiCode(nodes);
 		}
@@ -144,7 +139,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 			}
 			try {
 				Class<?> c = Class.forName(path);
-				StatementRules.this.importClass(env, t, c, alias, option);
+				this.importClass(env, t, c, alias, option);
 			} catch (ClassNotFoundException e) {
 				throw new OErrorCode(env, t.get(_path), "undefined class: %s by %s", path, e);
 			}
@@ -166,18 +161,18 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule FuncDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OAnno anno = StatementRules.this.parseAnno(env, "public,static,final", t.get(_anno, null));
+			OAnno anno = this.parseAnno(env, "public,static,final", t.get(_anno, null));
 			String name = t.getText(_name, null);
-			String[] paramNames = StatementRules.this.parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = StatementRules.this.parseParamTypes(env, paramNames, t.get(_param, null),
-					StatementRules.this.getDefaultParamType(env));
-			OType returnType = StatementRules.this.parseType(env, t.get(_type, null), env.t(OUntypedType.class));
-			OType[] exceptions = StatementRules.this.parseExceptionTypes(env, t.get(_throws, null));
+			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
+			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null),
+					this.getDefaultParamType(env));
+			OType returnType = this.parseType(env, t.get(_type, null), env.t(OUntypedType.class));
+			OType[] exceptions = this.parseExceptionTypes(env, t.get(_throws, null));
 
-			OCode body = StatementRules.this.parseUntypedCode(env, t.get(_body, null));
+			OCode body = this.parseUntypedCode(env, t.get(_body, null));
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
-			StatementRules.this.defineName(env, t, mh);
+			this.defineName(env, t, mh);
 			return new OEmptyCode(env);
 		}
 	};
@@ -185,19 +180,19 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule DyFuncDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OAnno anno = StatementRules.this.parseAnno(env, "public,static", t.get(_anno, null));
+			OAnno anno = this.parseAnno(env, "public,static", t.get(_anno, null));
 
 			String name = t.getText(_name, null);
-			String[] paramNames = StatementRules.this.parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = StatementRules.this.parseParamTypes(env, paramNames, t.get(_param, null),
-					StatementRules.this.getDefaultParamType(env));
-			OType returnType = StatementRules.this.parseType(env, t.get(_type, null), env.t(OUntypedType.class));
-			OType[] exceptions = StatementRules.this.parseExceptionTypes(env, t.get(_throws, null));
+			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
+			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null),
+					this.getDefaultParamType(env));
+			OType returnType = this.parseType(env, t.get(_type, null), env.t(OUntypedType.class));
+			OType[] exceptions = this.parseExceptionTypes(env, t.get(_throws, null));
 
-			OCode body = StatementRules.this.parseUntypedCode(env, t.get(_body, null));
+			OCode body = this.parseUntypedCode(env, t.get(_body, null));
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
-			StatementRules.this.defineName(env, t, mh);
+			this.defineName(env, t, mh);
 			return new OEmptyCode(env);
 		}
 	};
@@ -212,12 +207,12 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule ReturnStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
+			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
 				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("return"));
 			}
-			OCode expr = t.has(_expr) ? StatementRules.this.typeExpr(env, t.get(_expr)) : new OEmptyCode(env);
-			expr = StatementRules.this.typeCheck(env, mdecl.getReturnType(), expr);
+			OCode expr = t.has(_expr) ? this.typeExpr(env, t.get(_expr)) : new OEmptyCode(env);
+			expr = this.typeCheck(env, mdecl.getReturnType(), expr);
 			return new OReturnCode(env, expr);
 		}
 	};
@@ -225,11 +220,11 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule ThrowStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
+			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
 				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("throw"));
 			}
-			OCode expr = StatementRules.this.typeCheck(env, env.t(Throwable.class), t.get(_expr));
+			OCode expr = this.typeCheck(env, env.t(Throwable.class), t.get(_expr));
 			return new OReturnCode(env, expr);
 		}
 	};
@@ -237,12 +232,12 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule BreakStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
+			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
 				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("break"));
 			}
 			if (t.has(_expr)) {
-				OCode expr = StatementRules.this.typeExpr(env, t.get(_expr));
+				OCode expr = this.typeExpr(env, t.get(_expr));
 				return new OBreakCode(env, t.getText(_label, null), expr);
 			}
 			return new OBreakCode(env, t.getText(_label, null));
@@ -252,12 +247,12 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule ContinueStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OMethodDecl mdecl = StatementRules.this.getFunctionContext(env);
+			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
 				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("continue"));
 			}
 			if (t.has(_expr)) {
-				OCode expr = StatementRules.this.typeExpr(env, t.get(_expr));
+				OCode expr = this.typeExpr(env, t.get(_expr));
 				return new OContinueCode(env, t.getText(_label, null), expr);
 			}
 			return new OContinueCode(env, t.getText(_label, null));
@@ -268,7 +263,7 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	// public OTypeRule LabelStmt = new TypeRule() {
 	// @Override
 	// public OCode typeRule(OEnv env, Tree<?> t) {
-	// OCode body = StatementRules.this.typeStmt(env, t.get(_body));
+	// OCode body = this.typeStmt(env, t.get(_body));
 	// return new OLabelBlockCode(t.getText(_label, null), new OEmptyCode(env),
 	// body, new OEmptyCode(env));
 	// }
@@ -277,9 +272,9 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule IfStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
-			OCode thenCode = StatementRules.this.typeStmt(env, t.get(_then));
-			OCode elseCode = StatementRules.this.typeStmt(env, t.get(_else, null));
+			OCode condCode = this.typeCondition(env, t.get(_cond, null));
+			OCode thenCode = this.typeStmt(env, t.get(_then));
+			OCode elseCode = this.typeStmt(env, t.get(_else, null));
 			return new OIfCode(env, condCode, thenCode, elseCode);
 		}
 	};
@@ -287,10 +282,10 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule ForStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode initCode = StatementRules.this.typeStmt(env, t.get(_init, null));
-			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
-			OCode iterCode = StatementRules.this.typeStmt(env, t.get(_iter, null));
-			OCode bodyCode = StatementRules.this.typeStmt(env, t.get(_body, null));
+			OCode initCode = this.typeStmt(env, t.get(_init, null));
+			OCode condCode = this.typeCondition(env, t.get(_cond, null));
+			OCode iterCode = this.typeStmt(env, t.get(_iter, null));
+			OCode bodyCode = this.typeStmt(env, t.get(_body, null));
 			return new JavaForCode(env, initCode, condCode, iterCode, bodyCode);
 		}
 	};
@@ -299,9 +294,9 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode initCode = new OEmptyCode(env);
-			OCode condCode = StatementRules.this.typeCondition(env, t.get(_cond, null));
+			OCode condCode = this.typeCondition(env, t.get(_cond, null));
 			OCode iterCode = new OEmptyCode(env);
-			OCode bodyCode = StatementRules.this.typeStmt(env, t.get(_body, null));
+			OCode bodyCode = this.typeStmt(env, t.get(_body, null));
 			return new JavaForCode(env, initCode, condCode, iterCode, bodyCode);
 		}
 	};
@@ -324,13 +319,13 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule SwitchStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode condCode = StatementRules.this.typeExpr(env, t.get(_cond));
+			OCode condCode = this.typeExpr(env, t.get(_cond));
 			Tree<?> caseNode = t.get(_body);
 			OCode[] caseCodes = new OCode[caseNode.size()];
 			int i = 0;
 			for (Tree<?> sub : caseNode) {
-				OCode cond = StatementRules.this.typeExpr(env, sub.get(_cond, null));
-				OCode clause = StatementRules.this.typeStmt(env, sub.get(_body, null));
+				OCode cond = this.typeExpr(env, sub.get(_cond, null));
+				OCode clause = this.typeStmt(env, sub.get(_body, null));
 				Object value = null;
 				try {
 					value = cond.eval(env);
@@ -350,104 +345,63 @@ public class StatementRules implements OImportable, OScriptUtils, SyntaxAnalysis
 	public OTypeRule TryStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return StatementRules.this.typeTry(env, t);
+			return this.typeTry(env, t);
 		}
-	};
 
-	public OTypeRule JavaTryWithResource = new TypeRule() {
-		@Override
-		public OCode typeRule(OEnv env, Tree<?> t) {
-			return StatementRules.this.typeTry(env, t);
-		}
-	};
+		private OCode typeTry(OEnv env, Tree<?> t) {
+			/* With Resources */
+			OCode withClause = null;
+			// if (t.has(_with)) {
+			// Tree<?> resourceNode = t.get(_with, null);
+			// OCode[] resourceCodes = null;
+			// if (resourceNode != null) {
+			// resourceCodes = new OCode[resourceNode.size()];
+			// int i = 0;
+			// for (Tree<?> sub : resourceNode) {
+			// OCode vardecl = typeStmt(env, sub);
+			// OType type = vardecl.getType();
+			// OCode thisCode = new ThisCode(type);
+			// OCode[] params = { thisCode };
+			// OCode closeCode = MethodCallSite.lookup(env, t, "close",
+			// thisCode);
+			// resourceCodes[i] = new WithResourceCode(env, vardecl, closeCode);
+			// i++;
+			// }
+			// nodes[0] = new MultiCode(resourceCodes);
+			// }
+			// }
 
-	private OCode typeTry(OEnv env, Tree<?> t) {
-		/* With Resources */
-		OCode withClause = null;
-		// if (t.has(_with)) {
-		// Tree<?> resourceNode = t.get(_with, null);
-		// OCode[] resourceCodes = null;
-		// if (resourceNode != null) {
-		// resourceCodes = new OCode[resourceNode.size()];
-		// int i = 0;
-		// for (Tree<?> sub : resourceNode) {
-		// OCode vardecl = typeStmt(env, sub);
-		// OType type = vardecl.getType();
-		// OCode thisCode = new ThisCode(type);
-		// OCode[] params = { thisCode };
-		// OCode closeCode = MethodCallSite.lookup(env, t, "close", thisCode);
-		// resourceCodes[i] = new WithResourceCode(env, vardecl, closeCode);
-		// i++;
-		// }
-		// nodes[0] = new MultiCode(resourceCodes);
-		// }
-		// }
+			/* Try Clause */
+			OCode tryCode = this.typeStmt(env, t.get(_try));
 
-		/* Try Clause */
-		OCode tryCode = this.typeStmt(env, t.get(_try));
-
-		/* Catch Clause */
-		CatchCode[] catchCodes = new CatchCode[t.size(_catch, 0)];
-		if (catchCodes.length > 0) {
-			Tree<?> catchNode = t.get(_catch);
-			int i = 0;
-			for (Tree<?> sub : catchNode) {
-				String name = sub.getText(_name, "");
-				OType type = this.parseType(env, sub.get(_type, null), env.t(Exception.class));
-				OEnv lenv = env.newEnv();
-				lenv.add(sub.get(_name), name, new OLocalVariable(name, type));
-				OCode clause = this.typeStmt(lenv, sub.get(_body, null));
-				catchCodes[i] = new CatchCode(type, name, clause);
-				i++;
+			/* Catch Clause */
+			CatchCode[] catchCodes = new CatchCode[t.size(_catch, 0)];
+			if (catchCodes.length > 0) {
+				Tree<?> catchNode = t.get(_catch);
+				int i = 0;
+				for (Tree<?> sub : catchNode) {
+					String name = sub.getText(_name, "");
+					OType type = this.parseType(env, sub.get(_type, null), env.t(Exception.class));
+					OEnv lenv = env.newEnv();
+					lenv.add(sub.get(_name), name, new OLocalVariable(name, type));
+					OCode clause = this.typeStmt(lenv, sub.get(_body, null));
+					catchCodes[i] = new CatchCode(type, name, clause);
+					i++;
+				}
 			}
-		}
-		/* Finally Clause */
-		OCode finallyCode = this.typeStmt(env, t.get(_finally, null));
+			/* Finally Clause */
+			OCode finallyCode = this.typeStmt(env, t.get(_finally, null));
 
-		return new OTryCode(env, tryCode, finallyCode, catchCodes);
-	}
-
-	public OTypeRule AssertStmt = new TypeRule() {
-		@Override
-		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode cond = StatementRules.this.typeCondition(env, t.get(_cond));
-			OCode msg = null;
-			if (t.has(_value)) {
-				msg = StatementRules.this.typeCheck(env, env.t(String.class), t.get(_value));
-			} else {
-				msg = env.v(ODebug.assertMessage(env, t.get(_cond)));
-			}
-			return new OMethodCode(env,
-					OTypeUtils.loadMethod(StatementRules.class, "assertTest", boolean.class, String.class), cond, msg);
+			return new OTryCode(env, tryCode, finallyCode, catchCodes);
 		}
+
 	};
 
-	// APIs
-	// -----------------------------------------------------------------------
-
-	private static int tested = 0;
-	private static int succ = 0;
-
-	public static final void assertTest(boolean cond, String msg) {
-		tested++;
-		assert (cond) : msg;
-		succ++;
-	}
-
-	public static final void exitTest() {
-		if (tested == 0 || tested > succ) {
-			System.exit(1);
-		}
-		System.exit(0);
-	}
-
-	public static void initTest() {
-		tested = 0;
-		succ = 0;
-	}
-
-	public static void checkTest() {
-		assert (tested > 0) : "untested";
-	}
+	// public OTypeRule JavaTryWithResource = new TypeRule() {
+	// @Override
+	// public OCode typeRule(OEnv env, Tree<?> t) {
+	// return StatementRules.this.typeTry(env, t);
+	// }
+	// };
 
 }
