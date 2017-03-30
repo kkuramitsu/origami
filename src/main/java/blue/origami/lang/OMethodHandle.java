@@ -20,12 +20,12 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.type.OParamMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.ocode.OCode;
 import blue.origami.util.OArrayUtils;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;

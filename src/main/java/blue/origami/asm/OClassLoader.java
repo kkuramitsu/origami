@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import blue.origami.code.OValueCode;
 import blue.origami.ffi.OrigamiObject;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OClassDeclType;
@@ -33,6 +32,7 @@ import blue.origami.lang.OEnv;
 import blue.origami.lang.OField;
 import blue.origami.lang.OFieldDecl;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.ValueCode;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeUtils;
@@ -114,7 +114,7 @@ public class OClassLoader extends ClassLoader {
 				}
 			}
 		}
-		OValueCode[] pools = cdecl.getPooledValues();
+		ValueCode[] pools = cdecl.getPooledValues();
 		for (int id = 0; id < pools.length; id++) {
 			Field f = OTypeUtils.loadField(c, cdecl.constFieldName(id));
 			try {

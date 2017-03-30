@@ -16,11 +16,11 @@
 
 package blue.origami.rule.java;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OSugarCode;
 import blue.origami.lang.OEnv;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.SugarCode;
 
-public class JavaSwitchCode extends OSugarCode {
+public class JavaSwitchCode extends SugarCode {
 
 	public JavaSwitchCode(OEnv env, OCode... nodes) {
 		super(env, env.t(void.class), nodes);
@@ -46,7 +46,7 @@ public class JavaSwitchCode extends OSugarCode {
 	 * <pre>
 	 * Params 0 : Condition (OCode) 1 : Case Clause(MultiCode)
 	 **/
-	public static class CaseCode extends OSugarCode {
+	public static class CaseCode extends SugarCode {
 
 		public Object value;
 

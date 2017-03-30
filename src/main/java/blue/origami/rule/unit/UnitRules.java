@@ -22,13 +22,6 @@ import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
 import blue.origami.asm.code.LoadArgCode;
 import blue.origami.asm.code.LoadThisCode;
-import blue.origami.code.OClassInitCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OReturnCode;
-import blue.origami.code.OTypeCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.ffi.OAlias;
 import blue.origami.ffi.OCast;
 import blue.origami.ffi.OImportable;
@@ -42,6 +35,13 @@ import blue.origami.lang.type.OUntypedType;
 import blue.origami.lang.type.ThisType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.ConstructorInvocationCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.ReturnCode;
+import blue.origami.ocode.TypeValueCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
 import blue.origami.rule.SyntaxAnalysis;
@@ -59,9 +59,9 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 			String name = "[" + t.toText() + "]";
 			OType ty = OTypeName.getType(env, name);
 			if (ty == null) {
-				throw new OErrorCode(env, t, OFmt.undefined_unit__YY0, name);
+				throw new ErrorCode(env, t, OFmt.undefined_unit__YY0, name);
 			}
-			return new OTypeCode(ty);
+			return new TypeValueCode(ty);
 		}
 	};
 
@@ -74,11 +74,11 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 				try {
 					OType ty = parseType(env, t.get(_type));
 					return ty.newConstructorCode(env, env.v(d));
-				} catch (OErrorCode e) {
-					return new OWarningCode(env.v(d), OFmt.undefined_unit__YY0, t.get(_type).toText());
+				} catch (ErrorCode e) {
+					return new WarningCode(env.v(d), OFmt.undefined_unit__YY0, t.get(_type).toText());
 				}
 			} catch (NumberFormatException e) {
-				throw new OErrorCode(env, t.get(_value), OFmt.syntax_error);
+				throw new ErrorCode(env, t.get(_value), OFmt.syntax_error);
 			}
 		}
 
@@ -160,7 +160,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 			OType unitType = new OLocalClassType(env, c, unitName, null);
 			env.getTypeSystem().define(c, unitType);
 			env.add(unitName, unitType);
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 	};
@@ -185,19 +185,19 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		// Unit(double value) { super(value); }
 		String[] paramNames = { "value" };
 		OType[] paramTypes = { env.t(double.class) };
-		OCode init1 = new OClassInitCode(env, unitConstructor1, new LoadThisCode(ct),
+		OCode init1 = new ConstructorInvocationCode(env, unitConstructor1, new LoadThisCode(ct),
 				new LoadArgCode(0, paramTypes[0]));
-		ct.addConstructor(A("public"), paramNames, paramTypes, OType.emptyTypes, new OReturnCode(env, init1));
+		ct.addConstructor(A("public"), paramNames, paramTypes, OType.emptyTypes, new ReturnCode(env, init1));
 		// Unit() { super(); }
-		OCode init0 = new OClassInitCode(env, unitConstructor0, new LoadThisCode(ct));
-		ct.addConstructor(A("public"), emptyNames, OType.emptyTypes, OType.emptyTypes, new OReturnCode(env, init0));
+		OCode init0 = new ConstructorInvocationCode(env, unitConstructor0, new LoadThisCode(ct));
+		ct.addConstructor(A("public"), emptyNames, OType.emptyTypes, OType.emptyTypes, new ReturnCode(env, init0));
 		// Unit newValue(double d) { return new Unit(d); }
 		OCode new1 = ct.newConstructorCode(env, new LoadArgCode(0, paramTypes[0]));
 		ct.addMethod(A("public,final"), env.t(OUnit.class), "newValue", paramNames, paramTypes, OType.emptyTypes,
-				new OReturnCode(env, new1));
+				new ReturnCode(env, new1));
 		// String unit() { return unit; }
 		ct.addMethod(A("public,final"), env.t(String.class), "unit", emptyNames, OType.emptyTypes, null,
-				new OReturnCode(env, env.v(unit)));
+				new ReturnCode(env, env.v(unit)));
 	}
 
 	private void addUnitConv(OEnv env, OClassDeclType ct, OType targetUnit, OType baseUnit, double scale,
@@ -215,7 +215,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		OType[] paramTypes = { baseUnit };
 		OAnno anno = A("public,static");
 		anno.setAnnotation(OCast.class, "cost", OCast.BXSAME);
-		ct.addMethod(anno, targetUnit, "conv", paramNames, paramTypes, null, new OReturnCode(env, base));
+		ct.addMethod(anno, targetUnit, "conv", paramNames, paramTypes, null, new ReturnCode(env, base));
 	}
 
 	private void defineMul(OEnv env, OClassDeclType ct, OType targetUnit, OType baseUnit, OType otherUnit) {
@@ -226,7 +226,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		OCode r = targetUnit.newConstructorCode(env, x.newBinaryCode(env, "*", y));
 		OAnno anno = A("public,static");
 		anno.setAnnotation(OAlias.class, "name", "*");
-		ct.addMethod(anno, targetUnit, "_mul", paramNames, paramTypes, null, new OReturnCode(env, r));
+		ct.addMethod(anno, targetUnit, "_mul", paramNames, paramTypes, null, new ReturnCode(env, r));
 	}
 
 	private void defineDiv(OEnv env, OClassDeclType ct, OType targetUnit, OType baseUnit, OType otherUnit) {
@@ -237,7 +237,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScript
 		OCode r = targetUnit.newConstructorCode(env, x.newBinaryCode(env, "/", y));
 		OAnno anno = A("public,static");
 		anno.setAnnotation(OAlias.class, "name", "/");
-		ct.addMethod(anno, targetUnit, "_div", paramNames, paramTypes, null, new OReturnCode(env, r));
+		ct.addMethod(anno, targetUnit, "_div", paramNames, paramTypes, null, new ReturnCode(env, r));
 	}
 
 }

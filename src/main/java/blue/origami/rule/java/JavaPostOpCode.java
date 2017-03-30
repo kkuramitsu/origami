@@ -16,11 +16,11 @@
 
 package blue.origami.rule.java;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OGenerator;
-import blue.origami.code.OParamCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.OParamCode;
 
 public class JavaPostOpCode extends OParamCode<String> {
 	public JavaPostOpCode(String handled, OType returnType, OCode... nodes) {

@@ -18,11 +18,11 @@ package blue.origami.asm;
 
 import org.objectweb.asm.Label;
 
-import blue.origami.code.OBreakCode;
-import blue.origami.code.OClassInitCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OContinueCode;
-import blue.origami.code.OReturnCode;
+import blue.origami.ocode.BreakCode;
+import blue.origami.ocode.ConstructorInvocationCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.ReturnCode;
 
 public interface OBlock {
 
@@ -49,13 +49,13 @@ class OFinallyBlock implements OBlock {
 
 	@Override
 	public OCode getBeforeCode(OCode code) {
-		if (code instanceof OContinueCode) {
+		if (code instanceof ContinueCode) {
 			return this.weaving;
 		}
-		if (code instanceof OBreakCode) {
+		if (code instanceof BreakCode) {
 			return this.weaving;
 		}
-		if (code instanceof OReturnCode) {
+		if (code instanceof ReturnCode) {
 			return this.weaving;
 		}
 		return null;
@@ -95,7 +95,7 @@ class OBreakContinueBlock extends OBreakBlock {
 
 	@Override
 	public OCode getBeforeCode(OCode code) {
-		if (code instanceof OContinueCode) {
+		if (code instanceof ContinueCode) {
 			return this.weaving;
 		}
 		return null;
@@ -113,7 +113,7 @@ class OClassFieldInitBlock implements OBlock {
 
 	@Override
 	public OCode getAfterCode(OCode code) {
-		if (code instanceof OClassInitCode) {
+		if (code instanceof ConstructorInvocationCode) {
 			return this.weaveCode;
 		}
 		return null;

@@ -25,9 +25,6 @@ import java.util.List;
 
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.NestedEnvCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.ffi.OrigamiException;
 import blue.origami.lang.OEnv;
@@ -41,6 +38,8 @@ import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeRule;
 
@@ -79,7 +78,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 				ImportableEnv imported = env.get(name, ImportableEnv.class);
 				// ODebug.trace("imported %s %s @%s", name, imported, env);
 				if (imported == null) {
-					return new OErrorCode(env, t, OFmt.undefined + " %s", name);
+					return new ErrorCode(env, t, OFmt.undefined + " %s", name);
 				}
 				top = new LayeredEnv(top, imported);
 			}
@@ -172,7 +171,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 				super.add(name, cvar);
 			} else {
 				if (!cvar.getType().eq(gvar.getType())) {
-					throw new OErrorCode(this, OFmt.mismatched + " %s defined=%s", gvar.getType(), cvar.getType());
+					throw new ErrorCode(this, OFmt.mismatched + " %s defined=%s", gvar.getType(), cvar.getType());
 				}
 			}
 		}
@@ -187,7 +186,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 				super.add(name, cmh);
 			} else {
 				if (!cmh.getReturnType().eq(mh.getReturnType())) {
-					throw new OErrorCode(this, OFmt.mismatched + " %s defined=%s", mh, cmh);
+					throw new ErrorCode(this, OFmt.mismatched + " %s defined=%s", mh, cmh);
 				}
 			}
 		}

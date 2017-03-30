@@ -19,15 +19,15 @@ package blue.origami.rule.js;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OValueCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OArrayType;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.rule.TypeRule;
 import blue.origami.util.OStringUtils;
@@ -53,7 +53,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule StringExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new OValueCode(OStringUtils.unquoteString(t.toText()), env.t(String.class));
+			return new ValueCode(OStringUtils.unquoteString(t.toText()), env.t(String.class));
 		}
 	};
 
@@ -68,7 +68,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new OValueCode(this.value, env.t(this.baseType));
+			return new ValueCode(this.value, env.t(this.baseType));
 		}
 	}
 
@@ -144,7 +144,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 					value = BigDecimal.ZERO;
 				}
 			}
-			OCode code = new OValueCode(value, env.t(base));
+			OCode code = new ValueCode(value, env.t(base));
 			return m.newMessageCode(code);
 		}
 
@@ -170,7 +170,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 			for (int i = 0; i < t.size(); i++) {
 				arrays[i] = typeCheck(env, innerType, arrays[i]);
 			}
-			return new OArrayCode(OArrayType.newType(innerType), arrays);
+			return new ArrayCode(OArrayType.newType(innerType), arrays);
 		}
 	};
 

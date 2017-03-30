@@ -16,8 +16,8 @@
 
 package blue.origami.lang;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.rule.OFmt;
 
 public class OMacroVariable extends OVariable {
@@ -36,7 +36,7 @@ public class OMacroVariable extends OVariable {
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
+		throw new ErrorCode(env, OFmt.read_only__YY0, this.getName());
 	}
 
 }

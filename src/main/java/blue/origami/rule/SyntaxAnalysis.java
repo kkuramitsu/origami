@@ -19,10 +19,6 @@ package blue.origami.rule;
 import java.util.Map;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OUntypedCode;
-import blue.origami.code.OValueCode;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodDecl;
@@ -31,6 +27,10 @@ import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.UntypedCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OLog;
 
@@ -63,7 +63,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	public default OClassDecl checkClassContext(OEnv env) {
 		OClassDecl cdecl = env.get(OSymbols.ClassContext, OClassDecl.class);
 		if (cdecl == null) {
-			throw new OErrorCode(env, "not in class");
+			throw new ErrorCode(env, "not in class");
 		}
 		return cdecl;
 	}
@@ -200,7 +200,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		}
 		if (ty == null) {
 			if (defaultType == null) {
-				throw new OErrorCode(env, param, OFmt.no_typing_hint__YY0, param.toText());
+				throw new ErrorCode(env, param, OFmt.no_typing_hint__YY0, param.toText());
 			}
 			ty = defaultType;
 		}
@@ -247,7 +247,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isInterface()) {
-				throw new OErrorCode(env, sub, OFmt.YY0_is_not_interface, sub.toText());
+				throw new ErrorCode(env, sub, OFmt.YY0_is_not_interface, sub.toText());
 			}
 			i++;
 		}
@@ -263,7 +263,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isA(Throwable.class)) {
-				throw new OErrorCode(env, sub, OFmt.YY0_is_not_throwable, sub.toText());
+				throw new ErrorCode(env, sub, OFmt.YY0_is_not_throwable, sub.toText());
 			}
 			i++;
 		}
@@ -271,7 +271,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	}
 
 	public default OCode parseUntypedCode(OEnv env, Tree<?> body) {
-		return body == null ? null : new OUntypedCode(env, body);
+		return body == null ? null : new UntypedCode(env, body);
 	}
 
 	public default Object parseConstantValue(OEnv env, Tree<?> t) {
@@ -280,10 +280,10 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 			return null;
 		}
 		OCode c = typeExpr(env, t);
-		if (c instanceof OValueCode) {
-			return ((OValueCode) c).getValue();
+		if (c instanceof ValueCode) {
+			return ((ValueCode) c).getValue();
 		}
-		throw new OErrorCode(env, t, OFmt.YY0_is_not_constant_value, t.toString());
+		throw new ErrorCode(env, t, OFmt.YY0_is_not_constant_value, t.toString());
 	}
 
 }

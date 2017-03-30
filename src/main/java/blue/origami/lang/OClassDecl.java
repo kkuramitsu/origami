@@ -23,15 +23,15 @@ import blue.origami.asm.OAnno;
 import blue.origami.asm.OCompilationUnit;
 import blue.origami.asm.code.LoadArgCode;
 import blue.origami.asm.code.LoadThisCode;
-import blue.origami.code.OClassInitCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OReturnCode;
-import blue.origami.code.OValueCode;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OParamVarType;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.ConstructorInvocationCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.ReturnCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.rule.OSymbols;
 import blue.origami.rule.TypeAnalysis;
 
@@ -224,9 +224,9 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 		return null;
 	}
 
-	private ArrayList<OValueCode> constList;
+	private ArrayList<ValueCode> constList;
 
-	public int poolConstValue(OValueCode value) {
+	public int poolConstValue(ValueCode value) {
 		if (this.constList == null) {
 			this.constList = new ArrayList<>();
 		}
@@ -238,11 +238,11 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 		return id;
 	}
 
-	public OValueCode[] getPooledValues() {
+	public ValueCode[] getPooledValues() {
 		if (constList == null) {
-			return new OValueCode[0];
+			return new ValueCode[0];
 		}
-		return constList.toArray(new OValueCode[constList.size()]);
+		return constList.toArray(new ValueCode[constList.size()]);
 	}
 
 	public String constFieldName(int id) {
@@ -303,7 +303,7 @@ public class OClassDecl implements OCompilationUnit, OSymbols, TypeAnalysis {
 			for (int i = 0; i < p.length; i++) {
 				args[i + 1] = new LoadArgCode(i, p[i]);
 			}
-			OCode body = new OMultiCode(new OClassInitCode(m, args), new OReturnCode(env()));
+			OCode body = new MultiCode(new ConstructorInvocationCode(m, args), new ReturnCode(env()));
 			thisType.addConstructor(new OAnno("public"), m.getParamNames(), m.getParamTypes(), m.getExceptionTypes(),
 					body);
 		}

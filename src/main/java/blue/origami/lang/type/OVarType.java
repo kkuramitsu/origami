@@ -1,7 +1,7 @@
 package blue.origami.lang.type;
 
-import blue.origami.code.OCode;
 import blue.origami.lang.OEnv;
+import blue.origami.ocode.OCode;
 import blue.origami.util.ODebug;
 
 public class OVarType extends PhantomType {

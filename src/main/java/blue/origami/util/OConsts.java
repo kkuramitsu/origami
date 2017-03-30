@@ -16,7 +16,7 @@
 
 package blue.origami.util;
 
-import blue.origami.code.OCode;
+import blue.origami.ocode.OCode;
 
 public interface OConsts {
 	public static OCode[] emptyNodes = new OCode[0];

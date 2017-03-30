@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OCodeWriter;
-import blue.origami.code.OErrorCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.Source;
@@ -33,6 +30,9 @@ import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.Production;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OCodeWriter;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.rule.OrigamiTypeSystem;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.OConsole;
@@ -131,10 +131,10 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 			this.showThrowable(((InvocationTargetException) e).getTargetException());
 			return;
 		}
-		if (e instanceof OErrorCode) {
+		if (e instanceof ErrorCode) {
 			OConsole.println(OConsole.bold("Static Error: "));
 			OConsole.beginColor(OConsole.Red);
-			OConsole.println(((OErrorCode) e).getLog());
+			OConsole.println(((ErrorCode) e).getLog());
 			OConsole.endColor();
 		} else {
 			OConsole.println(OConsole.bold("Runtime Exception: "));

@@ -18,11 +18,6 @@ package blue.origami.rule.java;
 
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OUntypedCode;
-import blue.origami.code.RunnableCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OClassDeclType;
@@ -34,8 +29,13 @@ import blue.origami.lang.type.OArrayType;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.UntypedCode;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
+import blue.origami.rule.RunnableCode;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.rule.TypeRule;
@@ -111,7 +111,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl cdecl = getClassContext(env);
 			if (cdecl == null) {
-				throw new OErrorCode(env, t, "not in class");
+				throw new ErrorCode(env, t, "not in class");
 			}
 			Tree<?> listNode = t.get(_list, null);
 			OType type = parseType(env, t.get(_type, null), env.t(Object.class));
@@ -127,11 +127,11 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 				}
 				OCode expr = null;
 				if (sub.has(_expr)) {
-					expr = new OUntypedCode(env, sub.get(_expr));
+					expr = new UntypedCode(env, sub.get(_expr));
 				}
 				cdecl.addField(anno, type, name, expr);
 			}
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 	};
@@ -142,7 +142,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl cdecl = getClassContext(env);
 			if (cdecl == null) {
-				throw new OErrorCode(env, t, "not in class");
+				throw new ErrorCode(env, t, "not in class");
 			}
 			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
 			String name = t.getText(_name, "");
@@ -158,7 +158,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			} else {
 				env.add(t, name, new OPartialFunc(m, 0, new JavaThisCode(cdecl.getType())));
 			}
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 	};
@@ -169,7 +169,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OClassDecl cdecl = getClassContext(env);
 			if (cdecl == null) {
-				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, OFmt.constructor);
+				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, OFmt.constructor);
 			}
 
 			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
@@ -178,7 +178,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 			OCode body = parseUntypedCode(env, t.get(_body));
 			cdecl.addConstructorCode(anno, paramNames, paramTypes, exceptions, body);
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 	};

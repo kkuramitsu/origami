@@ -24,10 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OReturnCode;
 import blue.origami.ffi.OAlias;
 import blue.origami.ffi.OCast;
 import blue.origami.ffi.OImportable;
@@ -49,6 +45,10 @@ import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.parser.TreeConnector;
 import blue.origami.nez.parser.TreeConstructor;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.ReturnCode;
 import blue.origami.rule.OFmt;
 
 public interface OScriptUtils {
@@ -89,7 +89,7 @@ public interface OScriptUtils {
 		try {
 			c = Class.forName(path);
 		} catch (ClassNotFoundException e) {
-			throw new OErrorCode(env, OFmt.unfound_class__YY0_by_YY1, path, e);
+			throw new ErrorCode(env, OFmt.unfound_class__YY0_by_YY1, path, e);
 		}
 		importClass(env, s, c, names);
 	}
@@ -229,9 +229,9 @@ public interface OScriptUtils {
 
 	public static Object eval(OEnv env, OCode... codes) throws Throwable {
 		OClassDeclType ct = OClassDeclType.currentType(env);
-		OCode code = codes.length == 0 ? codes[0] : new OMultiCode(codes);
+		OCode code = codes.length == 0 ? codes[0] : new MultiCode(codes);
 		ct.addMethod(new OAnno("public,static"), code.getType(), "f", OType.emptyNames, OType.emptyTypes,
-				OType.emptyTypes, new OReturnCode(env, code));
+				OType.emptyTypes, new ReturnCode(env, code));
 		ODebug.setDebug(true);
 		Class<?> c = ct.unwrap(env);
 		ODebug.setDebug(false);

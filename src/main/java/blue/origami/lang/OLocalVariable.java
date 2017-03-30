@@ -16,11 +16,11 @@
 
 package blue.origami.lang;
 
-import blue.origami.code.OAssignCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.ONameCode;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.AssignCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.NameCode;
 import blue.origami.rule.OFmt;
 
 public class OLocalVariable extends OVariable {
@@ -45,20 +45,20 @@ public class OLocalVariable extends OVariable {
 
 	@Override
 	public OCode nameCode(OEnv env, String name) {
-		return new ONameCode(name, this.getType(), this.isReadOnly());
+		return new NameCode(name, this.getType(), this.isReadOnly());
 	}
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		return new OAssignCode(this.getType(), true, this.getName(), right);
+		return new AssignCode(this.getType(), true, this.getName(), right);
 	}
 
 	@Override
 	public OCode assignCode(OEnv env, OCode right) {
 		if (this.isReadOnly()) {
-			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
+			throw new ErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
-		return new OAssignCode(this.getType(), false, this.getName(), right);
+		return new AssignCode(this.getType(), false, this.getName(), right);
 	}
 
 }

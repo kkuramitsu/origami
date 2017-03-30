@@ -23,40 +23,6 @@ import blue.origami.asm.code.DupCode;
 import blue.origami.asm.code.LoadArgCode;
 import blue.origami.asm.code.LoadThisCode;
 import blue.origami.asm.code.OAsmCode;
-import blue.origami.code.OAndCode;
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OAssignCode;
-import blue.origami.code.OBreakCode;
-import blue.origami.code.OCastCode;
-import blue.origami.code.OClassInitCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OConstructorCode;
-import blue.origami.code.OContinueCode;
-import blue.origami.code.ODefaultValueCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OGenerator;
-import blue.origami.code.OGetIndexCode;
-import blue.origami.code.OGetSizeCode;
-import blue.origami.code.OGetterCode;
-import blue.origami.code.OIfCode;
-import blue.origami.code.OInstanceOfCode;
-import blue.origami.code.OLambdaCode;
-import blue.origami.code.OMethodCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.ONameCode;
-import blue.origami.code.ONotCode;
-import blue.origami.code.OOrCode;
-import blue.origami.code.OReturnCode;
-import blue.origami.code.OSetIndexCode;
-import blue.origami.code.OSetterCode;
-import blue.origami.code.OSugarCode;
-import blue.origami.code.OThrowCode;
-import blue.origami.code.OTryCode;
-import blue.origami.code.OValueCode;
-import blue.origami.code.OWarningCode;
-import blue.origami.code.OWhileCode;
-import blue.origami.code.OTryCode.CatchCode;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OField;
@@ -64,6 +30,40 @@ import blue.origami.lang.OFieldDecl;
 import blue.origami.lang.OMethodDecl;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.AndCode;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.AssignCode;
+import blue.origami.ocode.BreakCode;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.ConstructorInvocationCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NewCode;
+import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.DefaultValueCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.GetIndexCode;
+import blue.origami.ocode.GetSizeCode;
+import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.IfCode;
+import blue.origami.ocode.InstanceOfCode;
+import blue.origami.ocode.LambdaCode;
+import blue.origami.ocode.ApplyCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.NameCode;
+import blue.origami.ocode.NotCode;
+import blue.origami.ocode.OrCode;
+import blue.origami.ocode.ReturnCode;
+import blue.origami.ocode.SetIndexCode;
+import blue.origami.ocode.SetterCode;
+import blue.origami.ocode.SugarCode;
+import blue.origami.ocode.ThrowCode;
+import blue.origami.ocode.TryCode;
+import blue.origami.ocode.ValueCode;
+import blue.origami.ocode.WarningCode;
+import blue.origami.ocode.WhileCode;
+import blue.origami.ocode.TryCode.CatchCode;
 import blue.origami.rule.java.JavaSwitchCode;
 import blue.origami.rule.java.JavaSwitchCode.CaseCode;
 import blue.origami.util.OArrayUtils;
@@ -87,8 +87,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 		return this.env.t(c);
 	}
 
-	private OValueCode newValueCode(Object value) {
-		return (OValueCode) this.env.v(value);
+	private ValueCode newValueCode(Object value) {
+		return (ValueCode) this.env.v(value);
 	}
 
 	byte[] byteCompile(OClassDecl cdecl) {
@@ -111,8 +111,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 			this.defineField(cw, fdecl);
 		}
 		if (staticInits.size() > 0) {
-			staticInits.add(new OReturnCode(this.env));
-			OMultiCode body = new OMultiCode(staticInits);
+			staticInits.add(new ReturnCode(this.env));
+			MultiCode body = new MultiCode(staticInits);
 			OAnno anno = new OAnno("static,private");
 			OMethodDecl mdecl = new OMethodDecl(cdecl.getType(), anno, this.env.t(void.class), "<clinit>", emptyNames,
 					emptyTypes, emptyTypes, body);
@@ -120,8 +120,8 @@ public class OAsm implements OGenerator, OArrayUtils {
 		}
 
 		if (fieldInits.size() > 0) {
-			OMultiCode body = new OMultiCode(fieldInits);
-			this.env.add(OClassInitCode.class, body);
+			MultiCode body = new MultiCode(fieldInits);
+			this.env.add(ConstructorInvocationCode.class, body);
 		}
 		/* if isInterface(), then unnecessary */
 		boolean hasConstructor = cdecl.getType().isInterface();
@@ -138,7 +138,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 			this.defineMethod(cw, mh.getDecl());
 		}
 
-		OValueCode[] v = cdecl.getPooledValues();
+		ValueCode[] v = cdecl.getPooledValues();
 		for (int id = 0; id < v.length; id++) {
 			FieldNode fn = new FieldNode(Opcodes.ACC_STATIC, cdecl.constFieldName(id), v[id].getType().typeDesc(0),
 					null, null);
@@ -161,7 +161,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 		// mdecl.getSignature());
 		this.mBuilder = cw.newGeneratorAdapter(mdecl);
 		if (mdecl.getName().equals("<init>")) {
-			this.mBuilder.pushBlock(new OClassFieldInitBlock(this.env.get(OClassInitCode.class)));
+			this.mBuilder.pushBlock(new OClassFieldInitBlock(this.env.get(ConstructorInvocationCode.class)));
 		}
 		if (mdecl.body != null) {
 			this.mBuilder.enterScope();
@@ -223,7 +223,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	// }
 
 	@Override
-	public void pushMulti(OMultiCode node) {
+	public void pushMulti(MultiCode node) {
 		if (node.hasDefinedLocalVariables()) {
 			this.mBuilder.enterScope();
 		}
@@ -236,7 +236,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushIf(OIfCode node) {
+	public void pushIf(IfCode node) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
@@ -304,7 +304,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushReturn(OReturnCode node) {
+	public void pushReturn(ReturnCode node) {
 		this.mBuilder.weaveBefore(node, null, this);
 		OCode[] params = node.getParams();
 		if (params.length == 1) {
@@ -315,13 +315,13 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushTry(OTryCode code) {
+	public void pushTry(TryCode code) {
 		OCode finallyCode = code.finallyCode();
 		boolean isStmt = code.getType().is(void.class);
 		VarEntry entry = null;
 		if (!isStmt) {
 			this.mBuilder.enterScope();
-			this.pushValue(new ODefaultValueCode(code.getType()));
+			this.pushValue(new DefaultValueCode(code.getType()));
 			String name = "res";
 			entry = this.mBuilder.createNewVar(name, code.getType());
 			this.mBuilder.storeToVar(entry);
@@ -360,7 +360,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 			this.mBuilder.goTo(mergeLabel);
 		}
 
-		if (!(finallyCode instanceof OEmptyCode)) {
+		if (!(finallyCode instanceof EmptyCode)) {
 			// Label tryFinallyLabel = this.mBuilder.newLabel();
 			this.mBuilder.catchException(tryStartLabel, tryEndLabel,
 					null/* this.env.t(Throwable.class).asmType() */);
@@ -377,7 +377,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushValue(OValueCode node) {
+	public void pushValue(ValueCode node) {
 		Object v = node.getHandled();
 		OType t = node.getType();
 		// ODebug.trace("pushValue %s %s", t, v);
@@ -466,7 +466,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushAnd(OAndCode code) {
+	public void pushAnd(AndCode code) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
@@ -482,7 +482,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushOr(OOrCode code) {
+	public void pushOr(OrCode code) {
 		Label thenLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 		this.pushIfTrue(code.getParams()[0], thenLabel);
@@ -498,19 +498,19 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushNot(ONotCode code) {
+	public void pushNot(NotCode code) {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public void pushInstanceOf(OInstanceOfCode code) {
+	public void pushInstanceOf(InstanceOfCode code) {
 		Type type = OAsmUtils.asmType(code.getInstanceOfType());
 		code.getParams()[0].boxCode(this.env).generate(this);
 		this.mBuilder.instanceOf(type);
 	}
 
 	@Override
-	public void pushArray(OArrayCode node) {
+	public void pushArray(ArrayCode node) {
 		OType type = node.getType();
 		OType ctype = type.getParamTypes()[0];
 		Type elementType = ctype.asmType();
@@ -528,7 +528,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushLambda(OLambdaCode node) {
+	public void pushLambda(LambdaCode node) {
 
 	}
 
@@ -564,7 +564,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushCast(OCastCode node) {
+	public void pushCast(CastCode node) {
 		if (node.isStupidCast()) {
 			node.newErrorCode(this.env).generate(this);
 			return;
@@ -616,7 +616,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushMethod(OMethodCode node) {
+	public void pushMethod(ApplyCode node) {
 		OMethodHandle m = node.getHandled();
 		int ivc = m.getInvocation();
 		if (ivc == OMethodHandle.DynamicInvocation) {
@@ -683,13 +683,13 @@ public class OAsm implements OGenerator, OArrayUtils {
 		}
 		//
 		this.mBuilder.checkCast(node.getType(), m.getReturnType());
-		if (node instanceof OClassInitCode) {
+		if (node instanceof ConstructorInvocationCode) {
 			this.mBuilder.weaveBefore(node, null, this);
 		}
 	}
 
 	@Override
-	public void pushGetter(OGetterCode node) {
+	public void pushGetter(GetterCode node) {
 		OField field = node.getHandled();
 		this.pushParams(field.getType(), node);
 		Type base = OAsmUtils.asmType(field.getDeclaringClass());
@@ -702,7 +702,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushSetter(OSetterCode node) {
+	public void pushSetter(SetterCode node) {
 		OCode expr = node.expr();
 		OField field = node.getHandled();
 		if (node.recv().isPresent()) {
@@ -721,7 +721,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushConstructor(OConstructorCode node) {
+	public void pushConstructor(NewCode node) {
 		Type type = OAsmUtils.asmType(node.getDeclaringClass());
 		this.mBuilder.newInstance(type);
 		this.mBuilder.dup();
@@ -729,7 +729,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushName(ONameCode node) {
+	public void pushName(NameCode node) {
 		try {
 			VarEntry var = this.mBuilder.getVar(node.getName());
 			this.mBuilder.loadFromVar(var);
@@ -741,7 +741,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushAssign(OAssignCode node) {
+	public void pushAssign(AssignCode node) {
 		VarEntry entry;
 		this.push(null, node.rightCode());
 		if (!node.getType().is(void.class)) {
@@ -762,7 +762,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushGetSize(OGetSizeCode code) {
+	public void pushGetSize(GetSizeCode code) {
 		if (code.getMethod() == null) {
 			this.pushParams(code.getType(), code);
 			this.mBuilder.arrayLength();
@@ -772,7 +772,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushGetIndex(OGetIndexCode code) {
+	public void pushGetIndex(GetIndexCode code) {
 		if (code.getMethod() == null) {
 			this.pushParams(code.getType(), code);
 			this.mBuilder.arrayLoad(code.getType().asmType());
@@ -782,7 +782,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushSetIndex(OSetIndexCode code) {
+	public void pushSetIndex(SetIndexCode code) {
 		if (code.getMethod() == null) {
 			this.pushParams(code.getType(), code);
 			this.mBuilder.arrayStore(code.getType().asmType());
@@ -792,13 +792,13 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushThrow(OThrowCode code) {
+	public void pushThrow(ThrowCode code) {
 		this.pushParams(null, code);
 		this.mBuilder.throwException();
 	}
 
 	@Override
-	public void pushBreak(OBreakCode code) {
+	public void pushBreak(BreakCode code) {
 		OBreakBlock untilBlock = this.mBuilder.findBlock(OBreakBlock.class, (b) -> b.matchLabel(code.getLabel()));
 		this.mBuilder.weaveBefore(code, untilBlock, this);
 		if (untilBlock == null) {
@@ -813,7 +813,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushContinue(OContinueCode code) {
+	public void pushContinue(ContinueCode code) {
 		OBreakContinueBlock block = this.mBuilder.findBlock(OBreakContinueBlock.class,
 				(b) -> b.matchLabel(code.getLabel()));
 		this.mBuilder.weaveBefore(code, block, this);
@@ -845,7 +845,7 @@ public class OAsm implements OGenerator, OArrayUtils {
 	// }
 
 	@Override
-	public void pushWhile(OWhileCode code) {
+	public void pushWhile(WhileCode code) {
 		OBreakContinueBlock block = this.mBuilder
 				.pushBlock(new OBreakContinueBlock(this.mBuilder, null, code.nextCode()));
 		this.mBuilder.mark(block.startLabel);
@@ -914,22 +914,22 @@ public class OAsm implements OGenerator, OArrayUtils {
 	}
 
 	@Override
-	public void pushError(OErrorCode node) {
+	public void pushError(ErrorCode node) {
 		OLog.report(this.env, node.getLog());
 		Constructor<?> c = OTypeUtils.loadConstructor(OrigamiSourceException.class, String.class);
-		OConstructorCode code = new OConstructorCode(this.env, c, this.env.v(node.getLog().toString()));
+		NewCode code = new NewCode(this.env, c, this.env.v(node.getLog().toString()));
 		this.push(code);
 		this.mBuilder.throwException();
 	}
 
 	@Override
-	public void pushWarning(OWarningCode node) {
+	public void pushWarning(WarningCode node) {
 		OLog.report(this.env, node.getHandled());
 		this.push(node.getFirst());
 	}
 
 	@Override
-	public void pushSugar(OSugarCode code) {
+	public void pushSugar(SugarCode code) {
 		code.desugar().generate(this);
 	}
 }

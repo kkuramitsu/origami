@@ -23,12 +23,12 @@ import org.objectweb.asm.Type;
 
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OParamType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OTypeSystemType;
+import blue.origami.ocode.OCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeUtils;
 

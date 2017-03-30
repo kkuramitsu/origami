@@ -16,12 +16,12 @@
 
 package blue.origami.lang.type;
 
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OCode;
-import blue.origami.code.ODefaultValueCode;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.DefaultValueCode;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.OArrayUtils;
 import blue.origami.util.ODebug;
@@ -48,16 +48,16 @@ public class OParamMatcher extends OVarDomain implements OArrayUtils, TypeAnalys
 			if (params.length == paramSize) {
 				if (isVarg && !params[paramSize - 1].getType().isArray()) {
 					System.arraycopy(params, 0, p, 0, paramSize - 1);
-					p[paramSize - 1] = new OArrayCode(env, params[paramSize - 1]);
+					p[paramSize - 1] = new ArrayCode(env, params[paramSize - 1]);
 				} else {
 					System.arraycopy(params, 0, p, 0, paramSize);
 				}
 			} else {
 				System.arraycopy(params, 0, p, 0, paramSize - 1);
 				if (params.length > paramSize) {
-					p[paramSize - 1] = new OArrayCode(env, slice(params, paramSize - 1, params.length));
+					p[paramSize - 1] = new ArrayCode(env, slice(params, paramSize - 1, params.length));
 				} else {
-					p[paramSize - 1] = new ODefaultValueCode(env);
+					p[paramSize - 1] = new DefaultValueCode(env);
 				}
 			}
 			return p;

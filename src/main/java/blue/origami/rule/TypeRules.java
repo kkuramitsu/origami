@@ -16,21 +16,21 @@
 
 package blue.origami.rule;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OTypeCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OTypeName;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.TypeValueCode;
 import blue.origami.util.OTypeRule;
 
 public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 
 	@SuppressWarnings("serial")
-	public static class TypeNotFoundException extends OErrorCode {
+	public static class TypeNotFoundException extends ErrorCode {
 
 		public TypeNotFoundException(OEnv env, Tree<?> s, LocaleFormat format, Object... args) {
 			super(env, s, format, args);
@@ -45,7 +45,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 			if (type == null) {
 				throw new TypeNotFoundException(env, t, OFmt.undefined_type__YY0, t.toText());
 			}
-			return new OTypeCode(type);
+			return new TypeValueCode(type);
 		}
 
 		@Override
@@ -66,7 +66,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType ty = this.parseType(env, t.get(_base));
-			return new OTypeCode(new blue.origami.lang.type.OArrayType(ty));
+			return new TypeValueCode(new blue.origami.lang.type.OArrayType(ty));
 		}
 
 	};
@@ -81,7 +81,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 				a[i] = this.parseType(env, params.get(i));
 			}
 			OType ty = blue.origami.lang.type.OFuncType.newType(env, returnType, a);
-			return new OTypeCode(ty);
+			return new TypeValueCode(ty);
 		}
 	};
 
@@ -91,7 +91,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 			OType p = this.parseType(env, t.get(_base));
 			OType ret = this.parseType(env, t.get(_param));
 			OType ty = blue.origami.lang.type.OFuncType.newType(env, ret, p);
-			return new OTypeCode(ty);
+			return new TypeValueCode(ty);
 		}
 	};
 
@@ -100,7 +100,7 @@ public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType p = this.parseType(env, t.get(_base));
 			// OType ty = env.getTypeSystem().newNullableType(p);
-			return new OTypeCode(p);
+			return new TypeValueCode(p);
 		}
 	};
 

@@ -18,11 +18,11 @@ package blue.origami.lang;
 
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
-import blue.origami.code.OUntypedCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.UntypedCode;
 import blue.origami.util.ODebug;
 
 public class OMethodDecl extends OCommonMethodHandle {
@@ -170,9 +170,9 @@ public class OMethodDecl extends OCommonMethodHandle {
 	private boolean isTypeChecking = false;
 
 	public void typeCheck(OEnv env0) {
-		if (!this.isTypeChecking && this.body instanceof OUntypedCode) {
+		if (!this.isTypeChecking && this.body instanceof UntypedCode) {
 			this.isTypeChecking = true;
-			this.body = ((OUntypedCode) this.body).typeCheck(env0, this);
+			this.body = ((UntypedCode) this.body).typeCheck(env0, this);
 			this.isTypeChecking = false;
 		}
 	}

@@ -17,10 +17,10 @@
 package blue.origami.lang;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OGetterCode;
-import blue.origami.code.OSetterCode;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.SetterCode;
 
 public class OGlobalVariable extends OVariable {
 	private final OField field;
@@ -43,12 +43,12 @@ public class OGlobalVariable extends OVariable {
 
 	@Override
 	public OCode nameCode(OEnv env, String name) {
-		return new OGetterCode(this.field);
+		return new GetterCode(this.field);
 	}
 
 	@Override
 	public OCode defineCode(OEnv env, OCode right) {
-		return new OSetterCode(this.field, this.getType(), right);
+		return new SetterCode(this.field, this.getType(), right);
 	}
 
 }

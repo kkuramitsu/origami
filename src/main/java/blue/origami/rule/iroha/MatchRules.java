@@ -24,14 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import blue.origami.code.BlockGen;
-import blue.origami.code.OCode;
-import blue.origami.code.ODefaultValueCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OIfCode;
-import blue.origami.code.OLocalCode;
-import blue.origami.code.OSugarCode;
 import blue.origami.ffi.Case;
 import blue.origami.ffi.FieldExtractable;
 import blue.origami.ffi.ListExtractable;
@@ -46,6 +38,14 @@ import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.DefaultValueCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.IfCode;
+import blue.origami.ocode.OLocalCode;
+import blue.origami.ocode.SugarCode;
+import blue.origami.rule.BlockGen;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.TypeRule;
 import blue.origami.rule.unit.OUnit;
@@ -112,7 +112,7 @@ public class MatchRules implements OImportable {
 						v[i] = this.parseConstantValue(env, e);
 						if (i > 0) {
 							if (!v[i - 1].getClass().equals(v[i].getClass())) {
-								throw new OErrorCode(env, e, OFmt.S_must_be_S, e.toString(), ts.valueType(v[0]));
+								throw new ErrorCode(env, e, OFmt.S_must_be_S, e.toString(), ts.valueType(v[0]));
 							}
 						}
 						i++;
@@ -131,7 +131,7 @@ public class MatchRules implements OImportable {
 				Object end = this.parseConstantValue(env, t.get(_end));
 				OType ty = ts.valueType(start);
 				if (!start.getClass().equals(end.getClass())) {
-					throw new OErrorCode(env, t.get(_end), OFmt.S_must_be_S, end, ty);
+					throw new ErrorCode(env, t.get(_end), OFmt.S_must_be_S, end, ty);
 				}
 				if (start instanceof Number) {
 					return new DRangeValue(ty, name, (Number) start, (Number) end, !tag.equals("RangeUntilCase"));
@@ -142,7 +142,7 @@ public class MatchRules implements OImportable {
 				if (start instanceof String) {
 					return new SRangeValue(ty, name, (String) start, (String) end, !tag.equals("RangeUntilCase"));
 				}
-				throw new OErrorCode(env, t, "illenal range values %s", t.toString());
+				throw new ErrorCode(env, t, "illenal range values %s", t.toString());
 			}
 			case "TypeCase": {
 				OType type = this.parseParamType(env, t, name, t.get(_type, null), null);
@@ -175,20 +175,20 @@ public class MatchRules implements OImportable {
 				for (Tree<?> e : t) {
 					l[i] = this.parseCaseBody(env, e);
 					if (l[i].getName() == null) {
-						throw new OErrorCode(env, e, "no field name %s", e.toText());
+						throw new ErrorCode(env, e, "no field name %s", e.toText());
 					}
 					i++;
 				}
 				return new FieldCase(l);
 			}
 			default:
-				throw new OErrorCode(env, t, OFmt.undefined_syntax__YY0, t.getTag().getSymbol());
+				throw new ErrorCode(env, t, OFmt.undefined_syntax__YY0, t.getTag().getSymbol());
 			}
 		}
 
 	}
 
-	public static class IMatchCode extends OSugarCode {
+	public static class IMatchCode extends SugarCode {
 		ICaseCode[] caseCodes;
 
 		IMatchCode(OEnv env, OCode matchCode, ICaseCode... cases) {
@@ -244,7 +244,7 @@ public class MatchRules implements OImportable {
 		@Override
 		public OCode desugar() {
 			BlockGen block0 = new BlockGen(this.env());
-			block0.pushDefine("result_", new ODefaultValueCode(this.getType()));
+			block0.pushDefine("result_", new DefaultValueCode(this.getType()));
 			block0.pushDefine("input_", this.getFirst().boxCode(this.env()));
 
 			block0.pushDefine("cases_", this.env().v(this.getEmbededCaseData()));
@@ -315,11 +315,11 @@ public class MatchRules implements OImportable {
 			return this;
 		}
 
-		OIfCode desugarIfCode(BlockGen block0, int index) {
-			return new OIfCode(this.env(), //
+		IfCode desugarIfCode(BlockGen block0, int index) {
+			return new IfCode(this.env(), //
 					block0.eVar("unmatched_"), //
 					this.desugarIfThenBlock(block0), //
-					new OEmptyCode(this.env()));
+					new EmptyCode(this.env()));
 		}
 
 		OCode desugarIfThenBlock(BlockGen block0) {

@@ -23,14 +23,14 @@ import java.lang.reflect.Modifier;
 
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
-import blue.origami.code.OFuncNameCode;
-import blue.origami.code.OMethodCode;
 import blue.origami.ffi.OMutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.lang.type.OFuncType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.FuncNameCode;
+import blue.origami.ocode.ApplyCode;
 
 public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeName {
 
@@ -130,7 +130,7 @@ public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeNa
 
 	@Override
 	public OCode newMatchedParamCode(OEnv env, OCallSite site, OType ret, OCode[] params, int matchCost) {
-		return new OMethodCode(this, ret, params, matchCost);
+		return new ApplyCode(this, ret, params, matchCost);
 	}
 
 	/* OName */
@@ -142,7 +142,7 @@ public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeNa
 
 	@Override
 	public OCode nameCode(OEnv env, String name) {
-		return new OFuncNameCode(env, name, this);
+		return new FuncNameCode(env, name, this);
 	}
 
 	/* OTypeName */

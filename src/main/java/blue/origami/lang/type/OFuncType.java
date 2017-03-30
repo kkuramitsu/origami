@@ -23,13 +23,13 @@ import java.util.function.BiConsumer;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
 import blue.origami.asm.code.LoadArgCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OReturnCode;
 import blue.origami.ffi.OrigamiFunction;
 import blue.origami.lang.OClassDeclType;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.ReturnCode;
 import blue.origami.util.OArrayUtils;
 import blue.origami.util.StringCombinator;
 
@@ -205,7 +205,7 @@ class FuncType$ implements OArrayUtils { /* Companions */
 		for (int i = 0; i < paramTypes.length; i++) {
 			codes[i] = new LoadArgCode(i, paramTypes[i]);
 		}
-		OCode code = new OMultiCode(new OReturnCode(env, mh.newMethodCode(env, codes)));
+		OCode code = new MultiCode(new ReturnCode(env, mh.newMethodCode(env, codes)));
 		ct.addMethod(A("public,final"), mh.getReturnType(), "apply", mh.getParamNames(), mh.getParamTypes(), emptyTypes,
 				code);
 		// ct.getDecl().addDefaultConstructors();

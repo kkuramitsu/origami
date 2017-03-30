@@ -16,15 +16,15 @@
 
 package blue.origami.rule;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OTypeCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.TypeValueCode;
 import blue.origami.util.OTypeRule;
 
 public interface TypeAnalysis {
@@ -34,12 +34,12 @@ public interface TypeAnalysis {
 		OCode node = null;
 		try {
 			node = env.get(name, OTypeRule.class, (d, c) -> d.typeRule(env, t));
-		} catch (OErrorCode e) {
+		} catch (ErrorCode e) {
 			e.setSourcePosition(t);
 			throw e;
 		}
 		if (node == null) {
-			throw new OErrorCode(env, t, OFmt.undefined_syntax__YY0, name);
+			throw new ErrorCode(env, t, OFmt.undefined_syntax__YY0, name);
 		}
 		node.setSourcePosition(t);
 		return node;
@@ -47,7 +47,7 @@ public interface TypeAnalysis {
 
 	public default OCode typeExpr(OEnv env, Tree<?> t) {
 		if (t == null) {
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 		return typeTree(env, t);
 	}
@@ -55,7 +55,7 @@ public interface TypeAnalysis {
 	public default OCode typeExprOrErrorCode(OEnv env, Tree<?> t) {
 		try {
 			return typeExpr(env, t);
-		} catch (OErrorCode e) {
+		} catch (ErrorCode e) {
 			if (e.getType() == null) {
 				e.refineType(env, env.t(OUntypedType.class));
 			}
@@ -65,7 +65,7 @@ public interface TypeAnalysis {
 
 	public default OCode typeStmt(OEnv env, Tree<?> t) {
 		if (t == null) {
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 		OCode node = typeTree(env, t);
 		return node.asType(env, env.t(void.class));
@@ -74,7 +74,7 @@ public interface TypeAnalysis {
 	public default OCode ensureTypedExpr(OEnv env, Tree<?> t) {
 		OCode node = typeExpr(env, t);
 		if (node.isUntyped()) {
-			throw new OErrorCode(env, t, OFmt.implicit_type);
+			throw new ErrorCode(env, t, OFmt.implicit_type);
 		}
 		return node;
 	}
@@ -109,8 +109,8 @@ public interface TypeAnalysis {
 
 	public default OType parseType(OEnv env, Tree<?> t) {
 		OCode node = typeTree(env, t);
-		if (node instanceof OTypeCode) {
-			return ((OTypeCode) node).getTypeValue();
+		if (node instanceof TypeValueCode) {
+			return ((TypeValueCode) node).getTypeValue();
 		}
 		return node.getType();
 	}
@@ -119,11 +119,11 @@ public interface TypeAnalysis {
 		if (t != null) {
 			try {
 				OCode node = typeTree(env, t);
-				if (node instanceof OTypeCode) {
-					return ((OTypeCode) node).getTypeValue();
+				if (node instanceof TypeValueCode) {
+					return ((TypeValueCode) node).getTypeValue();
 				}
 				return node.getType();
-			} catch (OErrorCode e) {
+			} catch (ErrorCode e) {
 			}
 		}
 		return defty;

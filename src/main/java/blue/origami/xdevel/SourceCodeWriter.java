@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OCodeWriter;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OGenerator;
-import blue.origami.code.OMethodCode;
-import blue.origami.code.OSugarCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OCodeWriter;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.ApplyCode;
+import blue.origami.ocode.SugarCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.util.OArrayUtils;
 import blue.origami.util.ODebug;
 import blue.origami.util.OLog;
@@ -45,24 +45,24 @@ public abstract class SourceCodeWriter extends OCodeWriter implements OGenerator
 	}
 
 	@Override
-	public void pushError(OErrorCode node) {
+	public void pushError(ErrorCode node) {
 		this.logList.add(node.getLog());
 
 	}
 
 	@Override
-	public void pushWarning(OWarningCode node) {
+	public void pushWarning(WarningCode node) {
 		this.logList.add(node.getLog());
 		this.push(node.getFirst());
 	}
 
 	@Override
-	public void pushSugar(OSugarCode code) {
+	public void pushSugar(SugarCode code) {
 		code.desugar().generate(this);
 	}
 
 	@Override
-	public void pushMethod(OMethodCode node) {
+	public void pushMethod(ApplyCode node) {
 		OMethodHandle m = node.getHandled();
 		if (this.tryCodeTemplate(m, node.getParams())) {
 			return;

@@ -16,11 +16,11 @@
 
 package blue.origami.rule.java;
 
-import blue.origami.code.OGenerator;
-import blue.origami.code.OValueCode;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.ValueCode;
 
-public class JavaThisCode extends OValueCode {
+public class JavaThisCode extends ValueCode {
 	public JavaThisCode(OType ty) {
 		super(null, ty);
 	}

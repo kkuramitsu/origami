@@ -23,17 +23,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OBreakCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OContinueCode;
-import blue.origami.code.ODefaultValueCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OIfCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OReturnCode;
-import blue.origami.code.OTryCode;
-import blue.origami.code.OTryCode.CatchCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OLocalVariable;
@@ -44,6 +33,17 @@ import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.BreakCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.DefaultValueCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.IfCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.ReturnCode;
+import blue.origami.ocode.TryCode;
+import blue.origami.ocode.TryCode.CatchCode;
 import blue.origami.rule.java.JavaForCode;
 import blue.origami.rule.java.JavaSwitchCode;
 import blue.origami.rule.java.JavaSwitchCode.CaseCode;
@@ -55,7 +55,7 @@ public class StatementRules implements OImportable {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			if (t.size() == 0) {
-				return new ODefaultValueCode(env);
+				return new DefaultValueCode(env);
 			}
 			OCode[] nodes = new OCode[t.size()];
 			int last = t.size() - 1;
@@ -65,7 +65,7 @@ public class StatementRules implements OImportable {
 			if (last >= 0) {
 				nodes[last] = this.typeExpr(env, t.get(last));
 			}
-			return new OMultiCode(nodes);
+			return new MultiCode(nodes);
 		}
 	};
 
@@ -81,7 +81,7 @@ public class StatementRules implements OImportable {
 			if (last >= 0) {
 				nodes[last] = this.typeExpr(lenv, t.get(last));
 			}
-			return new OMultiCode(nodes);
+			return new MultiCode(nodes);
 		}
 	};
 
@@ -89,14 +89,14 @@ public class StatementRules implements OImportable {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			if (t.size() == 0) {
-				return new OEmptyCode(env);
+				return new EmptyCode(env);
 			}
 			OCode[] nodes = new OCode[t.size()];
 			int last = t.size();
 			for (int i = 0; i < last; i++) {
 				nodes[i] = this.typeStmt(env, t.get(i));
 			}
-			return new OMultiCode(nodes);
+			return new MultiCode(nodes);
 		}
 	};
 
@@ -109,7 +109,7 @@ public class StatementRules implements OImportable {
 			for (int i = 0; i < last; i++) {
 				nodes[i] = this.typeStmt(lenv, t.get(i));
 			}
-			return new OMultiCode(nodes);
+			return new MultiCode(nodes);
 		}
 	};
 
@@ -141,9 +141,9 @@ public class StatementRules implements OImportable {
 				Class<?> c = Class.forName(path);
 				this.importClass(env, t, c, alias, option);
 			} catch (ClassNotFoundException e) {
-				throw new OErrorCode(env, t.get(_path), "undefined class: %s by %s", path, e);
+				throw new ErrorCode(env, t.get(_path), "undefined class: %s by %s", path, e);
 			}
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 		private Set<String> parseSubSymbols(Tree<?> t, Set<String> option) {
@@ -173,7 +173,7 @@ public class StatementRules implements OImportable {
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
 			this.defineName(env, t, mh);
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 	};
 
@@ -193,14 +193,14 @@ public class StatementRules implements OImportable {
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
 			this.defineName(env, t, mh);
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 	};
 
 	public OTypeRule EmptyStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 	};
 
@@ -209,11 +209,11 @@ public class StatementRules implements OImportable {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("return"));
+				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, quote("return"));
 			}
-			OCode expr = t.has(_expr) ? this.typeExpr(env, t.get(_expr)) : new OEmptyCode(env);
+			OCode expr = t.has(_expr) ? this.typeExpr(env, t.get(_expr)) : new EmptyCode(env);
 			expr = this.typeCheck(env, mdecl.getReturnType(), expr);
-			return new OReturnCode(env, expr);
+			return new ReturnCode(env, expr);
 		}
 	};
 
@@ -222,10 +222,10 @@ public class StatementRules implements OImportable {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("throw"));
+				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, quote("throw"));
 			}
 			OCode expr = this.typeCheck(env, env.t(Throwable.class), t.get(_expr));
-			return new OReturnCode(env, expr);
+			return new ReturnCode(env, expr);
 		}
 	};
 
@@ -234,13 +234,13 @@ public class StatementRules implements OImportable {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("break"));
+				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, quote("break"));
 			}
 			if (t.has(_expr)) {
 				OCode expr = this.typeExpr(env, t.get(_expr));
-				return new OBreakCode(env, t.getText(_label, null), expr);
+				return new BreakCode(env, t.getText(_label, null), expr);
 			}
-			return new OBreakCode(env, t.getText(_label, null));
+			return new BreakCode(env, t.getText(_label, null));
 		}
 	};
 
@@ -249,13 +249,13 @@ public class StatementRules implements OImportable {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OMethodDecl mdecl = this.getFunctionContext(env);
 			if (mdecl == null) {
-				throw new OErrorCode(env, t, OFmt.YY0_is_not_here, quote("continue"));
+				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, quote("continue"));
 			}
 			if (t.has(_expr)) {
 				OCode expr = this.typeExpr(env, t.get(_expr));
-				return new OContinueCode(env, t.getText(_label, null), expr);
+				return new ContinueCode(env, t.getText(_label, null), expr);
 			}
-			return new OContinueCode(env, t.getText(_label, null));
+			return new ContinueCode(env, t.getText(_label, null));
 
 		}
 	};
@@ -275,7 +275,7 @@ public class StatementRules implements OImportable {
 			OCode condCode = this.typeCondition(env, t.get(_cond, null));
 			OCode thenCode = this.typeStmt(env, t.get(_then));
 			OCode elseCode = this.typeStmt(env, t.get(_else, null));
-			return new OIfCode(env, condCode, thenCode, elseCode);
+			return new IfCode(env, condCode, thenCode, elseCode);
 		}
 	};
 
@@ -293,9 +293,9 @@ public class StatementRules implements OImportable {
 	public OTypeRule WhileStmt = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OCode initCode = new OEmptyCode(env);
+			OCode initCode = new EmptyCode(env);
 			OCode condCode = this.typeCondition(env, t.get(_cond, null));
-			OCode iterCode = new OEmptyCode(env);
+			OCode iterCode = new EmptyCode(env);
 			OCode bodyCode = this.typeStmt(env, t.get(_body, null));
 			return new JavaForCode(env, initCode, condCode, iterCode, bodyCode);
 		}
@@ -336,7 +336,7 @@ public class StatementRules implements OImportable {
 			}
 			OCode caseCode = null;
 			if (caseNode.size() > 0) {
-				caseCode = new OMultiCode(caseCodes);
+				caseCode = new MultiCode(caseCodes);
 			}
 			return new JavaSwitchCode(env, condCode, caseCode);
 		}
@@ -392,7 +392,7 @@ public class StatementRules implements OImportable {
 			/* Finally Clause */
 			OCode finallyCode = this.typeStmt(env, t.get(_finally, null));
 
-			return new OTryCode(env, tryCode, finallyCode, catchCodes);
+			return new TryCode(env, tryCode, finallyCode, catchCodes);
 		}
 
 	};

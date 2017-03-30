@@ -26,9 +26,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import blue.origami.code.OCode;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
 import blue.origami.util.ODebug;
 
 public class OGeneratorAdapter extends GeneratorAdapter {

@@ -18,10 +18,10 @@ package blue.origami.lang.type;
 
 import org.objectweb.asm.Type;
 
-import blue.origami.code.OCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OField;
 import blue.origami.lang.OMethodHandle;
+import blue.origami.ocode.OCode;
 import blue.origami.util.StringCombinator;
 
 public interface OWrapperType extends OType, StringCombinator {

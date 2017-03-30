@@ -18,10 +18,10 @@ package blue.origami.lang;
 
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.rule.OFmt;
 import blue.origami.util.OLog;
 
@@ -77,7 +77,7 @@ public class OUntypedMethod extends OMethod {
 		}
 		this.definedEnv.add(this.getName(), newmh);
 		OCode node = newmh.matchParamCode(env, site, nodes);
-		return new OWarningCode(node, OLog.TypeInfo, OFmt.type_inferred__YY0, newmh);
+		return new WarningCode(node, OLog.TypeInfo, OFmt.type_inferred__YY0, newmh);
 	}
 
 }

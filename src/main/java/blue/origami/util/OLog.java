@@ -16,12 +16,12 @@
 
 package blue.origami.util;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.lang.OEnv;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.WarningCode;
 
 public class OLog implements StringCombinator {
 	public SourcePosition s;
@@ -165,7 +165,7 @@ public class OLog implements StringCombinator {
 			if (head == null) {
 				return code;
 			}
-			return new OWarningCode(code, head);
+			return new WarningCode(code, head);
 		}
 
 	}

@@ -19,10 +19,10 @@ package blue.origami.rule;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import blue.origami.code.OCode;
 import blue.origami.ffi.OrigamiPrimitiveGenerics;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
 import blue.origami.util.StringCombinator;
 
 public class OrigamiIterator {

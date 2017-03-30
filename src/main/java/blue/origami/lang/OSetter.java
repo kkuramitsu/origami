@@ -21,9 +21,9 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
-import blue.origami.code.OSetterCode;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.SetterCode;
 
 public class OSetter extends OFieldHandle {
 
@@ -83,9 +83,9 @@ public class OSetter extends OFieldHandle {
 	@Override
 	public OCode newMatchedParamCode(OEnv env, OCallSite site, OType ret, OCode[] params, int matchCost) {
 		if (this.isStatic()) {
-			return new OSetterCode(this.field, ret, params[1]);
+			return new SetterCode(this.field, ret, params[1]);
 		} else {
-			return new OSetterCode(this.field, ret, params[0], params[1]);
+			return new SetterCode(this.field, ret, params[0], params[1]);
 		}
 	}
 }

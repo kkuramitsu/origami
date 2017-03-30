@@ -17,9 +17,6 @@
 package blue.origami.rule.js;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.ODefaultValueCode;
-import blue.origami.code.OEmptyCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OGlobalVariable;
@@ -28,6 +25,9 @@ import blue.origami.lang.OVariable;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.DefaultValueCode;
+import blue.origami.ocode.EmptyCode;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.rule.TypeRule;
@@ -56,13 +56,13 @@ public class JSExpressionRule implements OImportable, SyntaxAnalysis, TypeAnalys
 				}
 				right = typeCheck(env, type, right);
 			} else {
-				right = new ODefaultValueCode(type);
+				right = new DefaultValueCode(type);
 			}
 
 			if (isTopLevel(env)) {
 				OVariable var = new OGlobalVariable(env, anno, name, type, right);
 				defineName(env, t, var);
-				return new OEmptyCode(env);
+				return new EmptyCode(env);
 			}
 			OVariable var = new OLocalVariable(this.isReadOnly, name, type);
 			defineName(env, t, var);

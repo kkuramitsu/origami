@@ -22,11 +22,11 @@ import java.util.Arrays;
 import org.objectweb.asm.Type;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
-import blue.origami.code.OMethodCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ApplyCode;
 
 public class ODynamicMethodHandle extends OCommonMethodHandle {
 
@@ -134,10 +134,10 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 	@Override
 	public OCode newMatchedParamCode(OEnv env, OCallSite site, OType ret, OCode[] params, int matchCost) {
 		assert (site == null);
-		return new OMethodCode(this, env.t(OUntypedType.class), params, matchCost);
+		return new ApplyCode(this, env.t(OUntypedType.class), params, matchCost);
 	}
 
-	public OCode retype(OMethodCode orig, OCode[] params) {
+	public OCode retype(ApplyCode orig, OCode[] params) {
 		for (int i = 0; i < params.length; i++) {
 			if (params[i].isUntyped()) {
 				return orig;

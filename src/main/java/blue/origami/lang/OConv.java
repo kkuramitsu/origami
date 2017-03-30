@@ -24,12 +24,12 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCastCode;
-import blue.origami.code.OCode;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.OCode;
 
 public class OConv extends OMethodWrapper {
 	int matchCost;
@@ -50,7 +50,7 @@ public class OConv extends OMethodWrapper {
 
 	@Override
 	public OCode newMethodCode(OEnv env, OCode... params) {
-		return new OCastCode(this.getReturnType(), this, params);
+		return new CastCode(this.getReturnType(), this, params);
 	}
 
 	// Utils
@@ -131,7 +131,7 @@ public class OConv extends OMethodWrapper {
 			for (int i = 0; i < values.length; i++) {
 				a[i + 1] = env.v(values[i]);
 			}
-			return new OCastCode(ret, this, a);
+			return new CastCode(ret, this, a);
 		}
 
 		// @Override

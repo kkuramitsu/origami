@@ -19,12 +19,12 @@ package blue.origami.rule;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import blue.origami.code.OCode;
-import blue.origami.code.ONullCode;
-import blue.origami.code.OValueCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NullCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OTypeRule;
 import blue.origami.util.OLog.Messenger;
@@ -34,7 +34,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule NullExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new ONullCode(env);
+			return new NullCode(env);
 		}
 	};
 
@@ -83,7 +83,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new OValueCode(this.value, env.t(this.baseType));
+			return new ValueCode(this.value, env.t(this.baseType));
 		}
 	}
 
@@ -156,7 +156,7 @@ public class LiteralRules implements OImportable, TypeAnalysis {
 					value = BigDecimal.ZERO;
 				}
 			}
-			OCode code = new OValueCode(value, env.t(base));
+			OCode code = new ValueCode(value, env.t(base));
 			return m.newMessageCode(code);
 		}
 	}

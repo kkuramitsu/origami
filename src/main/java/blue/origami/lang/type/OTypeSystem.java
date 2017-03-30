@@ -26,14 +26,14 @@ import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
-import blue.origami.code.ONullCode;
-import blue.origami.code.OValueCode;
 import blue.origami.ffi.Immutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.ffi.OrigamiObject;
 import blue.origami.lang.OEnv;
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NullCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.util.OTypeUtils;
 
 public abstract class OTypeSystem {
@@ -222,9 +222,9 @@ public abstract class OTypeSystem {
 
 	public final OCode newValueCode(Object value) {
 		if (value == null) {
-			return new ONullCode(newType(OUntypedType.class));
+			return new NullCode(newType(OUntypedType.class));
 		}
-		return new OValueCode(value, valueType(value));
+		return new ValueCode(value, valueType(value));
 	}
 
 }

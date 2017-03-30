@@ -23,11 +23,6 @@ import java.lang.invoke.MutableCallSite;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.origami.code.OCastCode;
-import blue.origami.code.OCode;
-import blue.origami.code.ODyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OValueCode;
 import blue.origami.ffi.OCast;
 import blue.origami.ffi.OrigamiException;
 import blue.origami.lang.ODynamicMethodHandle;
@@ -35,6 +30,11 @@ import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ODyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeUtils;
 import blue.origami.util.StringCombinator;
@@ -181,7 +181,7 @@ public abstract class OCallSite extends MutableCallSite {
 		OCode[] params = new OCode[args.length];
 		for (int i = 0; i < args.length; i++) {
 			this.testTypes[i] = (args[i] == null) ? Object.class : args[i].getClass();
-			params[i] = new OValueCode(args[i], env().t(OTypeUtils.unboxType(this.testTypes[i])));
+			params[i] = new ValueCode(args[i], env().t(OTypeUtils.unboxType(this.testTypes[i])));
 		}
 		OCode node = findParamCode2(env(), true, this.name, params);
 		if (node instanceof ODyCode) {
@@ -189,8 +189,8 @@ public abstract class OCallSite extends MutableCallSite {
 			MethodHandle mh = ((ODyCode) node).getMethodHandle(env(), lookup);
 			OCode[] p = node.getParams();
 			for (int i = 0; i < p.length; i++) {
-				if (p[i] instanceof OCastCode) {
-					MethodHandle conv = ((OCastCode) p[i]).getMethodHandle(env(), lookup);
+				if (p[i] instanceof CastCode) {
+					MethodHandle conv = ((CastCode) p[i]).getMethodHandle(env(), lookup);
 					if (conv != null) {
 						mh = MethodHandles.filterArguments(mh, i, conv);
 					}
@@ -285,7 +285,7 @@ public abstract class OCallSite extends MutableCallSite {
 	public final static OCode matchParamCode(OEnv env, OCallSite site, String name, OCode[] params,
 			List<OMethodHandle> l) {
 		if (l.size() == 0) {
-			throw new OErrorCode(env, "undefined %s(%s)", name, params);
+			throw new ErrorCode(env, "undefined %s(%s)", name, params);
 		}
 		OCode start = l.get(0).matchParamCode(env, site, params);
 		for (int i = 1; i < l.size(); i++) {
@@ -297,7 +297,7 @@ public abstract class OCallSite extends MutableCallSite {
 		}
 		if (start.getMatchCost() >= OCast.STUPID) {
 			// ODebug.trace("miss cost=%d %s", start.getMatchCost(), start);
-			throw new OErrorCode(env, "mismatched %s(%s)", name, params);
+			throw new ErrorCode(env, "mismatched %s(%s)", name, params);
 		}
 		return site == null ? start : site.staticCheck(env, start);
 	}

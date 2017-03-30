@@ -19,12 +19,12 @@ package blue.origami.lang;
 import java.lang.reflect.Field;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OGetterCode;
 import blue.origami.ffi.OMutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.GetterCode;
 import blue.origami.util.OTypeUtils;
 
 public class OField {
@@ -120,15 +120,15 @@ public class OField {
 
 	public OCode nameCode(OEnv env) {
 		assert (this.isStatic());
-		return new OGetterCode(this);
+		return new GetterCode(this);
 	}
 
 	public OCode matchParamCode(OEnv env, OCode[] params) {
 		// if (params.length == 1) {
 		if (this.isStatic()) {
-			return new OGetterCode(this);
+			return new GetterCode(this);
 		}
-		return new OGetterCode(this, params[0]);
+		return new GetterCode(this, params[0]);
 		// }
 		// return new MismatchedCode(env, new OGetter(this));
 	}

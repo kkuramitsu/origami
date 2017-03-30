@@ -1,33 +1,33 @@
 package blue.origami.xdevel;
 
-import blue.origami.code.OAndCode;
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OAssignCode;
-import blue.origami.code.OBreakCode;
-import blue.origami.code.OCastCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OConstructorCode;
-import blue.origami.code.OContinueCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OGenerator;
-import blue.origami.code.OGetIndexCode;
-import blue.origami.code.OGetSizeCode;
-import blue.origami.code.OGetterCode;
-import blue.origami.code.OIfCode;
-import blue.origami.code.OInstanceOfCode;
-import blue.origami.code.OLambdaCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.ONameCode;
-import blue.origami.code.ONotCode;
-import blue.origami.code.OOrCode;
-import blue.origami.code.OReturnCode;
-import blue.origami.code.OSetIndexCode;
-import blue.origami.code.OSetterCode;
-import blue.origami.code.OThrowCode;
-import blue.origami.code.OTryCode;
-import blue.origami.code.OValueCode;
-import blue.origami.code.OWhileCode;
 import blue.origami.lang.OField;
+import blue.origami.ocode.AndCode;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.AssignCode;
+import blue.origami.ocode.BreakCode;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NewCode;
+import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.GetIndexCode;
+import blue.origami.ocode.GetSizeCode;
+import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.IfCode;
+import blue.origami.ocode.InstanceOfCode;
+import blue.origami.ocode.LambdaCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.NameCode;
+import blue.origami.ocode.NotCode;
+import blue.origami.ocode.OrCode;
+import blue.origami.ocode.ReturnCode;
+import blue.origami.ocode.SetIndexCode;
+import blue.origami.ocode.SetterCode;
+import blue.origami.ocode.ThrowCode;
+import blue.origami.ocode.TryCode;
+import blue.origami.ocode.ValueCode;
+import blue.origami.ocode.WhileCode;
 import blue.origami.rule.OFmt;
 import blue.origami.util.OStringUtils;
 
@@ -51,7 +51,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushValue(OValueCode node) {
+	public void pushValue(ValueCode node) {
 		Object value = node.getValue();
 		if (node.getType().is(void.class)) {
 			this.p("pass");
@@ -77,25 +77,25 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushArray(OArrayCode node) {
+	public void pushArray(ArrayCode node) {
 		this.p("[");
 		this.pushParam(node, ",");
 		this.p("]");
 	}
 
 	@Override
-	public void pushLambda(OLambdaCode node) {
+	public void pushLambda(LambdaCode node) {
 		String[] names = node.getParamNames();
 		node.getFirst();
 	}
 
 	@Override
-	public void pushName(ONameCode node) {
+	public void pushName(NameCode node) {
 		this.p(node.getName());
 	}
 
 	@Override
-	public void pushConstructor(OConstructorCode node) {
+	public void pushConstructor(NewCode node) {
 		this.pushCons(node.getDeclaringClass(), node.getParams());
 	}
 
@@ -106,7 +106,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	// }
 
 	@Override
-	public void pushCast(OCastCode node) {
+	public void pushCast(CastCode node) {
 		if (node.getHandled() != null) {
 			this.pushMethod(node);
 		} else {
@@ -115,7 +115,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushSetter(OSetterCode node) {
+	public void pushSetter(SetterCode node) {
 		OField f = node.getHandled();
 		if (f.isStatic()) {
 			this.pushSetter(f.getDeclaringClass(), f.getName(), node.getFirst());
@@ -125,7 +125,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushGetter(OGetterCode node) {
+	public void pushGetter(GetterCode node) {
 		OField f = node.getHandled();
 		if (f.isStatic()) {
 			this.pushGetter(f.getDeclaringClass(), f.getName());
@@ -135,46 +135,46 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushInstanceOf(OInstanceOfCode code) {
+	public void pushInstanceOf(InstanceOfCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushAnd(OAndCode code) {
+	public void pushAnd(AndCode code) {
 		this.pushBinary(code.getFirst(), "and", code.getParams()[1]);
 	}
 
 	@Override
-	public void pushOr(OOrCode code) {
+	public void pushOr(OrCode code) {
 		this.pushBinary(code.getFirst(), "or", code.getParams()[1]);
 	}
 
 	@Override
-	public void pushNot(ONotCode code) {
+	public void pushNot(NotCode code) {
 		this.pushUnary("not", code.getFirst());
 
 	}
 
 	@Override
-	public void pushGetSize(OGetSizeCode code) {
+	public void pushGetSize(GetSizeCode code) {
 		this.pushApply("len", code.getFirst());
 	}
 
 	@Override
-	public void pushSetIndex(OSetIndexCode code) {
+	public void pushSetIndex(SetIndexCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushGetIndex(OGetIndexCode code) {
+	public void pushGetIndex(GetIndexCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushMulti(OMultiCode node) {
+	public void pushMulti(MultiCode node) {
 		for (OCode stmt : node.getParams()) {
 			this.L("");
 			this.push(stmt);
@@ -182,7 +182,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushAssign(OAssignCode node) {
+	public void pushAssign(AssignCode node) {
 		this.p(node.getName());
 		this.pSpace();
 		this.p(this.s("=", "="));
@@ -191,7 +191,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushIf(OIfCode node) {
+	public void pushIf(IfCode node) {
 		this.p(this.s("if", "if"));
 		this.pSpace();
 		this.push(node.condCode());
@@ -200,7 +200,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 			this.push(node.thenCode());
 		}
 		this.pEnd("");
-		if (!(node.elseCode() instanceof OEmptyCode)) {
+		if (!(node.elseCode() instanceof EmptyCode)) {
 			this.pBegin("else:");
 			this.push(node.elseCode());
 			this.pEnd("");
@@ -208,7 +208,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushWhile(OWhileCode code) {
+	public void pushWhile(WhileCode code) {
 		// if(code.nextCode() instanceof OEmptyCode) {
 		//
 		// }
@@ -225,29 +225,29 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushTry(OTryCode code) {
+	public void pushTry(TryCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushReturn(OReturnCode node) {
+	public void pushReturn(ReturnCode node) {
 		this.p(this.s("return", "return"));
-		if (!(node.getFirst() instanceof OEmptyCode)) {
+		if (!(node.getFirst() instanceof EmptyCode)) {
 			this.pSpace();
 			this.push(node.getFirst());
 		}
 	}
 
 	@Override
-	public void pushThrow(OThrowCode code) {
+	public void pushThrow(ThrowCode code) {
 		this.p(this.s("throw", "raise"));
 		this.pSpace();
 		this.push(code.getFirst());
 	}
 
 	@Override
-	public void pushBreak(OBreakCode code) {
+	public void pushBreak(BreakCode code) {
 		if (code.getLabel() != null) {
 			this.reportError(code.getSourcePosition(), OFmt.label_is_unsupported);
 		}
@@ -255,7 +255,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	}
 
 	@Override
-	public void pushContinue(OContinueCode code) {
+	public void pushContinue(ContinueCode code) {
 		if (code.getLabel() != null) {
 			this.reportError(code.getSourcePosition(), OFmt.label_is_unsupported);
 		}

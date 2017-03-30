@@ -16,7 +16,7 @@
 
 package blue.origami.lang;
 
-import blue.origami.code.OCode;
+import blue.origami.ocode.OCode;
 
 public interface ONameEntity {
 

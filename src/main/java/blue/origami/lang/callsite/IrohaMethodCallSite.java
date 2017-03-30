@@ -21,13 +21,13 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.List;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OMethodCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ApplyCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.rule.OFmt;
 
 public class IrohaMethodCallSite extends OMethodCallSite {
@@ -58,12 +58,12 @@ public class IrohaMethodCallSite extends OMethodCallSite {
 	@Override
 	protected OCode staticCheck(OEnv env, OCode matched) {
 		// ODebug.trace("matched=%s", matched);
-		if (matched instanceof OMethodCode && matched.getParams().length > 0) {
-			OMethodHandle mh = ((OMethodCode) matched).getMethod();
+		if (matched instanceof ApplyCode && matched.getParams().length > 0) {
+			OMethodHandle mh = ((ApplyCode) matched).getMethod();
 			if (mh != null && mh.isMutable()) {
-				OCode callee = ((OMethodCode) matched).getFirst();
+				OCode callee = ((ApplyCode) matched).getFirst();
 				if (!callee.getType().isMutable()) {
-					return new OWarningCode(callee, OFmt.implicit_mutation);
+					return new WarningCode(callee, OFmt.implicit_mutation);
 				}
 			}
 		}

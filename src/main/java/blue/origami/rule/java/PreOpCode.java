@@ -17,19 +17,19 @@
 package blue.origami.rule.java;
 
 import blue.origami.asm.code.DupCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OGenerator;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OParamCode;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OGenerator;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.OParamCode;
 
 public class PreOpCode extends OParamCode<String> {
 	OCode setter;
 
 	public PreOpCode(String handled, OType returnType, OCode left, OCode expr, OEnv env) {
 		super(handled, returnType);
-		OCode op = new OMultiCode(left.newBinaryCode(env, handled, expr), new DupCode(left));
+		OCode op = new MultiCode(left.newBinaryCode(env, handled, expr), new DupCode(left));
 		this.setter = left.newAssignCode(env, op);
 	}
 

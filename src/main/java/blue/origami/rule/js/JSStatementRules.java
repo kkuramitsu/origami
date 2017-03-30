@@ -17,8 +17,6 @@
 package blue.origami.rule.js;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OEmptyCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
@@ -26,6 +24,8 @@ import blue.origami.lang.OUntypedMethod;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OType;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.EmptyCode;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.rule.TypeRule;
@@ -51,7 +51,7 @@ public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalys
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
 			defineName(env, t, mh);
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 	};
 }

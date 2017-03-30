@@ -25,13 +25,6 @@ import java.util.List;
 import org.objectweb.asm.Type;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCastCode;
-import blue.origami.code.OCode;
-import blue.origami.code.ODyCastCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OGetterCode;
-import blue.origami.code.OTypeCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.ffi.OAlias;
 import blue.origami.ffi.OCast;
 import blue.origami.ffi.OrigamiObject;
@@ -43,6 +36,13 @@ import blue.origami.lang.ONameEntity;
 import blue.origami.lang.OTypeName;
 import blue.origami.lang.OConstructor.DefaultThisCode;
 import blue.origami.lang.OEnv.OListMatcher;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.DyCastCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.TypeValueCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.rule.OFmt;
 import blue.origami.util.OArrayUtils;
 import blue.origami.util.OTypeUtils;
@@ -131,7 +131,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		@Override
 		public OCode check(OEnv env, OType t, OCode code) {
 			if (code.getType().isNullable() && !t.isNullable()) {
-				return new OWarningCode(code, OFmt.nullable);
+				return new WarningCode(code, OFmt.nullable);
 			}
 			return code;
 		}
@@ -159,10 +159,10 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 			return code;
 		}
 		if (t.is(void.class)) {
-			return new OCastCode(t, OCast.UPCAST, code);
+			return new CastCode(t, OCast.UPCAST, code);
 		}
 		if (f.isUntyped() || f.isDynamic()) {
-			return new ODyCastCode(env, t, code);
+			return new DyCastCode(env, t, code);
 		}
 		if (f.isPrimitive() && t.is(Object.class)) {
 			return code.boxCode(env);
@@ -172,14 +172,14 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		if (conv != null) {
 			// ODebug.trace("finding cast cost=%d %s => %s",
 			// conv.getMatchCost(), f, t);
-			return new OCastCode(t, conv, code);
+			return new CastCode(t, conv, code);
 		}
 		if (t.isAssignableFrom(f)) {
 			// ODebug.trace("downcast %s => %s conv=%s", f, t, conv);
-			return new OCastCode(t, OCast.DOWNCAST, code);
+			return new CastCode(t, OCast.DOWNCAST, code);
 		}
 		// ODebug.trace("stupid %s => %s conv=%s", f, t, conv);
-		return new OCastCode(t, OCast.STUPID, code);
+		return new CastCode(t, OCast.STUPID, code);
 	}
 
 	public default boolean isOrigami() {
@@ -390,20 +390,20 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 		OField f = this.getDeclaredField(name);
 		if (f != null) {
 			if (f.isPublic()) {
-				return f.isStatic() ? new OGetterCode(f) : new OGetterCode(f, recv);
+				return f.isStatic() ? new GetterCode(f) : new GetterCode(f, recv);
 			}
 		}
-		throw new OErrorCode(env, OFmt.undefined_field__YY0_YY1, this, name);
+		throw new ErrorCode(env, OFmt.undefined_field__YY0_YY1, this, name);
 	}
 
 	public default OCode newStaticGetterCode(OEnv env, String name) {
 		OField f = this.getDeclaredField(name);
 		if (f != null) {
 			if (f.isPublic() && f.isStatic()) {
-				return new OGetterCode(f);
+				return new GetterCode(f);
 			}
 		}
-		throw new OErrorCode(env, OFmt.undefined_static_field__YY0_YY1, this, name);
+		throw new ErrorCode(env, OFmt.undefined_static_field__YY0_YY1, this, name);
 	}
 
 	// --------------------------------------------------------------------
@@ -455,7 +455,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 
 	@Override
 	public default OCode nameCode(OEnv env, String name) {
-		return new OTypeCode(this);
+		return new TypeValueCode(this);
 	}
 
 	@Override

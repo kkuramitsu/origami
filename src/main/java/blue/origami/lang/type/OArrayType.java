@@ -19,9 +19,9 @@ package blue.origami.lang.type;
 import java.lang.reflect.Array;
 
 import blue.origami.asm.code.ArrayLengthCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OMultiCode;
 import blue.origami.lang.OEnv;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.MultiCode;
 
 public class OArrayType extends OTypeImpl {
 	private final OType innerType;
@@ -135,7 +135,7 @@ public class OArrayType extends OTypeImpl {
 	@Override
 	public OCode newGetterCode(OEnv env, OCode recv, String name) {
 		if (name.equals(ArrayLengthName)) {
-			return new OMultiCode(recv, new ArrayLengthCode(env));
+			return new MultiCode(recv, new ArrayLengthCode(env));
 		}
 		return super.newGetterCode(env, recv, name);
 	}

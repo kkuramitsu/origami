@@ -20,10 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.ocode.OCode;
 import blue.origami.util.Handled;
 import blue.origami.util.OStackable;
 import blue.origami.util.OTypeUtils;

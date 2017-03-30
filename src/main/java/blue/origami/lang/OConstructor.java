@@ -22,11 +22,11 @@ import java.lang.reflect.Constructor;
 
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.OClassLoader;
-import blue.origami.code.OCode;
-import blue.origami.code.OConstructorCode;
-import blue.origami.code.ODefaultValueCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NewCode;
+import blue.origami.ocode.DefaultValueCode;
 import blue.origami.util.ODebug;
 
 public class OConstructor extends OExecutable<Constructor<?>> {
@@ -94,7 +94,7 @@ public class OConstructor extends OExecutable<Constructor<?>> {
 		return lookup.unreflectConstructor(method(env));
 	}
 
-	public static class DefaultThisCode extends ODefaultValueCode {
+	public static class DefaultThisCode extends DefaultValueCode {
 		public DefaultThisCode(OType ty) {
 			super(ty.toGenericType());
 		}
@@ -107,7 +107,7 @@ public class OConstructor extends OExecutable<Constructor<?>> {
 				params = ltrim(params);
 			}
 		}
-		return new OConstructorCode(this, ret, params, matchCost);
+		return new NewCode(this, ret, params, matchCost);
 	}
 
 }

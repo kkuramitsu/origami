@@ -16,7 +16,7 @@
 
 package blue.origami.asm.code;
 
-import blue.origami.code.OCode;
+import blue.origami.ocode.OCode;
 
 public class ArrayGetCode extends OAsmCode<Void> {
 

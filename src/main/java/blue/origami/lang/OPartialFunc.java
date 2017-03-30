@@ -19,7 +19,7 @@ package blue.origami.lang;
 import java.lang.reflect.Method;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
+import blue.origami.ocode.OCode;
 import blue.origami.util.OArrayUtils;
 
 public class OPartialFunc extends OMethodWrapper implements OMethodHandle, OArrayUtils {

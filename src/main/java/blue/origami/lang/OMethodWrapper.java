@@ -20,9 +20,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 
 import blue.origami.asm.OCallSite;
-import blue.origami.code.OCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.OCode;
 
 public class OMethodWrapper implements OMethodHandle {
 	protected final OMethodHandle mh;

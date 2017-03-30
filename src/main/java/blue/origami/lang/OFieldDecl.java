@@ -17,12 +17,12 @@
 package blue.origami.lang;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OCode;
-import blue.origami.code.OSetterCode;
-import blue.origami.code.OUntypedCode;
-import blue.origami.code.OValueCode;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.SetterCode;
+import blue.origami.ocode.UntypedCode;
+import blue.origami.ocode.ValueCode;
 import blue.origami.rule.java.JavaThisCode;
 
 public class OFieldDecl {
@@ -71,13 +71,13 @@ public class OFieldDecl {
 	}
 
 	public void typeCheck(OEnv env) {
-		if (this.initValue instanceof OUntypedCode) {
-			this.initValue = ((OUntypedCode) initValue).typeCheck(env, this.getType());
+		if (this.initValue instanceof UntypedCode) {
+			this.initValue = ((UntypedCode) initValue).typeCheck(env, this.getType());
 		}
 	}
 
 	public OCode getInitCode(OEnv env) {
-		if (initValue instanceof OValueCode) {
+		if (initValue instanceof ValueCode) {
 			OType t = initValue.getType();
 			// Integer, Long, Float, Double, String
 			if (t.isPrimitive() || t.is(String.class)) {
@@ -87,9 +87,9 @@ public class OFieldDecl {
 		if (this.initValue != null) {
 			OCode initCode = null;
 			if (this.isStatic()) {
-				initCode = new OSetterCode(this.field, env.t(void.class), initValue);
+				initCode = new SetterCode(this.field, env.t(void.class), initValue);
 			} else {
-				initCode = new OSetterCode(this.field, env.t(void.class), new JavaThisCode(this.getDeclaringClass()),
+				initCode = new SetterCode(this.field, env.t(void.class), new JavaThisCode(this.getDeclaringClass()),
 						initValue);
 			}
 			this.initValue = null;
@@ -99,19 +99,19 @@ public class OFieldDecl {
 	}
 
 	public Object getInitValue() {
-		if (initValue instanceof OValueCode) {
+		if (initValue instanceof ValueCode) {
 			OType t = initValue.getType();
 			// Integer, Long, Float, Double, String
 			if (t.isPrimitive() || t.is(String.class)) {
-				return ((OValueCode) initValue).getValue();
+				return ((ValueCode) initValue).getValue();
 			}
 		}
 		return null;
 	}
 
 	public Object getValue() {
-		if (initValue instanceof OValueCode) {
-			return ((OValueCode) initValue).getValue();
+		if (initValue instanceof ValueCode) {
+			return ((ValueCode) initValue).getValue();
 		}
 		return null;
 	}

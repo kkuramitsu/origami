@@ -17,20 +17,6 @@
 package blue.origami.rule;
 
 import blue.origami.asm.OAnno;
-import blue.origami.code.OAndCode;
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OCastCode;
-import blue.origami.code.OCode;
-import blue.origami.code.ODefaultValueCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OGetSizeCode;
-import blue.origami.code.OIfCode;
-import blue.origami.code.OInstanceOfCode;
-import blue.origami.code.OOrCode;
-import blue.origami.code.OTypeCode;
-import blue.origami.code.OValueCode;
-import blue.origami.code.OWarningCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
@@ -41,6 +27,20 @@ import blue.origami.lang.OVariable;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.AndCode;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.CastCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.DefaultValueCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.GetSizeCode;
+import blue.origami.ocode.IfCode;
+import blue.origami.ocode.InstanceOfCode;
+import blue.origami.ocode.OrCode;
+import blue.origami.ocode.TypeValueCode;
+import blue.origami.ocode.ValueCode;
+import blue.origami.ocode.WarningCode;
 import blue.origami.rule.java.JavaPostOpCode;
 import blue.origami.rule.java.JavaThisCode;
 import blue.origami.rule.java.PreOpCode;
@@ -55,7 +55,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			String name = t.toText();
 			ONameEntity nameDecl = env.get(name, ONameEntity.class, (e, c) -> e.isName(env) ? e : null);
 			if (nameDecl == null) {
-				throw new OErrorCode(env, t, OFmt.undefined_name__YY0, name);
+				throw new ErrorCode(env, t, OFmt.undefined_name__YY0, name);
 			}
 			return nameDecl.nameCode(env, name);
 		}
@@ -88,13 +88,13 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			} else {
 				type = ExpressionRules.this.parseType(env, t.get(_type, null), type);
 				type = ExpressionRules.this.parseTypeArity(env, type, t);
-				right = new ODefaultValueCode(type);
+				right = new DefaultValueCode(type);
 			}
 
 			if (ExpressionRules.this.isTopLevel(env)) {
 				OVariable var = new OGlobalVariable(env, anno, name, type, right);
 				ExpressionRules.this.defineName(env, t, var);
-				return new OEmptyCode(env);
+				return new EmptyCode(env);
 			}
 			OVariable var = new OLocalVariable(this.isReadOnly, name, type);
 			ExpressionRules.this.defineName(env, t, var);
@@ -112,7 +112,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			if (defined != null) {
 				return new JavaThisCode(defined.getType());
 			}
-			throw new OErrorCode(env, t, "can't use 'this' in global");
+			throw new ErrorCode(env, t, "can't use 'this' in global");
 		}
 	};
 
@@ -142,8 +142,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			if (t.has(_type)) {
 				OType type = ExpressionRules.this.parseType(env, t.get(_type));
 				expr = expr.asType(env, type);
-				if (expr instanceof OCastCode) {
-					OCastCode node = (OCastCode) expr;
+				if (expr instanceof CastCode) {
+					CastCode node = (CastCode) expr;
 					if (node.isStupidCast()) {
 						throw node.newErrorCode(env);
 					}
@@ -151,7 +151,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 				}
 				return expr;
 			}
-			return new OCastCode(env.t(OUntypedType.class), 0, expr);
+			return new CastCode(env.t(OUntypedType.class), 0, expr);
 		}
 	};
 
@@ -160,7 +160,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeExpr(env, t.get(_left));
 			OCode right = ExpressionRules.this.typeExpr(env, t.get(_right));
-			OType ty = (right instanceof OTypeCode) ? ((OTypeCode) right).getTypeValue() : right.getType();
+			OType ty = (right instanceof TypeValueCode) ? ((TypeValueCode) right).getTypeValue() : right.getType();
 			OType lty = left.getType();
 			if (ty.isPrimitive()) {
 				if (lty.isPrimitive()) {
@@ -170,13 +170,13 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			if (!lty.isUntyped()) {
 				ty = ty.boxType();
 				if (ty.isAssignableFrom(lty)) {
-					return new OWarningCode(env.v(true), OFmt.unnecessary_expression);
+					return new WarningCode(env.v(true), OFmt.unnecessary_expression);
 				}
 				if (!lty.isAssignableFrom(ty)) {
-					return new OWarningCode(env.v(false), OFmt.stupid_expression);
+					return new WarningCode(env.v(false), OFmt.stupid_expression);
 				}
 			}
-			return new OInstanceOfCode(left, ty);
+			return new InstanceOfCode(left, ty);
 		}
 	};
 
@@ -214,7 +214,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			OCode expr = ExpressionRules.this.typeExpr(env, t.get(_expr));
 			OType recvType = expr.getType();
 			if (recvType.isArray()) {
-				return new OGetSizeCode(env, null, expr);
+				return new GetSizeCode(env, null, expr);
 			}
 			String name = recvType.rename("size");
 			return expr.newMethodCode(env, name);
@@ -243,7 +243,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 				}
 			}
 
-			return new OArrayCode(type, expr);
+			return new ArrayCode(type, expr);
 		}
 	};
 
@@ -255,8 +255,8 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 			OCode condCode = ExpressionRules.this.typeCondition(env, t.get(_cond));
 			OCode thenCode = ExpressionRules.this.typeExprOrErrorCode(env, t.get(_then));
 			OCode elseCode = t.has(_else) ? ExpressionRules.this.typeExprOrErrorCode(env, t.get(_else))
-					: new OEmptyCode(env);
-			return new OIfCode(env, condCode, thenCode, elseCode);
+					: new EmptyCode(env);
+			return new IfCode(env, condCode, thenCode, elseCode);
 		}
 	};
 
@@ -267,7 +267,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
 			OCode right = ExpressionRules.this.typeCondition(env, t.get(_left));
-			return new OAndCode(env, left, right);
+			return new AndCode(env, left, right);
 		}
 	};
 
@@ -276,7 +276,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode left = ExpressionRules.this.typeCondition(env, t.get(_left));
 			OCode right = ExpressionRules.this.typeCondition(env, t.get(_left));
-			return new OOrCode(env, left, right);
+			return new OrCode(env, left, right);
 		}
 	};
 
@@ -405,7 +405,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 	class PreOpExpr extends SelfAssign {
 
 		PreOpExpr(OEnv env, String name) {
-			super(name, new OValueCode(1, env.t(int.class)));
+			super(name, new ValueCode(1, env.t(int.class)));
 		}
 
 		@Override
@@ -423,7 +423,7 @@ public class ExpressionRules implements OImportable, SyntaxAnalysis, OArrayUtils
 
 		PostOpExpr(OEnv env, String name) {
 			this.name = name;
-			this.expr = new OValueCode(1, env.t(int.class));
+			this.expr = new ValueCode(1, env.t(int.class));
 		}
 
 		@Override

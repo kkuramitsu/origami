@@ -16,9 +16,9 @@
 
 package blue.origami.util;
 
-import blue.origami.code.OCode;
 import blue.origami.lang.OEnv;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.OCode;
 
 public interface OTypeRule {
 

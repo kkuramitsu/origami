@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import blue.origami.code.OErrorCode;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OConstructor;
 import blue.origami.lang.OMethod;
@@ -32,6 +31,7 @@ import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.ocode.ErrorCode;
 
 public class OTypeUtils {
 
@@ -202,7 +202,7 @@ public class OTypeUtils {
 		try {
 			return c.getMethod(name, parameterTypes);
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new OErrorCode(null, "undefined method: %s.%s(%s) by %s", c, name, parameterTypes, e);
+			throw new ErrorCode(null, "undefined method: %s.%s(%s) by %s", c, name, parameterTypes, e);
 		}
 	}
 
@@ -210,7 +210,7 @@ public class OTypeUtils {
 		try {
 			return c.getDeclaredConstructor();
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new OErrorCode(null, "undefined method: %s by %s", c, e);
+			throw new ErrorCode(null, "undefined method: %s by %s", c, e);
 		}
 	}
 
@@ -223,7 +223,7 @@ public class OTypeUtils {
 		try {
 			return c.getDeclaredConstructor(parameterTypes);
 		} catch (NoSuchMethodException | SecurityException e) {
-			throw new OErrorCode(null, "undefined method: %s(%s) by %s", c, parameterTypes, e);
+			throw new ErrorCode(null, "undefined method: %s(%s) by %s", c, parameterTypes, e);
 		}
 	}
 

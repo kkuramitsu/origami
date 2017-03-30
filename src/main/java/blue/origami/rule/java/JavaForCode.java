@@ -16,13 +16,13 @@
 
 package blue.origami.rule.java;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OMultiCode;
-import blue.origami.code.OSugarCode;
-import blue.origami.code.OWhileCode;
 import blue.origami.lang.OEnv;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.SugarCode;
+import blue.origami.ocode.WhileCode;
 
-public class JavaForCode extends OSugarCode {
+public class JavaForCode extends SugarCode {
 
 	public JavaForCode(OEnv env, OCode initCode, OCode condCode, OCode nextCode, OCode bodyCode) {
 		super(env, env.t(void.class), initCode, condCode, nextCode, bodyCode);
@@ -46,7 +46,7 @@ public class JavaForCode extends OSugarCode {
 
 	@Override
 	public OCode desugar() {
-		OCode whileCode = new OWhileCode(this.env(), this.condCode(), this.nextCode(), this.bodyCode());
-		return new OMultiCode(this.initCode(), whileCode);
+		OCode whileCode = new WhileCode(this.env(), this.condCode(), this.nextCode(), this.bodyCode());
+		return new MultiCode(this.initCode(), whileCode);
 	}
 }

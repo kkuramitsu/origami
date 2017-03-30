@@ -23,19 +23,6 @@ import java.util.HashSet;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.code.DupCode;
-import blue.origami.code.BlockGen;
-import blue.origami.code.HookAfterCode;
-import blue.origami.code.MutableCode;
-import blue.origami.code.OArrayCode;
-import blue.origami.code.OCode;
-import blue.origami.code.OConstructorCode;
-import blue.origami.code.OEmptyCode;
-import blue.origami.code.OErrorCode;
-import blue.origami.code.OGetterCode;
-import blue.origami.code.OSugarCode;
-import blue.origami.code.OWarningCode;
-import blue.origami.code.OWhileCode;
-import blue.origami.code.RunnableCode;
 import blue.origami.ffi.OImportable;
 import blue.origami.ffi.OMutable;
 import blue.origami.ffi.OrigamiObject;
@@ -57,9 +44,22 @@ import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.NewCode;
+import blue.origami.ocode.EmptyCode;
+import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.SugarCode;
+import blue.origami.ocode.WarningCode;
+import blue.origami.ocode.WhileCode;
+import blue.origami.rule.BlockGen;
+import blue.origami.rule.HookAfterCode;
+import blue.origami.rule.MutableCode;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
 import blue.origami.rule.OrigamiIterator;
+import blue.origami.rule.RunnableCode;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeRule;
 import blue.origami.rule.java.JavaThisCode;
@@ -92,7 +92,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 					defineEnv.add(t, name, OTypeName.newEntry(type));
 				}
 			}
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 	};
 
@@ -139,14 +139,14 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OCode expr = IrohaRules.this.typeExpr(env, t.get(_expr));
 			OType ty = expr.getType();
 			if (ty.isPrimitive()) {
-				return new OWarningCode(expr, OFmt.YY0_is_meaningless, OFmt.quote("new")).setSourcePosition(t);
+				return new WarningCode(expr, OFmt.YY0_is_meaningless, OFmt.quote("new")).setSourcePosition(t);
 			}
-			if (!(expr instanceof OConstructorCode)) {
+			if (!(expr instanceof NewCode)) {
 				if (ty.isA(Cloneable.class)) {
 					expr = expr.newMethodCode(env, "clone");
 					expr = expr.refineType(env, ty);
 				} else {
-					return new OErrorCode(env, t, OFmt.not_clonable);
+					return new ErrorCode(env, t, OFmt.not_clonable);
 				}
 			}
 			if (ty.isOrigami()) {
@@ -172,7 +172,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Class<?> c = env.findEntryPoint();
-			return new OGetterCode(new OField(env, OTypeUtils.loadField(c, "entry")));
+			return new GetterCode(new OField(env, OTypeUtils.loadField(c, "entry")));
 		}
 	};
 
@@ -185,7 +185,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			} else {
 				ty = IrohaRules.this.typeExpr(env, t.get(_expr)).getType();
 			}
-			return new OEmptyCode(ty);
+			return new EmptyCode(ty);
 		}
 	};
 
@@ -199,7 +199,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				if (ctype.isUntyped()) {
 					ctype = element.getType();
 				}
-				if (!(element instanceof OEmptyCode)) {
+				if (!(element instanceof EmptyCode)) {
 					l.add(element);
 				}
 			}
@@ -212,7 +212,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 
 		protected OCode newListCode(OEnv env, OType ctype, OCode[] nodes) {
-			return new OArrayCode(ctype, nodes);
+			return new ArrayCode(ctype, nodes);
 		}
 	}
 
@@ -225,7 +225,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 
 		@Override
 		protected OCode newListCode(OEnv env, OType ctype, OCode[] nodes) {
-			OCode listCode = new ListCode(env, OrigamiList.newListType(ctype), new OArrayCode(ctype, nodes));
+			OCode listCode = new ListCode(env, OrigamiList.newListType(ctype), new ArrayCode(ctype, nodes));
 			if (this.isMutable) {
 				return new MutableCode(listCode);
 			}
@@ -233,10 +233,10 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	}
 
-	static class ListCode extends OSugarCode {
-		OArrayCode arrayCode;
+	static class ListCode extends SugarCode {
+		ArrayCode arrayCode;
 
-		ListCode(OEnv env, OType ret, OArrayCode a) {
+		ListCode(OEnv env, OType ret, ArrayCode a) {
 			super(env, ret);
 			this.arrayCode = a;
 		}
@@ -278,9 +278,9 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				if (vtype.isUntyped()) {
 					vtype = element.getType();
 				}
-				if (!(element instanceof OEmptyCode)) {
+				if (!(element instanceof EmptyCode)) {
 					if (duplicatedChecker.contains(key)) {
-						element = new OWarningCode(element, OFmt.YY0_is_duplicated, key);
+						element = new WarningCode(element, OFmt.YY0_is_duplicated, key);
 					}
 					keys.add(env.v(key));
 					values.add(element);
@@ -297,8 +297,8 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 					keys.set(i, IrohaRules.this.typeCheck(env, vtype, keys.get(i)));
 				}
 			}
-			OCode key = new OArrayCode(ktype, keys.toArray(new OCode[keys.size()]));
-			OCode value = new OArrayCode(vtype, values.toArray(new OCode[keys.size()]));
+			OCode key = new ArrayCode(ktype, keys.toArray(new OCode[keys.size()]));
+			OCode value = new ArrayCode(vtype, values.toArray(new OCode[keys.size()]));
 			OType mapType = OParamType.of(env.t(OrigamiDictMap.class), vtype);
 			OCode mapCode = mapType.newConstructorCode(env, key, value);
 			if (this.isMutable) {
@@ -350,18 +350,18 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 					if (ty != null) {
 						element = element.asType(env, ty);
 					} else {
-						element = new OWarningCode(element, OFmt.YY0_is_unknown_name, key);
+						element = new WarningCode(element, OFmt.YY0_is_unknown_name, key);
 					}
 				}
 				keys.add(env.v(Symbol.unique(key).id()));
 				if (duplicatedChecker.contains(key)) {
-					element = new OWarningCode(element, OFmt.YY0_is_duplicated, key);
+					element = new WarningCode(element, OFmt.YY0_is_duplicated, key);
 				}
 				values.add(element);
 				duplicatedChecker.add(key);
 			}
-			OCode key = new OArrayCode(env.t(int.class), keys.toArray(new OCode[keys.size()]));
-			OCode value = new OArrayCode(env.t(Object.class), values.toArray(new OCode[keys.size()]));
+			OCode key = new ArrayCode(env.t(int.class), keys.toArray(new OCode[keys.size()]));
+			OCode value = new ArrayCode(env.t(Object.class), values.toArray(new OCode[keys.size()]));
 			OCode treeCode = env.t(IObject.class).newConstructorCode(env, key, value);
 			if (this.isMutable) {
 				return new MutableCode(treeCode);
@@ -410,7 +410,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		}
 	};
 
-	static class ForEachCode extends OSugarCode {
+	static class ForEachCode extends SugarCode {
 		final String name;
 		final OType nextType;
 
@@ -466,7 +466,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			// loop.p(outer.name(name));
 			block1.push(this.bodyCode());
 
-			block0.push(new OWhileCode(block0.env(), hasNext, block1.desugar()));
+			block0.push(new WhileCode(block0.env(), hasNext, block1.desugar()));
 			return block0.desugar();
 		}
 
@@ -484,7 +484,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			block1.push(
 					block0.eVar("a_").newMethodCode(this.env(), "add", this.bodyCode()).asType(this.env(), void.class));
 
-			block0.push(new OWhileCode(block0.env(), hasNext, block1.desugar()));
+			block0.push(new WhileCode(block0.env(), hasNext, block1.desugar()));
 			block0.push(block0.eVar("a_").asType(this.env(), this.getType()));
 			return block0.desugar();
 		}
@@ -602,7 +602,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			} else {
 				IrohaRules.this.defineName(env, t, new OPartialFunc(m, 0, new JavaThisCode(cdecl.getType())));
 			}
-			return new OEmptyCode(env);
+			return new EmptyCode(env);
 		}
 
 	};

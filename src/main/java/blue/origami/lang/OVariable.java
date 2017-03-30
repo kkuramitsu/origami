@@ -16,9 +16,9 @@
 
 package blue.origami.lang;
 
-import blue.origami.code.OCode;
-import blue.origami.code.OErrorCode;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.rule.OFmt;
 import blue.origami.util.StringCombinator;
 
@@ -59,7 +59,7 @@ public abstract class OVariable implements ONameEntity, OTypeName, StringCombina
 
 	public OCode assignCode(OEnv env, OCode right) {
 		if (this.isReadOnly()) {
-			throw new OErrorCode(env, OFmt.read_only__YY0, this.getName());
+			throw new ErrorCode(env, OFmt.read_only__YY0, this.getName());
 		}
 		return defineCode(env, right);
 	}
