@@ -18,15 +18,16 @@ package origami;
 
 import java.io.IOException;
 
-import origami.code.OAssignCode;
-import origami.code.OCode;
-import origami.code.OEmptyCode;
-import origami.code.OIfCode;
-import origami.code.ONameCode;
-import origami.code.ONullCode;
-import origami.code.OTryCode;
-import origami.lang.OEnv;
-import origami.util.OScriptUtils;
+import blue.origami.OrigamiContext;
+import blue.origami.code.OAssignCode;
+import blue.origami.code.OCode;
+import blue.origami.code.OEmptyCode;
+import blue.origami.code.OIfCode;
+import blue.origami.code.ONameCode;
+import blue.origami.code.ONullCode;
+import blue.origami.code.OTryCode;
+import blue.origami.lang.OEnv;
+import blue.origami.util.OScriptUtils;
 
 public class AsmTest {
 

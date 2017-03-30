@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>origami</groupId>
+  <groupId>blue.origami</groupId>
   <artifactId>origami</artifactId>
   <version>0.0.1</version>
   <name>Origami</name>
@@ -102,7 +102,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>origami.main.OCommand</mainClass>
+              <mainClass>blue.origami.main.OCommand</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -272,4 +272,9 @@
     
     </plugins>
   </build>
+  <url>http://www.origami.blue/</url>
+  <organization>
+  	<url>http://www.origami.blue/</url>
+  	<name>Origami project</name>
+  </organization>
 </project>

@@ -1,8 +1,9 @@
 package origami;
 
-import origami.nez.ast.SourcePosition;
-import origami.nez.parser.ParserSource;
-import origami.nez.peg.Grammar;
+import blue.origami.OrigamiContext;
+import blue.origami.nez.ast.SourcePosition;
+import blue.origami.nez.parser.ParserSource;
+import blue.origami.nez.peg.Grammar;
 
 //import junit.framework.Assert;
 //import org.junit.Test;
@@ -23,7 +24,7 @@ public class ScriptTest {
 
 	public static void runScript(String file) throws Throwable {
 		String ext = SourcePosition.extractFileExtension(file);
-		Grammar g = Grammar.loadFile("/origami/grammar/" + ext + ".nez");
+		Grammar g = Grammar.loadFile("/blue/origami/grammar/" + ext + ".nez");
 		OrigamiContext env = new OrigamiContext(g);
 		env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 	}

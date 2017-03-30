@@ -1,6 +1,6 @@
 package origami;
 
-import origami.main.OCommand;
+import blue.origami.main.OCommand;
 
 public class CommandTest {
 

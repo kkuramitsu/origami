@@ -43,7 +43,7 @@ Use the following definition to use Origami in your maven project:
 
 ```
 <dependency>
-  <groupId>origami</groupId>
+  <groupId>blue.origami</groupId>
   <artifactId>origami</artifactId>
   <version>0.0.1</version>
 </dependency>
