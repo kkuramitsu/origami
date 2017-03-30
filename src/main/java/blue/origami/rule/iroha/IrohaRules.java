@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import blue.nez.ast.Symbol;
+import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.code.DupCode;
@@ -42,14 +44,12 @@ import blue.origami.lang.type.OParamType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.ArrayCode;
-import blue.origami.ocode.OCode;
-import blue.origami.ocode.NewCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.GetterCode;
+import blue.origami.ocode.NewCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.SugarCode;
 import blue.origami.ocode.WarningCode;
 import blue.origami.ocode.WhileCode;
@@ -107,6 +107,8 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			return assertFunc.newMethodCode(env, expr, env.v(msg));
 		}
 	};
+
+	public OTypeRule AssertStmt = this.AssertExpr;
 
 	public OTypeRule AssertEqExpr = new InlineAssertRule("==");
 	public OTypeRule AssertNeExpr = new InlineAssertRule("!=");

@@ -17,13 +17,13 @@ package blue.origami.ocode;
 
 import java.util.List;
 
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.SourcePosition;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.nez.ast.LocaleFormat;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.OConsts;
 import blue.origami.util.OLog;
 

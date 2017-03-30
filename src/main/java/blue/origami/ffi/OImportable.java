@@ -20,8 +20,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
+import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.OTypeUtils;
 
 public interface OImportable {

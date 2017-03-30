@@ -16,7 +16,7 @@
 
 package blue.origami.xdevel;
 
-import blue.origami.nez.peg.Grammar;
+import blue.nez.peg.Grammar;
 import blue.origami.util.OStringUtils;
 
 public class CParserGenerator extends ParserGenerator {

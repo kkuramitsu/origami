@@ -16,10 +16,10 @@
 
 package blue.origami.main;
 
+import blue.nez.ast.SourcePosition;
+import blue.nez.parser.ParserOption;
+import blue.nez.peg.Grammar;
 import blue.origami.OrigamiContext;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.parser.ParserOption;
-import blue.origami.nez.peg.Grammar;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 

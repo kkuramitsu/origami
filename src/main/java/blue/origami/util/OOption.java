@@ -19,9 +19,9 @@ package blue.origami.util;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.LocaleFormat;
-import blue.origami.nez.ast.SourceLogger;
-import blue.origami.nez.ast.SourcePosition;
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.SourceLogger;
+import blue.nez.ast.SourcePosition;
 
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();

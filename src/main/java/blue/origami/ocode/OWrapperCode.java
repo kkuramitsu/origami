@@ -18,11 +18,11 @@ package blue.origami.ocode;
 
 import java.util.List;
 
+import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
-import blue.origami.nez.ast.SourcePosition;
 
 public interface OWrapperCode extends OCode {
 

@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.Tree;
+import blue.nez.parser.Parser;
+import blue.nez.parser.ParserOption;
+import blue.nez.peg.Grammar;
 import blue.origami.OVersion;
-import blue.origami.nez.ast.LocaleFormat;
-import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
-import blue.origami.nez.peg.Grammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;

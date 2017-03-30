@@ -19,16 +19,16 @@ package blue.origami.main;
 import java.io.IOException;
 import java.util.HashMap;
 
+import blue.nez.ast.Source;
+import blue.nez.ast.SourcePosition;
+import blue.nez.ast.Symbol;
+import blue.nez.ast.Tree;
+import blue.nez.parser.Parser;
+import blue.nez.parser.ParserOption;
+import blue.nez.parser.ParserSource;
+import blue.nez.peg.Grammar;
+import blue.nez.peg.GrammarParser;
 import blue.origami.main.Otest.Coverage;
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
-import blue.origami.nez.peg.GrammarParser;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -93,7 +93,7 @@ public class Oexample extends OCommand {
 	}
 
 	void importFile(OOption options, String prefix, Source s, Grammar g) throws IOException {
-		Tree<?> t = GrammarParser.NezParser.parse(s);
+		Tree<?> t = GrammarParser.OPegParser.parse(s);
 		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
 				this.parse(options, prefix, sub, g);

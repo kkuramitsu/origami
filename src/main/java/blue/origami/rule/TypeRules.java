@@ -16,12 +16,12 @@
 
 package blue.origami.rule;
 
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.Tree;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OTypeName;
 import blue.origami.lang.type.OType;
-import blue.origami.nez.ast.LocaleFormat;
-import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.TypeValueCode;

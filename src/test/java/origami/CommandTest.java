@@ -17,7 +17,7 @@ public class CommandTest {
 	}
 
 	public void testParse() throws Throwable {
-		OCommand.start("parse", "-g", "xml.peg", "pom.xml");
+		OCommand.start("parse", "-g", "xml.opeg", "pom.xml");
 	}
 
 }

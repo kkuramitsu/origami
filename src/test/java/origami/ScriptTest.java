@@ -1,9 +1,9 @@
 package origami;
 
+import blue.nez.ast.SourcePosition;
+import blue.nez.parser.ParserSource;
+import blue.nez.peg.Grammar;
 import blue.origami.OrigamiContext;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
 
 //import junit.framework.Assert;
 //import org.junit.Test;

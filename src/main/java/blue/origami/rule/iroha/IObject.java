@@ -18,10 +18,10 @@ package blue.origami.rule.iroha;
 
 import java.util.Arrays;
 
+import blue.nez.ast.Symbol;
 import blue.origami.ffi.OMutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.ffi.OrigamiObject;
-import blue.origami.nez.ast.Symbol;
 import blue.origami.util.StringCombinator;
 
 public class IObject implements StringCombinator, OrigamiObject, Cloneable {

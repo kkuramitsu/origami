@@ -16,7 +16,7 @@
 
 package blue.origami.rule;
 
-import blue.origami.nez.ast.LocaleFormat;
+import blue.nez.ast.LocaleFormat;
 import blue.origami.util.OConsole;
 
 public enum OFmt implements LocaleFormat {

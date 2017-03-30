@@ -16,8 +16,8 @@
 
 package blue.origami.main;
 
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserCode;
+import blue.nez.parser.Parser;
+import blue.nez.parser.ParserCode;
 import blue.origami.util.OOption;
 
 public class Ccompile extends OCommand {

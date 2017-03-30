@@ -18,12 +18,12 @@ package blue.origami.rule.iroha;
 
 import java.util.Set;
 
+import blue.nez.ast.SourcePosition;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.callsite.IrohaMethodCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.ExpressionRules;
 import blue.origami.rule.LayerRules;
 import blue.origami.rule.LiteralRules;

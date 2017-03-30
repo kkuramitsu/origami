@@ -18,13 +18,13 @@ package blue.origami.main;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
-import blue.origami.nez.peg.GrammarParser;
+import blue.nez.ast.Source;
+import blue.nez.ast.Tree;
+import blue.nez.parser.Parser;
+import blue.nez.parser.ParserOption;
+import blue.nez.parser.ParserSource;
+import blue.nez.peg.Grammar;
+import blue.nez.peg.GrammarParser;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 
@@ -42,7 +42,7 @@ public class Onez extends OCommand {
 		p(Yellow, "Tips: Start with an empty line for multiple lines.");
 		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
-		Parser nezParser = GrammarParser.NezParser;
+		Parser nezParser = GrammarParser.OPegParser;
 		// nezParser.setPrintingException(false);
 		// nezParser.setThrowingException(false);
 

@@ -18,8 +18,8 @@ package blue.origami.util;
 
 import java.lang.reflect.Field;
 
+import blue.nez.ast.LocaleFormat;
 import blue.origami.ffi.OAlias;
-import blue.origami.nez.ast.LocaleFormat;
 
 public interface StringCombinator {
 

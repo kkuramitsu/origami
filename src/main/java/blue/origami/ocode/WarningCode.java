@@ -1,8 +1,8 @@
 package blue.origami.ocode;
 
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
-import blue.origami.nez.ast.LocaleFormat;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.ODebug;
 import blue.origami.util.OLog;
 

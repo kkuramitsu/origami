@@ -16,7 +16,7 @@
 
 package blue.origami.xdevel;
 
-import blue.origami.nez.peg.Grammar;
+import blue.nez.peg.Grammar;
 
 public class JavaParserGenerator extends ParserGenerator {
 

@@ -16,6 +16,8 @@
 
 package blue.origami.rule.java;
 
+import blue.nez.ast.Symbol;
+import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
 import blue.origami.ffi.OImportable;
@@ -27,8 +29,6 @@ import blue.origami.lang.OPartialFunc;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OArrayType;
 import blue.origami.lang.type.OType;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;

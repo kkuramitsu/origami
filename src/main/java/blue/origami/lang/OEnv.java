@@ -19,10 +19,10 @@ package blue.origami.lang;
 import java.util.HashMap;
 import java.util.List;
 
+import blue.nez.ast.SourcePosition;
 import blue.origami.asm.OClassLoader;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.ocode.OCode;
 import blue.origami.util.Handled;
 import blue.origami.util.OStackable;

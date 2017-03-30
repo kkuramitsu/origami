@@ -16,6 +16,7 @@
 
 package blue.origami.rule;
 
+import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OClassDecl;
@@ -26,7 +27,6 @@ import blue.origami.lang.ONameEntity;
 import blue.origami.lang.OVariable;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.AndCode;
 import blue.origami.ocode.ArrayCode;
 import blue.origami.ocode.CastCode;

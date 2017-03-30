@@ -18,9 +18,9 @@ package blue.origami.rule.js;
 
 import java.util.Set;
 
+import blue.nez.ast.SourcePosition;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.ExpressionRules;
 import blue.origami.rule.OrigamiAPIs;
 import blue.origami.rule.StatementRules;
