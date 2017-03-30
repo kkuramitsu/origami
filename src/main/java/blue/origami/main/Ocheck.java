@@ -33,7 +33,7 @@ public class Ocheck extends Orun {
 		for (String file : files) {
 			try {
 				String ext = SourcePosition.extractFileExtension(file);
-				Grammar g = Grammar.loadFile(ext + ".nez", options.list(ParserOption.GrammarPath));
+				Grammar g = Grammar.loadFile(ext + ".opeg", options.list(ParserOption.GrammarPath));
 				OrigamiContext env = new OrigamiContext(g, options);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {

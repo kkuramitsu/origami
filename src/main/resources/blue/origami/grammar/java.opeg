@@ -19,7 +19,7 @@ File = _ {
 
 // ORIGAMI 
 
-ORIGAMI = 'origami.rule.java.JavaTypeSystem'
+ORIGAMI = 'blue.origami.rule.java.JavaTypeSystem'
 
 OrigamiTopLevel = AssertStatement
                 / BlockStatement
@@ -287,12 +287,6 @@ PackageName = QualifiedName {$
 	#WildCardName 
 }?
 
-AssertStatement = {
-	"assert"
-	$cond(Expression) 
-	( ":" $value(Expression) )? 
-	#AssertStmt
-}
 
 // type
 TypeDeclaration 

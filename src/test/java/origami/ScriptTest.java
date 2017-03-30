@@ -24,7 +24,7 @@ public class ScriptTest {
 
 	public static void runScript(String file) throws Throwable {
 		String ext = SourcePosition.extractFileExtension(file);
-		Grammar g = Grammar.loadFile("/blue/origami/grammar/" + ext + ".nez");
+		Grammar g = Grammar.loadFile("/blue/origami/grammar/" + ext + ".opeg");
 		OrigamiContext env = new OrigamiContext(g);
 		env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 	}

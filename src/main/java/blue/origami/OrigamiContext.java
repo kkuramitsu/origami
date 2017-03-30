@@ -30,9 +30,9 @@ import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.Production;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.OCodeWriter;
-import blue.origami.ocode.ErrorCode;
 import blue.origami.rule.OrigamiTypeSystem;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.OConsole;
@@ -89,7 +89,7 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 	}
 
 	static Grammar loadGrammar(OOption options) throws IOException {
-		String file = options.value(ParserOption.GrammarFile, "iroha.nez");
+		String file = options.value(ParserOption.GrammarFile, "iroha.opeg");
 		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
 	}
 

@@ -153,7 +153,7 @@ public abstract class OCommand extends OConsole {
 		p2("  -D                         ", MainFmt.specify_an_optional_value);
 		p("Example:");
 		p("  origami run sample.iroha");
-		p("  origami example -g js.nez");
+		p("  origami example -g js.opeg");
 		p("  origami parse -g js.nez -X JsonWriter jquery.js");
 		p("");
 

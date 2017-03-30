@@ -31,10 +31,10 @@ public class Orun extends blue.origami.main.OCommand {
 		if (options.value(ParserOption.GrammarFile, null) == null) {
 			if (files.length > 0) {
 				String ext = SourcePosition.extractFileExtension(files[0]);
-				options.set(ParserOption.GrammarFile, ext + ".nez");
+				options.set(ParserOption.GrammarFile, ext + ".opeg");
 			}
 		}
-		Grammar g = this.getGrammar(options, "iroha.nez");
+		Grammar g = this.getGrammar(options, "iroha.opeg");
 		OrigamiContext env = new OrigamiContext(g, options);
 		ODebug.setDebug(this.isDebug());
 
