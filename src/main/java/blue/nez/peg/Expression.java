@@ -331,6 +331,10 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			}
 			sb.append(this.name);
 		}
+
+		public String getNameSpace() {
+			return this.ns;
+		}
 	}
 
 	public final static void quote(String text, StringBuilder sb) {

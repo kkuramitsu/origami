@@ -65,7 +65,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public static final Parser OPegParser;
 
 	static {
-		OPegGrammar = new Grammar("opeg");
+		OPegGrammar = new SourceGrammar("opeg");
 		OOption options = new OOption();
 		// options.setVerboseMode(false);
 		new OPegGrammar().load(OPegGrammar, "Start", options);
@@ -125,24 +125,17 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 
 	/* Expression */
 
-	// public Expression newExpression(Tree<?> node) throws IOException {
-	// return this.find(key(node)).accept(null, node);
-	// }
-
 	public class _NonTerminal extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
+			String ns = null;
 			String name = node.toText();
-			return new Expression.PNonTerminal(gamma.grammar, name, node);
-		}
-	}
-
-	public class _NonTerminal2 extends SyntaxRule {
-		@Override
-		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String ns = node.getText(_ns, null);
-			String name = node.getText(_name, "");
-			return new Expression.PNonTerminal(gamma.grammar, name, node);
+			int loc = name.indexOf('.');
+			if (loc > 0) {
+				ns = name.substring(0, loc);
+				name = name.substring(loc + 1);
+			}
+			return new Expression.PNonTerminal(gamma.grammar, ns, name, node);
 		}
 	}
 
@@ -572,7 +565,6 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			Tree<?> nameNode = node.get(_name);
-			// boolean isPublic = node.get(_public, null) != null;
 			String name = nameNode.toText();
 			if (nameNode.is(_String)) {
 				name = Production.terminalName(name);
@@ -584,6 +576,10 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			}
 			rule = gamma.newExpression(node.get(_expr));
 			gamma.grammar.addProduction(name, rule);
+			boolean isPublic = node.get(_public, null) != null;
+			if (isPublic) {
+				gamma.grammar.addPublicProduction(name);
+			}
 			return rule;
 		}
 	}

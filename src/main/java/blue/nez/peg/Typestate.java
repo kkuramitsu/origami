@@ -55,6 +55,9 @@ public enum Typestate {
 
 		@Override
 		public Typestate visitNonTerminal(Expression.PNonTerminal e, Void memo) {
+			if (e.getGrammar() == null || e.getProduction() == null) {
+				return Typestate.Unit;
+			}
 			return Typestate.compute(e.getProduction());
 		}
 
@@ -85,16 +88,16 @@ public enum Typestate {
 
 		@Override
 		public Typestate visitPair(Expression.PPair e, Void memo) {
-			Typestate ts = compute(e.get(0), memo);
+			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Unit) {
-				return compute(e.get(1), memo);
+				return this.compute(e.get(1), memo);
 			}
 			return ts;
 		}
 
 		@Override
 		public Typestate visitChoice(Expression.PChoice e, Void memo) {
-			Typestate t = compute(e.get(0), memo);
+			Typestate t = this.compute(e.get(0), memo);
 			if (t == Typestate.Tree || t == Typestate.Fold || t == Typestate.TreeMutation) {
 				return t;
 			}

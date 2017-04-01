@@ -47,13 +47,12 @@ public class Oexample extends OCommand {
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, false);
-
 	}
 
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Grammar g = this.getGrammar(options);
-		g.dump();
+		// g.dump();
 		this.treeWriter = options.newInstance(OTreeWriter.class);
 		if (options.is(ParserOption.Coverage, false)) {
 			this.cov = new Coverage();
@@ -74,7 +73,7 @@ public class Oexample extends OCommand {
 					p("You are invited to share your grammar at Nez open grammar repository, ");
 					p(" http://github.com/nez-peg/grammar.");
 					p("If you want, please send a pull-request with:");
-					p(bold("git commit -am '" + this.desc + ", %.2f%% (coverage) tested.'"), (fullcov * 100));
+					p(bold("git commit -m '" + this.desc + ", %.2f%% (coverage) tested.'"), (fullcov * 100));
 				}
 			} else {
 				p(bold("Result: %.2f%% passed."), (passRatio * 100));
@@ -88,15 +87,15 @@ public class Oexample extends OCommand {
 			exit(1, MainFmt.no_specified_grammar);
 		}
 		Source s = ParserSource.newFileSource(path, options.list(ParserOption.GrammarPath));
-		this.importFile(options, null, s, g);
+		this.importFile(g, s, options);
 		this.desc = parseGrammarDescription(s);
 	}
 
-	void importFile(OOption options, String prefix, Source s, Grammar g) throws IOException {
+	void importFile(Grammar g, Source s, OOption options) throws IOException {
 		Tree<?> t = GrammarParser.OPegParser.parse(s);
 		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
-				this.parse(options, prefix, sub, g);
+				this.parse(g, sub, options);
 			}
 		}
 	}
@@ -106,23 +105,20 @@ public class Oexample extends OCommand {
 	public final static Symbol _name2 = Symbol.unique("name2"); // example
 	public final static Symbol _text = Symbol.unique("text"); // example
 
-	String prefix(String prefix, String name) {
-		return prefix == null ? name : prefix + "." + name;
-	}
-
-	void parse(OOption options, String prefix, Tree<?> node, Grammar g) throws IOException {
+	void parse(Grammar g, Tree<?> node, OOption options) throws IOException {
 		if (node.is(GrammarParser._Production)) {
 			return;
 		}
 		if (node.is(_Example)) {
-			this.parseExample(prefix, node, g, options);
+			this.parseExample(node, g, options);
 			return;
 		}
 		if (node.is(GrammarParser._Grammar)) {
 			String name = node.getText(GrammarParser._name, null);
+			Grammar lg = g.getGrammar(name);
 			Tree<?> body = node.get(GrammarParser._body);
 			for (Tree<?> sub : body) {
-				this.parse(options, this.prefix(prefix, name), sub, g);
+				this.parse(lg, sub, options);
 			}
 			return;
 		}
@@ -132,23 +128,23 @@ public class Oexample extends OCommand {
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = SourcePosition.extractFilePath(node.getSource().getResourceName()) + "/" + name;
 			}
-			this.importFile(options, prefix, ParserSource.newFileSource(path, null), g);
+			this.importFile(g, ParserSource.newFileSource(path, null), options);
 			return;
 		}
 	}
 
-	public void parseExample(String prefix, Tree<?> node, Grammar g, OOption options) throws IOException {
+	public void parseExample(Tree<?> node, Grammar g, OOption options) throws IOException {
 		Tree<?> nameNode = node.get(GrammarParser._name, null);
 		String uname = nameNode.toText();
-		Parser p = this.getParser(nameNode, g, options, uname);
+		Parser p = this.getParser(g, uname, nameNode, options);
 		if (p != null) {
 			this.performExample(p, uname, node);
 		}
 		if (this instanceof Otest) {
 			nameNode = node.get(_name2, null);
 			if (nameNode != null) {
-				uname = this.uname(prefix, nameNode.toText());
-				p = this.getParser(nameNode, g, options, uname);
+				uname = nameNode.toText();
+				p = this.getParser(g, uname, nameNode, options);
 				if (p != null) {
 					this.performExample(p, uname, node);
 				}
@@ -156,25 +152,19 @@ public class Oexample extends OCommand {
 		}
 	}
 
-	private Parser getParser(Tree<?> nameNode, Grammar g, OOption options, String uname) throws IOException {
+	private Parser getParser(Grammar g, String name, Tree<?> nameNode, OOption options) throws IOException {
+		String uname = g.getUniqueName(name);
 		Parser p = this.parserMap.get(uname);
 		if (p == null) {
-			options.set(ParserOption.Start, uname);
+			options.set(ParserOption.Start, name);
 			p = g.newParser(options);
 			if (p == null) {
-				options.reportError(nameNode, "undefined nonterminal: %s", uname);
+				options.reportError(nameNode, "undefined nonterminal: %s", name);
 				return null;
 			}
 			this.parserMap.put(uname, p);
 		}
 		return p;
-	}
-
-	String uname(String prefix, String name) {
-		if (name.indexOf('.') > 0) {
-			return name;
-		}
-		return this.prefix(prefix, name);
 	}
 
 	protected void performExample(Parser p, String uname, Tree<?> ex) {

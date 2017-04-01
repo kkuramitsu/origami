@@ -27,6 +27,7 @@ import blue.nez.ast.Tree;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Grammar;
+import blue.nez.peg.SourceGrammar;
 import blue.origami.OVersion;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -126,7 +127,7 @@ public abstract class OCommand extends OConsole {
 		if (file == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		return Grammar.loadFile(file, options.list(ParserOption.GrammarPath));
+		return SourceGrammar.loadFile(file, options.list(ParserOption.GrammarPath));
 	}
 
 	protected Grammar getGrammar(OOption options) throws IOException {

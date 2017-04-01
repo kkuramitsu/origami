@@ -19,6 +19,7 @@ package blue.origami.main;
 import blue.nez.ast.SourcePosition;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Grammar;
+import blue.nez.peg.SourceGrammar;
 import blue.origami.OrigamiContext;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -33,7 +34,7 @@ public class Ocheck extends Orun {
 		for (String file : files) {
 			try {
 				String ext = SourcePosition.extractFileExtension(file);
-				Grammar g = Grammar.loadFile(ext + ".opeg", options.list(ParserOption.GrammarPath));
+				Grammar g = SourceGrammar.loadFile(ext + ".opeg", options.list(ParserOption.GrammarPath));
 				OrigamiContext env = new OrigamiContext(g, options);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {

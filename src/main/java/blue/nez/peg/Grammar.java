@@ -1,25 +1,23 @@
 package blue.nez.peg;
 
-import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import blue.nez.ast.Source;
 import blue.nez.ast.SourcePosition;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserOption;
-import blue.nez.parser.ParserSource;
 import blue.origami.util.OConsole;
+import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.StringCombinator;
 
-public class Grammar extends AbstractList<Production> implements StringCombinator {
+public abstract class Grammar extends AbstractList<Production> implements StringCombinator {
 
-	protected String id;
-	protected Grammar parent;
+	protected final String id;
+	protected final Grammar parent;
 	protected ArrayList<String> nameList;
 	protected HashMap<String, Expression> exprMap;
 
@@ -27,16 +25,20 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		this.parent = parent;
 		this.nameList = new ArrayList<>(16);
 		this.exprMap = new HashMap<>();
-		this.id = name == null ? "g" + Objects.hashCode(this) : SourcePosition.extractFileName(name);
+		String id = name == null ? "g" + Objects.hashCode(this) : SourcePosition.extractFileBodyName(name);
+		if (parent != null) {
+			id = parent.getName() + "." + id;
+		}
+		this.id = id;
 	}
 
-	public Grammar(String name) {
-		this(name, null);
-	}
-
-	public Grammar() {
-		this(null, null);
-	}
+	// public Grammar(String name) {
+	// this(name, null);
+	// }
+	//
+	// public Grammar() {
+	// this(null, null);
+	// }
 
 	public String getName() {
 		return this.id;
@@ -48,6 +50,10 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 
 	/* grammar management */
 
+	public Grammar[] getLocalGrammars() {
+		return new Grammar[0];
+	}
+
 	public final Grammar getGrammar(String name) {
 		Grammar g = this.getLocalGrammar(name);
 		if (g == null && this.parent != null) {
@@ -56,26 +62,13 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		return g;
 	}
 
-	private HashMap<String, Grammar> grammarMap = null;
-
 	protected Grammar getLocalGrammar(String name) {
-		if (this.grammarMap != null) {
-			return this.grammarMap.get(name);
-		}
 		return null;
 	}
 
-	public void addGrammar(String name, Grammar g) {
-		if (this.grammarMap == null) {
-			this.grammarMap = new HashMap<>();
-		}
-		this.grammarMap.put(name, g);
-	}
-
 	public Grammar newLocalGrammar(String name) {
-		Grammar g = new Grammar(name, this);
-		this.addGrammar(name, g);
-		return g;
+		ODebug.NotAvailable(this);
+		return this;
 	}
 
 	/* expression */
@@ -164,6 +157,12 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 		return l.toArray(new Production[l.size()]);
 	}
 
+	/* public productions */
+
+	public abstract void addPublicProduction(String name);
+
+	public abstract Production[] getPublicProductions();
+
 	@Override
 	public final String toString() {
 		return StringCombinator.stringfy(this);
@@ -220,23 +219,24 @@ public class Grammar extends AbstractList<Production> implements StringCombinato
 
 	// ----------------------------------------------------------------------
 
-	public final static Grammar loadFile(String file) throws IOException {
-		return loadFile(file, null);
-	}
-
-	public final static Grammar loadFile(String file, String[] paths) throws IOException {
-		Grammar g = new Grammar(file);
-		GrammarParser parser = new GrammarParser();
-		parser.importSource(g, ParserSource.newFileSource(file, paths));
-		return g;
-	}
-
-	public final static Grammar loadSource(Source s) throws IOException {
-		Grammar g = new Grammar(s.getResourceName());
-		GrammarParser parser = new GrammarParser();
-		parser.importSource(g, s);
-		return g;
-	}
+	// public final static Grammar loadFile(String file) throws IOException {
+	// return loadFile(file, null);
+	// }
+	//
+	// public final static Grammar loadFile(String file, String[] paths) throws
+	// IOException {
+	// Grammar g = new Grammar(file);
+	// GrammarParser parser = new GrammarParser();
+	// parser.importSource(g, ParserSource.newFileSource(file, paths));
+	// return g;
+	// }
+	//
+	// public final static Grammar loadSource(Source s) throws IOException {
+	// Grammar g = new Grammar(s.getResourceName());
+	// GrammarParser parser = new GrammarParser();
+	// parser.importSource(g, s);
+	// return g;
+	// }
 
 	/**
 	 * Create a new parser

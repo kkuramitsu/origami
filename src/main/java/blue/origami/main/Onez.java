@@ -25,11 +25,13 @@ import blue.nez.parser.ParserOption;
 import blue.nez.parser.ParserSource;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarParser;
+import blue.nez.peg.SourceGrammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 
 public class Onez extends OCommand {
 
+	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, false);
@@ -46,24 +48,24 @@ public class Onez extends OCommand {
 		// nezParser.setPrintingException(false);
 		// nezParser.setThrowingException(false);
 
-		Grammar g = getGrammar(options);
-		Parser p = newParser(g, options);
+		Grammar g = this.getGrammar(options);
+		Parser p = this.newParser(g, options);
 		OTreeWriter tw = options.newInstance(OTreeWriter.class);
-		String prompt = getPrompt(g);
+		String prompt = this.getPrompt(g);
 		String input = null;
 		while ((input = this.readMulti(prompt)) != null) {
 			if (checkEmptyInput(input)) {
 				g.dump();
 				continue;
 			}
-			Source sc = ParserSource.newStringSource("<stdio>", linenum, input);
+			Source sc = ParserSource.newStringSource("<stdio>", this.linenum, input);
 			try {
 				Tree<?> node = nezParser.parse(sc);
 				if (node != null && node.is(GrammarParser._Source)) {
-					g = Grammar.loadSource(sc);
-					p = newParser(g, options);
-					prompt = getPrompt(g);
-					addHistory(input);
+					g = SourceGrammar.loadSource(sc);
+					p = this.newParser(g, options);
+					prompt = this.getPrompt(g);
+					this.addHistory(input);
 					p(Yellow, "Grammar is successfully loaded!");
 					continue;
 				}

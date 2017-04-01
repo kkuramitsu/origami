@@ -31,6 +31,7 @@ import blue.nez.peg.Expression.PTrap;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarFlag;
+import blue.nez.peg.NezFmt;
 import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
@@ -53,12 +54,21 @@ public class ParserChecker {
 
 	static class ParserGrammar extends Grammar {
 		ParserGrammar(String name) {
-			super(name);
+			super(name, null);
 		}
 
 		@Override
 		public String getUniqueName(String name) {
 			return name;
+		}
+
+		@Override
+		public void addPublicProduction(String name) {
+		}
+
+		@Override
+		public Production[] getPublicProductions() {
+			return new Production[0];
 		}
 	}
 
@@ -133,17 +143,28 @@ public class ParserChecker {
 	private void visitProduction(Expression e) {
 		if (e instanceof Expression.PNonTerminal) {
 			PNonTerminal n = ((Expression.PNonTerminal) e);
+			Grammar g = n.getGrammar();
+			if (g == null) {
+				// this.options.reportError(e.getSourceLocation(),
+				// NezFmt.YY0_is_undefined_grammar, n.getNameSpace());
+				return;
+			}
 			Production p = n.getProduction();
 			if (p == null) {
-				if (n.getLocalName().startsWith("\"")) {
-					this.options.reportError(e.getSourceLocation(), "undefined terminal: %s", n.getLocalName());
-					n.getGrammar().addProduction(n.getLocalName(),
-							Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null));
-				} else {
-					this.options.reportError(e.getSourceLocation(), "undefined %s", n.getLocalName());
-					n.getGrammar().addProduction(n.getLocalName(), Expression.defaultFailure);
-				}
-				p = n.getProduction();
+				return;
+				// if (n.getLocalName().startsWith("\"")) {
+				// this.options.reportError(e.getSourceLocation(), "undefined
+				// terminal: %s", n.getLocalName());
+				// n.getGrammar().addProduction(n.getLocalName(),
+				// Expression.newString(OStringUtils.unquoteString(n.getLocalName()),
+				// null));
+				// } else {
+				// this.options.reportError(e.getSourceLocation(), "undefined
+				// %s", n.getLocalName());
+				// n.getGrammar().addProduction(n.getLocalName(),
+				// Expression.defaultFailure);
+				// }
+				// p = n.getProduction();
 			}
 			this.visitProduction(p);
 			return;
@@ -170,35 +191,7 @@ public class ParserChecker {
 		}
 	}
 
-	// public final List<Production> getProductions() {
-	// return this.list;
-	// }
-
-	// private HashMap<String, Integer> countMap = null;
 	private boolean[] usedChars = null;
-
-	// public void enabledNonterminalCount() {
-	// this.countMap = new HashMap<>();
-	// }
-	//
-	// private void countNonterminal(String key) {
-	// Integer n = this.countMap.get(key);
-	// if (n == null) {
-	// n = 1;
-	// } else {
-	// n = n + 1;
-	// }
-	// this.countMap.put(key, n);
-	// }
-	//
-	// public int getNonterminalCount(String uname) {
-	// Integer n = this.countMap.get(uname);
-	// return n == null ? 0 : n;
-	// }
-	//
-	// public void enabledFlagNames() {
-	// this.flagMap = new TreeMap<>();
-	// }
 
 	private void countFlag(String key) {
 		Integer n = this.flagMap.get(key);
@@ -227,56 +220,6 @@ public class ParserChecker {
 	public final boolean isBinary() {
 		return this.usedChars[0] = true;
 	}
-
-	// private HashMap<String, HashSet<Production>> reachMap = null;
-	//
-	// public void enabledMatrix() {
-	// this.reachMap = new HashMap<>();
-	// }
-	//
-	// private void computeReach() {
-	// for (Production p : list) {
-	// HashSet<Production> memo = new HashSet<>();
-	// visitReach(p.getExpression(), memo);
-	// if (memo.size() > 0) {
-	// reachMap.put(p.getUniqueName(), memo);
-	// }
-	// }
-	// for (String key : reachMap.keySet()) {
-	// HashSet<Production> visited = this.reachMap.get(key);
-	// for (Production pp : visited) {
-	// visitReach2(pp.getExpression(), visited);
-	// }
-	// }
-	// }
-	//
-	// private void visitReach(Expression p, HashSet<Production> memo) {
-	// if (p instanceof Expression.PNonTerminal) {
-	// memo.add(((Expression.PNonTerminal) p).getProduction());
-	// return;
-	// }
-	// for (Expression e : p) {
-	// visitReach(e, memo);
-	// }
-	// }
-	//
-	// private void visitReach2(Expression p, HashSet<Production> visited) {
-	// if (p instanceof Expression.PNonTerminal) {
-	// Production pp = ((Expression.PNonTerminal) p).getProduction();
-	// if (!visited.contains(pp)) {
-	// visited.add(pp);
-	// visitReach2(pp.getExpression(), visited);
-	// }
-	// return;
-	// }
-	// for (Expression e : p) {
-	// visitReach2(e, visited);
-	// }
-	// }
-}
-
-class Stat {
-
 }
 
 class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
@@ -294,12 +237,18 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	@Override
 	public Boolean visitNonTerminal(Expression.PNonTerminal e, Production a) {
 		if (e.getUniqueName().equals(a.getUniqueName())) {
-			this.options.reportError(e.getSourceLocation(), "left recursion: " + a.getLocalName());
+			this.options.reportError(e.getSourceLocation(), NezFmt.left_recursion_is_forbidden__YY0, a.getLocalName());
 			// e.isLeftRecursion = true;
 			return true;
 		}
+		if (e.getGrammar() == null) {
+			return false;
+		}
 		Production p = e.getProduction();
-		return this.check(p.getExpression(), a);
+		if (p != null) {
+			return this.check(p.getExpression(), a);
+		}
+		return false;
 	}
 
 	@Override
@@ -490,12 +439,12 @@ class FlagContext extends TreeMap<String, Boolean> {
 }
 
 class EliminateFlags extends Expression.Duplicator<Void> {
-	final OOption fac;
+	final OOption options;
 	final FlagContext flagContext;
 
 	EliminateFlags(OOption options, Grammar grammar, String[] flags) {
 		super(grammar);
-		this.fac = options;
+		this.options = options;
 		this.flagContext = new FlagContext(flags, false);
 	}
 
@@ -521,8 +470,26 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 
 	@Override
 	public Expression visitNonTerminal(PNonTerminal n, Void a) {
-		String cname = this.duplicateName(n.getProduction());
-		return new Expression.PNonTerminal(this.base, cname, this.ref(n));
+		Grammar g = n.getGrammar();
+		if (g == null) {
+			this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_grammar, n.getNameSpace());
+			return Expression.defaultFailure;
+		}
+		Production p = n.getProduction();
+		if (p != null) {
+			String cname = this.duplicateName(p);
+			return new PNonTerminal(this.base, cname, this.ref(n));
+		}
+		if (p == null) {
+			if (n.getLocalName().startsWith("\"")) {
+				this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_terminal, n.getLocalName());
+				return Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null);
+			} else {
+				this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_nonterminal, n.getLocalName());
+			}
+			p = n.getProduction();
+		}
+		return Expression.defaultFailure;
 	}
 
 	@Override

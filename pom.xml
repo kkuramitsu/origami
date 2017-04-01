@@ -246,7 +246,7 @@
       		</descriptorRefs>
       		<archive>
       			<manifest>
-      				<mainClass>origami.main.OCommand</mainClass>
+      				<mainClass>blue.origami.main.OCommand</mainClass>
       			</manifest>
       		</archive>
           <finalName>origami-${project.version}-run</finalName>

@@ -46,6 +46,9 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitNonTerminal(Expression.PNonTerminal e, Void a) {
+			if (e.getGrammar() == null || e.getProduction() == null) {
+				return NonEmpty.False;
+			}
 			return NonEmpty.isConsumedImpl(e.getGrammar(), e.getLocalName(), e.getExpression());
 		}
 
@@ -76,10 +79,10 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitPair(Expression.PPair e, Void a) {
-			if (check(e.get(0), a) == NonEmpty.True) {
+			if (this.check(e.get(0), a) == NonEmpty.True) {
 				return NonEmpty.True;
 			}
-			return check(e.get(1), a);
+			return this.check(e.get(1), a);
 		}
 
 		@Override
@@ -87,7 +90,7 @@ public enum NonEmpty {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
-				NonEmpty c = check(sub, a);
+				NonEmpty c = this.check(sub, a);
 				if (c == NonEmpty.True) {
 					continue;
 				}
@@ -107,7 +110,7 @@ public enum NonEmpty {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
-				NonEmpty c = check(sub, a);
+				NonEmpty c = this.check(sub, a);
 				if (c == NonEmpty.True) {
 					continue;
 				}
@@ -130,7 +133,7 @@ public enum NonEmpty {
 		@Override
 		public NonEmpty visitRepetition(Expression.PRepetition e, Void a) {
 			if (e.isOneMore()) {
-				return check(e.get(0), a);
+				return this.check(e.get(0), a);
 			}
 			return NonEmpty.False;
 		}
@@ -147,12 +150,12 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitTree(Expression.PTree e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
 		public NonEmpty visitLinkTree(Expression.PLinkTree e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
@@ -167,17 +170,17 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitDetree(Expression.PDetree e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
 		public NonEmpty visitSymbolScope(Expression.PSymbolScope e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
 		public NonEmpty visitSymbolAction(Expression.PSymbolAction e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
@@ -185,12 +188,12 @@ public enum NonEmpty {
 			if (e.funcName == NezFunc.exists) {
 				return NonEmpty.Unsure;
 			}
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
 		public NonEmpty visitScan(Expression.PScan e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override
@@ -206,7 +209,7 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitOn(Expression.POnCondition e, Void a) {
-			return check(e.get(0), a);
+			return this.check(e.get(0), a);
 		}
 
 		@Override

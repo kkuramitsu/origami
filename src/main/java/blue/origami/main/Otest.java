@@ -16,6 +16,7 @@
 
 package blue.origami.main;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import blue.nez.parser.NZ86ParserContext;
@@ -44,22 +45,50 @@ public class Otest extends Oexample {
 		public Coverage() {
 		}
 
+		// public void init(OOption options, Grammar g) {
+		// Production[] prods = g.getAllProductions();
+		// this.unameMap = new HashMap<>();
+		// this.names = new String[prods.length];
+		// this.enterCounts = new int[prods.length];
+		// this.exitCounts = new int[prods.length];
+		// options.add(ParserOption.TrapActions, new TrapAction[] {
+		// this.newEnterAction(), this.newExitAction() });
+		// int enterId = 0;
+		// int exitId = 1;
+		// int uid = 0;
+		// for (Production p : prods) {
+		// this.names[uid] = p.getUniqueName();
+		// Expression enterTrap = new Expression.PTrap(enterId, uid, null);
+		// Expression exitTrap = new Expression.PTrap(exitId, uid++, null);
+		// Expression e = Expression.append(p.getExpression(), exitTrap);
+		// g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap,
+		// e, null));
+		// }
+		// }
+
 		public void init(OOption options, Grammar g) {
-			Production[] prods = g.getAllProductions();
 			this.unameMap = new HashMap<>();
-			this.names = new String[prods.length];
-			this.enterCounts = new int[prods.length];
-			this.exitCounts = new int[prods.length];
+			ArrayList<String> nameList = new ArrayList<>();
 			options.add(ParserOption.TrapActions, new TrapAction[] { this.newEnterAction(), this.newExitAction() });
 			int enterId = 0;
 			int exitId = 1;
-			int uid = 0;
-			for (Production p : prods) {
-				this.names[uid] = p.getUniqueName();
+			this.init(g, enterId, exitId, nameList);
+			this.names = nameList.toArray(new String[nameList.size()]);
+			this.enterCounts = new int[nameList.size()];
+			this.exitCounts = new int[nameList.size()];
+		}
+
+		private void init(Grammar g, int enterId, int exitId, ArrayList<String> nameList) {
+			for (Production p : g) {
+				int uid = nameList.size();
+				nameList.add(p.getUniqueName());
 				Expression enterTrap = new Expression.PTrap(enterId, uid, null);
 				Expression exitTrap = new Expression.PTrap(exitId, uid++, null);
 				Expression e = Expression.append(p.getExpression(), exitTrap);
 				g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap, e, null));
+			}
+			for (Grammar lg : g.getLocalGrammars()) {
+				this.init(lg, enterId, exitId, nameList);
 			}
 		}
 
@@ -75,7 +104,7 @@ public class Otest extends Oexample {
 		class EnterAction implements TrapAction {
 			@Override
 			public void performed(NZ86ParserContext<?> context, int uid) {
-				enterCounts[uid]++;
+				Coverage.this.enterCounts[uid]++;
 
 			}
 		}
@@ -83,7 +112,7 @@ public class Otest extends Oexample {
 		class ExitAction implements TrapAction {
 			@Override
 			public void performed(NZ86ParserContext<?> context, int uid) {
-				exitCounts[uid]++;
+				Coverage.this.exitCounts[uid]++;
 			}
 		}
 
@@ -97,31 +126,31 @@ public class Otest extends Oexample {
 
 		public final double enterCov() {
 			int c = 0;
-			for (int i = 0; i < names.length; i++) {
-				if (enterCounts[i] > 0) {
+			for (int i = 0; i < this.names.length; i++) {
+				if (this.enterCounts[i] > 0) {
 					c++;
 				}
 			}
-			return ((double) c) / names.length;
+			return ((double) c) / this.names.length;
 		}
 
 		public final double cov() {
 			int c = 0;
-			for (int i = 0; i < names.length; i++) {
-				if (exitCounts[i] > 0) {
+			for (int i = 0; i < this.names.length; i++) {
+				if (this.exitCounts[i] > 0) {
 					c++;
 				}
 			}
-			return ((double) c) / names.length;
+			return ((double) c) / this.names.length;
 		}
 
 		public void dump(OOption options) {
-			for (int i = 0; i < names.length; i++) {
-				if (exitCounts[i] == 0) {
-					OConsole.println("%s %d/%d", names[i], enterCounts[i], exitCounts[i]);
+			for (int i = 0; i < this.names.length; i++) {
+				if (this.exitCounts[i] == 0) {
+					OConsole.println("%s %d/%d", this.names[i], this.enterCounts[i], this.exitCounts[i]);
 				}
 			}
-			OConsole.println("Coverage %.3f %.3f", enterCov(), cov());
+			OConsole.println("Coverage %.3f %.3f", this.enterCov(), this.cov());
 		}
 
 	}
