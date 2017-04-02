@@ -41,34 +41,32 @@ public final class Parser {
 
 	public final Grammar getGrammar() {
 		if (this.code == null) {
-			compile();
+			this.compile();
 		}
-		return code.getGrammar();
+		return this.code.getGrammar();
 	}
 
 	public final ParserExecutable compile() {
-		ParserCompiler compl = options.newInstance(NZ86Compiler.class);
-		long t = options.nanoTime(null, 0);
-		Grammar g = new ParserChecker(options, start).checkGrammar();
+		ParserCompiler compl = this.options.newInstance(NZ86Compiler.class);
+		long t = this.options.nanoTime(null, 0);
+		Grammar g = new ParserChecker(this.options, this.start).checkGrammar();
 		this.code = compl.compile(g);
-		options.nanoTime("ParserCompilingTime@" + start.getUniqueName(), t);
-		return code;
+		this.options.nanoTime("ParserCompilingTime@" + this.start.getUniqueName(), t);
+		return this.code;
 	}
 
 	public final ParserExecutable getExecutable() {
 		if (this.code == null) {
-			compile();
+			this.compile();
 		}
-		return code;
+		return this.code;
 	}
 
 	/* --------------------------------------------------------------------- */
 
 	final <T> T performNull(ParserContext<T> ctx, Source s) {
-		// ParserExecutable code = this.getExecutable();
-		// code.initContext(ctx);
 		ctx.start();
-		T matched = code.exec(ctx);
+		T matched = this.code.exec(ctx);
 		ctx.end();
 		return matched;
 	}
@@ -77,13 +75,13 @@ public final class Parser {
 			throws IOException {
 		ParserExecutable parser = this.getExecutable();
 		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
-		T matched = performNull(ctx, s);
+		T matched = this.performNull(ctx, s);
 		if (matched == null) {
-			perror(SourcePosition.newInstance(s, ctx.getMaximumPosition()), NezFmt.syntax_error);
+			this.perror(SourcePosition.newInstance(s, ctx.getMaximumPosition()), NezFmt.syntax_error);
 			return null;
 		}
-		if (!ctx.eof() && options.is(ParserOption.PartialFailure, true)) {
-			perror(SourcePosition.newInstance(s, ctx.getPosition()), NezFmt.unconsumed);
+		if (!ctx.eof() && this.options.is(ParserOption.PartialFailure, false)) {
+			this.pwarn(SourcePosition.newInstance(s, ctx.getPosition()), NezFmt.unconsumed);
 		}
 		return matched;
 	}
@@ -91,7 +89,7 @@ public final class Parser {
 	public final <T> long match(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		ParserExecutable parser = this.getExecutable();
 		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
-		T matched = performNull(ctx, s);
+		T matched = this.performNull(ctx, s);
 		if (matched == null) {
 			return -1;
 		}
@@ -107,7 +105,7 @@ public final class Parser {
 	}
 
 	public final int match(String str) {
-		return match(ParserSource.newStringSource(str));
+		return this.match(ParserSource.newStringSource(str));
 	}
 
 	public final Tree<?> parse(Source sc) throws IOException {
@@ -120,27 +118,19 @@ public final class Parser {
 
 	/* Errors */
 
-	// private boolean PartialFailure = false;
-	// private boolean PrintingParserError = false;
-	// private boolean ThrowingParserError = true;
-	//
-	// public void setPartialFailure(boolean b) {
-	// this.PartialFailure = b;
-	// }
-	//
-	// public void setThrowingException(boolean b) {
-	// this.ThrowingParserError = b;
-	// }
-	//
-	// public void setPrintingException(boolean b) {
-	// this.PrintingParserError = b;
-	// }
-
 	private void perror(SourcePosition s, LocaleFormat message) throws IOException {
-		if (options.is(ParserOption.ThrowingParserError, true)) {
+		if (this.options.is(ParserOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
 		} else {
-			options.reportError(s, message);
+			this.options.reportError(s, message);
+		}
+	}
+
+	private void pwarn(SourcePosition s, LocaleFormat message) throws IOException {
+		if (this.options.is(ParserOption.ThrowingParserError, true)) {
+			throw new ParserErrorException(s, message);
+		} else {
+			this.options.reportWarning(s, message);
 		}
 	}
 
@@ -156,7 +146,7 @@ public final class Parser {
 
 		@Override
 		public final String toString() {
-			return SourcePosition.formatErrorMessage(s, message);
+			return SourcePosition.formatErrorMessage(this.s, this.message);
 		}
 	}
 

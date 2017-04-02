@@ -226,11 +226,11 @@ public class OOption {
 	}
 
 	public final void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args) {
-		this.log().reportError(s, fmt, args);
+		this.log().reportWarning(s, fmt, args);
 	}
 
 	public final void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args) {
-		this.log().reportError(s, fmt, args);
+		this.log().reportNotice(s, fmt, args);
 	}
 
 	// Messaging

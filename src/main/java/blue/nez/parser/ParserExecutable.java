@@ -3,16 +3,8 @@ package blue.nez.parser;
 import blue.nez.ast.Source;
 import blue.nez.peg.Grammar;
 
-public interface ParserExecutable /*
-									 * extends
-									 * OOption.OptionalFactory<ParserExecutable>
-									 */ {
-	// public default Class<?> entryClass() {
-	// return ParserCompiler.class;
-	// }
+public interface ParserExecutable {
 	public Grammar getGrammar();
-
-	// public <T> void initContext(ParserContext<T> ctx);
 
 	public <T> T exec(ParserContext<T> ctx);
 

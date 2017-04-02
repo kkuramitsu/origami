@@ -46,22 +46,20 @@ public abstract class ParserCode<I> implements ParserExecutable {
 	}
 
 	public final I getStartInstruction() {
-		return codeList.get(0);
+		return this.codeList.get(0);
 	}
 
 	public final void setInstruction(String uname, I inst) {
-		codeMap.put(uname, inst);
+		this.codeMap.put(uname, inst);
 	}
 
 	public final I getInstruction(String uname) {
-		return codeMap.get(uname);
+		return this.codeMap.get(uname);
 	}
 
 	public final int getInstructionSize() {
-		return codeList.size();
+		return this.codeList.size();
 	}
-
-	// public abstract Object exec(ParserInstance context);
 
 	/* MemoPoint */
 
@@ -109,20 +107,23 @@ public abstract class ParserCode<I> implements ParserExecutable {
 		}
 
 		public final double hitRatio() {
-			if (this.memoMiss == 0)
+			if (this.memoMiss == 0) {
 				return 0.0;
+			}
 			return (double) this.memoHit / this.memoMiss;
 		}
 
 		public final double failHitRatio() {
-			if (this.memoMiss == 0)
+			if (this.memoMiss == 0) {
 				return 0.0;
+			}
 			return (double) this.memoFailHit / this.memoMiss;
 		}
 
 		public final double meanLength() {
-			if (this.memoHit == 0)
+			if (this.memoHit == 0) {
 				return 0.0;
+			}
 			return (double) this.hitLength / this.memoHit;
 		}
 
@@ -140,11 +141,6 @@ public abstract class ParserCode<I> implements ParserExecutable {
 				if (this.memoHit == 0) {
 					return true;
 				}
-				// if(this.hitLength < this.memoHit) {
-				// enableMemo = false;
-				// disabledMemo();
-				// return;
-				// }
 				if (this.memoMiss / this.memoHit > 10) {
 					return true;
 				}
@@ -162,7 +158,7 @@ public abstract class ParserCode<I> implements ParserExecutable {
 	protected Map<String, MemoPoint> memoPointMap = null;
 
 	public final MemoPoint getMemoPoint(String uname) {
-		if (memoPointMap != null) {
+		if (this.memoPointMap != null) {
 			return this.memoPointMap.get(uname);
 		}
 		return null;
@@ -173,9 +169,9 @@ public abstract class ParserCode<I> implements ParserExecutable {
 	}
 
 	public void initMemoPoint() {
-		StaticMemoization memo = options.newInstance(StaticMemoization.class);
-		memoPointMap = new HashMap<>();
-		memo.init(grammar, memoPointMap);
+		StaticMemoization memo = this.options.newInstance(StaticMemoization.class);
+		this.memoPointMap = new HashMap<>();
+		memo.init(this.grammar, this.memoPointMap);
 	}
 
 	public static class StaticMemoization implements OptionalFactory<StaticMemoization> {
@@ -210,32 +206,15 @@ public abstract class ParserCode<I> implements ParserExecutable {
 
 	public final void dumpMemoPoints() {
 		if (this.memoPointMap != null) {
-			options.verbose("ID\tPEG\tCount\tHit\tFail\tMean");
+			this.options.verbose("ID\tPEG\tCount\tHit\tFail\tMean");
 			for (String key : this.memoPointMap.keySet()) {
 				MemoPoint p = this.memoPointMap.get(key);
-				options.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(),
+				this.options.verbose("%d\t%s\t%d\t%f\t%f\t%f", p.id, p.label, p.count(), p.hitRatio(), p.failHitRatio(),
 						p.meanLength());
 			}
-			options.verbose("");
+			this.options.verbose("");
 		}
 	}
-
-	// /* Coverage */
-	// private CoverageProfiler prof = null;
-	//
-	// public void initCoverage(ParserFactory strategy) {
-	// prof = strategy.getCoverageProfier();
-	// }
-	//
-	// public NZ86Instruction compileCoverage(String label, boolean start,
-	// NZ86Instruction next) {
-	// if (prof != null) {
-	// return prof.compileCoverage(label, start, next);
-	// }
-	// return next;
-	// }
-
-	// Executble Core
 
 	abstract public void dump();
 }

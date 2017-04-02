@@ -25,7 +25,7 @@ import blue.origami.util.OOption;
 public class NZ86Code extends ParserCode<NZ86Instruction> {
 
 	public NZ86Code(Grammar grammar, OOption options) {
-		super(grammar, options, new NZ86Instruction[1034]);
+		super(grammar, options, new NZ86Instruction[1024]);
 	}
 
 	List<NZ86Instruction> codeList() {
@@ -39,8 +39,8 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 	@Override
 	public <T> ParserContext<T> newContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		NZ86ParserContext<T> ctx = new NZ86ParserContext<>(s, pos, newTree, linkTree);
-		ctx.setTrap((TrapAction[]) options.get(ParserOption.TrapActions));
-		int w = options.intValue(ParserOption.WindowSize, 64);
+		ctx.setTrap((TrapAction[]) this.options.get(ParserOption.TrapActions));
+		int w = this.options.intValue(ParserOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
 			ctx.initMemoTable(w, this.getMemoPointSize());
 		}
@@ -51,7 +51,7 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 	public final <E> E exec(ParserContext<E> ctx) {
 		int ppos = (int) ctx.getPosition();
 		NZ86Instruction code = this.getStartInstruction();
-		boolean result = exec((NZ86ParserContext<E>) ctx, code);
+		boolean result = this.exec((NZ86ParserContext<E>) ctx, code);
 		if (ctx.left == null && result) {
 			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
 		}

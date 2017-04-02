@@ -35,6 +35,7 @@ public class Onez extends OCommand {
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, false);
+		options.set(ParserOption.PartialFailure, true);
 	}
 
 	@Override
@@ -45,8 +46,6 @@ public class Onez extends OCommand {
 		p(Yellow, " Entering two empty lines diplays the current grammar.");
 		OConsole.println("");
 		Parser nezParser = GrammarParser.OPegParser;
-		// nezParser.setPrintingException(false);
-		// nezParser.setThrowingException(false);
 
 		Grammar g = this.getGrammar(options);
 		Parser p = this.newParser(g, options);
@@ -66,7 +65,7 @@ public class Onez extends OCommand {
 					p = this.newParser(g, options);
 					prompt = this.getPrompt(g);
 					this.addHistory(input);
-					p(Yellow, "Grammar is successfully loaded!");
+					p(Yellow, MainFmt.grammar_is_successfully_loaded);
 					continue;
 				}
 			} catch (Exception e) {
@@ -79,6 +78,15 @@ public class Onez extends OCommand {
 				display(tw, node);
 			}
 		}
+	}
+
+	@Override
+	protected Grammar getGrammar(OOption options, String file) throws IOException {
+		file = options.value(ParserOption.GrammarFile, file);
+		if (file == null) {
+			return new SourceGrammar();
+		}
+		return SourceGrammar.loadFile(file, options.list(ParserOption.GrammarPath));
 	}
 
 	private Parser newParser(Grammar g, OOption options) throws IOException {
