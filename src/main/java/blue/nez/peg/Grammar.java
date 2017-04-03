@@ -250,7 +250,7 @@ public abstract class Grammar extends AbstractList<Production> implements String
 	}
 
 	public final Parser newParser(String name) {
-		return new Parser(this.getProduction(name), new OOption());
+		return this.newParser(name, new OOption());
 	}
 
 	public Parser newParser(OOption options) {
@@ -258,7 +258,15 @@ public abstract class Grammar extends AbstractList<Production> implements String
 		if (start == null) {
 			return new Parser(this.getStartProduction(), options);
 		}
-		return new Parser(this.getProduction(start), options);
+		return this.newParser(start, options);
+	}
+
+	public final Parser newParser(String name, OOption options) {
+		Production p = this.getProduction(name);
+		if (p != null) {
+			return new Parser(p, options);
+		}
+		return null;
 	}
 
 	public void dump() {
