@@ -52,27 +52,7 @@ public class ParserChecker {
 		this.start = start;
 	}
 
-	static class ParserGrammar extends Grammar {
-		ParserGrammar(String name) {
-			super(name, null);
-		}
-
-		@Override
-		public String getUniqueName(String name) {
-			return name;
-		}
-
-		@Override
-		public void addPublicProduction(String name) {
-		}
-
-		@Override
-		public Production[] getPublicProductions() {
-			return new Production[0];
-		}
-	}
-
-	public Grammar checkGrammar() {
+	public ParserGrammar checkParserGrammar() {
 		this.visitProduction(this.start);
 		LeftRecursionChecker lrc = new LeftRecursionChecker(this.options);
 		TreeCheckerPass treeChecker = new TreeCheckerPass();
@@ -82,7 +62,7 @@ public class ParserChecker {
 				treeChecker.check(p, this.options);
 			}
 		}
-		Grammar g = new ParserGrammar("@" + this.start.getUniqueName());
+		ParserGrammar g = new ParserGrammar("@" + this.start.getUniqueName(), this.usedChars[0]);
 		String[] flags = this.flagNames();
 		GrammarFlag.checkFlag(this.prodList, flags);
 		EliminateFlags dup = new EliminateFlags(this.options, g, flags);
@@ -90,7 +70,7 @@ public class ParserChecker {
 		// if (flags.length > 0) {
 		// g.dump();
 		// }
-		return this.applyPass(g);
+		return (ParserGrammar) this.applyPass(g);
 	}
 
 	private Grammar applyPass(Grammar g) {
@@ -145,26 +125,11 @@ public class ParserChecker {
 			PNonTerminal n = ((Expression.PNonTerminal) e);
 			Grammar g = n.getGrammar();
 			if (g == null) {
-				// this.options.reportError(e.getSourceLocation(),
-				// NezFmt.YY0_is_undefined_grammar, n.getNameSpace());
 				return;
 			}
 			Production p = n.getProduction();
 			if (p == null) {
 				return;
-				// if (n.getLocalName().startsWith("\"")) {
-				// this.options.reportError(e.getSourceLocation(), "undefined
-				// terminal: %s", n.getLocalName());
-				// n.getGrammar().addProduction(n.getLocalName(),
-				// Expression.newString(OStringUtils.unquoteString(n.getLocalName()),
-				// null));
-				// } else {
-				// this.options.reportError(e.getSourceLocation(), "undefined
-				// %s", n.getLocalName());
-				// n.getGrammar().addProduction(n.getLocalName(),
-				// Expression.defaultFailure);
-				// }
-				// p = n.getProduction();
 			}
 			this.visitProduction(p);
 			return;
@@ -191,7 +156,7 @@ public class ParserChecker {
 		}
 	}
 
-	private boolean[] usedChars = null;
+	private boolean[] usedChars = new boolean[256];
 
 	private void countFlag(String key) {
 		Integer n = this.flagMap.get(key);

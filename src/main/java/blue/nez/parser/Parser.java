@@ -49,7 +49,7 @@ public final class Parser {
 	public final ParserExecutable compile() {
 		ParserCompiler compl = this.options.newInstance(NZ86Compiler.class);
 		long t = this.options.nanoTime(null, 0);
-		Grammar g = new ParserChecker(this.options, this.start).checkGrammar();
+		ParserGrammar g = new ParserChecker(this.options, this.start).checkParserGrammar();
 		this.code = compl.compile(g);
 		this.options.nanoTime("ParserCompilingTime@" + this.start.getUniqueName(), t);
 		return this.code;

@@ -18,24 +18,26 @@ Year,Make,Model,Description,Price
 air, moon roof, loaded",4799.00
 '''
 
-public File
-	= CommaSeparatedValue
+public File = 
+	CommaSeparatedValue
 
-public CommaSeparatedValue
-	= { ($(Line))* #CSV }
+public CommaSeparatedValue = {
+	$(Line)*
+	#CSV
+}
 
-Line
-	= { $(Value) (',' $(Value))* ( NEWLINE / !. ) #Line }
+Line = {
+	$(Value) 
+	(',' $(Value))* 
+	( NEWLINE / !. ) 
+	#Line 
+}
 	
-Value
-	= '"' { ('""' / (!'"' .))* #Value } '"'
+Value = 
+	'"' { ('""' / (!'"' .))* #Value } '"'
 	/ { (![,\r\n] .)* #Value }
 
-NEWLINE
-	= '\r\n' 
+NEWLINE = 
+	'\r\n' 
 	/ '\n'
 
-format #CSV[*] `$[0`${NL}`-1]${NL}`
-format #Line[*] `$[0`,`-1]`
-format #Value[0] `"${text}"`
- 

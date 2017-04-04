@@ -218,7 +218,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			throw new ParserTerminationException(status);
+			throw new ParserTerminationException(this.status);
 		}
 	}
 
@@ -239,7 +239,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.trap(type, uid);
+			sc.trap(this.type, this.uid);
 			return this.next;
 		}
 	}
@@ -347,7 +347,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.xCall(uname, jump);
+			sc.xCall(this.uname, this.jump);
 			return this.next;
 		}
 
@@ -390,7 +390,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.xAlt(jump);
+			sc.xAlt(this.jump);
 			return this.next;
 		}
 	}
@@ -657,7 +657,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			if (sc.eof()) {
-				return next;
+				return this.next;
 			}
 			return sc.xFail();
 		}
@@ -686,7 +686,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.read();
-			if (byteSet[byteChar]) {
+			if (this.byteSet[byteChar]) {
 				return this.next;
 			}
 			return sc.xFail();
@@ -702,7 +702,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.prefetch();
-			if (byteSet[byteChar] && !sc.eof()) {
+			if (this.byteSet[byteChar] && !sc.eof()) {
 				sc.move(1);
 				return this.next;
 			}
@@ -724,7 +724,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.prefetch();
-			if (byteSet[byteChar]) {
+			if (this.byteSet[byteChar]) {
 				sc.move(1);
 			}
 			return this.next;
@@ -740,7 +740,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.prefetch();
-			if (byteSet[byteChar] && sc.eof()) {
+			if (this.byteSet[byteChar] && sc.eof()) {
 				sc.move(1);
 			}
 			return this.next;
@@ -750,6 +750,7 @@ public class NZ86 {
 	public static class NSet extends AbstSet {
 		public NSet(boolean[] byteMap, NZ86Instruction next) {
 			super(byteMap, next);
+			this.byteSet[0] = true;
 		}
 
 		@Override
@@ -760,7 +761,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.prefetch();
-			if (!byteSet[byteChar]) {
+			if (!this.byteSet[byteChar]) {
 				return this.next;
 			}
 			return sc.xFail();
@@ -776,7 +777,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int byteChar = sc.prefetch();
-			if (!byteSet[byteChar] && !sc.eof()) {
+			if (!this.byteSet[byteChar] && !sc.eof()) {
 				return this.next;
 			}
 			return sc.xFail();
@@ -787,6 +788,7 @@ public class NZ86 {
 	public static class RSet extends AbstSet {
 		public RSet(boolean[] byteMap, NZ86Instruction next) {
 			super(byteMap, next);
+			byteMap[0] = false;
 		}
 
 		@Override
@@ -796,7 +798,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			while (byteSet[sc.prefetch()]) {
+			while (this.byteSet[sc.prefetch()]) {
 				sc.move(1);
 			}
 			return this.next;
@@ -811,7 +813,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			while (byteSet[sc.prefetch()] && !sc.eof()) {
+			while (this.byteSet[sc.prefetch()] && !sc.eof()) {
 				sc.move(1);
 			}
 			return this.next;
@@ -924,7 +926,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ch = sc.prefetch();
-			return jumpTable[jumpIndex[ch] & 0xff];
+			return this.jumpTable[this.jumpIndex[ch] & 0xff];
 		}
 
 	}
@@ -941,7 +943,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			return jumpTable[jumpIndex[sc.read()] & 0xff];
+			return this.jumpTable[this.jumpIndex[sc.read()] & 0xff];
 		}
 
 	}
@@ -1000,7 +1002,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.beginTree(shift);
+			sc.beginTree(this.shift);
 			return this.next;
 		}
 	}
@@ -1024,7 +1026,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.endTree(shift, tag, value);
+			sc.endTree(this.shift, this.tag, this.value);
 			return this.next;
 		}
 	}
@@ -1044,7 +1046,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.tagTree(tag);
+			sc.tagTree(this.tag);
 			return this.next;
 		}
 
@@ -1065,7 +1067,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.valueTree(value);
+			sc.valueTree(this.value);
 			return this.next;
 		}
 
@@ -1086,7 +1088,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.xTLink(label);
+			sc.xTLink(this.label);
 			return this.next;
 		}
 
@@ -1109,7 +1111,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.foldTree(shift, label);
+			sc.foldTree(this.shift, this.label);
 			return this.next;
 		}
 	}
@@ -1212,7 +1214,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			sc.xSOpen();
-			sc.addSymbolMask(table);
+			sc.addSymbolMask(this.table);
 			return this.next;
 		}
 
@@ -1231,7 +1233,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xPPos();
-			sc.addSymbol(table, ppos);
+			sc.addSymbol(this.table, ppos);
 			return this.next;
 		}
 	}
@@ -1248,7 +1250,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			return sc.exists(table) ? this.next : sc.xFail();
+			return sc.exists(this.table) ? this.next : sc.xFail();
 		}
 
 	}
@@ -1268,7 +1270,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			return sc.existsSymbol(table, utf8) ? this.next : sc.xFail();
+			return sc.existsSymbol(this.table, this.utf8) ? this.next : sc.xFail();
 		}
 	}
 
@@ -1284,7 +1286,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			return sc.matchSymbol(table) ? this.next : sc.xFail();
+			return sc.matchSymbol(this.table) ? this.next : sc.xFail();
 		}
 
 	}
@@ -1302,7 +1304,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xPPos();
-			return sc.equals(table, ppos) ? this.next : sc.xFail();
+			return sc.equals(this.table, ppos) ? this.next : sc.xFail();
 		}
 
 	}
@@ -1320,7 +1322,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xPPos();
-			return sc.contains(table, ppos) ? this.next : sc.xFail();
+			return sc.contains(this.table, ppos) ? this.next : sc.xFail();
 		}
 
 	}
@@ -1345,8 +1347,8 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xPPos();
-			sc.scanCount(ppos, mask, shift);
-			return next;
+			sc.scanCount(ppos, this.mask, this.shift);
+			return this.next;
 		}
 	}
 
@@ -1407,7 +1409,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			switch (sc.lookupMemo(uid)) {
+			switch (sc.lookupMemo(this.uid)) {
 			case ParserContext.NotFound:
 				return this.next;
 			case ParserContext.SuccFound:
@@ -1431,7 +1433,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xSuccPos();
-			sc.memoSucc(uid, ppos);
+			sc.memoSucc(this.uid, ppos);
 			return this.next;
 		}
 	}
@@ -1448,7 +1450,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			sc.memoFail(uid);
+			sc.memoFail(this.uid);
 			return sc.xFail();
 		}
 
@@ -1469,7 +1471,7 @@ public class NZ86 {
 
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
-			switch (sc.lookupTreeMemo(uid)) {
+			switch (sc.lookupTreeMemo(this.uid)) {
 			case ParserContext.NotFound:
 				return this.next;
 			case ParserContext.SuccFound:
@@ -1494,7 +1496,7 @@ public class NZ86 {
 		@Override
 		public NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException {
 			int ppos = sc.xSuccPos();
-			sc.memoTreeSucc(uid, ppos);
+			sc.memoTreeSucc(this.uid, ppos);
 			return this.next;
 		}
 
