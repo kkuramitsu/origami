@@ -49,6 +49,7 @@ FuncDef = {
 
 ParameterList = {
 	 ( $(Parameter) ( __ ',' __ $(Parameter) )* )?
+	 ( __ ',' )?
 }
 
 Parameter = {
