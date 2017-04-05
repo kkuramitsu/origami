@@ -21,14 +21,14 @@ import java.util.Set;
 import blue.nez.ast.SourcePosition;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
-import blue.origami.rule.ExpressionRules;
-import blue.origami.rule.OrigamiAPIs;
-import blue.origami.rule.StatementRules;
-import blue.origami.rule.TypeRules;
-import blue.origami.rule.java.ClassRules;
-import blue.origami.util.OScriptUtils;
+import blue.origami.rule.ScriptAnalysis;
+import blue.origami.rule.OrigamiExpressionRules;
+import blue.origami.rule.OrigamiOperatorAPIs;
+import blue.origami.rule.OrigamiStatementRules;
+import blue.origami.rule.OrigamiTypeRules;
+import blue.origami.rule.java.OrigamiClassRules;
 
-public class JsSet implements OImportable, OScriptUtils {
+public class JsSet implements OImportable, ScriptAnalysis {
 	@Override
 	public void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		// addType(env, t, "Unit", void.class);
@@ -38,19 +38,19 @@ public class JsSet implements OImportable, OScriptUtils {
 		// addType(env, t, "String", String.class);
 		// addType(env, t, "Object", IObject.class);
 
-		importClass(env, s, TypeRules.class, AllSubSymbols);
-		importClass(env, s, ExpressionRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiTypeRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiExpressionRules.class, AllSubSymbols);
 
-		importClass(env, s, ExpressionRules.class, AllSubSymbols);
-		importClass(env, s, StatementRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiExpressionRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiStatementRules.class, AllSubSymbols);
 
-		importClass(env, s, ClassRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiClassRules.class, AllSubSymbols);
 
 		importClass(env, s, JSLiteralRules.class, AllSubSymbols);
 		importClass(env, s, JSExpressionRule.class, AllSubSymbols);
 		importClass(env, s, JSStatementRules.class, AllSubSymbols);
 
-		importClass(env, s, OrigamiAPIs.class, AllSubSymbols);
+		importClass(env, s, OrigamiOperatorAPIs.class, AllSubSymbols);
 
 		importClass(env, s, JsCore.class, AllSubSymbols);
 	}

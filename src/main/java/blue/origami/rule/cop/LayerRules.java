@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.rule;
+package blue.origami.rule.cop;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
@@ -39,6 +39,9 @@ import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.ocode.OCode;
+import blue.origami.rule.OFmt;
+import blue.origami.rule.SyntaxAnalysis;
+import blue.origami.rule.TypeRule;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeRule;
@@ -271,7 +274,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 
 		@Override
-		public Class<?> getEntryPoint() {
+		public Class<?> getSingletonClass() {
 			return null;
 		}
 
@@ -384,7 +387,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 
 		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
 				String context) throws Throwable {
-			OEnv env = OEnv.resolve(entry);
+			OEnv env = OEnv.resolveEnv(entry);
 			OContextGroup share = env.get(context, OContextGroup.class);
 			OContextVariableCallSite site = new OContextVariableCallSite(env, name, OCallSite.Virtual, type);
 			share.addContextListener(site);
@@ -418,7 +421,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 
 		public static CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Class<?> entry,
 				String context) throws Throwable {
-			OEnv env = OEnv.resolve(entry);
+			OEnv env = OEnv.resolveEnv(entry);
 			OContextGroup share = env.get(context, OContextGroup.class);
 			OContextMethodCallSite site = new OContextMethodCallSite(env, name, OCallSite.Virtual, type);
 			share.addContextListener(site);

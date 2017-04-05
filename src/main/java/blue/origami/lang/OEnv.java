@@ -47,22 +47,18 @@ public interface OEnv {
 		return false;
 	}
 
-	public Class<?> getEntryPoint();
+	public Class<?> getSingletonClass();
 
-	public default Class<?> findEntryPoint() {
+	public default OEnv findExportableEnv() {
 		for (OEnv cur = this; cur != null; cur = cur.getParent()) {
-			if (cur.getEntryPoint() != null) {
-				return cur.getEntryPoint();
+			if (cur.getSingletonClass() != null) {
+				return cur;
 			}
 		}
-		return null;
+		return null; // this does not happen
 	}
 
-	public default OEnv getStartPoint() {
-		return this; // FIXME
-	}
-
-	public static OEnv resolve(Class<?> entry) {
+	public static OEnv resolveEnv(Class<?> entry) {
 		OEnv env = (OEnv) OTypeUtils.loadFieldValue(entry, "entry");
 		assert (env != null);
 		return env;
@@ -81,7 +77,7 @@ public interface OEnv {
 	public OTypeSystem getTypeSystem();
 
 	public default OType t(Class<?> c) {
-		return getTypeSystem().newType(c);
+		return getTypeSystem().ofType(c);
 	}
 
 	public default OCode v(Object value) {
@@ -246,7 +242,7 @@ public interface OEnv {
 		}
 
 		@Override
-		public Class<?> getEntryPoint() {
+		public Class<?> getSingletonClass() {
 			if (this.entryPoint == null) {
 				this.entryPoint = this.getClassLoader().entryPoint(this, new RuntimeEnv(this));
 			}
@@ -283,7 +279,7 @@ public interface OEnv {
 		}
 
 		@Override
-		public Class<?> getEntryPoint() {
+		public Class<?> getSingletonClass() {
 			return null;
 		}
 

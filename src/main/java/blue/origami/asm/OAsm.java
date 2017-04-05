@@ -31,28 +31,29 @@ import blue.origami.lang.OMethodDecl;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
 import blue.origami.ocode.AndCode;
+import blue.origami.ocode.ApplyCode;
 import blue.origami.ocode.ArrayCode;
 import blue.origami.ocode.AssignCode;
 import blue.origami.ocode.BreakCode;
 import blue.origami.ocode.CastCode;
 import blue.origami.ocode.ConstructorInvocationCode;
-import blue.origami.ocode.OCode;
-import blue.origami.ocode.NewCode;
 import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.DeclCode;
 import blue.origami.ocode.DefaultValueCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
-import blue.origami.ocode.OGenerator;
 import blue.origami.ocode.GetIndexCode;
 import blue.origami.ocode.GetSizeCode;
 import blue.origami.ocode.GetterCode;
 import blue.origami.ocode.IfCode;
 import blue.origami.ocode.InstanceOfCode;
 import blue.origami.ocode.LambdaCode;
-import blue.origami.ocode.ApplyCode;
 import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.NameCode;
+import blue.origami.ocode.NewCode;
 import blue.origami.ocode.NotCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OGenerator;
 import blue.origami.ocode.OrCode;
 import blue.origami.ocode.ReturnCode;
 import blue.origami.ocode.SetIndexCode;
@@ -60,10 +61,10 @@ import blue.origami.ocode.SetterCode;
 import blue.origami.ocode.SugarCode;
 import blue.origami.ocode.ThrowCode;
 import blue.origami.ocode.TryCode;
+import blue.origami.ocode.TryCode.CatchCode;
 import blue.origami.ocode.ValueCode;
 import blue.origami.ocode.WarningCode;
 import blue.origami.ocode.WhileCode;
-import blue.origami.ocode.TryCode.CatchCode;
 import blue.origami.rule.java.JavaSwitchCode;
 import blue.origami.rule.java.JavaSwitchCode.CaseCode;
 import blue.origami.util.OArrayUtils;
@@ -931,5 +932,11 @@ public class OAsm implements OGenerator, OArrayUtils {
 	@Override
 	public void pushSugar(SugarCode code) {
 		code.desugar().generate(this);
+	}
+
+	@Override
+	public void pushDecl(DeclCode code) {
+		// TODO Auto-generated method stub
+
 	}
 }

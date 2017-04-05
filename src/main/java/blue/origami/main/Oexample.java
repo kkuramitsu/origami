@@ -29,6 +29,7 @@ import blue.nez.parser.ParserSource;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarParser;
 import blue.origami.main.Otest.Coverage;
+import blue.origami.main.tool.OTreeWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -82,11 +83,11 @@ public class Oexample extends OCommand {
 	}
 
 	void loadExample(OOption options, Grammar g) throws IOException {
-		String path = options.value(ParserOption.GrammarFile, null);
+		String path = options.stringValue(ParserOption.GrammarFile, null);
 		if (path == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		Source s = ParserSource.newFileSource(path, options.list(ParserOption.GrammarPath));
+		Source s = ParserSource.newFileSource(path, options.stringList(ParserOption.GrammarPath));
 		this.importFile(g, s, options);
 		this.desc = parseGrammarDescription(s);
 	}

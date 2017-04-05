@@ -36,13 +36,13 @@ public class OParamVarType extends OTypeImpl {
 		if (bounds.length > 0) {
 			Type pp = bounds[0];
 			if (pp instanceof ParameterizedType) {
-				OType base = ts.newType(((ParameterizedType) pp).getRawType());
+				OType base = ts.ofType(((ParameterizedType) pp).getRawType());
 				return base;
 			}
 
-			return ts.newType(bounds[0]);
+			return ts.ofType(bounds[0]);
 		}
-		return ts.newType(Object.class);
+		return ts.ofType(Object.class);
 	}
 
 	OParamVarType(OTypeSystem ts, String name, OType upperBound) {

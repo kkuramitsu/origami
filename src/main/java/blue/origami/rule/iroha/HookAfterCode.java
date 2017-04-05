@@ -1,4 +1,4 @@
-package blue.origami.rule;
+package blue.origami.rule.iroha;
 
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;

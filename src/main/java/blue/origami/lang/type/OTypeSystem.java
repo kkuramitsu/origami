@@ -31,8 +31,8 @@ import blue.origami.ffi.Immutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.ffi.OrigamiObject;
 import blue.origami.lang.OEnv;
-import blue.origami.ocode.OCode;
 import blue.origami.ocode.NullCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.ValueCode;
 import blue.origami.util.OTypeUtils;
 
@@ -42,8 +42,8 @@ public abstract class OTypeSystem {
 
 	public OTypeSystem() {
 		this.classLoader = new OClassLoader();
-		define(OUntypedType.class, new OUntypedType(this));
-		define(AnyType.class, new AnyType(this));
+		this.define(OUntypedType.class, new OUntypedType(this));
+		this.define(AnyType.class, new AnyType(this));
 	}
 
 	/* class loader */
@@ -62,8 +62,22 @@ public abstract class OTypeSystem {
 		return new OClassType(this, c);
 	}
 
-	protected OType createArrayType(OType t) {
-		return new OArrayType(t);
+	// protected OType createArrayType(OType t) {
+	// return new OArrayType(t);
+	// }
+
+	/* ArrayType */
+
+	public String nameArrayType(OType componentType) {
+		return componentType.getLocalName() + "[]";
+	}
+
+	public OType newArrayType(OType componentType) {
+		Class<?> c = componentType.unwrapOrNull((Class<?>) null);
+		if (c == null) {
+			return new OArrayType(componentType);
+		}
+		return this.ofType(Array.newInstance(c, 0).getClass());
 	}
 
 	protected OType createNullableType(OType t) {
@@ -79,7 +93,7 @@ public abstract class OTypeSystem {
 	final HashMap<Class<?>, OType> typeMap = new HashMap<>();
 
 	public final boolean isDefined(Class<?> c) {
-		return typeMap.get(c) != null;
+		return this.typeMap.get(c) != null;
 	}
 
 	public final <T extends OType> T define(Class<?> c, T t) {
@@ -92,32 +106,32 @@ public abstract class OTypeSystem {
 		return t;
 	}
 
-	public final OType newType(Class<?> c) {
-		OType t = typeMap.get(c);
+	public final OType ofType(Class<?> c) {
+		OType t = this.typeMap.get(c);
 		if (t == null && c != null) {
 			if (c.isArray()) {
-				t = createClassType(c.getComponentType());
-				t = createArrayType(t);
+				t = this.createClassType(c.getComponentType());
+				t = new OArrayType(t);
 			} else {
-				t = createClassType(c);
+				t = this.createClassType(c);
 			}
-			typeMap.put(c, t);
+			this.typeMap.put(c, t);
 		}
 		return t;
 	}
 
-	public final OType[] newTypes(Class<?>... c) {
+	public final OType[] ofTypes(Class<?>... c) {
 		OType[] inf = new OType[c.length];
 		for (int i = 0; i < inf.length; i++) {
-			inf[i] = newType(c[i]);
+			inf[i] = this.ofType(c[i]);
 		}
 		return inf;
 	}
 
-	public final OType[] newTypes(Parameter... p) {
+	public final OType[] ofTypes(Parameter... p) {
 		OType[] inf = new OType[p.length];
 		for (int i = 0; i < inf.length; i++) {
-			OType t = newType(p[i].getParameterizedType());
+			OType t = this.ofType(p[i].getParameterizedType());
 			if (p[i].isAnnotationPresent(ONullable.class)) {
 				t = this.newNullableType(t);
 			}
@@ -126,45 +140,35 @@ public abstract class OTypeSystem {
 		return inf;
 	}
 
-	public final OType newType(Type p) {
+	public final OType ofType(Type p) {
 		if (p instanceof Class<?>) {
-			return newType((Class<?>) p);
+			return this.ofType((Class<?>) p);
 		}
 		if (p instanceof TypeVariable<?>) {
 			return new OParamVarType(this, (TypeVariable<?>) p);
 		}
 		if (p instanceof ParameterizedType) {
-			OType base = newType(((ParameterizedType) p).getRawType());
+			OType base = this.ofType(((ParameterizedType) p).getRawType());
 			Type[] pp = ((ParameterizedType) p).getActualTypeArguments();
-			return OParamType.of(base, newTypes(pp));
+			return OParamType.of(base, this.ofTypes(pp));
 		}
 		if (p instanceof GenericArrayType) {
-			OType t = newType(((GenericArrayType) p).getGenericComponentType());
+			OType t = this.ofType(((GenericArrayType) p).getGenericComponentType());
 			return new OArrayType(t);
 		}
 		if (p instanceof WildcardType) {
 			WildcardType w = (WildcardType) p;
 			return new OParamWildcardType(this, w);
 		}
-		return newType((Class<?>) p);
+		return this.ofType((Class<?>) p);
 	}
 
-	public final OType[] newTypes(Type[] p) {
+	public final OType[] ofTypes(Type[] p) {
 		OType[] t = new OType[p.length];
 		for (int i = 0; i < p.length; i++) {
-			t[i] = newType(p[i]);
+			t[i] = this.ofType(p[i]);
 		}
 		return t;
-	}
-
-	/* ArrayType */
-
-	public OType newArrayType(OType t) {
-		Class<?> c = t.unwrapOrNull((Class<?>) null);
-		if (c == null) {
-			return this.createArrayType(t);
-		}
-		return newType(Array.newInstance(c, 0).getClass());
 	}
 
 	/* NullMap */
@@ -172,19 +176,19 @@ public abstract class OTypeSystem {
 	final HashMap<Class<?>, OType> nullMap = new HashMap<>();
 
 	public OType newNullableType(Class<?> c) {
-		OType t = nullMap.get(c);
+		OType t = this.nullMap.get(c);
 		if (t == null) {
-			t = createNullableType(newType(OTypeUtils.boxType(c)));
-			nullMap.put(c, t);
+			t = this.createNullableType(this.ofType(OTypeUtils.boxType(c)));
+			this.nullMap.put(c, t);
 		}
 		return t;
 	}
 
 	public OType newNullableType(OType ty) {
 		if (ty instanceof OClassType) {
-			return newNullableType(ty.unwrap());
+			return this.newNullableType(ty.unwrap());
 		}
-		return createNullableType(ty);
+		return this.createNullableType(ty);
 	}
 
 	/* MutableType */
@@ -192,12 +196,12 @@ public abstract class OTypeSystem {
 	final HashMap<Class<?>, OType> mutMap = new HashMap<>();
 
 	public final OType newMutableType(Class<?> c) {
-		OType t = mutMap.get(c);
+		OType t = this.mutMap.get(c);
 		if (t == null) {
-			t = newType(c);
+			t = this.ofType(c);
 			if (OrigamiObject.class.isAssignableFrom(c) && !Immutable.class.isAssignableFrom(c)) {
-				t = createMutableType(t);
-				mutMap.put(c, t);
+				t = this.createMutableType(t);
+				this.mutMap.put(c, t);
 			}
 		}
 		return t;
@@ -206,25 +210,25 @@ public abstract class OTypeSystem {
 	public final OType newMutableType(OType t) {
 		Class<?> c = t.unwrapOrNull((Class<?>) null);
 		if (c != null) {
-			return newMutableType(c);
+			return this.newMutableType(c);
 		}
-		return createMutableType(t);
+		return this.createMutableType(t);
 	}
 
 	/* ValueType */
 
 	public final OType valueType(Object value) {
 		if (value == null) {
-			return newNullableType(Object.class);
+			return this.newNullableType(Object.class);
 		}
-		return newType(OTypeUtils.unboxType(value.getClass())).valueType();
+		return this.ofType(OTypeUtils.unboxType(value.getClass())).valueType();
 	}
 
 	public final OCode newValueCode(Object value) {
 		if (value == null) {
-			return new NullCode(newType(OUntypedType.class));
+			return new NullCode(this.ofType(OUntypedType.class));
 		}
-		return new ValueCode(value, valueType(value));
+		return new ValueCode(value, this.valueType(value));
 	}
 
 }

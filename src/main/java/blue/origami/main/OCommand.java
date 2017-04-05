@@ -29,10 +29,11 @@ import blue.nez.parser.ParserOption;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.SourceGrammar;
 import blue.origami.OVersion;
+import blue.origami.main.tool.OTreeWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.OOption.Key;
+import blue.origami.util.OOption.OOptionKey;
 import blue.origami.util.StringCombinator;
 
 public abstract class OCommand extends OConsole {
@@ -76,7 +77,7 @@ public abstract class OCommand extends OConsole {
 		options.set(ParserOption.GrammarPath, new String[] { "/blue/origami/grammar", "/blue/local" });
 	}
 
-	static HashMap<String, Key> optMap = new HashMap<>();
+	static HashMap<String, OOptionKey> optMap = new HashMap<>();
 	static {
 		optMap.put("-g", ParserOption.GrammarFile);
 		optMap.put("--grammar", ParserOption.GrammarFile);
@@ -95,7 +96,7 @@ public abstract class OCommand extends OConsole {
 		ArrayList<String> fileList = new ArrayList<>();
 		for (int index = 1; index < args.length; index++) {
 			String as = args[index];
-			Key key = optMap.get(as);
+			OOptionKey key = optMap.get(as);
 			if (key != null && index + 1 < args.length) {
 				options.set(key, args[index + 1]);
 				index++;
@@ -123,11 +124,11 @@ public abstract class OCommand extends OConsole {
 	}
 
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
-		file = options.value(ParserOption.GrammarFile, file);
+		file = options.stringValue(ParserOption.GrammarFile, file);
 		if (file == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		return SourceGrammar.loadFile(file, options.list(ParserOption.GrammarPath));
+		return SourceGrammar.loadFile(file, options.stringList(ParserOption.GrammarPath));
 	}
 
 	protected Grammar getGrammar(OOption options) throws IOException {

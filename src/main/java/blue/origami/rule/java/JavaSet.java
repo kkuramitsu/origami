@@ -21,14 +21,14 @@ import java.util.Set;
 import blue.nez.ast.SourcePosition;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
-import blue.origami.rule.ExpressionRules;
-import blue.origami.rule.LiteralRules;
-import blue.origami.rule.OrigamiAPIs;
-import blue.origami.rule.StatementRules;
-import blue.origami.rule.TypeRules;
-import blue.origami.util.OScriptUtils;
+import blue.origami.rule.ScriptAnalysis;
+import blue.origami.rule.OrigamiExpressionRules;
+import blue.origami.rule.OrigamiLiteralRules;
+import blue.origami.rule.OrigamiOperatorAPIs;
+import blue.origami.rule.OrigamiStatementRules;
+import blue.origami.rule.OrigamiTypeRules;
 
-public class JavaSet implements OImportable, OScriptUtils {
+public class JavaSet implements OImportable, ScriptAnalysis {
 	@Override
 	public void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		addType(env, s, "boolean", boolean.class);
@@ -44,13 +44,13 @@ public class JavaSet implements OImportable, OScriptUtils {
 		addType(env, s, "String", String.class);
 		addType(env, s, "Object", Object.class);
 
-		importClass(env, s, LiteralRules.class, AllSubSymbols);
-		importClass(env, s, TypeRules.class, AllSubSymbols);
-		importClass(env, s, ExpressionRules.class, AllSubSymbols);
-		importClass(env, s, StatementRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiLiteralRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiTypeRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiExpressionRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiStatementRules.class, AllSubSymbols);
 
-		importClass(env, s, OrigamiAPIs.class, AllSubSymbols);
-		importClass(env, s, ClassRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiOperatorAPIs.class, AllSubSymbols);
+		importClass(env, s, OrigamiClassRules.class, AllSubSymbols);
 
 	}
 

@@ -27,7 +27,7 @@ import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.TypeValueCode;
 import blue.origami.util.OTypeRule;
 
-public class TypeRules implements OImportable, OSymbols, TypeAnalysis {
+public class OrigamiTypeRules implements OImportable, OSymbols, TypeAnalysis {
 
 	@SuppressWarnings("serial")
 	public static class TypeNotFoundException extends ErrorCode {

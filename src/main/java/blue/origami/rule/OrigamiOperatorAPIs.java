@@ -24,7 +24,7 @@ import java.util.Objects;
 import blue.origami.ffi.OAlias;
 import blue.origami.ffi.OCast;
 
-public class OrigamiAPIs {
+public class OrigamiOperatorAPIs {
 	/* Object */
 
 	// @ODynamic

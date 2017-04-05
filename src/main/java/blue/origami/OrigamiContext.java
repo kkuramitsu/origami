@@ -34,12 +34,12 @@ import blue.origami.lang.type.OTypeSystem;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.OCodeWriter;
+import blue.origami.rule.ScriptAnalysis;
 import blue.origami.rule.OrigamiTypeSystem;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.OScriptUtils;
 import blue.origami.util.OTree;
 
 public class OrigamiContext extends OEnv.OBaseEnv {
@@ -90,8 +90,8 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 	}
 
 	static Grammar loadGrammar(OOption options) throws IOException {
-		String file = options.value(ParserOption.GrammarFile, "iroha.opeg");
-		return SourceGrammar.loadFile(file, options.list(ParserOption.GrammarPath));
+		String file = options.stringValue(ParserOption.GrammarFile, "iroha.opeg");
+		return SourceGrammar.loadFile(file, options.stringList(ParserOption.GrammarPath));
 	}
 
 	public void setGrammar(Grammar grammar) {
@@ -155,7 +155,7 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 		this.runtime.runREPL(this, sc);
 	}
 
-	class OrigamiRuntime extends OConsole implements OScriptUtils, TypeAnalysis {
+	class OrigamiRuntime extends OConsole implements ScriptAnalysis, TypeAnalysis {
 		OTree defaultTree = new OTree();
 		OCodeWriter eval = new OCodeWriter();
 
@@ -191,7 +191,7 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 				OCode code = this.typeExpr(env, node);
 				// env.add(LocalVariables.class, new LocalVariables());
 				OCodeWriter eval = OrigamiContext.this.options.newInstance(OCodeWriter.class);
-				eval.writeln(env, code);
+				eval.writeCodeLine(env, code);
 				// Object value = code.eval(env);
 				// if (!code.getType().is(void.class)) {
 				// String t2 = code.getType().toString();

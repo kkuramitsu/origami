@@ -25,8 +25,8 @@ import blue.origami.asm.OCallSite;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.ocode.OCode;
 import blue.origami.ocode.ApplyCode;
+import blue.origami.ocode.OCode;
 
 public class ODynamicMethodHandle extends OCommonMethodHandle {
 
@@ -49,7 +49,7 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 	}
 
 	public OEnv getEnv() {
-		return env;
+		return this.env;
 	}
 
 	@Override
@@ -59,14 +59,14 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 
 	@Override
 	public Object[] getCallSiteParams() {
-		return new Object[] { Type.getType(env.findEntryPoint()), OCallSite.Dynamic };
+		return new Object[] { Type.getType(this.env.findExportableEnv().getSingletonClass()), OCallSite.Dynamic };
 	}
 
 	@Override
 	public MethodType methodType() {
-		Class<?>[] p = new Class<?>[paramSize];
+		Class<?>[] p = new Class<?>[this.paramSize];
 		Arrays.fill(p, Object.class);
-		return MethodType.methodType(ret.unwrapOrNull(Object.class), p);
+		return MethodType.methodType(this.ret.unwrapOrNull(Object.class), p);
 	}
 
 	@Override
@@ -106,12 +106,12 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 
 	@Override
 	public OType getDeclaringClass() {
-		return env.t(site.getClass());
+		return this.env.t(this.site.getClass());
 	}
 
 	@Override
 	public OType getReturnType() {
-		return ret;
+		return this.ret;
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 	@Override
 	public OType[] getParamTypes() {
 		OType[] p = new OType[this.paramSize];
-		Arrays.fill(p, env.t(Object.class));
+		Arrays.fill(p, this.env.t(Object.class));
 		return p;
 	}
 
@@ -143,7 +143,7 @@ public class ODynamicMethodHandle extends OCommonMethodHandle {
 				return orig;
 			}
 		}
-		return site.findParamCode(env, this.name, params);
+		return this.site.findParamCode(this.env, this.name, params);
 	}
 
 }

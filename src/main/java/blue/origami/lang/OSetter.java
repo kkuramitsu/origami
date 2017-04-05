@@ -43,7 +43,7 @@ public class OSetter extends OFieldHandle {
 
 	@Override
 	public OType getReturnType() {
-		return this.getTypeSystem().newType(void.class);
+		return this.getTypeSystem().ofType(void.class);
 	}
 
 	@Override

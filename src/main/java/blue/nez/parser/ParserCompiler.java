@@ -1,12 +1,12 @@
 package blue.nez.parser;
 
-import blue.origami.util.OOption;
+import blue.origami.util.OptionalFactory;
 
-public interface ParserCompiler extends OOption.OptionalFactory<ParserCompiler> {
+public interface ParserCompiler extends OptionalFactory<ParserCompiler> {
 	public ParserExecutable compile(ParserGrammar grammar);
 
 	@Override
-	public default Class<?> entryClass() {
+	public default Class<?> keyClass() {
 		return ParserCompiler.class;
 	}
 }

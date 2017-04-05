@@ -1,4 +1,4 @@
-package blue.origami.rule;
+package blue.origami.ocode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +8,6 @@ import blue.origami.lang.OEnv;
 import blue.origami.lang.OLocalVariable;
 import blue.origami.lang.OMethod;
 import blue.origami.lang.type.OType;
-import blue.origami.ocode.AssignCode;
-import blue.origami.ocode.OCode;
-import blue.origami.ocode.DefaultValueCode;
-import blue.origami.ocode.EmptyCode;
-import blue.origami.ocode.IfCode;
-import blue.origami.ocode.MultiCode;
-import blue.origami.ocode.NameCode;
-import blue.origami.ocode.NullCode;
-import blue.origami.ocode.ThrowCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTypeUtils;
 

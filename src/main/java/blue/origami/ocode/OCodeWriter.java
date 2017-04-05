@@ -17,15 +17,16 @@
 package blue.origami.ocode;
 
 import blue.origami.lang.OEnv;
-import blue.origami.util.CommonWriter;
+import blue.origami.util.OCommonWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
+import blue.origami.util.OptionalFactory;
 import blue.origami.util.StringCombinator;
 
-public class OCodeWriter extends CommonWriter implements OOption.OptionalFactory<OCodeWriter> {
+public class OCodeWriter extends OCommonWriter implements OptionalFactory<OCodeWriter> {
 
 	@Override
-	public Class<?> entryClass() {
+	public Class<?> keyClass() {
 		return OCodeWriter.class;
 	}
 
@@ -46,7 +47,8 @@ public class OCodeWriter extends CommonWriter implements OOption.OptionalFactory
 		this.options = options;
 	}
 
-	public void write(OEnv env, OCode code) throws Throwable {
+	public void writeCode(OEnv env, OCode code) throws Throwable {
+		// eval
 		Object value = code.eval(env);
 		if (!code.getType().is(void.class)) {
 			String t2 = code.getType().toString();
@@ -61,8 +63,8 @@ public class OCodeWriter extends CommonWriter implements OOption.OptionalFactory
 		}
 	}
 
-	public void writeln(OEnv env, OCode node) throws Throwable {
-		this.write(env, node);
+	public void writeCodeLine(OEnv env, OCode node) throws Throwable {
+		this.writeCode(env, node);
 		this.println();
 	}
 

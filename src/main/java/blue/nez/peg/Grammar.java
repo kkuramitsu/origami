@@ -254,7 +254,7 @@ public abstract class Grammar extends AbstractList<Production> implements String
 	}
 
 	public Parser newParser(OOption options) {
-		String start = options.value(ParserOption.Start, null);
+		String start = options.stringValue(ParserOption.Start, null);
 		if (start == null) {
 			return new Parser(this.getStartProduction(), options);
 		}

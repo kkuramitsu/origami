@@ -37,7 +37,7 @@ public class ConstructorInvocationCode extends ApplyCode {
 
 	@Override
 	public OType getType() {
-		return nodes[0].getTypeSystem().newType(void.class);
+		return nodes[0].getTypeSystem().ofType(void.class);
 	}
 
 }

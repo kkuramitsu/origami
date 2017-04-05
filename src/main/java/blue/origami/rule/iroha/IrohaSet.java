@@ -24,13 +24,14 @@ import blue.origami.lang.OEnv;
 import blue.origami.lang.callsite.IrohaMethodCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.rule.ExpressionRules;
-import blue.origami.rule.LayerRules;
-import blue.origami.rule.LiteralRules;
-import blue.origami.rule.OrigamiAPIs;
-import blue.origami.rule.OrigamiDevelAPIs;
-import blue.origami.rule.StatementRules;
-import blue.origami.rule.TypeRules;
+import blue.origami.rule.OrigamiExpressionRules;
+import blue.origami.rule.OrigamiLiteralRules;
+import blue.origami.rule.OrigamiOperatorAPIs;
+import blue.origami.rule.ScriptAnalysis;
+import blue.origami.rule.OrigamiCommonAPIs;
+import blue.origami.rule.OrigamiStatementRules;
+import blue.origami.rule.OrigamiTypeRules;
+import blue.origami.rule.cop.LayerRules;
 import blue.origami.rule.iroha.OrigamiList.IList;
 import blue.origami.rule.iroha.OrigamiList.OList;
 import blue.origami.rule.unit.CelsiusUnit;
@@ -40,9 +41,8 @@ import blue.origami.rule.unit.MeterUnit;
 import blue.origami.rule.unit.OUnit;
 import blue.origami.rule.unit.SecondUnit;
 import blue.origami.rule.unit.UnitRules;
-import blue.origami.util.OScriptUtils;
 
-public class IrohaSet implements OImportable, OScriptUtils {
+public class IrohaSet implements OImportable, ScriptAnalysis {
 	@Override
 	public final void importDefined(OEnv env, SourcePosition s, Set<String> names) {
 		addType(env, s, "void", void.class);
@@ -71,18 +71,18 @@ public class IrohaSet implements OImportable, OScriptUtils {
 
 		env.add(OMethodCallSite.class, new IrohaMethodCallSite());
 
-		importClass(env, s, StatementRules.class, AllSubSymbols);
-		importClass(env, s, LiteralRules.class, AllSubSymbols);
-		importClass(env, s, TypeRules.class, AllSubSymbols);
-		importClass(env, s, ExpressionRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiStatementRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiLiteralRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiTypeRules.class, AllSubSymbols);
+		importClass(env, s, OrigamiExpressionRules.class, AllSubSymbols);
 
 		importClass(env, s, LayerRules.class, AllSubSymbols);
 		importClass(env, s, MatchRules.class, AllSubSymbols);
 		importClass(env, s, UnitRules.class, AllSubSymbols);
 		importClass(env, s, IrohaRules.class, AllSubSymbols);
 
-		importClass(env, s, OrigamiAPIs.class, AllSubSymbols);
-		importClass(env, s, OrigamiDevelAPIs.class, AllSubSymbols);
+		importClass(env, s, OrigamiOperatorAPIs.class, AllSubSymbols);
+		importClass(env, s, OrigamiCommonAPIs.class, AllSubSymbols);
 		importClass(env, s, IrohaAPIs.class, AllSubSymbols);
 
 	}

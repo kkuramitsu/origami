@@ -29,7 +29,7 @@ import blue.origami.util.OStringUtils;
 import blue.origami.util.OTypeRule;
 import blue.origami.util.OLog.Messenger;
 
-public class LiteralRules implements OImportable, TypeAnalysis {
+public class OrigamiLiteralRules implements OImportable, TypeAnalysis {
 
 	public OTypeRule NullExpr = new TypeRule() {
 		@Override

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.rule;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -49,9 +49,11 @@ import blue.origami.ocode.OCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.ReturnCode;
-import blue.origami.rule.OFmt;
+import blue.origami.util.ODebug;
+import blue.origami.util.OTree;
+import blue.origami.util.OTypeUtils;
 
-public interface OScriptUtils {
+public interface ScriptAnalysis {
 	public static String parser = " parser";
 	public static String InteractiveMode = " interactiveMode";
 

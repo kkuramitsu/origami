@@ -105,7 +105,7 @@ public class OMethod extends OExecutable<Method> implements ONameEntity, OTypeNa
 		if (this.method == null) {
 			return mdecl.getReturnType();
 		}
-		OType t = typeSystem.newType(method.getGenericReturnType());
+		OType t = typeSystem.ofType(method.getGenericReturnType());
 		if (this.getDeclaringClass().isOrigami()) {
 			if (this.method.getAnnotation(ONullable.class) != null) {
 				t = this.getTypeSystem().newNullableType(t);

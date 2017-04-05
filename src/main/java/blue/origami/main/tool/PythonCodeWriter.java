@@ -1,4 +1,4 @@
-package blue.origami.xdevel;
+package blue.origami.main.tool;
 
 import blue.origami.lang.OField;
 import blue.origami.ocode.AndCode;
@@ -6,11 +6,9 @@ import blue.origami.ocode.ArrayCode;
 import blue.origami.ocode.AssignCode;
 import blue.origami.ocode.BreakCode;
 import blue.origami.ocode.CastCode;
-import blue.origami.ocode.OCode;
-import blue.origami.ocode.NewCode;
 import blue.origami.ocode.ContinueCode;
+import blue.origami.ocode.DeclCode;
 import blue.origami.ocode.EmptyCode;
-import blue.origami.ocode.OGenerator;
 import blue.origami.ocode.GetIndexCode;
 import blue.origami.ocode.GetSizeCode;
 import blue.origami.ocode.GetterCode;
@@ -19,7 +17,10 @@ import blue.origami.ocode.InstanceOfCode;
 import blue.origami.ocode.LambdaCode;
 import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.NameCode;
+import blue.origami.ocode.NewCode;
 import blue.origami.ocode.NotCode;
+import blue.origami.ocode.OCode;
+import blue.origami.ocode.OGenerator;
 import blue.origami.ocode.OrCode;
 import blue.origami.ocode.ReturnCode;
 import blue.origami.ocode.SetIndexCode;
@@ -62,7 +63,7 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 			return;
 		}
 		if (value instanceof Boolean) {
-			this.p((Boolean) value ? "True" : "False");
+			this.p(this.s(value.toString()));
 			return;
 		}
 		if (value instanceof Number) {
@@ -265,6 +266,12 @@ public class PythonCodeWriter extends SourceCodeWriter implements OGenerator {
 	@Override
 	public void pushThis() {
 		this.p(this.s("this", "self"));
+	}
+
+	@Override
+	public void pushDecl(DeclCode code) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

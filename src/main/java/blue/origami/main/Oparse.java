@@ -21,6 +21,7 @@ import blue.nez.ast.Tree;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserOption;
 import blue.nez.parser.ParserSource;
+import blue.origami.main.tool.OTreeWriter;
 import blue.origami.util.OOption;
 
 public class Oparse extends OCommand {
@@ -36,14 +37,14 @@ public class Oparse extends OCommand {
 
 		OTreeWriter treeWriter = options.newInstance(OTreeWriter.class);
 		treeWriter.init(options);
-		if (options.value(ParserOption.InlineGrammar, null) != null) {
-			Source input = ParserSource.newStringSource(options.value(ParserOption.InlineGrammar, null));
+		if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
+			Source input = ParserSource.newStringSource(options.stringValue(ParserOption.InlineGrammar, null));
 			Tree<?> node = parser.parse(input);
 			if (node != null) {
 				treeWriter.write(node);
 			}
 		}
-		String[] files = options.list(ParserOption.InputFiles);
+		String[] files = options.stringList(ParserOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
 			Source input = ParserSource.newFileSource(file, null);

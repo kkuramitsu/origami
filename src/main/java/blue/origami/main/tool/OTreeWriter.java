@@ -14,26 +14,38 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.rule;
+package blue.origami.main.tool;
 
-import blue.origami.util.OConsole;
-import blue.origami.util.StringCombinator;
+import blue.nez.ast.Tree;
+import blue.origami.util.OCommonWriter;
+import blue.origami.util.OOption;
+import blue.origami.util.OptionalFactory;
 
-public class OrigamiDevelAPIs {
-	public final static void print(Object o) {
-		OConsole.print(o);
+public class OTreeWriter extends OCommonWriter implements OptionalFactory<OTreeWriter> {
+
+	@Override
+	public Class<?> keyClass() {
+		return OTreeWriter.class;
 	}
 
-	public final static void println(Object o) {
-		OConsole.println(o);
+	@Override
+	public OTreeWriter clone() {
+		return new OTreeWriter();
 	}
 
-	public final static void println() {
-		OConsole.println("");
+	@Override
+	public void init(OOption options) {
+
 	}
 
-	public final static void printf(String fmt, Object... args) {
-		OConsole.print(StringCombinator.format(fmt, args));
+	public void write(Tree<?> t) {
+		this.print(t.toString());
+	}
+
+	public void writeln(Tree<?> t) {
+		this.write(t);
+		this.println();
+		this.flush();
 	}
 
 }

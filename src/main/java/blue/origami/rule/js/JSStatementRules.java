@@ -47,7 +47,7 @@ public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalys
 			// returnType = OConfig.inferReturnType(env, name, returnType);
 			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
 
-			OCode body = parseUntypedCode(env, t.get(_body, null));
+			OCode body = parseFuncBody(env, t.get(_body, null));
 			OMethodHandle mh = OUntypedMethod.newFunc(env, anno, returnType, name, paramNames, paramTypes, exceptions,
 					body);
 			defineName(env, t, mh);

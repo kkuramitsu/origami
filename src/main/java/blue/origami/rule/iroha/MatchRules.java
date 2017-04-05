@@ -38,14 +38,14 @@ import blue.origami.lang.OLocalVariable;
 import blue.origami.lang.type.NullableType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
-import blue.origami.ocode.OCode;
+import blue.origami.ocode.BlockGen;
 import blue.origami.ocode.DefaultValueCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.IfCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.OLocalCode;
 import blue.origami.ocode.SugarCode;
-import blue.origami.rule.BlockGen;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.TypeRule;
 import blue.origami.rule.unit.OUnit;
@@ -157,7 +157,7 @@ public class MatchRules implements OImportable {
 					l[i] = this.parseCaseBody(env, e);
 					i++;
 				}
-				return new ExtractCase(env.getStartPoint(), l);
+				return new ExtractCase(env, l);
 			}
 			case "ListMoreCase":
 			case "ListCase": {

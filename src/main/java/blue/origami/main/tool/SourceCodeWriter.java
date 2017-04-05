@@ -1,4 +1,4 @@
-package blue.origami.xdevel;
+package blue.origami.main.tool;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -9,11 +9,11 @@ import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
+import blue.origami.ocode.ApplyCode;
+import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.OCodeWriter;
-import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OGenerator;
-import blue.origami.ocode.ApplyCode;
 import blue.origami.ocode.SugarCode;
 import blue.origami.ocode.WarningCode;
 import blue.origami.util.OArrayUtils;
@@ -23,14 +23,14 @@ import blue.origami.util.OLog;
 public abstract class SourceCodeWriter extends OCodeWriter implements OGenerator, OArrayUtils {
 
 	@Override
-	public void write(OEnv env, OCode code) throws Throwable {
+	public void writeCode(OEnv env, OCode code) throws Throwable {
 		this.push(code);
 	}
 
 	@Override
-	public void writeln(OEnv env, OCode node) throws Throwable {
+	public void writeCodeLine(OEnv env, OCode node) throws Throwable {
 		this.logList = new ArrayList<>();
-		this.write(env, node);
+		this.writeCode(env, node);
 		this.println();
 		for (OLog log : this.logList) {
 			OLog.report(env, log);

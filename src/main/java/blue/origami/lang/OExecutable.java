@@ -75,7 +75,7 @@ abstract class OExecutable<T extends Executable> extends OCommonMethodHandle {
 		if (method == null) {
 			return mdecl.getDeclaringClass();
 		}
-		return typeSystem.newType(method.getDeclaringClass());
+		return typeSystem.ofType(method.getDeclaringClass());
 	}
 
 	@Override
@@ -118,9 +118,9 @@ abstract class OExecutable<T extends Executable> extends OCommonMethodHandle {
 			return mdecl.getParamTypes();
 		}
 		if (!this.getDeclaringClass().isOrigami()) {
-			return typeSystem.newTypes(method.getGenericParameterTypes());
+			return typeSystem.ofTypes(method.getGenericParameterTypes());
 		}
-		return typeSystem.newTypes(method.getParameters());
+		return typeSystem.ofTypes(method.getParameters());
 	}
 
 	@Override
@@ -128,7 +128,7 @@ abstract class OExecutable<T extends Executable> extends OCommonMethodHandle {
 		if (method == null) {
 			return mdecl.getExceptionTypes();
 		}
-		return typeSystem.newTypes(this.method.getExceptionTypes());
+		return typeSystem.ofTypes(this.method.getExceptionTypes());
 	}
 
 	Class<?>[] params(OEnv env) {

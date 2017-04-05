@@ -144,7 +144,7 @@ public class OParamType extends OTypeImpl {
 			return base;
 		}
 		OTypeSystem ts = base.getTypeSystem();
-		return new OParamType(base, ts.newTypes(typeParameters));
+		return new OParamType(base, ts.ofTypes(typeParameters));
 	}
 
 }

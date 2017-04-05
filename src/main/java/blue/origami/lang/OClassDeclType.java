@@ -247,7 +247,7 @@ public class OClassDeclType extends OTypeSystemType {
 	public OMethodHandle addConstructor(OAnno anno, String[] paramNames, OType[] paramTypes, OType[] exceptions,
 			OCode body) {
 		OTypeSystem ts = this.getTypeSystem();
-		OMethodDecl mdecl = new OMethodDecl(this, anno, ts.newType(void.class), "<init>", paramNames, paramTypes,
+		OMethodDecl mdecl = new OMethodDecl(this, anno, ts.ofType(void.class), "<init>", paramNames, paramTypes,
 				exceptions, body);
 		OMethodHandle mh = new OConstructor(mdecl.getTypeSystem(), null, null, mdecl);
 		this.getDecl().add(mh);

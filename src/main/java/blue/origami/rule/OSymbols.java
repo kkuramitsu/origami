@@ -34,7 +34,10 @@ public interface OSymbols {
 	public final static Symbol _expr = Symbol.unique("expr");
 	public final static Symbol _list = Symbol.unique("list");
 	public final static Symbol _param = Symbol.unique("param");
+
 	public final static Symbol _suffix = Symbol.unique("suffix");
+	public final static Symbol _useTypeHint = Symbol.unique("useTypeHint");
+	public final static Symbol _useDynamicType = Symbol.unique("useDynamicType");
 
 	public final static Symbol _throws = Symbol.unique("throws");
 

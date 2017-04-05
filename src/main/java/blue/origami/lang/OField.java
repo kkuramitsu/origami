@@ -88,7 +88,7 @@ public class OField {
 
 	public OType getDeclaringClass() {
 		if (this.field != null) {
-			return typeSystem.newType(field.getDeclaringClass());
+			return typeSystem.ofType(field.getDeclaringClass());
 		}
 		return fdecl.getDeclaringClass();
 	}
@@ -106,7 +106,7 @@ public class OField {
 
 	public OType getType() {
 		if (this.field != null) {
-			OType ty = typeSystem.newType(field.getGenericType());
+			OType ty = typeSystem.ofType(field.getGenericType());
 			if (this.field.getAnnotation(OMutable.class) != null) {
 				ty = this.getTypeSystem().newMutableType(ty);
 			}

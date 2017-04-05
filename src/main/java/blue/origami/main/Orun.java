@@ -27,8 +27,8 @@ public class Orun extends blue.origami.main.OCommand {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		String[] files = options.list(ParserOption.InputFiles);
-		if (options.value(ParserOption.GrammarFile, null) == null) {
+		String[] files = options.stringList(ParserOption.InputFiles);
+		if (options.stringValue(ParserOption.GrammarFile, null) == null) {
 			if (files.length > 0) {
 				String ext = SourcePosition.extractFileExtension(files[0]);
 				options.set(ParserOption.GrammarFile, ext + ".opeg");

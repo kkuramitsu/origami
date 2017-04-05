@@ -1,4 +1,4 @@
-package blue.origami.xdevel;
+package blue.origami.xlocal;
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *

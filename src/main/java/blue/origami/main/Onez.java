@@ -26,6 +26,7 @@ import blue.nez.parser.ParserSource;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarParser;
 import blue.nez.peg.SourceGrammar;
+import blue.origami.main.tool.OTreeWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 
@@ -82,11 +83,11 @@ public class Onez extends OCommand {
 
 	@Override
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
-		file = options.value(ParserOption.GrammarFile, file);
+		file = options.stringValue(ParserOption.GrammarFile, file);
 		if (file == null) {
 			return new SourceGrammar();
 		}
-		return SourceGrammar.loadFile(file, options.list(ParserOption.GrammarPath));
+		return SourceGrammar.loadFile(file, options.stringList(ParserOption.GrammarPath));
 	}
 
 	private Parser newParser(Grammar g, OOption options) throws IOException {

@@ -62,8 +62,10 @@ public interface OGenerator {
 
 	// public void pushLoop(ForCode code);
 
-	public void pushSugar(SugarCode oSugarCode);
+	public void pushSugar(SugarCode code);
 	// public void pushUndefined(OCode node);
+
+	public void pushDecl(DeclCode code);
 
 	public void pushError(ErrorCode node);
 

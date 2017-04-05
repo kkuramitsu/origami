@@ -27,12 +27,12 @@ import blue.origami.ocode.IfCode;
 import blue.origami.ocode.NameCode;
 import blue.origami.ocode.NullCode;
 import blue.origami.ocode.TryCode;
-import blue.origami.util.OScriptUtils;
+import blue.origami.rule.ScriptAnalysis;
 
 public class AsmTest {
 
 	public Object eval(OEnv env, OCode... codes) throws Throwable {
-		return OScriptUtils.eval(env, codes);
+		return ScriptAnalysis.eval(env, codes);
 	}
 
 	public void testNull() throws Throwable {

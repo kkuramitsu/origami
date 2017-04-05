@@ -20,24 +20,24 @@ import java.lang.reflect.Array;
 
 import blue.origami.asm.code.ArrayLengthCode;
 import blue.origami.lang.OEnv;
-import blue.origami.ocode.OCode;
 import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.OCode;
 
 public class OArrayType extends OTypeImpl {
-	private final OType innerType;
+	private final OType componentType;
 	public static String ArrayLengthName = "length";
 
 	public OArrayType(OType inner) {
-		this.innerType = inner;
+		this.componentType = inner;
 	}
 
 	OArrayType(OTypeSystem ts, Class<?> c) {
-		this.innerType = ts.newType(c);
+		this.componentType = ts.ofType(c);
 	}
 
 	@Override
 	public OTypeSystem getTypeSystem() {
-		return this.innerType.getTypeSystem();
+		return this.componentType.getTypeSystem();
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class OArrayType extends OTypeImpl {
 
 	@Override
 	public Object getDefaultValue() {
-		Class<?> ctype = innerType.unwrapOrNull((Class<?>) null);
+		Class<?> ctype = this.componentType.unwrapOrNull((Class<?>) null);
 		if (ctype != null) {
 			return Array.newInstance(ctype, 0);
 		}
@@ -56,48 +56,48 @@ public class OArrayType extends OTypeImpl {
 
 	@Override
 	public Class<?> unwrap() {
-		return Array.newInstance(innerType.unwrap(), 0).getClass();
+		return Array.newInstance(this.componentType.unwrap(), 0).getClass();
 	}
 
 	@Override
 	public Class<?> unwrapOrNull(Class<?> c) {
-		return Array.newInstance(innerType.unwrapOrNull(c), 0).getClass();
+		return Array.newInstance(this.componentType.unwrapOrNull(c), 0).getClass();
 	}
 
 	@Override
 	public Class<?> unwrap(OEnv env) {
-		return Array.newInstance(innerType.unwrap(env), 0).getClass();
+		return Array.newInstance(this.componentType.unwrap(env), 0).getClass();
 	}
 
 	@Override
 	public void typeDesc(StringBuilder sb, int levelGeneric) {
 		sb.append("[");
-		innerType.typeDesc(sb, levelGeneric);
+		this.componentType.typeDesc(sb, levelGeneric);
 	}
 
 	@Override
 	public boolean isUntyped() {
-		return innerType.isUntyped();
+		return this.componentType.isUntyped();
 	}
 
 	@Override
 	public String getLocalName() {
-		return innerType.getLocalName() + "[]";
+		return this.getTypeSystem().nameArrayType(this.componentType);
 	}
 
 	@Override
 	public String getName() {
-		return innerType.getName() + "[]";
+		return this.componentType.getName() + "[]";
 	}
 
 	@Override
 	public OType getBaseType() {
-		return newType(Object[].class);
+		return this.newType(Object[].class);
 	}
 
 	@Override
 	public OType[] getParamTypes() {
-		return new OType[] { innerType };
+		return new OType[] { this.componentType };
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class OArrayType extends OTypeImpl {
 
 	@Override
 	public OType getSupertype() {
-		return newType(this.unwrap().getSuperclass());
+		return this.newType(this.unwrap().getSuperclass());
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class OArrayType extends OTypeImpl {
 	public static OType newType(OType inner) {
 		if (inner instanceof OClassType) {
 			Class<?> a = Array.newInstance(inner.unwrap(), 0).getClass();
-			return inner.getTypeSystem().newType(a);
+			return inner.getTypeSystem().ofType(a);
 		}
 		return new OArrayType(inner);
 	}

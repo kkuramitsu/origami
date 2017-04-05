@@ -30,11 +30,11 @@ public class Ocheck extends Orun {
 	public void exec(OOption options) throws Throwable {
 		int totalTestCount = 0;
 		int totalPassCount = 0;
-		String[] files = options.list(ParserOption.InputFiles);
+		String[] files = options.stringList(ParserOption.InputFiles);
 		for (String file : files) {
 			try {
 				String ext = SourcePosition.extractFileExtension(file);
-				Grammar g = SourceGrammar.loadFile(ext + ".opeg", options.list(ParserOption.GrammarPath));
+				Grammar g = SourceGrammar.loadFile(ext + ".opeg", options.stringList(ParserOption.GrammarPath));
 				OrigamiContext env = new OrigamiContext(g, options);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {

@@ -48,12 +48,12 @@ public class OVirtualMethodHandle extends OMethodWrapper {
 
 	@Override
 	public MethodType methodType() {
-		OType[] t = mh.isSpecial() ? mh.getParamTypes() : mh.getThisParamTypes();
+		OType[] t = this.mh.isSpecial() ? this.mh.getParamTypes() : this.mh.getThisParamTypes();
 		Class<?>[] p = new Class<?>[t.length];
 		for (int i = 0; i < t.length; i++) {
 			p[i] = OTypeUtils.boxType(t[i].unwrapOrNull(Object.class));
 		}
-		return MethodType.methodType(mh.getReturnType().unwrapOrNull(Object.class), p);
+		return MethodType.methodType(this.mh.getReturnType().unwrapOrNull(Object.class), p);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class OVirtualMethodHandle extends OMethodWrapper {
 
 	@Override
 	public Object[] getCallSiteParams() {
-		return new Object[] { Type.getType(env.findEntryPoint()), OCallSite.Virtual };
+		return new Object[] { Type.getType(this.env.findExportableEnv().getSingletonClass()), OCallSite.Virtual };
 	}
 
 }

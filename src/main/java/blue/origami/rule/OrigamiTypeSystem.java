@@ -22,20 +22,19 @@ import blue.origami.lang.callsite.OFuncCallSite;
 import blue.origami.lang.callsite.OGetterCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
 import blue.origami.lang.type.OTypeSystem;
-import blue.origami.rule.java.ClassRules;
+import blue.origami.rule.java.OrigamiClassRules;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
-import blue.origami.util.OScriptUtils;
-import blue.origami.util.OOption.OptionalFactory;
+import blue.origami.util.OptionalFactory;
 
-public class OrigamiTypeSystem extends OTypeSystem implements OScriptUtils, OptionalFactory<OrigamiTypeSystem> {
+public class OrigamiTypeSystem extends OTypeSystem implements ScriptAnalysis, OptionalFactory<OrigamiTypeSystem> {
 
 	public OrigamiTypeSystem() {
 		super();
 	}
 
 	@Override
-	public Class<?> entryClass() {
+	public Class<?> keyClass() {
 		return OrigamiTypeSystem.class;
 	}
 
@@ -57,9 +56,9 @@ public class OrigamiTypeSystem extends OTypeSystem implements OScriptUtils, Opti
 	@Override
 	public void init(OEnv env, SourcePosition s) {
 		this.addType(env, s, "void", void.class);
-		this.addType(env, s, "boolean", boolean.class);
+		this.addType(env, s, "bool", boolean.class);
 		this.addType(env, s, "int", int.class);
-		this.addType(env, s, "double", double.class);
+		this.addType(env, s, "float", double.class);
 		this.addType(env, s, "String", String.class);
 		this.addType(env, s, "Object", Object.class);
 
@@ -67,15 +66,14 @@ public class OrigamiTypeSystem extends OTypeSystem implements OScriptUtils, Opti
 		env.add(OMethodCallSite.class, new OMethodCallSite());
 		env.add(OGetterCallSite.class, new OGetterCallSite());
 
-		this.importClass(env, s, StatementRules.class, AllSubSymbols);
-		this.importClass(env, s, LiteralRules.class, AllSubSymbols);
-		this.importClass(env, s, TypeRules.class, AllSubSymbols);
-		this.importClass(env, s, ClassRules.class, AllSubSymbols);
-		this.importClass(env, s, ExpressionRules.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiTypeRules.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiClassRules.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiStatementRules.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiExpressionRules.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiLiteralRules.class, AllSubSymbols);
 
-		this.importClass(env, s, OrigamiAPIs.class, AllSubSymbols);
-		this.importClass(env, s, OrigamiDevelAPIs.class, AllSubSymbols);
-		// importClass(env, s, IrohaAPIs.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiOperatorAPIs.class, AllSubSymbols);
+		this.importClass(env, s, OrigamiCommonAPIs.class, AllSubSymbols);
 	}
 
 }

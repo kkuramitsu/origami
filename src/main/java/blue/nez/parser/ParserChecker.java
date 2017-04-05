@@ -77,7 +77,7 @@ public class ParserChecker {
 		if (this.options.is(ParserOption.Unoptimized, false)) {
 			return g;
 		}
-		String[] pass = this.options.list(ParserOption.Pass);
+		String[] pass = this.options.stringList(ParserOption.Pass);
 		if (pass.length > 0) {
 			return this.applyPass(g, this.loadPassClass(pass));
 		} else {
@@ -89,7 +89,7 @@ public class ParserChecker {
 		ArrayList<Class<?>> l = new ArrayList<>();
 		for (String p : pass) {
 			try {
-				l.add(this.options.loadClass(p, this.options.list(ParserOption.PassPath)));
+				l.add(OOption.loadClass(ParserPass.class, p, this.options.stringList(ParserOption.PassPath)));
 			} catch (ClassNotFoundException e) {
 				ODebug.traceException(e);
 			}

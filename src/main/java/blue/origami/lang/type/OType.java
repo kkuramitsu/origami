@@ -78,11 +78,11 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 	public Class<?> unwrap();
 
 	public default OType newType(java.lang.reflect.Type t) {
-		return this.getTypeSystem().newType(t);
+		return this.getTypeSystem().ofType(t);
 	}
 
 	public default OType[] newTypes(java.lang.reflect.Type... t) {
-		return this.getTypeSystem().newTypes(t);
+		return this.getTypeSystem().ofTypes(t);
 	}
 
 	public String getLocalName();
@@ -250,7 +250,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 	}
 
 	public default OType getGenericSupertype() {
-		return this.getTypeSystem().newType(this.unwrap().getGenericSuperclass());
+		return this.getTypeSystem().ofType(this.unwrap().getGenericSuperclass());
 	}
 
 	public default OType[] getInterfaces() {
@@ -258,7 +258,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 	}
 
 	public default OType[] getGenericInterfaces() {
-		return this.getTypeSystem().newTypes(this.unwrap().getGenericInterfaces());
+		return this.getTypeSystem().ofTypes(this.unwrap().getGenericInterfaces());
 	}
 
 	public default boolean isAssignableFrom(OType a) {
@@ -425,7 +425,7 @@ public interface OType extends StringCombinator, OArrayUtils, OTypeName, ONameEn
 	}
 
 	public default OType commonSuperType(OType a) {
-		return this.getTypeSystem().newType(Object.class); // FIXME
+		return this.getTypeSystem().ofType(Object.class); // FIXME
 	}
 
 	public default OType boxType() {

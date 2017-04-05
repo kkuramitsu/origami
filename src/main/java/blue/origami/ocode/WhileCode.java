@@ -1,7 +1,7 @@
 package blue.origami.ocode;
 
 import blue.origami.lang.OEnv;
-import blue.origami.util.OScriptUtils;
+import blue.origami.rule.ScriptAnalysis;
 
 public class WhileCode extends OParamCode<Void> {
 
@@ -15,7 +15,7 @@ public class WhileCode extends OParamCode<Void> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		return OScriptUtils.eval(env, this);
+		return ScriptAnalysis.eval(env, this);
 	}
 
 	@Override

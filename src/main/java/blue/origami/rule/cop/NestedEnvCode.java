@@ -1,4 +1,4 @@
-package blue.origami.rule;
+package blue.origami.rule.cop;
 
 import blue.origami.lang.OEnv;
 import blue.origami.ocode.OCode;

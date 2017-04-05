@@ -43,15 +43,15 @@ import blue.origami.ocode.ReturnCode;
 import blue.origami.ocode.TypeValueCode;
 import blue.origami.ocode.WarningCode;
 import blue.origami.rule.OFmt;
+import blue.origami.rule.ScriptAnalysis;
 import blue.origami.rule.OSymbols;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeRule;
 import blue.origami.util.ODebug;
-import blue.origami.util.OScriptUtils;
 import blue.origami.util.OTypeRule;
 import blue.origami.util.OTypeUtils;
 
-public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, OScriptUtils {
+public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptAnalysis {
 	public OTypeRule UnitType = new TypeRule() {
 
 		@Override

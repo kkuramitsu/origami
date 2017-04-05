@@ -18,7 +18,7 @@ package blue.origami.rule.iroha;
 
 import blue.origami.ffi.OrigamiObject;
 import blue.origami.lang.OEnv;
-import blue.origami.rule.LayerRules;
+import blue.origami.rule.cop.LayerRules;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;

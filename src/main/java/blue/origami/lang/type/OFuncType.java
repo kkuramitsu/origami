@@ -210,7 +210,7 @@ class FuncType$ implements OArrayUtils { /* Companions */
 				code);
 		// ct.getDecl().addDefaultConstructors();
 		Class<?> c = ct.unwrap(env);
-		ft = env.getTypeSystem().newType(c);
+		ft = env.getTypeSystem().ofType(c);
 		funcNameMap.put(id, ft);
 		return ft;
 	}

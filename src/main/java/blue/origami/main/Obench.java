@@ -32,14 +32,14 @@ public class Obench extends OCommand {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		if (options.value(ParserOption.InlineGrammar, null) != null) {
+		if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
 			exit(1, "unavailable -t --text option");
 			return;
 		}
 		Parser parser = getParser(options);
 		double total = 0.0;
 		int len = 0;
-		String[] files = options.list(ParserOption.InputFiles);
+		String[] files = options.stringList(ParserOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
 			System.out.printf("%s", file);

@@ -24,7 +24,7 @@ import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
 import blue.origami.util.OOption;
-import blue.origami.util.OOption.OptionalFactory;
+import blue.origami.util.OptionalFactory;
 
 public abstract class ParserCode<I> implements ParserExecutable {
 
@@ -187,7 +187,7 @@ public abstract class ParserCode<I> implements ParserExecutable {
 		}
 
 		@Override
-		public Class<?> entryClass() {
+		public Class<?> keyClass() {
 			return StaticMemoization.class;
 		}
 

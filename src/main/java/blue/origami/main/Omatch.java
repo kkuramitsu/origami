@@ -34,8 +34,8 @@ public class Omatch extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
-		if (options.value(ParserOption.InlineGrammar, null) != null) {
-			String t = options.value(ParserOption.InlineGrammar, null);
+		if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
+			String t = options.stringValue(ParserOption.InlineGrammar, null);
 			Source input = ParserSource.newStringSource(t);
 			int l = parser.match(input);
 			if (l == -1) {
@@ -44,7 +44,7 @@ public class Omatch extends OCommand {
 			}
 			return;
 		}
-		String[] files = options.list(ParserOption.InputFiles);
+		String[] files = options.stringList(ParserOption.InputFiles);
 		ArrayList<String> failedFileList = new ArrayList<>();
 		this.checkInputSource(files);
 		for (String file : files) {

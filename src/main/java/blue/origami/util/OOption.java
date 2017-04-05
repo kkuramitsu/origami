@@ -26,24 +26,24 @@ import blue.nez.ast.SourcePosition;
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();
 
-	public interface Key {
-		public Key keyOf(String key);
+	public interface OOptionKey {
+		public OOptionKey keyOf(String key);
 	}
 
-	private String tokey(Key key) {
+	private String tokey(OOptionKey key) {
 		return key.toString();
 	}
 
-	public void set(Key key, Object value) {
+	public void set(OOptionKey key, Object value) {
 		this.valueMap.put(this.tokey(key), value);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T get(Key key) {
+	public <T> T get(OOptionKey key) {
 		return (T) this.valueMap.get(this.tokey(key));
 	}
 
-	public <T> void add(Key key, T[] list) {
+	public <T> void add(OOptionKey key, T[] list) {
 		T[] olist = this.get(key);
 		if (olist == null) {
 			this.set(key, list);
@@ -56,9 +56,9 @@ public class OOption {
 		}
 	}
 
-	public Key checkKeyName(String t, Key... keys) {
-		for (Key k : keys) {
-			Key r = k.keyOf(t);
+	public OOptionKey checkKeyName(String t, OOptionKey... keys) {
+		for (OOptionKey k : keys) {
+			OOptionKey r = k.keyOf(t);
 			if (r != null) {
 				return r;
 			}
@@ -66,10 +66,10 @@ public class OOption {
 		return null;
 	}
 
-	public final void setKeyValue(String option, Key... keys) {
+	public final void setKeyValue(String option, OOptionKey... keys) {
 		int loc = option.indexOf('=');
 		if (loc > 0) {
-			Key name = this.checkKeyName(option.substring(0, loc), keys);
+			OOptionKey name = this.checkKeyName(option.substring(0, loc), keys);
 			if (name == null) {
 				return;
 			}
@@ -99,22 +99,22 @@ public class OOption {
 		}
 	}
 
-	public final boolean is(Key key, boolean defval) {
+	public final boolean is(OOptionKey key, boolean defval) {
 		Boolean b = this.get(key);
 		return b == null ? defval : b;
 	}
 
-	public final int intValue(Key key, int defval) {
+	public final int intValue(OOptionKey key, int defval) {
 		Integer b = this.get(key);
 		return b == null ? defval : b;
 	}
 
-	public final String value(Key key, String defval) {
+	public final String stringValue(OOptionKey key, String defval) {
 		String b = this.get(key);
 		return b == null ? defval : b;
 	}
 
-	public final String[] list(Key key) {
+	public final String[] stringList(OOptionKey key) {
 		Object o = this.get(key);
 		if (o instanceof String[]) {
 			return (String[]) o;
@@ -136,14 +136,6 @@ public class OOption {
 		return (T) this.classMap.get(c);
 	}
 
-	public interface OptionalFactory<T> extends Cloneable {
-		public Class<?> entryClass();
-
-		public T clone();
-
-		public void init(OOption options);
-	}
-
 	public <T extends OptionalFactory<T>> T newInstance(Class<? extends T> c) {
 		T value = this.get(c);
 		if (value != null) {
@@ -160,17 +152,20 @@ public class OOption {
 	}
 
 	public void setClass(String path) throws Throwable {
-		Class<?> c = Class.forName(path);
+		Class<?> c = loadClass(OptionalFactory.class, path, "blue.origami.main.tool", "blue.origami.xlocal");
 		OptionalFactory<?> f = (OptionalFactory<?>) c.newInstance();
-		this.classMap.put(f.entryClass(), f);
+		this.classMap.put(f.keyClass(), f);
 	}
 
-	public Class<?> loadClass(String className, String path[]) throws ClassNotFoundException {
+	public static Class<?> loadClass(Class<?> base, String className, String... path) throws ClassNotFoundException {
 		if (path != null) {
 			for (String cpath : path) {
 				String cname = cpath + "." + className;
 				try {
-					return Class.forName(cname);
+					Class<?> c = Class.forName(cname);
+					if (base.isAssignableFrom(c)) {
+						return c;
+					}
 				} catch (ClassNotFoundException e) {
 				}
 			}
@@ -180,7 +175,7 @@ public class OOption {
 
 	// Logging
 
-	static enum VerboseOption implements Key {
+	static enum VerboseOption implements OOptionKey {
 		SourceLogger;
 
 		@Override
@@ -189,7 +184,7 @@ public class OOption {
 		}
 
 		@Override
-		public Key keyOf(String key) {
+		public OOptionKey keyOf(String key) {
 			return VerboseOption.valueOf(key);
 		}
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.xdevel;
+package blue.origami.xlocal;
 
 import blue.nez.peg.Grammar;
 

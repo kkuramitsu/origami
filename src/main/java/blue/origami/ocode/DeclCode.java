@@ -14,27 +14,33 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.rule;
+package blue.origami.ocode;
 
 import blue.origami.lang.OEnv;
-import blue.origami.ocode.OGenerator;
-import blue.origami.ocode.OParamCode;
 
-public class RunnableCode extends OParamCode<Runnable> {
+public class DeclCode extends OParamCode<Object> {
+	private final Runnable hooked;
 
-	public RunnableCode(OEnv env, Runnable handled) {
-		super(handled, env.t(void.class));
+	public DeclCode(OEnv env, Object defined) {
+		this(env, defined, null);
+	}
+
+	public DeclCode(OEnv env, Object defined, Runnable hooked) {
+		super(defined, env.t(void.class));
+		this.hooked = hooked;
 	}
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		this.getHandled().run();
+		if (this.hooked != null) {
+			this.hooked.run();
+		}
 		return null;
 	}
 
 	@Override
 	public void generate(OGenerator gen) {
-
+		gen.pushDecl(this);
 	}
 
 }

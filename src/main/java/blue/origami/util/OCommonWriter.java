@@ -26,11 +26,11 @@ import java.util.HashMap;
 
 import blue.nez.ast.LocaleFormat;
 
-public abstract class CommonWriter {
+public abstract class OCommonWriter {
 	protected String fileName = null;
 	private PrintStream out;
 
-	public CommonWriter() {
+	public OCommonWriter() {
 		this.out = System.out;
 		this.lastChar = '\n';
 		this.isColor = true;
@@ -205,33 +205,9 @@ public abstract class CommonWriter {
 
 	}
 
-	public void Verbose(String fmt, Object... args) {
+	public void pVerbose(String fmt, Object... args) {
 		this.pComment(fmt, args);
 	}
-
-	// public final void writeIndent(String fmt, Object... args) {
-	// writeIndent(StringOut.format(fmt, args));
-	// }
-	//
-	// public void writeMultiLine(String sub) {
-	// int start = 0;
-	// boolean empty = true;
-	// for (int i = 0; i < sub.length(); i++) {
-	// char ch = sub.charAt(i);
-	// if (ch == ' ' || ch == '\t') {
-	// continue;
-	// }
-	// if (ch == '\n') {
-	// if (!empty) {
-	// this.writeIndent(sub.substring(start, i));
-	// }
-	// start = i + 1;
-	// empty = true;
-	// continue;
-	// }
-	// empty = false;
-	// }
-	// }
 
 	public final void importFileContent(String path) {
 		this.importResourceContent(path);
@@ -240,9 +216,9 @@ public abstract class CommonWriter {
 	public final void importResourceContent(String path, String... stringReplacements) {
 		try {
 			if (!path.startsWith("/")) {
-				path = "/nez/include/" + path;
+				path = "/blue/origami/include/" + path;
 			}
-			InputStream s = CommonWriter.class.getResourceAsStream(path);
+			InputStream s = OCommonWriter.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
@@ -259,7 +235,7 @@ public abstract class CommonWriter {
 
 	public final void showResourceContent(String path, String... stringReplacements) {
 		try {
-			InputStream s = CommonWriter.class.getResourceAsStream(path);
+			InputStream s = OCommonWriter.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			while ((line = reader.readLine()) != null) {
@@ -273,20 +249,5 @@ public abstract class CommonWriter {
 			OConsole.exit(1, e);
 		}
 	}
-
-	// //
-	// protected final void Verbose(String stmt) {
-	// // if (strategy.VerboseCode) {
-	// // LineComment(stmt);
-	// // }
-	// }
-	//
-	// protected String _LineComment() {
-	// return "//";
-	// }
-	//
-	// protected void LineComment(String stmt) {
-	// this.L(this._LineComment() + " " + stmt);
-	// }
 
 }

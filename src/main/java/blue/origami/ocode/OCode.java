@@ -133,7 +133,7 @@ public interface OCode {
 
 	// (c)Code
 	public default OCode newCastCode(OEnv env, Class<?> c) {
-		return this.newCastCode(env, env.getTypeSystem().newType(c));
+		return this.newCastCode(env, env.getTypeSystem().ofType(c));
 	}
 
 	// (t)Code

@@ -25,10 +25,11 @@ import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodDecl;
 import blue.origami.lang.OTypeName;
+import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
-import blue.origami.ocode.OCode;
 import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.UntypedCode;
 import blue.origami.ocode.ValueCode;
 import blue.origami.util.ODebug;
@@ -176,27 +177,33 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 			return OType.emptyTypes;
 		}
 		OType[] p = new OType[paramNames.length];
-		if (params.has(_name)) {
+		if (params.has(_name) && p.length == 1) {
 			p[0] = parseParamType(env, params, paramNames[0], params.get(_type, null), defaultType);
+			return p;
 		}
 		int i = 0;
 		for (Tree<?> sub : params) {
-			p[i] = parseParamType(env, params, paramNames[i], sub.get(_type, null), defaultType);
+			p[i] = parseParamType(env, sub, paramNames[i], sub.get(_type, null), defaultType);
 			i++;
 		}
 		return p;
 	}
 
 	public default OType parseParamType(OEnv env, Tree<?> param, String name, Tree<?> type, OType defaultType) {
+		// Symbol paramTag = param.getTag();
 		OType ty = null;
 		if (type != null) {
 			ty = parseType(env, type, null);
-			if (ty != null) {
-				return ty;
+		}
+		if (ty == null && param.has(_useTypeHint)) {
+			if (name != null) {
+				ty = OTypeName.lookupTypeName(env, name);
 			}
 		}
-		if (name != null) {
-			ty = OTypeName.lookupTypeName(env, name);
+		if (ty == null && param.has(_useDynamicType)) {
+			if (name != null) {
+				ty = env.getTypeSystem().ofType(AnyType.class);
+			}
 		}
 		if (ty == null) {
 			if (defaultType == null) {
@@ -270,7 +277,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		return p;
 	}
 
-	public default OCode parseUntypedCode(OEnv env, Tree<?> body) {
+	public default OCode parseFuncBody(OEnv env, Tree<?> body) {
 		return body == null ? null : new UntypedCode(env, body);
 	}
 

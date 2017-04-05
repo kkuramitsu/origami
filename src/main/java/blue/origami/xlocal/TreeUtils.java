@@ -1,4 +1,4 @@
-package blue.origami.xdevel;
+package blue.origami.xlocal;
 // package origami.main.tool;
 //
 /// ***********************************************************************

@@ -18,7 +18,7 @@ package blue.origami.ocode;
 
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
-import blue.origami.util.OScriptUtils;
+import blue.origami.rule.ScriptAnalysis;
 
 public class TryCode extends OParamCode<OEnv> {
 
@@ -102,7 +102,7 @@ public class TryCode extends OParamCode<OEnv> {
 
 	@Override
 	public Object eval(OEnv env) throws Throwable {
-		return OScriptUtils.eval(env, this);
+		return ScriptAnalysis.eval(env, this);
 	}
 
 	@Override

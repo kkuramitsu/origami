@@ -45,6 +45,8 @@ import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.ocode.ArrayCode;
+import blue.origami.ocode.BlockGen;
+import blue.origami.ocode.DeclCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.GetterCode;
@@ -53,13 +55,9 @@ import blue.origami.ocode.OCode;
 import blue.origami.ocode.SugarCode;
 import blue.origami.ocode.WarningCode;
 import blue.origami.ocode.WhileCode;
-import blue.origami.rule.BlockGen;
-import blue.origami.rule.HookAfterCode;
-import blue.origami.rule.MutableCode;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
 import blue.origami.rule.OrigamiIterator;
-import blue.origami.rule.RunnableCode;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeRule;
 import blue.origami.rule.java.JavaThisCode;
@@ -73,7 +71,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			for (OEnv cur = env.getParent(); cur != null; cur = cur.getParent()) {
-				if (cur.getEntryPoint() != null) {
+				if (cur.getSingletonClass() != null) {
 					IrohaRules.this.setDefiningEnv(env, cur);
 				}
 			}
@@ -173,7 +171,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule EnvExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			Class<?> c = env.findEntryPoint();
+			Class<?> c = env.findExportableEnv().getSingletonClass();
 			return new GetterCode(new OField(env, OTypeUtils.loadField(c, "entry")));
 		}
 	};
@@ -579,7 +577,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 				// OMethod.newMethod(cdecl.getType(), anno, paramNames,
 				// paramTypes, exceptions);
 			}
-			return new RunnableCode(env, ct.getDecl()::typeCheck);
+			return new DeclCode(env, ct.getDecl(), ct.getDecl()::typeCheck);
 		}
 	};
 
@@ -597,7 +595,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 					env.t(AnyType.class));
 			OType[] exceptions = IrohaRules.this.parseExceptionTypes(env, t.get(_throws, null));
 
-			OCode body = IrohaRules.this.parseUntypedCode(env, t.get(_body, null));
+			OCode body = IrohaRules.this.parseFuncBody(env, t.get(_body, null));
 			OMethodHandle m = cdecl.addMethod(anno, rtype, name, paramNames, paramTypes, exceptions, body);
 			if (anno.isStatic()) {
 				IrohaRules.this.defineName(env, t, m);

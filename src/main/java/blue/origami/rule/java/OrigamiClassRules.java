@@ -29,19 +29,16 @@ import blue.origami.lang.OPartialFunc;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OArrayType;
 import blue.origami.lang.type.OType;
-import blue.origami.ocode.OCode;
+import blue.origami.ocode.DeclCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.UntypedCode;
 import blue.origami.rule.OFmt;
-import blue.origami.rule.OSymbols;
-import blue.origami.rule.RunnableCode;
-import blue.origami.rule.SyntaxAnalysis;
-import blue.origami.rule.TypeAnalysis;
 import blue.origami.rule.TypeRule;
 import blue.origami.util.OTypeRule;
 
-public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAnalysis {
+public class OrigamiClassRules implements OImportable {
 
 	public static final String DefaultSuperType = " DefaultSuperType";
 
@@ -50,13 +47,13 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			/* annotations */
-			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
+			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
 			String name = t.getText(_name, null);
 
 			/* extends */
 			OType superClass = env.get(DefaultSuperType, OType.class);
 			if (t.has(_super)) {
-				superClass = parseType(env, t.get(_super), superClass);
+				superClass = this.parseType(env, t.get(_super), superClass);
 			}
 			if (superClass == null) {
 				superClass = env.t(Object.class)/* OType.Object */;
@@ -68,7 +65,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 				interfaces = new OType[t.get(_impl).size()];
 				int i = 0;
 				for (Tree<?> impl : t.get(_impl)) {
-					OType implClass = parseType(env, impl,
+					OType implClass = this.parseType(env, impl,
 							env.t(Object.class)/* OType.Object */);
 					// typedClass(impl, implClass);
 					interfaces[i] = implClass;
@@ -82,7 +79,7 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 				int size = list.size();
 				params = new OType[size];
 				for (int i = 0; i < size; i++) {
-					params[i] = parseType(env, list.get(_list),
+					params[i] = this.parseType(env, list.get(_list),
 							env.t(AnyType.class)/* OType.Any */);
 				}
 			}
@@ -91,31 +88,21 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 			OClassDeclType ct = cl.newType(env, anno, name, params, superClass, interfaces);
 			ct.getDecl().addBody(t.get(_body, null));
 			env.add(t, name, ct); // FIXME
-			return new RunnableCode(env, ct.getDecl()::typeCheck);
+			return new DeclCode(env, ct.getDecl(), ct.getDecl()::typeCheck);
 		}
-
 	};
-
-	// private boolean hasConstructor(ClassDecl decl, Tree<?> body) {
-	// for (Tree<?> sub : body) {
-	// if (sub.is(_ConstructorDecl)) {
-	// return true;
-	// }
-	// }
-	// return false;
-	// }
 
 	public OTypeRule FieldDecl = new TypeRule() {
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OClassDecl cdecl = getClassContext(env);
+			OClassDecl cdecl = this.getClassContext(env);
 			if (cdecl == null) {
 				throw new ErrorCode(env, t, "not in class");
 			}
 			Tree<?> listNode = t.get(_list, null);
-			OType type = parseType(env, t.get(_type, null), env.t(Object.class));
-			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
+			OType type = this.parseType(env, t.get(_type, null), env.t(Object.class));
+			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
 
 			for (Tree<?> sub : listNode) {
 				String name;
@@ -140,18 +127,18 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OClassDecl cdecl = getClassContext(env);
+			OClassDecl cdecl = this.getClassContext(env);
 			if (cdecl == null) {
 				throw new ErrorCode(env, t, "not in class");
 			}
-			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
+			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
 			String name = t.getText(_name, "");
-			String[] paramNames = parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));
-			OType ret = parseType(env, t.get(_type, null), env.t(AnyType.class));
-			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
+			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
+			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));
+			OType ret = this.parseType(env, t.get(_type, null), env.t(AnyType.class));
+			OType[] exceptions = this.parseExceptionTypes(env, t.get(_throws, null));
 
-			OCode body = parseUntypedCode(env, t.get(_body));
+			OCode body = this.parseFuncBody(env, t.get(_body));
 			OMethodHandle m = cdecl.addMethod(anno, ret, name, paramNames, paramTypes, exceptions, body);
 			if (anno.isStatic()) {
 				env.add(t, name, m);
@@ -167,16 +154,17 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OClassDecl cdecl = getClassContext(env);
+			OClassDecl cdecl = this.getClassContext(env);
 			if (cdecl == null) {
 				throw new ErrorCode(env, t, OFmt.YY0_is_not_here, OFmt.constructor);
 			}
 
-			OAnno anno = parseAnno(env, "public", t.get(_anno, null));
-			String[] paramNames = parseParamNames(env, t.get(_param, null));
-			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), getDefaultParamType(env));
-			OType[] exceptions = parseExceptionTypes(env, t.get(_throws, null));
-			OCode body = parseUntypedCode(env, t.get(_body));
+			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
+			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
+			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null),
+					this.getDefaultParamType(env));
+			OType[] exceptions = this.parseExceptionTypes(env, t.get(_throws, null));
+			OCode body = this.parseFuncBody(env, t.get(_body));
 			cdecl.addConstructorCode(anno, paramNames, paramTypes, exceptions, body);
 			return new EmptyCode(env);
 		}
@@ -187,9 +175,9 @@ public class ClassRules implements OImportable, OSymbols, SyntaxAnalysis, TypeAn
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			OType type = parseType(env, t.get(_type),
+			OType type = this.parseType(env, t.get(_type),
 					env.t(Object.class)/* OType.Object */);
-			OCode[] params = typeParams(env, t);
+			OCode[] params = this.typeParams(env, t);
 			return type.newConstructorCode(env, params);
 		}
 

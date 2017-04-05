@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.xdevel;
+package blue.origami.xlocal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,14 +35,14 @@ import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
-import blue.origami.util.CommonWriter;
+import blue.origami.util.OCommonWriter;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OVerbose;
 
 public abstract class ParserGenerator
-		extends CommonWriter /* implements GrammarWriter */ {
+		extends OCommonWriter /* implements GrammarWriter */ {
 
 	protected boolean verboseMode = true;
 	protected boolean Optimization = true;
@@ -862,7 +862,7 @@ public abstract class ParserGenerator
 
 		private void generateFunction(String name, Expression e) {
 			Integer memoPoint = ParserGenerator.this.memoPointMap.get(name);
-			ParserGenerator.this.Verbose(e.toString());
+			ParserGenerator.this.pVerbose(e.toString());
 			this.initLocal();
 			ParserGenerator.this.BeginFunc(name);
 			{
@@ -1149,7 +1149,7 @@ public abstract class ParserGenerator
 				ParserGenerator.this.If(temp);
 				{
 					String[] n = this.SaveState(sub);
-					ParserGenerator.this.Verbose(sub.toString());
+					ParserGenerator.this.pVerbose(sub.toString());
 					ParserGenerator.this.If(f);
 					{
 						ParserGenerator.this.VarAssign(temp, ParserGenerator.this._False());
@@ -1216,7 +1216,7 @@ public abstract class ParserGenerator
 			for (Expression sub : e) {
 				ParserGenerator.this.Case(ParserGenerator.this._int(caseIndex));
 				String f = this._eval(sub);
-				ParserGenerator.this.Verbose(sub.toString());
+				ParserGenerator.this.pVerbose(sub.toString());
 				ParserGenerator.this.VarAssign(temp, f);
 				ParserGenerator.this.Break();
 				ParserGenerator.this.EndCase();
@@ -1237,7 +1237,7 @@ public abstract class ParserGenerator
 			if (!this.tryOptionOptimization(sub)) {
 				String f = this._eval(sub);
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.Verbose(sub.toString());
+				ParserGenerator.this.pVerbose(sub.toString());
 				ParserGenerator.this.If(ParserGenerator.this._Not(f));
 				{
 					this.BackState(sub, n);
@@ -1277,7 +1277,7 @@ public abstract class ParserGenerator
 			ParserGenerator.this.While(ParserGenerator.this._True());
 			{
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.Verbose(sub.toString());
+				ParserGenerator.this.pVerbose(sub.toString());
 				ParserGenerator.this.If(ParserGenerator.this._Not(f));
 				{
 					this.BackState(sub, n);
@@ -1307,7 +1307,7 @@ public abstract class ParserGenerator
 				String f = this._eval(sub);
 				this.BeginScope();
 				String n = this.SavePos();
-				ParserGenerator.this.Verbose(sub.toString());
+				ParserGenerator.this.pVerbose(sub.toString());
 				ParserGenerator.this.If(ParserGenerator.this._Not(f));
 				{
 					ParserGenerator.this.Fail();
@@ -1326,7 +1326,7 @@ public abstract class ParserGenerator
 				String f = this._eval(sub);
 				this.BeginScope();
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.Verbose(sub.toString());
+				ParserGenerator.this.pVerbose(sub.toString());
 				ParserGenerator.this.If(f);
 				{
 					ParserGenerator.this.Fail();
