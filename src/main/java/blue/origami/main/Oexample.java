@@ -187,9 +187,9 @@ public class Oexample extends OCommand {
 			}
 			this.record(uname, t2 - t1);
 		} catch (IOException e) {
+			p(Red, e.toString());
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
-			// e.printStackTrace();
 		} catch (Throwable e) {
 			p(Red, "[FAIL] " + name);
 			p(Red, bold(textNode.toText()));
