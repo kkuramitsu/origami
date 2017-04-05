@@ -4,13 +4,14 @@
   [1] http://docs.python.jp/3.3/reference/index.html
   [2] https://github.com/antlr/grammars-v4/blob/master/python3/Python3.g4
   
-  Author:
+  Authors:
     Shun Honda (https://github.com/shun-honda)
+    Kimio Kuramitsu (https://github.com/kkuramitsu)
 */
 
 /* Starting Point */
 
-File = <on !InParentheses { ( NEWLINE / EOS / $(NonIndentStatement) / $(Statement) )* #Source } > EOF
+Source = <on !InParentheses { ( NEWLINE / EOS / $(Statement) )* #CompilationUnit } > EOF
 
 /* Code Layout */
 
@@ -26,6 +27,7 @@ EOS     =
 	';'
 	/ NEWLINE
 	/ COMMENT
+INDENT  = ((<exists Indent> <match Indent>) / '')
 EOF     = !.
 
 // ====================
@@ -59,23 +61,15 @@ Parameter = {
 	(__ '=' __ $expr(Test))?
 }
 
-ParameterList0 = 
-	{ '**' _ $(Parameter) #Params }
-	/ { '*' ( _ $(Parameter) )? ( __ ',' __ $(Parameter) )* ( __ ',' __ '**' _ $(Parameter) )? #Params }
-	/ { ( $(DefParameter) ( __ ',' __ $(DefParameter) )* )? ( __ ',' __ ('**' _ $(Parameter) / '*' ( _ $(Parameter) )? ( __ ',' __ $(Parameter) )* ( __ ',' __ '**' _ $(Parameter) )?) )? ( __ ',' )? #Params }
+LambdaParameterList = {
+	 ( $(LambdaParameter) ( __ ',' __ $(LambdaParameter) )* )?
+	 ( __ ',' )?
+}
 
-DefParameter = Parameter 
-	
-VarArgList
-	= { '**' _ $(VarArg) #VarArgs }
-	/ { '*' ( _ $(VarArg) )? ( __ ',' __ $(VarArg) )* ( __ ',' __ '**' _ $(VarArg) )? #VarArgs }
-	/ { ( $(DefVarArg) ( __ ',' __ $(DefVarArg) )* )? ( __ ',' __ ('**' _ $(VarArg) / '*' ( _ $(VarArg) )? ( __ ',' __ $(VarArg) )* ( __ ',' __ '**' _ $(VarArg) )?) )? ( __ ',' )? #VarArgs }
-
-DefVarArg = 
-	VarArg 
-	{$name __ '=' __ $expr(Test) #Initialize }?
-
-VarArg = Name
+LambdaParameter = {
+	('**' _ #PyDictParam / '*' _ #PyListParam / '' #Param )
+	$name(Name) 
+}
 
 // ====================
 //      Decorator
@@ -109,7 +103,7 @@ Statement =
 
 SimpleStatement = 
 	SmallStatement 
-	{$ ( _ ';' __ $(SmallStatement) )+ #List }? _ ';'? ( '#' ( !'\n' . )* )? (NEWLINE / !.)
+	{$ ( _ ';' __ $(SmallStatement) )+ #MultiStmt }? _ ';'? ( '#' ( !'\n' . )* )? (NEWLINE / !.)
 	
 SmallStatement = 
 	ExprStatement
@@ -124,7 +118,7 @@ SmallStatement =
 DelStatement = {
 	"del" __ 
 	$expr(TestList) 
-	#Delete 
+	#DelStmt 
 }
 
 PassStatement = {
@@ -156,10 +150,13 @@ ReturnStatement = {
 }
 
 RaiseStatement = {
-	"raise" ( __ $expr(TestList) ( __ $({ "from" __ $expr(Test) #From }) )? )? #Raise 
+	"raise" 
+	( __ $expr(TestList) ( __ "from" __ $from(Test) )? )? 
+	#Throw
 }
 
 YieldStatement = YieldExpr
+
 ImportStatement = 
 	ImportName
 	/ ImportFrom
@@ -184,9 +181,6 @@ Module  = {
 	#Field 
 }
 
-/*ImportList = ImportAsName {$ ( __ ',' __ $(ImportAsName) )+ #List }?
-ImportAsName                        = Name {$ __ "as" __ $name(Name) #As }?*/
-
 DottedAsNames = 
 	DottedAsName 
 	{$ ( __ ',' __ $(DottedAsName) )+ #List }?
@@ -198,22 +192,39 @@ DottedAsName =
 DottedName = 
 	Name 
 	{$ ( __ '.' __ $(Name) )+ #Field }?
-	
+
+/* global, nonlocal */
+
+example Statement '''
+global a
+'''
+
+example Statement '''
+nonlocal a,b,c
+'''
+
 GlobalStatement = {
-	"global" __ $label(NameList) 
+	"global" __ 
+	$label(NameList)?
 	#PyGlobalStmt 
 }
 
 NonLocalStatement = {
 	"nonlocal" __ 
-	$label(NameList) 
+	$label(NameList)?
 	#PyNonLocalStmt 
 }
 
-NameList = 
-	Name 
-	{$ ( __ ',' __ $(Name) )+ #List }?
-	
+NameList = { 
+	$(Name) ( __ ',' __ $(Name) )* 
+}
+
+/* assert */
+
+example Statement '''
+assert a == 3
+'''
+
 AssertStatement = {
 	 "assert" __ 
 	 $cond(Test)
@@ -235,30 +246,28 @@ IfStatement = {
 	"if" __ 
 	$cond(Test) __ 
 	':' __ $then(Suite) 
-	( <match Indent> $elif(Elif) )* 
-	( <match Indent> $else(Else) )? 
+	( INDENT $else(ElifStatement) )? 
+	( ELSE )? 
 	#IfStmt 
 }
 
-Elif = { 
+ElifStatement = { 
 	"elif" __ 
 	$cond(Test) __ 
 	':' __ $then(Suite) 
-	#Elif 
-}
+	( INDENT $else(ElifStatement) )? 
+	( INDENT "else" __ ':' __ $else(Suite) )? 
+	#IfStmt 
+}	
 
-Else = {
-	"else" __ 
-	':' __ 
-	$then(Suite) 
-	#Else 
-}
+ELSE = 
+	INDENT "else" __ ':' __ $else(Suite)
 
 WhileStatement = {
 	"while" __ 
 	$cond(Test) __ 
 	':' __ $body(Suite) 
-	( <match Indent> $else(Else) )? 
+	( ELSE )? 
 	#While 
 }
 
@@ -267,34 +276,30 @@ ForStatement = {
 	$name(ExprList) __ 
 	"in" __ $iter(TestList) __ 
 	':' __ $body(Suite) 
-	( <match Indent> $(Else) )? 
+	( ELSE )? 
 	#ForEachStmt 
 }
 
 TryStatement = {
 	"try" __ 
 	':' __ $try(Suite) 
+	( INDENT $catch(Except) )? 
+	( ELSE )? 
 	(
-		( <match Indent> $(Except) )+ 
-		( <match Indent> $(Else) )? 
-		( <match Indent> $(Finally) )? 
-		/ <match Indent> $(Finally)
-	) 
-	#Try 
+		INDENT "finally" __ ':' __ $finally(Suite) 
+	)?
+	#TryStmt 
 }
 
-Except = { 
-	"except" 
-	( __ $expr(TestList) 
-	( __ $({ "as" __ $name(Name) #As }) )? )? __ 
-	':' __ $body(Suite) 
-	#Except 
+Except = {
+	( INDENT "except" $(CatchCase) )+
 }
 
-Finally = {
-	"finally" __ 
-	':' __ $finally(Suite) 
-	#Finally 
+CatchCase = { 
+	(__ $expr(TestList) )?
+	( __ "as" __ $name(Name)  )? 
+	__ ':' __ $body(Suite) 
+	#CatchCase 
 }
 
 WithStatement = {
@@ -315,13 +320,13 @@ WithItem =
 Suite = 
 	{ $(SimpleStatement) #Block }
 	/ NEWLINE ( _ EOS )* 
-	{ <block ( <symbol Indent> $(Statement) ( <match Indent> $(Statement) / _ EOS )* )> #Block }
+	{ <block ( <symbol Indent> $(Statement) ( INDENT $(Statement) / _ EOS )* )> #Block }
 
-NonIndentStatement = 
-	{ "if" __ $cond(Test) __ ':' __ $then(Suite) $(Elif)* $(Else)? #If }
-	/ { "while" __ $cond(Test) __ ':' __ $body(Suite) $(Else)? #While }
-	/ { "for" __ $name(ExprList) __ "in" __ $iter(TestList) __ ':' __ $body(Suite) $(Else)? #For }
-	/ { "try" __ ':' __ $try(Suite) ( $(Except)+ $(Else)? $(Finally)? / $(Finally)) #Try }
+//NonIndentStatement = ''
+//	{ "if" __ $cond(Test) __ ':' __ $then(Suite) $(Elif)* (ELSE)? #IfStmt }
+//	/ { "while" __ $cond(Test) __ ':' __ $body(Suite) (ELSE)? #WhileStmt }
+//	/ { "for" __ $name(ExprList) __ "in" __ $iter(TestList) __ ':' __ $body(Suite) (ELSE)? #ForEachStmt }
+//	/ { "try" __ ':' __ $try(Suite) ( $(Except)+ (ELSE)? $(Finally)? / $(Finally)) #TryStmt }
 
 // ====================
 //      Expression
@@ -367,14 +372,14 @@ TestNoCond
 
 LambDef = {
 	"lambda" __ 
-	$param(ParameterList)? __ 
+	$param(LambdaParameterList)? __ 
 	':' __ $body(Test) 
 	#Lambda 
 }
 
 LambDefNoCond = {
 	"lambda" __ 
-	$param(ParameterList)? __ 
+	$param(LambdaParameterList)? __ 
 	':' __ $body(TestNoCond) 
 	#Lambda 
 }
@@ -777,20 +782,9 @@ example Statement '''
 yield data[index]
 '''
 
-example Statement '''
-global a
-'''
-
-example Statement '''
-nonlocal a
-'''
 
 example Statement '''
 a += 1
-'''
-
-example Statement '''
-assert a == 3
 '''
 
 example LambDef '''
