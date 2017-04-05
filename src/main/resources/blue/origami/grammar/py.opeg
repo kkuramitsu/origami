@@ -23,11 +23,14 @@ S       = [ \t]
 _       = S*
 __      = ( S / '\\' NEWLINE / COMMENT / <if InParentheses> NEWLINE )*
 COMMENT = _ '#' ( !'\n' . )*
+
+INDENT  = ((<exists Indent> <match Indent>) / '')
+
 EOS     = 
 	';'
 	/ NEWLINE
 	/ COMMENT
-INDENT  = ((<exists Indent> <match Indent>) / '')
+
 EOF     = !.
 
 // ====================
@@ -103,7 +106,8 @@ Statement =
 
 SimpleStatement = 
 	SmallStatement 
-	{$ ( _ ';' __ $(SmallStatement) )+ #MultiStmt }? _ ';'? ( '#' ( !'\n' . )* )? (NEWLINE / !.)
+	{$ ( _ ';' __ $(SmallStatement) )+ #MultiStmt }? _ 
+	';'? ( '#' ( !'\n' . )* )? (NEWLINE / !.)
 	
 SmallStatement = 
 	ExprStatement
@@ -322,11 +326,6 @@ Suite =
 	/ NEWLINE ( _ EOS )* 
 	{ <block ( <symbol Indent> $(Statement) ( INDENT $(Statement) / _ EOS )* )> #Block }
 
-//NonIndentStatement = ''
-//	{ "if" __ $cond(Test) __ ':' __ $then(Suite) $(Elif)* (ELSE)? #IfStmt }
-//	/ { "while" __ $cond(Test) __ ':' __ $body(Suite) (ELSE)? #WhileStmt }
-//	/ { "for" __ $name(ExprList) __ "in" __ $iter(TestList) __ ':' __ $body(Suite) (ELSE)? #ForEachStmt }
-//	/ { "try" __ ':' __ $try(Suite) ( $(Except)+ (ELSE)? $(Finally)? / $(Finally)) #TryStmt }
 
 // ====================
 //      Expression
