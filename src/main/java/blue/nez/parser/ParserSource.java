@@ -36,12 +36,13 @@ public abstract class ParserSource implements Source {
 
 	@Override
 	public final String getResourceName() {
-		return resourceName;
+		return this.resourceName;
 	}
 
 	@Override
 	public Source subSource(long startIndex, long endIndex) {
-		return new StringSource(this.getResourceName(), this.linenum(startIndex), subByte(startIndex, endIndex), false);
+		return new StringSource(this.getResourceName(), this.linenum(startIndex), this.subByte(startIndex, endIndex),
+				false);
 	}
 
 	// @Override
@@ -51,7 +52,7 @@ public abstract class ParserSource implements Source {
 	public final int column(long pos) {
 		int count = 0;
 		for (long p = pos - 1; p >= 0; p--) {
-			if (this.byteAt(pos) == '\n') {
+			if (this.byteAt(p) == '\n') {
 				break;
 			}
 			count++;

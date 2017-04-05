@@ -47,19 +47,23 @@ FuncDef = {
 	#FuncDecl 
 }
 
-ParameterList = 
+ParameterList = {
+	 ( $(Parameter) ( __ ',' __ $(Parameter) )* )?
+}
+
+Parameter = {
+	('**' _ #PyDictParam / '*' _ #PyListParam / '' #Param )
+	$name(Name) 
+	(__ ':' __ $type(Test))? 
+	(__ '=' __ $expr(Test))?
+}
+
+ParameterList0 = 
 	{ '**' _ $(Parameter) #Params }
 	/ { '*' ( _ $(Parameter) )? ( __ ',' __ $(Parameter) )* ( __ ',' __ '**' _ $(Parameter) )? #Params }
 	/ { ( $(DefParameter) ( __ ',' __ $(DefParameter) )* )? ( __ ',' __ ('**' _ $(Parameter) / '*' ( _ $(Parameter) )? ( __ ',' __ $(Parameter) )* ( __ ',' __ '**' _ $(Parameter) )?) )? ( __ ',' )? #Params }
 
 DefParameter = Parameter 
-	
-Parameter = {
-	$name(Name) 
-	(__ ':' __ $type(Test))? 
-	(__ '=' __ $expr(Test))?
-	#DyParam 
-}
 	
 VarArgList
 	= { '**' _ $(VarArg) #VarArgs }
@@ -362,14 +366,14 @@ TestNoCond
 
 LambDef = {
 	"lambda" __ 
-	$param(VarArgList)? __ 
+	$param(ParameterList)? __ 
 	':' __ $body(Test) 
 	#Lambda 
 }
 
 LambDefNoCond = {
 	"lambda" __ 
-	$param(VarArgList)? __ 
+	$param(ParameterList)? __ 
 	':' __ $body(TestNoCond) 
 	#Lambda 
 }
