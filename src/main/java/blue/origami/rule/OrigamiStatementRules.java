@@ -50,9 +50,6 @@ import blue.origami.util.OTypeRule;
 
 public class OrigamiStatementRules implements OImportable {
 
-	public OTypeRule CompilationUnit = this.MultiExpr;
-	public OTypeRule Source = this.MultiExpr;
-
 	public OTypeRule MultiExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
@@ -70,6 +67,9 @@ public class OrigamiStatementRules implements OImportable {
 			return new MultiCode(nodes);
 		}
 	};
+
+	public OTypeRule CompilationUnit = this.MultiExpr;
+	public OTypeRule Source = this.MultiExpr;
 
 	public OTypeRule BlockExpr = new TypeRule() {
 		@Override

@@ -227,6 +227,7 @@ public abstract class OCommand extends OConsole {
 	}
 
 	// ReadLine
+	// private ConsoleReader console = null;
 	private Object console = null;
 	private boolean consoleNotFound = false;
 	protected int linenum = 1;
@@ -241,6 +242,7 @@ public abstract class OCommand extends OConsole {
 		if (this.console == null) {
 			try {
 				this.console = Class.forName("jline.console.ConsoleReader").newInstance();
+				((jline.console.ConsoleReader) this.console).setExpandEvents(false);
 			} catch (Exception e) {
 			}
 		}
