@@ -332,10 +332,10 @@ Suite =
 // ====================
 
 ExprStatement = 
-	TestListStarExpr {$left __ ASSIGN __ $right(YieldExpr/TestList) }
+	TestListStarExpr {$left __ _Assign __ $right(YieldExpr/TestList) }
 	/ TestListStarExpr {$left __ '=' __ $right(YieldExpr/TestListStarExpr) #AssignStmt }*
 
-ASSIGN = 
+_Assign = 
 	'+=' #AddAssign
 	/ '-=' #SubAssign
 	/ '*=' #MulAssign
@@ -641,8 +641,8 @@ OCT_INTEGER = '0' [oO] OCT_DIGIT+
 HEX_INTEGER = '0' [xX] HEX_DIGIT+
 BIN_INTEGER = '0' [bB] BIN_DIGIT+
 
-FloatNumber    = { (EXPONENT_FLOAT / POINT_FLOAT) #DoubleExpr }
-ImagNumber     = { ($(FloatNumber) / INT_PART) [jJ] #ImaginaryExpr }
+FloatNumber = { (EXPONENT_FLOAT / POINT_FLOAT) #DoubleExpr }
+ImagNumber = { ($(FloatNumber) / INT_PART) [jJ] #ImaginaryExpr }
 
 NON_ZERO_DIGIT = [1-9]
 DIGIT          = [0-9]
