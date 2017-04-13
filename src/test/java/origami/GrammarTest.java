@@ -16,9 +16,114 @@
 
 package origami;
 
+import java.io.IOException;
+
+import blue.nez.ast.Source;
+import blue.nez.parser.Parser;
+import blue.nez.parser.ParserSource;
+import blue.nez.peg.Grammar;
+import blue.nez.peg.SourceGrammar;
+
 public class GrammarTest {
 
 	void testCode() {
 
 	}
+
+	private Source loadInputText(String file, int num) {
+		try {
+			return ParserSource.newFileSource("/opeg-test/" + file + "/" + num + ".in", null);
+		} catch (IOException e) {
+		}
+		return null;
+	}
+
+	public void parseExample(String file) throws Throwable {
+		Grammar g = SourceGrammar.loadFile("/opeg-test/" + file + ".opeg");
+		Parser p = g.newParser();
+		for (int i = 0; i < 10; i++) {
+			Source sin = this.loadInputText(file, i);
+			if (sin == null) {
+				break;
+			}
+			String parsed = "" + p.parse(sin);
+			Source s = ParserSource.newFileSource("/opeg-test/" + file + "/1.out", null);
+			String result = s.subString(0, s.length());
+			if (!result.startsWith(parsed)) {
+				System.out.println("FAIL " + file + ", " + i);
+				System.out.println("\t" + parsed);
+				System.out.println("\t" + result);
+				assert result.startsWith(parsed);
+			}
+		}
+	}
+
+	public void test_alnum() throws Throwable {
+		this.parseExample("alnum");
+	}
+
+	public void test_recursion() throws Throwable {
+		this.parseExample("recursion");
+	}
+
+	public void test_list() throws Throwable {
+		this.parseExample("list");
+	}
+
+	public void test_lpair() throws Throwable {
+		this.parseExample("lpair");
+	}
+
+	public void test_rpair() throws Throwable {
+		this.parseExample("rpair");
+	}
+
+	public void test_mchar() throws Throwable {
+		this.parseExample("mchar");
+	}
+
+	public void test_math() throws Throwable {
+		this.parseExample("math");
+	}
+
+	public void test_rna() throws Throwable {
+		this.parseExample("rna");
+	}
+
+	public void test_if() throws Throwable {
+		this.parseExample("if");
+	}
+
+	public void test_block() throws Throwable {
+		this.parseExample("block");
+	}
+
+	public void test_local() throws Throwable {
+		this.parseExample("local");
+	}
+
+	public void test_match() throws Throwable {
+		this.parseExample("match");
+	}
+
+	public void test_exists() throws Throwable {
+		this.parseExample("exists");
+	}
+
+	public void test_notexists() throws Throwable {
+		this.parseExample("not-exists");
+	}
+
+	public void test_is() throws Throwable {
+		this.parseExample("is");
+	}
+
+	public void test_notis() throws Throwable {
+		this.parseExample("not-is");
+	}
+
+	public void test_scan() throws Throwable {
+		this.parseExample("scan");
+	}
+
 }

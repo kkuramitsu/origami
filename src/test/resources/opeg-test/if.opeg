@@ -1,0 +1,4 @@
+A = 'a' <on Flag B>
+  / B
+B = <if Flag> 'bb'
+  / 'b'

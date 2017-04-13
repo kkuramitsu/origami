@@ -1,0 +1,7 @@
+// exists test
+
+START = (S? <symbol NAME>)* ':' S <exists NAME 'Apple'>
+NAME = [A-Za-z0-9]+
+S = [ \t]+
+
+

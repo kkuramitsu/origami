@@ -4,8 +4,6 @@
  *        : Masanori Sato
 */
 
-//File                                 = BRANKLINE* _ { $(CompleteStatement) #Source }
-
 /* for comsumed check */
 File                                 = BRANKLINE* _ { $(CompleteStatement) ("__END__"/!.) $(Comsumed) #Source }
 Comsumed                             = { `comsumed` #Comsumed }

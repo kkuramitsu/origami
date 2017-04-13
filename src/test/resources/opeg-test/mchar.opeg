@@ -1,0 +1,10 @@
+START  
+      = { ABC !ABC !'xyz' #STR }
+      / { !ABC 'not' #NOT }
+      / { ABC+ !'xyz' #ONE }
+      / { &ABC 'abcxyz' #AND }
+      / { ABC? 'xyz' #OPT}
+      / ''
+
+ABC = 'abc'
+

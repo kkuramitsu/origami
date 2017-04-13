@@ -665,7 +665,7 @@ String =
 
 StringLiteral = [uU]? [rR]? (ShortString / LongString)
 BytesLiteral  = [bB] [rR]? (ShortBytes / LongBytes)
-ShortString   = 
+ShortString = 
 	!'\'\'\'' '\'' { ( STRING_ESCAPE_SEQ / ![\\\r\n'] . )* #StringExpr } '\''
 	/ !'"""' '"' { ( STRING_ESCAPE_SEQ / ![\\\r\n"] . )* #StringExpr } '"'
 LongString = 
