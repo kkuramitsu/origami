@@ -32,7 +32,7 @@ public class NotCharPass extends CommonPass {
 	@Override
 	protected void prepare(Grammar g) {
 		for (Production p : g.getAllProductions()) {
-			checkBinaryExpression(p.getExpression());
+			this.checkBinaryExpression(p.getExpression());
 		}
 	}
 
@@ -41,7 +41,7 @@ public class NotCharPass extends CommonPass {
 			return;
 		}
 		if (e instanceof PByte) {
-			if (((PByte) e).byteChar == 0) {
+			if (((PByte) e).byteChar() == 0) {
 				this.BinaryGrammar = true;
 			}
 		}
@@ -52,7 +52,7 @@ public class NotCharPass extends CommonPass {
 			}
 		}
 		for (Expression sub : e) {
-			checkBinaryExpression(sub);
+			this.checkBinaryExpression(sub);
 		}
 	}
 
@@ -60,11 +60,11 @@ public class NotCharPass extends CommonPass {
 	public Expression visitPair(PPair e, Void a) {
 		Expression p = super.visitPair(e, a);
 		if (p instanceof PPair) {
-			Expression nc = NotChar(p.get(0));
-			Expression c = Char(p.get(1));
+			Expression nc = this.NotChar(p.get(0));
+			Expression c = this.Char(p.get(1));
 			if (nc != null && c != null) {
-				Expression e1 = merge(nc, c);
-				return optimized(p, Expression.newSequence(e1, Remain(p.get(1)), ref(p)));
+				Expression e1 = this.merge(nc, c);
+				return this.optimized(p, Expression.newSequence(e1, this.Remain(p.get(1)), this.ref(p)));
 			}
 		}
 		return p;
@@ -99,9 +99,9 @@ public class NotCharPass extends CommonPass {
 	}
 
 	private Expression merge(Expression nc, Expression c) {
-		PByteSet bs = new PByteSet(ref(c));
+		PByteSet bs = new PByteSet(this.ref(c));
 		if (c instanceof PAny) {
-			bs.set(BinaryGrammar ? 0 : 1, 255, true);
+			bs.set(this.BinaryGrammar ? 0 : 1, 255, true);
 		}
 		if (c instanceof PByteSet) {
 			PByteSet c1 = (PByteSet) c;
@@ -112,7 +112,7 @@ public class NotCharPass extends CommonPass {
 			}
 		}
 		if (nc instanceof PByte) {
-			bs.set(((PByte) nc).byteChar, false);
+			bs.set(((PByte) nc).byteChar(), false);
 		}
 		if (nc instanceof PByteSet) {
 			PByteSet c1 = (PByteSet) nc;

@@ -4,8 +4,8 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 /**
- * Expression.Byte represents a single-byte string literal, denoted as 'a'
- * in Expression.
+ * Expression.Byte represents a single-byte string literal, denoted as 'a' in
+ * Expression.
  *
  * @author kiki
  *
@@ -15,21 +15,25 @@ public class PByte extends PTerm {
 	/**
 	 * byteChar
 	 */
-	public final int byteChar;
+	public final ByteSet byteSet;
 
 	public PByte(int byteChar, Object ref) {
 		super(ref);
-		this.byteChar = byteChar & 0xff;
+		this.byteSet = ByteSet.CharSet(byteChar & 0xff);
 	}
 
 	public PByte(int byteChar) {
 		this(byteChar, null);
 	}
 
+	public final int byteChar() {
+		return this.byteSet.getUnsignedByte();
+	}
+
 	@Override
 	public final boolean equals(Object o) {
 		if (o instanceof PByte) {
-			return this.byteChar == ((PByte) o).byteChar;
+			return this.byteChar() == ((PByte) o).byteChar();
 		}
 		return false;
 	}
@@ -42,7 +46,7 @@ public class PByte extends PTerm {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("'");
-		Expression.formatByte(this.byteChar, "'", "0x%02x", sb);
+		Expression.formatByte(this.byteChar(), "'", "0x%02x", sb);
 		sb.append("'");
 	}
 }

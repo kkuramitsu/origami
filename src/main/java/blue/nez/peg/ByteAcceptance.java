@@ -121,7 +121,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitByte(PByte e, Integer ch) {
-			return (e.byteChar == ch) ? Accept : Reject;
+			return (e.byteChar() == ch) ? Accept : Reject;
 		}
 
 		@Override
@@ -137,9 +137,9 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitPair(PPair e, Integer ch) {
-			ByteAcceptance r = accept(e.get(0), ch);
+			ByteAcceptance r = this.accept(e.get(0), ch);
 			if (r == Unconsumed) {
-				return accept(e.get(1), ch);
+				return this.accept(e.get(1), ch);
 			}
 			return r;
 		}
@@ -148,7 +148,7 @@ public enum ByteAcceptance {
 		public ByteAcceptance visitChoice(PChoice e, Integer ch) {
 			boolean hasUnconsumed = false;
 			for (int i = 0; i < e.size(); i++) {
-				ByteAcceptance r = accept(e.get(i), ch);
+				ByteAcceptance r = this.accept(e.get(i), ch);
 				if (r == Accept) {
 					return r;
 				}
@@ -165,36 +165,35 @@ public enum ByteAcceptance {
 			if (index == 0) {
 				return Reject;
 			}
-			return accept(e.get(index - 1), ch);
+			return this.accept(e.get(index - 1), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitOption(POption e, Integer ch) {
-			ByteAcceptance r = accept(e.get(0), ch);
+			ByteAcceptance r = this.accept(e.get(0), ch);
 			return (r == Accept) ? r : Unconsumed;
 		}
 
 		@Override
 		public ByteAcceptance visitRepetition(PRepetition e, Integer ch) {
 			if (e.isOneMore()) {
-				return accept(e.get(0), ch);
+				return this.accept(e.get(0), ch);
 			}
-			ByteAcceptance r = accept(e.get(0), ch);
+			ByteAcceptance r = this.accept(e.get(0), ch);
 			return (r == Accept) ? r : Unconsumed;
 		}
 
 		@Override
 		public ByteAcceptance visitAnd(PAnd e, Integer ch) {
-			ByteAcceptance r = accept(e.get(0), ch);
+			ByteAcceptance r = this.accept(e.get(0), ch);
 			return (r == Reject) ? r : Unconsumed;
 		}
 
 		@Override
 		public ByteAcceptance visitNot(PNot e, Integer ch) {
 			Expression inner = e.get(0);
-			if (inner instanceof PByte || inner instanceof PByteSet
-					|| inner instanceof PAny) {
-				return accept(inner, ch) == Accept ? Reject : Unconsumed;
+			if (inner instanceof PByte || inner instanceof PByteSet || inner instanceof PAny) {
+				return this.accept(inner, ch) == Accept ? Reject : Unconsumed;
 			}
 			/* The code below works only if a single character in !(e) */
 			/* we must accept 'i' for !'int' 'i' */
@@ -203,12 +202,12 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitTree(PTree e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitLinkTree(PLinkTree e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
@@ -223,17 +222,17 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitDetree(PDetree e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitSymbolScope(PSymbolScope e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitSymbolAction(PSymbolAction e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
@@ -241,17 +240,17 @@ public enum ByteAcceptance {
 			if (e.funcName == NezFunc.exists) {
 				return Unconsumed;
 			}
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitScan(PScan e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
 		public ByteAcceptance visitRepeat(PRepeat e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override
@@ -261,7 +260,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitOn(POnCondition e, Integer ch) {
-			return accept(e.get(0), ch);
+			return this.accept(e.get(0), ch);
 		}
 
 		@Override

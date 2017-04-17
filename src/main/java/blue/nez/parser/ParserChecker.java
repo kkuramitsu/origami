@@ -160,7 +160,7 @@ public class ParserChecker {
 		}
 		if (this.usedChars != null) {
 			if (e instanceof PByte) {
-				this.usedChars[((PByte) e).byteChar] = true;
+				this.usedChars[((PByte) e).byteChar()] = true;
 				return;
 			}
 			if (e instanceof PByteSet) {

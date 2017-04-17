@@ -197,10 +197,10 @@ public class NZ86Compiler implements ParserCompiler {
 
 		@Override
 		public NZ86Instruction visitByte(PByte p, NZ86Instruction next) {
-			if (/* this.BinaryGrammar && */ p.byteChar == 0) {
+			if (/* this.BinaryGrammar && */ p.byteChar() == 0) {
 				return new NZ86.BinaryByte(next);
 			}
-			return new NZ86.Byte(p.byteChar, next);
+			return new NZ86.Byte(p.byteChar(), next);
 		}
 
 		@Override
@@ -239,10 +239,10 @@ public class NZ86Compiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar == 0) {
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() == 0) {
 						return new NZ86.BinaryOByte(next);
 					}
-					return new NZ86.OByte(((PByte) inner).byteChar, next);
+					return new NZ86.OByte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).byteSet();
@@ -274,10 +274,10 @@ public class NZ86Compiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar == 0) {
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() == 0) {
 						return new NZ86.BinaryRByte(next);
 					}
-					return new NZ86.RByte(((PByte) inner).byteChar, next);
+					return new NZ86.RByte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).byteSet();
@@ -309,10 +309,10 @@ public class NZ86Compiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar != 0) {
-						return new NZ86.BinaryNByte(((PByte) inner).byteChar, next);
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() != 0) {
+						return new NZ86.BinaryNByte(((PByte) inner).byteChar(), next);
 					}
-					return new NZ86.NByte(((PByte) inner).byteChar, next);
+					return new NZ86.NByte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).byteSet();

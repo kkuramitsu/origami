@@ -122,12 +122,12 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		sb.append('"');
 	}
 
-	public final static void formatByte(int byteChar, String escaped, String fmt, StringBuilder sb) {
-		if (escaped.indexOf(byteChar) != -1) {
+	public final static void formatByte(int ubyte, String escaped, String fmt, StringBuilder sb) {
+		if (escaped.indexOf(ubyte) != -1) {
 			sb.append("\\");
-			sb.append((char) byteChar);
+			sb.append((char) ubyte);
 		}
-		switch (byteChar) {
+		switch (ubyte) {
 		case '\n':
 			sb.append("\\n");
 			return;
@@ -141,11 +141,11 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			sb.append("\\\\");
 			return;
 		}
-		if (Character.isISOControl(byteChar) || byteChar > 127) {
-			sb.append(String.format(fmt/* "0x%02x" */, byteChar));
+		if (Character.isISOControl(ubyte) || ubyte > 127) {
+			sb.append(String.format(fmt/* "0x%02x" */, ubyte));
 			return;
 		}
-		sb.append((char) byteChar);
+		sb.append((char) ubyte);
 	}
 
 	/* Unary */
@@ -169,7 +169,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			Expression left = ((PPair) e).left;
 			if (left instanceof PByte) {
 				if (l != null) {
-					l.add(((PByte) left).byteChar);
+					l.add(((PByte) left).byteChar());
 				}
 				return extractString(((PPair) e).right, l);
 			}
@@ -177,7 +177,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		}
 		if (e instanceof PByte) {
 			if (l != null) {
-				l.add(((PByte) e).byteChar);
+				l.add(((PByte) e).byteChar());
 			}
 			return Expression.defaultEmpty;
 		}
@@ -315,7 +315,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 				if (e instanceof PByteSet) {
 					b.union((PByteSet) e);
 				} else {
-					b.set(((PByte) e).byteChar, true);
+					b.set(((PByte) e).byteChar(), true);
 				}
 			}
 			return b;
@@ -454,7 +454,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitByte(PByte e, A a) {
 			if (this.enableFullDuplication) {
-				return new PByte(e.byteChar, this.ref(e));
+				return new PByte(e.byteChar(), this.ref(e));
 			}
 			return e;
 		}

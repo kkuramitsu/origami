@@ -26,8 +26,8 @@ import java.util.Map;
 import blue.nez.ast.Symbol;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserCode;
-import blue.nez.parser.ParserOption;
 import blue.nez.parser.ParserCode.MemoPoint;
+import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
@@ -1072,12 +1072,12 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitByte(PByte e, Object a) {
 			ParserGenerator.this.If(ParserGenerator.this._Func("read"), ParserGenerator.this._NotEq(),
-					ParserGenerator.this._byte(e.byteChar));
+					ParserGenerator.this._byte(e.byteChar()));
 			{
 				ParserGenerator.this.Fail();
 			}
 			ParserGenerator.this.EndIf();
-			this.checkBinaryEOF(e.byteChar == 0);
+			this.checkBinaryEOF(e.byteChar() == 0);
 			return null;
 		}
 
@@ -1369,9 +1369,9 @@ public abstract class ParserGenerator
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
-							ParserGenerator.this._byte(e.byteChar));
+							ParserGenerator.this._byte(e.byteChar()));
 					{
-						if (ParserGenerator.this.BinaryGrammar && e.byteChar == 0) {
+						if (ParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
 							ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
 							{
 								ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
@@ -1428,9 +1428,9 @@ public abstract class ParserGenerator
 						this.visit(inner, null);
 					}
 					ParserGenerator.this.While(ParserGenerator.this._Binary(ParserGenerator.this._Func("prefetch"),
-							ParserGenerator.this._Eq(), ParserGenerator.this._byte(e.byteChar)));
+							ParserGenerator.this._Eq(), ParserGenerator.this._byte(e.byteChar())));
 					{
-						if (ParserGenerator.this.BinaryGrammar && e.byteChar == 0) {
+						if (ParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
 							ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
 							{
 								ParserGenerator.this.Break();
@@ -1514,12 +1514,12 @@ public abstract class ParserGenerator
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._NotEq(),
-							ParserGenerator.this._byte(e.byteChar));
+							ParserGenerator.this._byte(e.byteChar()));
 					{
 						ParserGenerator.this.Fail();
 					}
 					ParserGenerator.this.EndIf();
-					this.checkBinaryEOF(e.byteChar == 0);
+					this.checkBinaryEOF(e.byteChar() == 0);
 					return true;
 				}
 				if (inner instanceof PByteSet) {
@@ -1560,12 +1560,12 @@ public abstract class ParserGenerator
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
-							ParserGenerator.this._byte(e.byteChar));
+							ParserGenerator.this._byte(e.byteChar()));
 					{
 						ParserGenerator.this.Fail();
 					}
 					ParserGenerator.this.EndIf();
-					this.checkBinaryEOF(e.byteChar != 0);
+					this.checkBinaryEOF(e.byteChar() != 0);
 					return true;
 				}
 				if (inner instanceof PByteSet) {
