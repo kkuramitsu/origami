@@ -16,6 +16,8 @@
 
 package blue.nez.parser;
 
+import blue.nez.parser.ParserContext.SymbolAction;
+import blue.nez.parser.ParserContext.SymbolDefinition;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.expression.PAnd;
@@ -73,8 +75,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitByteSet(PByteSet e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		return e.byteSet().is(px.read());
 	}
 
 	@Override
@@ -111,8 +112,8 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitDispatch(PDispatch e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		int u = px.prefetch();
+		return this.parse(e.get(e.indexMap[u] & 0xff), px);
 	}
 
 	@Override
@@ -190,18 +191,29 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitTree(PTree e, ParserContext<T> px) {
 
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
+
 		return null;
 	}
 
 	@Override
 	public Boolean visitDetree(PDetree e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
+
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
 
 		return null;
 	}
 
 	@Override
 	public Boolean visitLinkTree(PLinkTree e, ParserContext<T> px) {
+
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
 
 		return true;
 	}
@@ -221,7 +233,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitSymbolScope(PSymbolScope e, ParserContext<T> px) {
 		Object state = px.loadSymbolTable();
-		if (e.param != null) { // localScope
+		if (e.label != null) { // localScope
 
 		}
 		if (!this.parse(e.get(0), px)) {
@@ -233,6 +245,9 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitSymbolAction(PSymbolAction e, ParserContext<T> px) {
+		int ppos = px.pos;
+		SymbolAction action = new SymbolDefinition();
+		action.mutate(px, e.label, ppos);
 		// TODO Auto-generated method stub
 		return null;
 	}

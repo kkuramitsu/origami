@@ -30,7 +30,6 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarFlag;
 import blue.nez.peg.NezFmt;
-import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
 import blue.nez.peg.expression.PAnd;
@@ -357,9 +356,6 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 
 	@Override
 	public Boolean visitSymbolPredicate(PSymbolPredicate e, Production a) {
-		if (e.funcName == NezFunc.exists) {
-			return true;
-		}
 		return !NonEmpty.isAlwaysConsumed(e);
 	}
 

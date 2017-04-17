@@ -212,9 +212,6 @@ public enum NonEmpty {
 
 		@Override
 		public NonEmpty visitSymbolPredicate(PSymbolPredicate e, Void a) {
-			if (e.funcName == NezFunc.exists) {
-				return NonEmpty.Unsure;
-			}
 			return this.check(e.get(0), a);
 		}
 

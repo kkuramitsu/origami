@@ -26,6 +26,12 @@ import blue.nez.ast.Symbol;
 import blue.nez.ast.Tree;
 import blue.nez.ast.TreeVisitorMap;
 import blue.nez.parser.Parser;
+import blue.nez.parser.ParserContext.SymbolDefinition;
+import blue.nez.parser.ParserContext.SymbolExist;
+import blue.nez.parser.ParserContext.SymbolExistString;
+import blue.nez.parser.ParserContext.SymbolEquals;
+import blue.nez.parser.ParserContext.SymbolContains;
+import blue.nez.parser.ParserContext.SymbolMatch;
 import blue.nez.parser.ParserSource;
 import blue.nez.peg.expression.PAnd;
 import blue.nez.peg.expression.PAny;
@@ -457,15 +463,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Block extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PSymbolScope(NezFunc.block, null, gamma.newExpression(node.get(_expr)));
+			return new PSymbolScope(gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Local extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PSymbolScope(NezFunc.local, Symbol.unique(node.getText(_name, "")),
-					gamma.newExpression(node.get(_expr)));
+			return new PSymbolScope(Symbol.unique(node.getText(_name, "")), gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -488,7 +493,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
-			return new PSymbolAction(NezFunc.symbol, param, pat);
+			return new PSymbolAction(new SymbolDefinition(), param, pat);
 		}
 	}
 
@@ -497,7 +502,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
-			return new PSymbolPredicate(NezFunc.is, param, pat);
+			return new PSymbolPredicate(new SymbolEquals(), param, pat, null);
 		}
 	}
 
@@ -506,7 +511,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
-			return new PSymbolPredicate(NezFunc.isa, param, pat);
+			return new PSymbolPredicate(new SymbolContains(), param, pat, null);
 		}
 	}
 
@@ -515,7 +520,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
-			return new PSymbolPredicate(NezFunc.match, param, pat);
+			return new PSymbolPredicate(new SymbolMatch(), param, pat, null);
 		}
 	}
 
@@ -526,9 +531,9 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			String symbol = node.getText(_symbol, null);
 			if (symbol != null) {
-				param = param + "+" + symbol;
+				return new PSymbolPredicate(new SymbolExistString(), param, pat, symbol);
 			}
-			return new PSymbolPredicate(NezFunc.exists, param, pat);
+			return new PSymbolPredicate(new SymbolExist(), param, pat, null);
 		}
 	}
 

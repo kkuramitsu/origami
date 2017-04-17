@@ -237,9 +237,6 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitSymbolPredicate(PSymbolPredicate e, Integer ch) {
-			if (e.funcName == NezFunc.exists) {
-				return Unconsumed;
-			}
 			return this.accept(e.get(0), ch);
 		}
 

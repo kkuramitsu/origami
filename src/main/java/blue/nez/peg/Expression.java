@@ -552,7 +552,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolScope(PSymbolScope e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolScope(e.funcName, e.param, e0);
+				return new PSymbolScope(e.label, e0);
 			}
 			return e;
 		}
@@ -561,7 +561,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolAction(PSymbolAction e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolAction(e.funcName, e.param, (PNonTerminal) e0);
+				return new PSymbolAction(e.action, e.label, (PNonTerminal) e0);
 			}
 			return e;
 		}
@@ -570,7 +570,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolPredicate(PSymbolPredicate e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolPredicate(e.funcName, e.param, (PNonTerminal) e0);
+				return new PSymbolPredicate(e.pred, e.label, (PNonTerminal) e0, e.option);
 			}
 			return e;
 		}
@@ -579,7 +579,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitScan(PScan e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PScan(e.param, e0);
+				return new PScan(e.pattern, e0);
 			}
 			return e;
 		}
@@ -596,7 +596,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitIf(PIfCondition e, A a) {
 			if (this.enableFullDuplication) {
-				return new PIfCondition(e.param);
+				return new PIfCondition(e.nflag);
 			}
 			return e;
 		}
@@ -605,7 +605,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitOn(POnCondition e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new POnCondition(e.param, e0);
+				return new POnCondition(e.nflag, e0);
 			}
 			return e;
 		}

@@ -31,7 +31,6 @@ import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
-import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
@@ -814,13 +813,13 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitSymbolAction(PSymbolAction e, Object a) {
-			ParserGenerator.this.DeclTable(e.table);
+			ParserGenerator.this.DeclTable(e.label);
 			return this.visitInnerAll(e);
 		}
 
 		@Override
 		public Object visitSymbolPredicate(PSymbolPredicate e, Object a) {
-			ParserGenerator.this.DeclTable(e.table);
+			ParserGenerator.this.DeclTable(e.label);
 			return this.visitInnerAll(e);
 		}
 
@@ -1659,9 +1658,9 @@ public abstract class ParserGenerator
 		public Object visitSymbolScope(PSymbolScope e, Object a) {
 			this.BeginScope();
 			String n = this.SaveSymbolTable();
-			if (e.funcName == NezFunc.local) {
+			if (e.label != null) {
 				ParserGenerator.this
-						.Statement(ParserGenerator.this._Func("addSymbolMask", ParserGenerator.this._table(e.param)));
+						.Statement(ParserGenerator.this._Func("addSymbolMask", ParserGenerator.this._table(e.label)));
 			}
 			this.visit(e.get(0), a);
 			this.BackSymbolTable(n);

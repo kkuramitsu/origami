@@ -21,9 +21,6 @@ import java.util.List;
 
 import blue.nez.parser.ParserCode.MemoPoint;
 import blue.nez.parser.ParserContext.SymbolDefinition;
-import blue.nez.parser.ParserContext.SymbolExist;
-import blue.nez.parser.ParserContext.SymbolExistString;
-import blue.nez.parser.ParserContext.SymbolMatch;
 import blue.nez.parser.ParserContext.SymbolReset;
 import blue.nez.parser.pegasm.ASMMlookup;
 import blue.nez.parser.pegasm.ASMMlookupTree;
@@ -82,7 +79,6 @@ import blue.nez.parser.pegasm.ASMtrap;
 import blue.nez.parser.pegasm.PegAsm;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
-import blue.nez.peg.NezFunc;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
 import blue.nez.peg.expression.PAnd;
@@ -188,8 +184,7 @@ public class PegAsmCompiler implements ParserCompiler {
 			this.layoutCode(codeList, block);
 		}
 
-		private PegAsmInst compileProductionExpression(MemoPoint memoPoint, Expression p,
-				PegAsmInst next) {
+		private PegAsmInst compileProductionExpression(MemoPoint memoPoint, Expression p, PegAsmInst next) {
 			if (memoPoint != null) {
 				if (memoPoint.typeState == Typestate.Unit) {
 					PegAsmInst memo = new ASMMmemoSucc(memoPoint, next);
@@ -509,42 +504,34 @@ public class PegAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PegAsmInst visitSymbolScope(PSymbolScope p, PegAsmInst next) {
-			if (p.funcName == NezFunc.block) {
+			if (p.label == null) {
 				next = new ASMSend(next);
 				next = this.compile(p.get(0), next);
 				return new ASMSbegin(next);
 			} else {
 				next = new ASMSend(next);
 				next = this.compile(p.get(0), next);
-				next = new ASMSdef2(new SymbolReset(), p.param, next);
+				next = new ASMSdef2(new SymbolReset(), p.label, next);
 				return new ASMSbegin(next);
 			}
 		}
 
 		@Override
 		public PegAsmInst visitSymbolAction(PSymbolAction p, PegAsmInst next) {
-			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.table, next)));
+			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.label, next)));
 		}
 
 		@Override
 		public PegAsmInst visitSymbolPredicate(PSymbolPredicate p, PegAsmInst next) {
-			switch (p.funcName) {
-			case exists:
-				if (p.symbol == null) {
-					return new ASMSpred2(new SymbolExist(), p.table, null, next);
+			if (p.isEmpty()) {
+				if (p.option == null) {
+					return new ASMSpred2(p.pred, p.label, null, next);
 				} else {
-					return new ASMSpred2(new SymbolExistString(), p.table, OStringUtils.utf8(p.symbol), next);
+					return new ASMSpred2(p.pred, p.label, OStringUtils.utf8(p.option.toString()), next);
 				}
-			case is:
-				return new ASMpos(this.compile(p.get(0), new ASMSpred(null, p.table, next)));
-			case isa:
-				return new ASMpos(this.compile(p.get(0), new ASMSpred(null, p.table, next)));
-			case match:
-				return new ASMSpred2(new SymbolMatch(), p.table, next);
-			default:
-				break;
+			} else {
+				return new ASMpos(this.compile(p.get(0), new ASMSpred(p.pred, p.label, next)));
 			}
-			return next;
 		}
 
 		@Override

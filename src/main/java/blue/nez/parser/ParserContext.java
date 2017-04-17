@@ -317,6 +317,11 @@ public abstract class ParserContext<T> {
 				px.symbolTable = px.symbolTable.addEntry(label, extracted);
 			}
 		}
+
+		@Override
+		public String toString() {
+			return "symbol";
+		}
 	}
 
 	public static class SymbolReset implements SymbolAction {
@@ -325,6 +330,11 @@ public abstract class ParserContext<T> {
 			if (px.symbolTable != null) {
 				px.symbolTable = px.symbolTable.removeEntry(label);
 			}
+		}
+
+		@Override
+		public String toString() {
+			return "reset";
 		}
 	}
 
@@ -335,6 +345,11 @@ public abstract class ParserContext<T> {
 				return false;
 			}
 			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "exists";
 		}
 	}
 
@@ -351,6 +366,12 @@ public abstract class ParserContext<T> {
 			}
 			return false;
 		}
+
+		@Override
+		public String toString() {
+			return "exists";
+		}
+
 	}
 
 	public static class SymbolMatch implements SymbolPredicate {
@@ -365,9 +386,15 @@ public abstract class ParserContext<T> {
 			}
 			return px.match((byte[]) entry.value);
 		}
+
+		@Override
+		public String toString() {
+			return "match";
+		}
+
 	}
 
-	public static class SymbolIs implements SymbolPredicate {
+	public static class SymbolEquals implements SymbolPredicate {
 		@Override
 		public boolean match(ParserContext<?> px, Symbol label, int ppos, Object option) {
 			if (px.symbolTable == null) {
@@ -380,9 +407,15 @@ public abstract class ParserContext<T> {
 			byte[] extracted = px.subByte(ppos, px.pos);
 			return extracted.equals(entry.value);
 		}
+
+		@Override
+		public String toString() {
+			return "is";
+		}
+
 	}
 
-	public static class SymbolIsa implements SymbolPredicate {
+	public static class SymbolContains implements SymbolPredicate {
 		@Override
 		public boolean match(ParserContext<?> px, Symbol label, int ppos, Object option) {
 			if (px.symbolTable == null) {
@@ -396,6 +429,12 @@ public abstract class ParserContext<T> {
 			}
 			return false;
 		}
+
+		@Override
+		public String toString() {
+			return "contains";
+		}
+
 	}
 
 	// private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to
