@@ -38,7 +38,7 @@ public class TreePass extends CommonPass {
 	@Override
 	public Expression visitTree(PTree tree, Void a) {
 		List<Expression> l = Expression.newList(64);
-		Expression.addSequence(l, rewrite(tree.get(0), a));
+		Expression.addSequence(l, this.rewrite(tree.get(0), a));
 		List<Expression> factored = Expression.newList(l.size());
 		List<Expression> inners = Expression.newList(l.size());
 		int beginShift = tree.beginShift;
@@ -55,7 +55,7 @@ public class TreePass extends CommonPass {
 				foundReplace = ((PReplace) e).value;
 				continue;
 			}
-			int len = consumed(e, 0);
+			int len = this.consumed(e, 0);
 			if (len == -1) {
 				break;
 			}
@@ -71,7 +71,7 @@ public class TreePass extends CommonPass {
 					foundTag = ((PTag) e).tag;
 					continue;
 				}
-				movableTag = checkTag(e, 0);
+				movableTag = this.checkTag(e, 0);
 				if (!movableTag) {
 					foundTag = null;
 				}
@@ -81,7 +81,7 @@ public class TreePass extends CommonPass {
 					foundReplace = ((PReplace) e).value;
 					continue;
 				}
-				movableReplace = checkReplace(e, 0);
+				movableReplace = this.checkReplace(e, 0);
 				if (!movableReplace) {
 					foundReplace = null;
 				}
@@ -94,10 +94,9 @@ public class TreePass extends CommonPass {
 		if (tree.value != null) {
 			foundReplace = tree.value;
 		}
-		Expression inner = Expression.newSequence(inners, ref(tree));
-		PTree newTree = new PTree(tree.folding, tree.label, beginShift, inner, foundTag,
-				foundReplace, tree.endShift, ref(tree));
-		return optimized(tree, Expression.newSequence(Expression.newSequence(factored, ref(tree)), newTree, null));
+		Expression inner = Expression.newSequence(inners);
+		PTree newTree = new PTree(tree.folding, tree.label, beginShift, inner, foundTag, foundReplace, tree.endShift);
+		return this.optimized(tree, Expression.newSequence(Expression.newSequence(factored), newTree));
 	}
 
 	private int consumed(Expression e, int depth) {
@@ -109,28 +108,28 @@ public class TreePass extends CommonPass {
 		}
 		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
-				return consumed(Expression.deref(e), depth + 1);
+				return this.consumed(Expression.deref(e), depth + 1);
 			}
 			return -1;
 		}
 		if (e instanceof PPair) {
-			int len = consumed(e.get(0), depth);
+			int len = this.consumed(e.get(0), depth);
 			if (len == -1) {
 				return -1;
 			}
-			int len2 = consumed(e.get(1), depth);
+			int len2 = this.consumed(e.get(1), depth);
 			if (len2 == -1) {
 				return -1;
 			}
 			return len + len2;
 		}
 		if (e instanceof PChoice) {
-			int len = consumed(e.get(0), depth);
+			int len = this.consumed(e.get(0), depth);
 			if (len == -1) {
 				return -1;
 			}
 			for (Expression sub : e) {
-				if (len != consumed(sub, depth)) {
+				if (len != this.consumed(sub, depth)) {
 					return -1;
 				}
 			}
@@ -142,7 +141,7 @@ public class TreePass extends CommonPass {
 	private boolean checkTag(Expression e, int depth) {
 		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
-				return checkTag(Expression.deref(e), depth + 1);
+				return this.checkTag(Expression.deref(e), depth + 1);
 			}
 			return false; // unchecked
 		}
@@ -150,7 +149,7 @@ public class TreePass extends CommonPass {
 			return false;
 		}
 		for (Expression sub : e) {
-			if (checkTag(sub, depth) == false) {
+			if (this.checkTag(sub, depth) == false) {
 				return false;
 			}
 		}
@@ -160,7 +159,7 @@ public class TreePass extends CommonPass {
 	private boolean checkReplace(Expression e, int depth) {
 		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
-				return checkTag(Expression.deref(e), depth + 1);
+				return this.checkTag(Expression.deref(e), depth + 1);
 			}
 			return false; // unchecked
 		}
@@ -168,7 +167,7 @@ public class TreePass extends CommonPass {
 			return false;
 		}
 		for (Expression sub : e) {
-			if (checkReplace(sub, depth) == false) {
+			if (this.checkReplace(sub, depth) == false) {
 				return false;
 			}
 		}
@@ -182,13 +181,13 @@ public class TreePass extends CommonPass {
 			List<Expression> inners = Expression.newList(64);
 			Expression.addSequence(inners, tree.get(0));
 			List<Expression> l = Expression.newList(64);
-			Expression.addSequence(l, rewrite(pair.get(1), a));
+			Expression.addSequence(l, this.rewrite(pair.get(1), a));
 			List<Expression> remained = Expression.newList(l.size());
 			int endShift = tree.endShift;
 			int i;
 			for (i = 0; i < l.size(); i++) {
 				Expression e = l.get(i);
-				int len = consumed(e, 0);
+				int len = this.consumed(e, 0);
 				if (len == -1) {
 					break;
 				}
@@ -198,10 +197,10 @@ public class TreePass extends CommonPass {
 			for (; i < l.size(); i++) {
 				remained.add(l.get(i));
 			}
-			tree = new PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners, null),
-					tree.tag, tree.value, endShift, null);
-			return optimized(pair,
-					Expression.newSequence(visitTree(tree, a), Expression.newSequence(remained, null), null));
+			tree = new PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners), tree.tag,
+					tree.value, endShift);
+			return this.optimized(pair,
+					Expression.newSequence(this.visitTree(tree, a), Expression.newSequence(remained)));
 		}
 		return super.visitPair(pair, a);
 	}
@@ -212,10 +211,10 @@ public class TreePass extends CommonPass {
 			Expression choice = p.get(0);
 			List<Expression> l = Expression.newList(choice.size());
 			for (Expression inner : choice) {
-				inner = rewrite(inner, a);
-				l.add(new PLinkTree(p.label, inner, null));
+				inner = this.rewrite(inner, a);
+				l.add(new PLinkTree(p.label, inner));
 			}
-			return optimized(p, Expression.newChoice(l, null));
+			return this.optimized(p, Expression.newChoice(l));
 		}
 		return super.visitLinkTree(p, a);
 	}

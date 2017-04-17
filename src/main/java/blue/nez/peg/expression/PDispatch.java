@@ -6,8 +6,8 @@ import blue.nez.peg.ExpressionVisitor;
 public class PDispatch extends PArray {
 	public final byte[] indexMap;
 
-	public PDispatch(Expression[] inners, byte[] indexMap, Object ref) {
-		super(inners, ref);
+	public PDispatch(Expression[] inners, byte[] indexMap) {
+		super(inners);
 		this.indexMap = indexMap;
 	}
 
@@ -37,7 +37,7 @@ public class PDispatch extends PArray {
 	public void strOut(StringBuilder sb) {
 		sb.append("<switch");
 		for (int i = 0; i < this.size(); i++) {
-			PByteSet bs = new PByteSet(null);
+			PByteSet bs = new PByteSet();
 			for (int j = 0; j < this.indexMap.length; j++) {
 				if ((this.indexMap[j] & 0xff) == i + 1) {
 					bs.set(j, true);

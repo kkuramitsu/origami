@@ -17,8 +17,8 @@ import blue.nez.peg.ExpressionVisitor;
 /* NG ((a b) c) */
 
 public class PPair extends PBinary {
-	public PPair(Expression first, Expression next, Object ref) {
-		super(first, next, ref);
+	public PPair(Expression first, Expression next) {
+		super(first, next);
 	}
 
 	public void expand(java.util.List<Expression> l) {
@@ -54,7 +54,7 @@ public class PPair extends PBinary {
 			List<Expression> l = Expression.newList(64);
 			Expression.addSequence(l, this.left);
 			Expression.addSequence(l, this.right);
-			return Expression.newSequence(l, this.getExternalReference());
+			return Expression.newSequence(l);
 		}
 		return this;
 	}
@@ -72,7 +72,7 @@ public class PPair extends PBinary {
 			if (l.size() > 1) {
 				sb.append("'");
 				for (int c : l) {
-					Expression.formatByte(c, "'", "\\x%02x", sb);
+					ByteSet.formatByte(c, "'", "\\x%02x", sb);
 				}
 				sb.append("'");
 				if (!(lasting instanceof PEmpty)) {
@@ -90,14 +90,7 @@ abstract class PBinary extends Expression {
 	public Expression left;
 	public Expression right;
 
-	protected PBinary(Expression left, Expression right, Object ref) {
-		super(ref);
-		this.left = left;
-		this.right = right;
-	}
-
 	protected PBinary(Expression left, Expression right) {
-		super(null);
 		this.left = left;
 		this.right = right;
 	}

@@ -43,12 +43,12 @@ public class DispatchPass extends CommonPass {
 		for (int ch = 0; ch < 256; ch++) {
 			bufferList.clear();
 			assert (bufferList.size() == 0);
-			selectPredictedChoice(choice, ch, bufferList);
+			this.selectPredictedChoice(choice, ch, bufferList);
 			if (bufferList.size() == 0) {
 				charMap[ch] = 0;
 				continue;
 			}
-			String key = key(bufferList);
+			String key = this.key(bufferList);
 			Byte index = bufferIndex.get(key);
 			if (index == null) {
 				uniqueList.add(bufferList.toArray(new Expression[bufferList.size()]));
@@ -61,17 +61,17 @@ public class DispatchPass extends CommonPass {
 		int c = 0;
 		Expression[] inners = new Expression[uniqueList.size()];
 		for (Expression[] seq : uniqueList) {
-			inners[c] = mergeExpression(seq);
+			inners[c] = this.mergeExpression(seq);
 			c++;
 		}
-		return optimized(choice, new PDispatch(inners, charMap, ref(choice)));
+		return this.optimized(choice, new PDispatch(inners, charMap));
 	}
 
 	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<Expression> bufferList) {
 		for (Expression e : choice) {
 			Expression deref = Expression.deref(e);
 			if (deref instanceof PChoice) {
-				selectPredictedChoice((PChoice) deref, ch, bufferList);
+				this.selectPredictedChoice((PChoice) deref, ch, bufferList);
 			} else {
 				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
 				if (acc != ByteAcceptance.Reject) {
@@ -95,26 +95,26 @@ public class DispatchPass extends CommonPass {
 			return seq[0];
 		}
 		List<Expression> l = Expression.newList(seq.length);
-		if (isCommonPrefix(seq)) {
+		if (this.isCommonPrefix(seq)) {
 			for (Expression e : seq) {
-				Expression.addChoice(l, nextExpression(e));
+				Expression.addChoice(l, this.nextExpression(e));
 			}
-			Expression choice = Expression.newChoice(l, null);
+			Expression choice = Expression.newChoice(l);
 			if (choice instanceof PChoice) {
-				choice = visitChoice((PChoice) choice, null);
+				choice = this.visitChoice((PChoice) choice, null);
 			}
-			return Expression.newSequence(Expression.defaultAny, choice, null);
+			return Expression.newSequence(Expression.defaultAny, choice);
 		} else {
 			for (Expression e : seq) {
 				Expression.addChoice(l, e);
 			}
-			return Expression.newChoice(l, null);
+			return Expression.newChoice(l);
 		}
 	}
 
 	private boolean isCommonPrefix(Expression[] seq) {
 		for (Expression e : seq) {
-			if (!isCharacterConsumed(e)) {
+			if (!this.isCharacterConsumed(e)) {
 				return false;
 			}
 		}
@@ -140,7 +140,7 @@ public class DispatchPass extends CommonPass {
 				List<Expression> l = Expression.newList(16);
 				Expression.addSequence(l, first.get(1));
 				Expression.addSequence(l, e.get(1));
-				return Expression.newSequence(l, null);
+				return Expression.newSequence(l);
 			}
 			return e.get(1);
 		}

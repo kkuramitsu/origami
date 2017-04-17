@@ -12,7 +12,6 @@ import blue.nez.peg.ExpressionVisitor;
 
 public class PEmpty extends PTerm {
 	public PEmpty() {
-		super(null);
 	}
 
 	@Override

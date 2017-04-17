@@ -5,16 +5,16 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.NezFunc;
 
 public class POnCondition extends PFunction<String> {
+	public POnCondition(String c, Expression e) {
+		super(NezFunc.on, c, e);
+	}
+
 	public final boolean isPositive() {
 		return !this.param.startsWith("!");
 	}
 
 	public final String flagName() {
 		return this.param.startsWith("!") ? this.param.substring(1) : this.param;
-	}
-
-	public POnCondition(String c, Expression e, Object ref) {
-		super(NezFunc.on, c, e, ref);
 	}
 
 	@Override

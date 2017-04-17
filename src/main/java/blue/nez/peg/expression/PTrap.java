@@ -6,8 +6,7 @@ public class PTrap extends PTerm {
 	public int trapid;
 	public int uid;
 
-	public PTrap(int trapid, int uid, Object ref) {
-		super(ref);
+	public PTrap(int trapid, int uid) {
 		this.trapid = trapid;
 		this.uid = uid;
 	}

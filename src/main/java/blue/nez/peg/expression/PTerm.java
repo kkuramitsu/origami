@@ -3,8 +3,7 @@ package blue.nez.peg.expression;
 import blue.nez.peg.Expression;
 
 abstract class PTerm extends Expression {
-	protected PTerm(Object ref) {
-		super(ref);
+	protected PTerm() {
 	}
 
 	@Override

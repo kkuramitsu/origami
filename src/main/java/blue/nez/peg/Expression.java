@@ -22,6 +22,7 @@ import java.util.List;
 
 import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Symbol;
+import blue.nez.peg.expression.ByteSet;
 import blue.nez.peg.expression.PAnd;
 import blue.nez.peg.expression.PAny;
 import blue.nez.peg.expression.PByte;
@@ -68,85 +69,36 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	private Object ref = null;
 
-	protected Expression(Object ref) {
-		this.ref = ref;
-	}
+	// protected Expression(Object ref) {
+	// this.ref = ref;
+	// }
 
-	public final Object getExternalReference() {
+	public final Object getRef() {
 		return this.ref;
 	}
 
-	public final void setExternalReference(Object ref) {
+	public final Expression setRef(Object ref) {
 		this.ref = ref;
+		return this;
 	}
 
 	/* source location */
 
-	public final SourcePosition getSourceLocation() {
+	public final SourcePosition getSourcePosition() {
 		if (this.ref instanceof SourcePosition) {
 			return (SourcePosition) this.ref;
 		}
 		return null;
 	}
 
-	public final void setSourceLocation(SourcePosition s) {
-		this.ref = s;
-	}
-
-	public final void setSourceLocation(Expression e) {
-		this.ref = e.getExternalReference();
+	public final Expression setSourcePosition(SourcePosition s) {
+		if (!(this.ref instanceof SourcePosition)) {
+			this.ref = s;
+		}
+		return this;
 	}
 
 	// formal expressions
-
-	public final static void quote(String text, StringBuilder sb) {
-		sb.append('"');
-		for (int i = 0; i < text.length(); i++) {
-			char c = text.charAt(i);
-			String s = null;
-			switch (c) {
-			case '\"':
-				s = "\"";
-				break;
-			case '\n':
-				s = "\\n";
-				break;
-			case '\t':
-				s = "\\t";
-				break;
-			default:
-				s = String.valueOf(c);
-			}
-			sb.append(s);
-		}
-		sb.append('"');
-	}
-
-	public final static void formatByte(int ubyte, String escaped, String fmt, StringBuilder sb) {
-		if (escaped.indexOf(ubyte) != -1) {
-			sb.append("\\");
-			sb.append((char) ubyte);
-		}
-		switch (ubyte) {
-		case '\n':
-			sb.append("\\n");
-			return;
-		case '\t':
-			sb.append("\\t");
-			return;
-		case '\r':
-			sb.append("\\r");
-			return;
-		case '\\':
-			sb.append("\\\\");
-			return;
-		}
-		if (Character.isISOControl(ubyte) || ubyte > 127) {
-			sb.append(String.format(fmt/* "0x%02x" */, ubyte));
-			return;
-		}
-		sb.append((char) ubyte);
-	}
 
 	/* Unary */
 
@@ -191,7 +143,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		sb.append('`');
 		for (int i = 0; i < value.length(); i++) {
 			int c = value.charAt(i) & 0xff;
-			formatByte(c, "`", "\\x02x", sb);
+			ByteSet.formatByte(c, "`", "\\x02x", sb);
 		}
 		sb.append('`');
 	}
@@ -199,7 +151,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 	/* Function */
 	public static PEmpty defaultEmpty = new PEmpty();
 	public static PFail defaultFailure = new PFail();
-	public static PAny defaultAny = new PAny(null);
+	public static PAny defaultAny = new PAny();
 
 	final static Symbol symbolTableName(PNonTerminal n, Symbol table) {
 		if (table == null) {
@@ -211,11 +163,11 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	// utils
 
-	public final static Expression newRange(int c, int c2, Object ref) {
+	public final static Expression newRange(int c, int c2) {
 		if (c == c2) {
-			return new PByte(c, ref);
+			return new PByte(c);
 		} else {
-			PByteSet b = new PByteSet(ref);
+			PByteSet b = new PByteSet();
 			b.set(c, c2, true);
 			return b;
 		}
@@ -269,25 +221,25 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 	 * @return
 	 */
 
-	public final static Expression newSequence(List<Expression> l, Object ref) {
+	public final static Expression newSequence(List<Expression> l) {
 		if (l.size() == 0) {
 			return defaultEmpty;
 		}
 		if (l.size() == 1) {
 			return l.get(0);
 		}
-		return newSequence(l, 0, l.size(), ref);
+		return newSequence(l, 0, l.size());
 	}
 
-	private final static Expression newSequence(List<Expression> l, int start, int end, Object ref) {
+	private final static Expression newSequence(List<Expression> l, int start, int end) {
 		Expression first = l.get(start);
 		if (start + 1 == end) {
 			return first;
 		}
-		return newSequence(first, newSequence(l, start + 1, end, ref), ref);
+		return newSequence(first, newSequence(l, start + 1, end));
 	}
 
-	public final static Expression newChoice(List<Expression> l, Object ref) {
+	public final static Expression newChoice(List<Expression> l) {
 		int size = l.size();
 		boolean allCharacters = true;
 		for (int i = 0; i < size; i++) {
@@ -306,7 +258,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			return l.get(0);
 		}
 		if (allCharacters) {
-			PByteSet b = new PByteSet(ref);
+			PByteSet b = new PByteSet();
 			for (int i = 0; i < size; i++) {
 				Expression e = l.get(i);
 				if (e instanceof PAny) {
@@ -324,10 +276,10 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		for (int i = 0; i < size; i++) {
 			inners[i] = l.get(i);
 		}
-		return new PChoice(inners, ref);
+		return new PChoice(inners);
 	}
 
-	public final static Expression newSequence(Expression first, Expression second, Object ref) {
+	public final static Expression newSequence(Expression first, Expression second) {
 		if (first instanceof PFail) {
 			return first;
 		}
@@ -340,7 +292,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		if (first instanceof PEmpty) {
 			return second;
 		}
-		return new PPair(first, second, ref).desugar();
+		return new PPair(first, second).desugar();
 	}
 
 	public final static Expression append(Expression e1, Expression e2) {
@@ -348,35 +300,35 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			List<Expression> l = Expression.newList(64);
 			((PPair) e1).expand(l);
 			addSequence(l, e2);
-			return newSequence(l, null);
+			return newSequence(l);
 		}
-		return newSequence(e1, e2, null);
+		return newSequence(e1, e2);
 	}
 
-	public final static Expression newString(byte[] utf8, Object ref) {
+	public final static Expression newString(byte[] utf8) {
 		if (utf8.length == 0) {
 			return defaultEmpty;
 		}
 		if (utf8.length == 1) {
-			return new PByte(utf8[0] & 0xff, ref);
+			return new PByte(utf8[0] & 0xff);
 		}
 		List<Expression> l = newList(utf8.length);
 		for (int i = 0; i < utf8.length; i++) {
-			l.add(new PByte(utf8[i], ref));
+			l.add(new PByte(utf8[i]));
 		}
-		return newSequence(l, ref);
+		return newSequence(l);
 	}
 
-	public final static Expression newString(String text, Object ref) {
-		return newString(OStringUtils.utf8(text), ref);
+	public final static Expression newString(String text) {
+		return newString(OStringUtils.utf8(text));
 	}
 
-	public final static Expression newTree(Expression e, Object ref) {
-		return new PTree(false, null, 0, e, null, null, 0, ref);
+	public final static Expression newTree(Expression e) {
+		return new PTree(false, null, 0, e, null, null, 0);
 	}
 
-	public final static Expression newFoldTree(Symbol label, Expression e, Object ref) {
-		return new PTree(true, label, 0, e, null, null, 0, ref);
+	public final static Expression newFoldTree(Symbol label, Expression e) {
+		return new PTree(true, label, 0, e, null, null, 0);
 	}
 
 	public final static Expression deref(Expression e) {
@@ -400,7 +352,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 		protected Object ref(Expression e) {
 			if (this.enableExternalDuplication) {
-				return e.getExternalReference();
+				return e.getRef();
 			}
 			return null;
 		}
@@ -427,10 +379,10 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitNonTerminal(PNonTerminal e, A a) {
 			if (e.getGrammar() != this.base && this.base != null) {
 				String lname = e.getLocalName();
-				return new PNonTerminal(this.base, e.getNameSpace(), lname, this.ref(e));
+				return new PNonTerminal(this.base, e.getNameSpace(), lname);
 			}
 			if (this.enableFullDuplication) {
-				return new PNonTerminal(e.getGrammar(), e.getLocalName(), this.ref(e));
+				return new PNonTerminal(e.getGrammar(), e.getLocalName());
 			}
 			return e;
 		}
@@ -454,7 +406,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitByte(PByte e, A a) {
 			if (this.enableFullDuplication) {
-				return new PByte(e.byteChar(), this.ref(e));
+				return new PByte(e.byteChar());
 			}
 			return e;
 		}
@@ -462,7 +414,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitByteSet(PByteSet e, A a) {
 			if (this.enableFullDuplication) {
-				return new PByteSet(e.bits, this.ref(e));
+				return new PByteSet(e.bits);
 			}
 			return e;
 		}
@@ -480,7 +432,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			Expression e0 = this.dup(e, 0, a);
 			Expression e1 = this.dup(e, 1, a);
 			if (e0 != e.get(0) || e1 != e.get(1) || this.enableFullDuplication) {
-				return Expression.newSequence(e0, e1, this.ref(e));
+				return Expression.newSequence(e0, e1);
 			}
 			return e;
 		}
@@ -496,7 +448,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 				}
 			}
 			if (isModified || this.enableFullDuplication) {
-				return new PChoice(en, this.ref(e));
+				return new PChoice(en);
 			}
 			return e;
 		}
@@ -512,7 +464,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 				}
 			}
 			if (isModified || this.enableFullDuplication) {
-				return new PDispatch(en, e.indexMap, this.ref(e));
+				return new PDispatch(en, e.indexMap);
 			}
 			return e;
 		}
@@ -521,7 +473,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitOption(POption e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new POption(e0, this.ref(e));
+				return new POption(e0);
 			}
 			return e;
 		}
@@ -530,7 +482,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitRepetition(PRepetition e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PRepetition(e0, e.min, e.max, this.ref(e));
+				return new PRepetition(e0, e.min, e.max);
 			}
 			return e;
 		}
@@ -539,7 +491,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitAnd(PAnd e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PAnd(e0, this.ref(e));
+				return new PAnd(e0);
 			}
 			return e;
 		}
@@ -548,7 +500,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitNot(PNot e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PNot(e0, this.ref(e));
+				return new PNot(e0);
 			}
 			return e;
 		}
@@ -557,7 +509,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitTree(PTree e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PTree(e.folding, e.label, e.beginShift, e0, e.tag, e.value, e.endShift, this.ref(e));
+				return new PTree(e.folding, e.label, e.beginShift, e0, e.tag, e.value, e.endShift);
 			}
 			return e;
 		}
@@ -566,7 +518,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitLinkTree(PLinkTree e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PLinkTree(e.label, e0, this.ref(e));
+				return new PLinkTree(e.label, e0);
 			}
 			return e;
 		}
@@ -574,7 +526,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitTag(PTag e, A a) {
 			if (this.enableFullDuplication) {
-				return new PTag(e.tag, this.ref(e));
+				return new PTag(e.tag);
 			}
 			return e;
 		}
@@ -582,7 +534,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitReplace(PReplace e, A a) {
 			if (this.enableFullDuplication) {
-				return new PReplace(e.value, this.ref(e));
+				return new PReplace(e.value);
 			}
 			return e;
 		}
@@ -591,7 +543,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitDetree(PDetree e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PDetree(e0, this.ref(e));
+				return new PDetree(e0);
 			}
 			return e;
 		}
@@ -600,7 +552,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolScope(PSymbolScope e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolScope(e.funcName, e.param, e0, this.ref(e));
+				return new PSymbolScope(e.funcName, e.param, e0);
 			}
 			return e;
 		}
@@ -609,7 +561,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolAction(PSymbolAction e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolAction(e.funcName, e.param, (PNonTerminal) e0, this.ref(e));
+				return new PSymbolAction(e.funcName, e.param, (PNonTerminal) e0);
 			}
 			return e;
 		}
@@ -618,7 +570,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitSymbolPredicate(PSymbolPredicate e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PSymbolPredicate(e.funcName, e.param, (PNonTerminal) e0, this.ref(e));
+				return new PSymbolPredicate(e.funcName, e.param, (PNonTerminal) e0);
 			}
 			return e;
 		}
@@ -627,7 +579,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitScan(PScan e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PScan(e.param, e0, this.ref(e));
+				return new PScan(e.param, e0);
 			}
 			return e;
 		}
@@ -636,7 +588,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitRepeat(PRepeat e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new PRepeat(e0, this.ref(e));
+				return new PRepeat(e0);
 			}
 			return e;
 		}
@@ -644,7 +596,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitIf(PIfCondition e, A a) {
 			if (this.enableFullDuplication) {
-				return new PIfCondition(e.param, this.ref(e));
+				return new PIfCondition(e.param);
 			}
 			return e;
 		}
@@ -653,7 +605,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		public Expression visitOn(POnCondition e, A a) {
 			Expression e0 = this.dup(e, 0, a);
 			if (e0 != e.get(0) || this.enableFullDuplication) {
-				return new POnCondition(e.param, e0, this.ref(e));
+				return new POnCondition(e.param, e0);
 			}
 			return e;
 		}
@@ -661,7 +613,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitTrap(PTrap e, A a) {
 			if (this.enableFullDuplication) {
-				return new PTrap(e.trapid, e.uid, this.ref(e));
+				return new PTrap(e.trapid, e.uid);
 			}
 			return e;
 		}

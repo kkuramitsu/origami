@@ -4,8 +4,8 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 /**
- * Expression.Repetition is used to identify a common property of ZeroMore
- * and OneMore expressions.
+ * Expression.Repetition is used to identify a common property of ZeroMore and
+ * OneMore expressions.
  * 
  * @author kiki
  *
@@ -19,22 +19,14 @@ public class PRepetition extends PUnary {
 		return this.min > 0;
 	}
 
-	public PRepetition(Expression e, int min, int max, Object ref) {
-		super(e, ref);
+	public PRepetition(Expression e, int min, int max) {
+		super(e);
 		this.min = min;
 		this.max = max;
 	}
 
-	public PRepetition(Expression e, int min, Object ref) {
-		this(e, min, -1, ref);
-	}
-
-	public PRepetition(Expression e, int min, int max) {
-		this(e, min, max, null);
-	}
-
 	public PRepetition(Expression e, int min) {
-		this(e, min, -1, null);
+		this(e, min, -1);
 	}
 
 	@Override

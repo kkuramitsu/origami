@@ -1,6 +1,5 @@
 package blue.nez.peg.expression;
 
-import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 /**
@@ -53,13 +52,11 @@ public class PByteSet extends PTerm {
 		return this.bits[n];
 	}
 
-	public PByteSet(Object ref) {
-		super(ref);
+	public PByteSet() {
 		this.bits = new int[8];
 	}
 
-	public PByteSet(int[] bits, Object ref) {
-		this(ref);
+	public PByteSet(int[] bits) {
 		for (int i = 0; i < bits.length; i++) {
 			this.bits[i] = bits[i];
 		}
@@ -110,10 +107,10 @@ public class PByteSet extends PTerm {
 	}
 
 	private void format(int start, int end, StringBuilder sb) {
-		Expression.formatByte(start, "-]", "\\x%02x", sb);
+		ByteSet.formatByte(start, "-]", "\\x%02x", sb);
 		if (start != end) {
 			sb.append("-");
-			Expression.formatByte(end, "-]", "\\x%02x", sb);
+			ByteSet.formatByte(end, "-]", "\\x%02x", sb);
 		}
 	}
 }

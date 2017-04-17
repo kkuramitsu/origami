@@ -5,8 +5,7 @@ import blue.nez.peg.ExpressionVisitor;
 public class PReplace extends PTerm {
 	public String value;
 
-	public PReplace(String value, Object ref) {
-		super(ref);
+	public PReplace(String value) {
 		this.value = value;
 	}
 

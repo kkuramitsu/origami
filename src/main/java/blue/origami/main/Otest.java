@@ -83,10 +83,10 @@ public class Otest extends Oexample {
 			for (Production p : g) {
 				int uid = nameList.size();
 				nameList.add(p.getUniqueName());
-				Expression enterTrap = new PTrap(enterId, uid, null);
-				Expression exitTrap = new PTrap(exitId, uid++, null);
+				Expression enterTrap = new PTrap(enterId, uid);
+				Expression exitTrap = new PTrap(exitId, uid++);
 				Expression e = Expression.append(p.getExpression(), exitTrap);
-				g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap, e, null));
+				g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap, e));
 			}
 			for (Grammar lg : g.getLocalGrammars()) {
 				this.init(lg, enterId, exitId, nameList);

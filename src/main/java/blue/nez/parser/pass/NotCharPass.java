@@ -64,7 +64,7 @@ public class NotCharPass extends CommonPass {
 			Expression c = this.Char(p.get(1));
 			if (nc != null && c != null) {
 				Expression e1 = this.merge(nc, c);
-				return this.optimized(p, Expression.newSequence(e1, this.Remain(p.get(1)), this.ref(p)));
+				return this.optimized(p, Expression.newSequence(e1, this.Remain(p.get(1))));
 			}
 		}
 		return p;
@@ -99,7 +99,7 @@ public class NotCharPass extends CommonPass {
 	}
 
 	private Expression merge(Expression nc, Expression c) {
-		PByteSet bs = new PByteSet(this.ref(c));
+		PByteSet bs = new PByteSet();
 		if (c instanceof PAny) {
 			bs.set(this.BinaryGrammar ? 0 : 1, 255, true);
 		}

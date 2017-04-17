@@ -5,8 +5,8 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.NezFunc;
 
 public class PRepeat extends PFunction<Object> {
-	public PRepeat(Expression e, Object ref) {
-		super(NezFunc.repeat, null, e, ref);
+	public PRepeat(Expression e) {
+		super(NezFunc.repeat, null, e);
 	}
 
 	@Override

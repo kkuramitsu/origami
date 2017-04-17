@@ -51,7 +51,7 @@ public class ParserCombinator {
 		if (start != null) {
 			try {
 				startMethod = c.getMethod("p" + start);
-				addMethodProduction(start, startMethod);
+				this.addMethodProduction(start, startMethod);
 			} catch (NoSuchMethodException | SecurityException e2) {
 				options.verbose(e2.toString());
 			}
@@ -65,7 +65,7 @@ public class ParserCombinator {
 				if (name.startsWith("p")) {
 					name = name.substring(1);
 				}
-				addMethodProduction(name, m);
+				this.addMethodProduction(name, m);
 			}
 		}
 		return g;
@@ -74,7 +74,7 @@ public class ParserCombinator {
 	private void addMethodProduction(String name, Method m) {
 		try {
 			Expression e = (Expression) m.invoke(this);
-			grammar.addProduction(name, e);
+			this.grammar.addProduction(name, e);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
 			ODebug.traceException(e1);
 		}
@@ -111,21 +111,21 @@ public class ParserCombinator {
 		if (expr instanceof String) {
 			String t = (String) expr;
 			if (t.startsWith("'") && t.endsWith("'")) {
-				return Expression.newString(t.substring(1, t.length() - 1), src());
+				return Expression.newString(t.substring(1, t.length() - 1)).setSourcePosition(this.src());
 			}
 			if (t.startsWith("@")) {
-				return new PNonTerminal(grammar, t.substring(1), src());
+				return new PNonTerminal(this.grammar, t.substring(1)).setSourcePosition(this.src());
 			}
 			if (t.startsWith("#")) {
-				return new PTag(Symbol.unique(t.substring(1)), src());
+				return new PTag(Symbol.unique(t.substring(1))).setSourcePosition(this.src());
 			}
 			if (t.startsWith("`") && t.endsWith("`")) {
-				return new PReplace(t.substring(1, t.length() - 1), src());
+				return new PReplace(t.substring(1, t.length() - 1)).setSourcePosition(this.src());
 			}
-			return Expression.newString(t, src());
+			return Expression.newString(t).setSourcePosition(this.src());
 		}
 		if (expr instanceof Character) {
-			return Expression.newString(expr.toString(), src());
+			return Expression.newString(expr.toString()).setSourcePosition(this.src());
 		}
 		if (expr instanceof Expression) {
 			return (Expression) expr;
@@ -136,7 +136,7 @@ public class ParserCombinator {
 	protected final List<Expression> list(Object... exprs) {
 		List<Expression> l = Expression.newList(exprs.length);
 		for (Object expr : exprs) {
-			Expression.addSequence(l, e(expr));
+			Expression.addSequence(l, this.e(expr));
 		}
 		return l;
 	}
@@ -146,71 +146,71 @@ public class ParserCombinator {
 			return Expression.defaultEmpty;
 		}
 		if (exprs.length == 1) {
-			return e(exprs[0]);
+			return this.e(exprs[0]);
 		}
-		return Expression.newSequence(list(exprs), src());
+		return Expression.newSequence(this.list(exprs)).setSourcePosition(this.src());
 	}
 
 	// protected final Expression P(String name) {
-	// return new NonTerminal(grammar, name, src());
+	// return new NonTerminal(grammar, name).setSourcePosition(src());
 	// }
 	//
 	protected final Expression S(String token) {
-		return Expression.newString(token, src());
+		return Expression.newString(token).setSourcePosition(this.src());
 	}
 
 	protected final Expression t(char c) {
-		return Expression.newString(String.valueOf(c), src());
+		return Expression.newString(String.valueOf(c)).setSourcePosition(this.src());
 	}
 
 	protected final Expression Range(Character... chars) {
-		PByteSet b = new PByteSet(src());
+		PByteSet b = new PByteSet();
 		for (int i = 0; i < chars.length; i += 2) {
 			char s = chars[i];
 			char e = chars[i + 1];
 			b.set(s, e, true);
 		}
-		return b;
+		return b.setSourcePosition(this.src());
 	}
 
 	protected final Expression Choice(Object... exprs) {
 		List<Expression> l = Expression.newList(exprs.length);
 		for (Object expr : exprs) {
-			Expression.addChoice(l, e(expr));
+			Expression.addChoice(l, this.e(expr));
 		}
-		return Expression.newChoice(l, src());
+		return Expression.newChoice(l).setSourcePosition(this.src());
 	}
 
 	protected final Expression Option(Object... exprs) {
-		return new POption(Expr(exprs), src());
+		return new POption(this.Expr(exprs)).setSourcePosition(this.src());
 	}
 
 	protected final Expression ZeroMore(Object... exprs) {
-		return new PRepetition(Expr(exprs), 0, src());
+		return new PRepetition(this.Expr(exprs), 0).setSourcePosition(this.src());
 	}
 
 	protected final Expression OneMore(Object... exprs) {
-		return new PRepetition(Expr(exprs), 1, src());
+		return new PRepetition(this.Expr(exprs), 1).setSourcePosition(this.src());
 	}
 
 	protected final Expression And(Object... exprs) {
-		return new PAnd(Expr(exprs), src());
+		return new PAnd(this.Expr(exprs)).setSourcePosition(this.src());
 	}
 
 	protected final Expression Not(Object... exprs) {
-		return new PNot(Expr(exprs), src());
+		return new PNot(this.Expr(exprs)).setSourcePosition(this.src());
 	}
 
 	protected final Expression AnyChar() {
-		return new PAny(src());
+		return new PAny().setSourcePosition(this.src());
 	}
 
 	protected final Expression NotAny(Object... exprs) {
-		return Expr(new PNot(Expr(exprs), src()), AnyChar());
+		return this.Expr(new PNot(this.Expr(exprs)).setSourcePosition(this.src()), this.AnyChar());
 	}
 
 	protected final Expression Tree(Object... exprs) {
-		return Expression.newTree(Expr(exprs), src());
+		return Expression.newTree(this.Expr(exprs)).setSourcePosition(this.src());
 	}
 
 	private Symbol toSymbol(String label) {
@@ -224,31 +224,31 @@ public class ParserCombinator {
 	}
 
 	protected final Expression Fold(String symbol, Object... exprs) {
-		return Expression.newFoldTree(toSymbol(symbol), Expr(exprs), src());
+		return Expression.newFoldTree(this.toSymbol(symbol), this.Expr(exprs)).setSourcePosition(this.src());
 	}
 
 	protected final Expression OptionalFold(String label, Object... exprs) {
-		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new POption(fold, src());
+		Expression fold = Expression.newFoldTree(this.toSymbol(label), this.Expr(exprs)).setSourcePosition(this.src());
+		return new POption(fold).setSourcePosition(this.src());
 	}
 
 	protected final Expression ZeroMoreFold(String label, Object... exprs) {
-		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new PRepetition(fold, 0, src());
+		Expression fold = Expression.newFoldTree(this.toSymbol(label), this.Expr(exprs)).setSourcePosition(this.src());
+		return new PRepetition(fold, 0).setSourcePosition(this.src());
 	}
 
 	protected final Expression OneMoreFold(String label, Object... exprs) {
-		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new PRepetition(fold, 1, src());
+		Expression fold = Expression.newFoldTree(this.toSymbol(label), this.Expr(exprs)).setSourcePosition(this.src());
+		return new PRepetition(fold, 1).setSourcePosition(this.src());
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return new PLinkTree(toSymbol(label), e, src());
+		return new PLinkTree(this.toSymbol(label), e).setSourcePosition(this.src());
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
 		assert (nonTerminal.startsWith("@"));
-		return new PLinkTree(toSymbol(label), e(nonTerminal), src());
+		return new PLinkTree(this.toSymbol(label), this.e(nonTerminal)).setSourcePosition(this.src());
 	}
 
 }

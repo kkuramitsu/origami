@@ -11,12 +11,9 @@ import blue.nez.peg.ExpressionVisitor;
  */
 
 public class POption extends PUnary {
-	public POption(Expression e, Object ref) {
-		super(e, ref);
-	}
 
 	public POption(Expression e) {
-		super(e, null);
+		super(e);
 	}
 
 	@Override

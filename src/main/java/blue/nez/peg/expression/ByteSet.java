@@ -1,6 +1,5 @@
 package blue.nez.peg.expression;
 
-import blue.nez.peg.Expression;
 import blue.origami.util.StringCombinator;
 
 public class ByteSet implements StringCombinator {
@@ -80,7 +79,7 @@ public class ByteSet implements StringCombinator {
 		int unsignedByte = this.getUnsignedByte();
 		if (unsignedByte != -1) {
 			sb.append("'");
-			Expression.formatByte(unsignedByte, "'", "0x%02x", sb);
+			ByteSet.formatByte(unsignedByte, "'", "0x%02x", sb);
 			sb.append("'");
 		} else {
 			sb.append("[");
@@ -104,11 +103,37 @@ public class ByteSet implements StringCombinator {
 	}
 
 	void format(int start, int end, StringBuilder sb) {
-		Expression.formatByte(start, "-]", "\\x%02x", sb);
+		ByteSet.formatByte(start, "-]", "\\x%02x", sb);
 		if (start != end) {
 			sb.append("-");
-			Expression.formatByte(end, "-]", "\\x%02x", sb);
+			ByteSet.formatByte(end, "-]", "\\x%02x", sb);
 		}
+	}
+
+	public final static void formatByte(int ubyte, String escaped, String fmt, StringBuilder sb) {
+		if (escaped.indexOf(ubyte) != -1) {
+			sb.append("\\");
+			sb.append((char) ubyte);
+		}
+		switch (ubyte) {
+		case '\n':
+			sb.append("\\n");
+			return;
+		case '\t':
+			sb.append("\\t");
+			return;
+		case '\r':
+			sb.append("\\r");
+			return;
+		case '\\':
+			sb.append("\\\\");
+			return;
+		}
+		if (Character.isISOControl(ubyte) || ubyte > 127) {
+			sb.append(String.format(fmt/* "0x%02x" */, ubyte));
+			return;
+		}
+		sb.append((char) ubyte);
 	}
 
 	//

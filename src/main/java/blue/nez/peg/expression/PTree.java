@@ -13,8 +13,8 @@ public class PTree extends PUnary {
 	public String value = null; // optimization parameter
 
 	public PTree(boolean folding, Symbol label, int beginShift, Expression inner, Symbol tag, String value,
-			int endShift, Object ref) {
-		super(inner, ref);
+			int endShift) {
+		super(inner);
 		this.folding = folding;
 		this.label = label;
 		this.beginShift = beginShift;
@@ -23,8 +23,8 @@ public class PTree extends PUnary {
 		this.value = value;
 	}
 
-	public PTree(Expression inner, Object ref) {
-		this(false, null, 0, inner, null, null, 0, ref);
+	public PTree(Expression inner) {
+		this(false, null, 0, inner, null, null, 0);
 	}
 
 	@Override

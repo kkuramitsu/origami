@@ -8,8 +8,8 @@ public class PSymbolPredicate extends PFunction<String> {
 	public Symbol table;
 	public String symbol;
 
-	public PSymbolPredicate(NezFunc op, String param, PNonTerminal pat, Object ref) {
-		super(op, param, pat, ref);
+	public PSymbolPredicate(NezFunc op, String param, PNonTerminal pat) {
+		super(op, param, pat);
 		int l = param.indexOf('+');
 		if (l > 0) {
 			this.symbol = param.substring(l + 1);

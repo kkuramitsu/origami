@@ -6,8 +6,8 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.NezFunc;
 
 public class PSymbolScope extends PFunction<Symbol> {
-	public PSymbolScope(NezFunc op, Symbol table, Expression e, Object ref) {
-		super(op, table, e, ref);
+	public PSymbolScope(NezFunc op, Symbol table, Expression e) {
+		super(op, table, e);
 	}
 
 	@Override

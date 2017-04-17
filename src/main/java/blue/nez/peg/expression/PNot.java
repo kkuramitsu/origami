@@ -11,12 +11,9 @@ import blue.nez.peg.ExpressionVisitor;
  */
 
 public class PNot extends PUnary {
-	public PNot(Expression e, Object ref) {
-		super(e, ref);
-	}
 
 	public PNot(Expression e) {
-		super(e, null);
+		super(e);
 	}
 
 	@Override

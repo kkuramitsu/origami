@@ -11,16 +11,15 @@ public final class PNonTerminal extends Expression {
 	final String ns;
 	private final String name;
 
-	public PNonTerminal(Grammar g, String ns, String name, Object ref) {
-		super(ref);
+	public PNonTerminal(Grammar g, String ns, String name) {
 		// this.isLeftRecursion = isLeftRecursion;
 		this.grammar = g;
 		this.ns = ns;
 		this.name = name;
 	}
 
-	public PNonTerminal(Grammar g, String pname, Object ref) {
-		this(g, null, pname, ref);
+	public PNonTerminal(Grammar g, String pname) {
+		this(g, null, pname);
 	}
 
 	@Override

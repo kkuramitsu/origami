@@ -57,12 +57,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	protected SourcePosition src(Expression e) {
-		return e.getSourceLocation();
-	}
-
-	@Override
-	protected Object ref(Expression e) {
-		return e.getExternalReference();
+		return e.getSourcePosition();
 	}
 
 	/* Typestate */
@@ -74,7 +69,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	public Expression checkProductionExpression(String uname, Expression e) {
-		this.req = typeState(e);
+		this.req = this.typeState(e);
 		// System.out.println("@@check " + uname + " typestate=" + this.req + "
 		// " + e);
 		return e.visit(this, null);
@@ -92,12 +87,12 @@ public class TreeCheckerPass extends CommonPass {
 	private Expression detree(Expression e, int index, Typestate req, Typestate after) {
 		Expression ue = index == -1 ? e : e.get(index);
 		if (req != Typestate.Unit) {
-			options.reportWarning(src(ue), "removed mutation in %s", ue);
+			this.options.reportWarning(this.src(ue), "removed mutation in %s", ue);
 			if (!(ue instanceof PNonTerminal)) {
 				this.req = Typestate.Unit;
 				ue = ue.visit(this, null);
 			}
-			ue = new PDetree(ue, ref(ue));
+			ue = new PDetree(ue);
 		}
 		if (after != null) {
 			this.req = after;
@@ -111,11 +106,11 @@ public class TreeCheckerPass extends CommonPass {
 
 	private Expression insertLink(Expression e, int index) {
 		if (index == -1) {
-			options.reportNotice(src(e), "inserted unlabeled link");
-			return new PLinkTree(null, e, ref(e));
+			this.options.reportNotice(this.src(e), "inserted unlabeled link");
+			return new PLinkTree(null, e);
 		} else {
-			options.reportNotice(src(e.get(index)), "inserted unlabeled link");
-			e.set(index, new PLinkTree(null, e.get(index), ref(e.get(index))));
+			this.options.reportNotice(this.src(e.get(index)), "inserted unlabeled link");
+			e.set(index, new PLinkTree(null, e.get(index)));
 			return e;
 		}
 	}
@@ -123,63 +118,63 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitNonTerminal(PNonTerminal n, Void a) {
 		Production p = n.getProduction();
-		Typestate innerState = typeState(n);
+		Typestate innerState = this.typeState(n);
 		// System.out.println("@@@ Production " + n + " inner=" + innerState + "
 		// req=" + this.req);
 		if (innerState == Typestate.Tree) {
-			if (req == Typestate.TreeMutation) {
-				return insertLink(n, -1);
+			if (this.req == Typestate.TreeMutation) {
+				return this.insertLink(n, -1);
 			}
-			if (req == Typestate.Unit || req == Typestate.Immutation) {
-				return detree(n, -1, innerState, this.req);
+			if (this.req == Typestate.Unit || this.req == Typestate.Immutation) {
+				return this.detree(n, -1, innerState, this.req);
 			}
 			this.req = Typestate.Immutation;
 			return n;
 		}
 		if (innerState == Typestate.TreeMutation) {
-			if (req != Typestate.TreeMutation) {
-				return detree(n, -1, innerState, req);
+			if (this.req != Typestate.TreeMutation) {
+				return this.detree(n, -1, innerState, this.req);
 			}
 			return n;
 		}
 		if (innerState == Typestate.Fold) {
-			if (req == Typestate.Immutation) {
+			if (this.req == Typestate.Immutation) {
 				return n;
 			}
-			return detree(n, -1, innerState, req);
+			return this.detree(n, -1, innerState, this.req);
 		}
 		return n;
 	}
 
 	@Override
 	public Expression visitTree(PTree p, Void a) {
-		Typestate innerState = typeState(p.get(0));
+		Typestate innerState = this.typeState(p.get(0));
 		if (p.folding) {
-			if (req != Typestate.Immutation) {
-				options.reportWarning(src(p), "removed tree folding %s", p);
-				detree(p, 0, innerState, this.req);
+			if (this.req != Typestate.Immutation) {
+				this.options.reportWarning(this.src(p), "removed tree folding %s", p);
+				this.detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
-			return check(p, 0, Typestate.TreeMutation, Typestate.Immutation);
+			return this.check(p, 0, Typestate.TreeMutation, Typestate.Immutation);
 		} else {
-			if (req == Typestate.TreeMutation) {
-				check(p, 0, Typestate.TreeMutation, Typestate.TreeMutation);
-				insertLink(p, 0);
+			if (this.req == Typestate.TreeMutation) {
+				this.check(p, 0, Typestate.TreeMutation, Typestate.TreeMutation);
+				this.insertLink(p, 0);
 				return p.get(0);
 			}
-			if (req != Typestate.Tree) {
-				options.reportWarning(src(p), "removed tree %s (req=%s)", p, req);
-				detree(p, 0, innerState, this.req);
+			if (this.req != Typestate.Tree) {
+				this.options.reportWarning(this.src(p), "removed tree %s (req=%s)", p, this.req);
+				this.detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
-			return check(p, 0, Typestate.TreeMutation, Typestate.Immutation);
+			return this.check(p, 0, Typestate.TreeMutation, Typestate.Immutation);
 		}
 	}
 
 	@Override
 	public Expression visitTag(PTag p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			options.reportWarning(src(p), "removed %s", p);
+			this.options.reportWarning(this.src(p), "removed %s", p);
 			return Expression.defaultEmpty;
 		}
 		return super.visitTag(p, a);
@@ -188,7 +183,7 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitReplace(PReplace p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			options.reportWarning(src(p), "removed %s", p);
+			this.options.reportWarning(this.src(p), "removed %s", p);
 			return Expression.defaultEmpty;
 		}
 		return p;
@@ -196,15 +191,15 @@ public class TreeCheckerPass extends CommonPass {
 
 	@Override
 	public Expression visitLinkTree(PLinkTree p, Void a) {
-		Typestate innerState = typeState(p.get(0));
+		Typestate innerState = this.typeState(p.get(0));
 		if (this.req == Typestate.TreeMutation) {
 			this.check(p, 0, innerState, Typestate.TreeMutation);
 			if (innerState != Typestate.Tree) {
-				p.set(0, new PTree(p.get(0), ref(p)));
+				p.set(0, new PTree(p.get(0)));
 			}
 			return p;
 		} else {
-			detree(p, 0, innerState, this.req);
+			this.detree(p, 0, innerState, this.req);
 			return p.get(0);
 		}
 	}
@@ -214,7 +209,7 @@ public class TreeCheckerPass extends CommonPass {
 		Typestate req = this.req;
 		Typestate next = this.req;
 		for (int i = 0; i < p.size(); i++) {
-			check(p, i, req, null);
+			this.check(p, i, req, null);
 			if (this.req != req && this.req != next) {
 				next = this.req;
 			}
@@ -228,7 +223,7 @@ public class TreeCheckerPass extends CommonPass {
 		Typestate req = this.req;
 		Typestate next = this.req;
 		for (int i = 0; i < p.size(); i++) {
-			check(p, i, req, null);
+			this.check(p, i, req, null);
 			if (this.req != req && this.req != next) {
 				next = this.req;
 			}
@@ -253,13 +248,13 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	private Expression visitUnary(PUnary p, Void a) {
-		Typestate innerState = typeState(p.get(0));
+		Typestate innerState = this.typeState(p.get(0));
 		if (innerState == Typestate.Tree) {
 			if (this.req == Typestate.TreeMutation) {
-				check(p, 0, Typestate.Tree, this.req);
-				return insertLink(p, 0);
+				this.check(p, 0, Typestate.Tree, this.req);
+				return this.insertLink(p, 0);
 			} else {
-				return detree(p, 0, innerState, this.req);
+				return this.detree(p, 0, innerState, this.req);
 			}
 		}
 		p.set(0, p.get(0).visit(this, a));
@@ -268,7 +263,7 @@ public class TreeCheckerPass extends CommonPass {
 
 	@Override
 	public Expression visitNot(PNot p, Void a) {
-		Typestate innerState = typeState(p.get(0));
-		return detree(p, 0, innerState, this.req);
+		Typestate innerState = this.typeState(p.get(0));
+		return this.detree(p, 0, innerState, this.req);
 	}
 }

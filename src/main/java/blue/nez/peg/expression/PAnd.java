@@ -11,12 +11,9 @@ import blue.nez.peg.ExpressionVisitor;
  */
 
 public class PAnd extends PUnary {
-	public PAnd(Expression e, Object ref) {
-		super(e, ref);
-	}
 
 	public PAnd(Expression e) {
-		super(e, null);
+		super(e);
 	}
 
 	@Override

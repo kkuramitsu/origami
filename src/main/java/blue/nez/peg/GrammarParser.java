@@ -84,9 +84,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	static {
 		OPegGrammar = new SourceGrammar("opeg");
 		OOption options = new OOption();
-		// options.setVerboseMode(false);
 		new OPegGrammar().load(OPegGrammar, "Start", options);
-		// grammar.dump();
 		OPegParser = OPegGrammar.newParser(options);
 	}
 
@@ -100,7 +98,11 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		}
 
 		public Expression newExpression(Tree<?> node) throws IOException {
-			return GrammarParser.this.find(key(node)).accept(this, node);
+			Expression e = GrammarParser.this.find(key(node)).accept(this, node);
+			if (e != null) {
+				e = e.setSourcePosition(node);
+			}
+			return e;
 		}
 
 		public Gamma newLocalGramma(SourcePosition s, String name) {
@@ -119,9 +121,6 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		}
 
 	}
-
-	// final SourceLogger logger;
-	// final Grammar grammar;
 
 	public void importSource(Grammar base, Source s) throws IOException {
 		Gamma gamma = new Gamma(base, null);
@@ -152,7 +151,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 				ns = name.substring(0, loc);
 				name = name.substring(loc + 1);
 			}
-			return new PNonTerminal(gamma.grammar, ns, name, node);
+			return new PNonTerminal(gamma.grammar, ns, name);
 		}
 	}
 
@@ -160,14 +159,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String name = Production.terminalName(node.toText());
-			return new PNonTerminal(gamma.grammar, name, node);
+			return new PNonTerminal(gamma.grammar, name);
 		}
 	}
 
 	public class _Character extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma e, Tree<?> node) throws IOException {
-			return Expression.newString(OStringUtils.unquoteString(node.toText()), node);
+			return Expression.newString(OStringUtils.unquoteString(node.toText()));
 		}
 	}
 
@@ -179,35 +178,35 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 				for (int i = 0; i < node.size(); i++) {
 					Tree<?> o = node.get(i);
 					if (o.size() == 2) { // range
-						l.add(this.newCharSet(node, o.getText(0, ""), o.getText(1, "")));
+						l.add(this.newCharSet(o.getText(0, ""), o.getText(1, "")));
 					} else { // single
-						l.add(this.newCharSet(node, o.toText(), o.toText()));
+						l.add(this.newCharSet(o.toText(), o.toText()));
 					}
 				}
 			}
-			return Expression.newChoice(l, node);
+			return Expression.newChoice(l);
 		}
 
-		private Expression newCharSet(Object ref, String t, String t2) {
+		private Expression newCharSet(String t, String t2) {
 			int c = OStringUtils.parseAscii(t);
 			int c2 = OStringUtils.parseAscii(t2);
 			if (c != -1 && c2 != -1) {
-				return Expression.newRange(c, c2, ref);
+				return Expression.newRange(c, c2);
 			}
 			c = OStringUtils.parseUnicode(t);
 			c2 = OStringUtils.parseUnicode(t2);
 			if (c < 128 && c2 < 128) {
-				return Expression.newRange(c, c2, ref);
+				return Expression.newRange(c, c2);
 			} else {
-				return this.newUnicodeRange(ref, c, c2);
+				return this.newUnicodeRange(c, c2);
 			}
 		}
 
-		private Expression newUnicodeRange(Object ref, int c, int c2) {
+		private Expression newUnicodeRange(int c, int c2) {
 			byte[] b = OStringUtils.utf8(String.valueOf((char) c));
 			byte[] b2 = OStringUtils.utf8(String.valueOf((char) c2));
 			if (this.equalsBase(b, b2)) {
-				return this.newUnicodeRange(ref, b, b2);
+				return this.newUnicodeRange(b, b2);
 			}
 			List<Expression> l = Expression.newList(b.length);
 			b2 = b;
@@ -217,13 +216,13 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 					b2 = b3;
 					continue;
 				}
-				l.add(this.newUnicodeRange(ref, b, b2));
+				l.add(this.newUnicodeRange(b, b2));
 				b = b3;
 				b2 = b3;
 			}
 			b2 = OStringUtils.utf8(String.valueOf((char) c2));
-			l.add(this.newUnicodeRange(ref, b, b2));
-			return Expression.newChoice(l, ref);
+			l.add(this.newUnicodeRange(b, b2));
+			return Expression.newChoice(l);
 		}
 
 		private boolean equalsBase(byte[] b, byte[] b2) {
@@ -239,16 +238,16 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			return false;
 		}
 
-		private Expression newUnicodeRange(Object ref, byte[] b, byte[] b2) {
+		private Expression newUnicodeRange(byte[] b, byte[] b2) {
 			if (b[b.length - 1] == b2[b.length - 1]) {
-				return Expression.newString(b, ref);
+				return Expression.newString(b);
 			} else {
 				List<Expression> l = Expression.newList(b.length);
 				for (int i = 0; i < b.length - 1; i++) {
-					l.add(new PByte(b[i], ref));
+					l.add(new PByte(b[i]));
 				}
-				l.add(Expression.newRange(b[b.length - 1] & 0xff, b2[b2.length - 1] & 0xff, ref));
-				return Expression.newSequence(l, ref);
+				l.add(Expression.newRange(b[b.length - 1] & 0xff, b2[b2.length - 1] & 0xff));
+				return Expression.newSequence(l);
 			}
 		}
 	}
@@ -263,14 +262,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 				c = (c * 16) + this.parseHexicalNumber(t.charAt(4));
 				c = (c * 16) + this.parseHexicalNumber(t.charAt(5));
 				if (c < 128) {
-					return new PByte(c, node);
+					return new PByte(c);
 				}
 				String t2 = String.valueOf((char) c);
-				return Expression.newString(t2, node);
+				return Expression.newString(t2);
 			}
 			int c = this.parseHexicalNumber(t.charAt(t.length() - 2)) * 16
 					+ this.parseHexicalNumber(t.charAt(t.length() - 1));
-			return new PByte(c, node);
+			return new PByte(c);
 		}
 
 		private int parseHexicalNumber(int c) {
@@ -292,11 +291,11 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String t = node.toText();
-			return this.parseByteClass(t, node);
+			return this.parseByteClass(t);
 		}
 
-		private PByteSet parseByteClass(String octet, Object ref) {
-			PByteSet b = new PByteSet(ref);
+		private PByteSet parseByteClass(String octet) {
+			PByteSet b = new PByteSet();
 			b.set(0, 255, true);
 			while (octet.length() < 8) {
 				octet = "0" + octet;
@@ -333,7 +332,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _AnyChar extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PAny(node);
+			return new PAny();
 		}
 	}
 
@@ -344,7 +343,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			for (int i = 0; i < node.size(); i++) {
 				Expression.addChoice(l, gamma.newExpression(node.get(i)));
 			}
-			return Expression.newChoice(l, node);
+			return Expression.newChoice(l);
 		}
 	}
 
@@ -355,28 +354,28 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			for (int i = 0; i < node.size(); i++) {
 				Expression.addSequence(l, gamma.newExpression(node.get(i)));
 			}
-			return Expression.newSequence(l, node);
+			return Expression.newSequence(l);
 		}
 	}
 
 	public class _Not extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PNot(gamma.newExpression(node.get(_expr)), node);
+			return new PNot(gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _And extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PAnd(gamma.newExpression(node.get(_expr)), node);
+			return new PAnd(gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Option extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new POption(gamma.newExpression(node.get(_expr)), node);
+			return new POption(gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -387,7 +386,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			if (node.get(_min, null) != null) {
 				min = 1;
 			}
-			return new PRepetition(gamma.newExpression(node.get(_expr)), min, node);
+			return new PRepetition(gamma.newExpression(node.get(_expr)), min);
 		}
 	}
 
@@ -398,7 +397,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expression.defaultEmpty : gamma.newExpression(exprNode);
-			return Expression.newTree(p, node);
+			return Expression.newTree(p);
 		}
 	}
 
@@ -416,50 +415,49 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			Tree<?> exprNode = node.get(_expr, null);
 			Expression p = (exprNode == null) ? Expression.defaultEmpty : gamma.newExpression(exprNode);
-			return Expression.newFoldTree(GrammarParser.this.parseLabel(node), p, node);
+			return Expression.newFoldTree(GrammarParser.this.parseLabel(node), p);
 		}
 	}
 
 	public class _Link extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PLinkTree(GrammarParser.this.parseLabel(node), gamma.newExpression(node.get(_expr)),
-					node);
+			return new PLinkTree(GrammarParser.this.parseLabel(node), gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Tagging extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PTag(Symbol.unique(node.toText()), node);
+			return new PTag(Symbol.unique(node.toText()));
 		}
 	}
 
 	public class _Replace extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PReplace(node.toText(), node);
+			return new PReplace(node.toText());
 		}
 	}
 
 	public class _If extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PIfCondition(node.getText(_name, ""), node);
+			return new PIfCondition(node.getText(_name, ""));
 		}
 	}
 
 	public class _On extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new POnCondition(node.getText(_name, ""), gamma.newExpression(node.get(_expr)), node);
+			return new POnCondition(node.getText(_name, ""), gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Block extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PSymbolScope(NezFunc.block, null, gamma.newExpression(node.get(_expr)), node);
+			return new PSymbolScope(NezFunc.block, null, gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -467,7 +465,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			return new PSymbolScope(NezFunc.local, Symbol.unique(node.getText(_name, "")),
-					gamma.newExpression(node.get(_expr)), node);
+					gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -477,7 +475,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	// Grammar g = getGrammar();
 	// Tree<?> nameNode = node.get(_name);
 	// Expression.NonTerminal pat = new Expression.NonTerminal(g,
-	// nameNode.toText(), node);
+	// nameNode.toText());
 	// Expression expr = newInstance(node.get(_expr));
 	// Production p = g.addProduction(pat.getLocalName(), expr);
 	// reportWarning(nameNode, "new production generated: " + p);
@@ -489,8 +487,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
-			PNonTerminal pat = new PNonTerminal(gamma.grammar, param, node);
-			return new PSymbolAction(NezFunc.symbol, param, pat, node);
+			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			return new PSymbolAction(NezFunc.symbol, param, pat);
 		}
 	}
 
@@ -498,8 +496,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
-			PNonTerminal pat = new PNonTerminal(gamma.grammar, param, node);
-			return new PSymbolPredicate(NezFunc.is, param, pat, node);
+			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			return new PSymbolPredicate(NezFunc.is, param, pat);
 		}
 	}
 
@@ -507,8 +505,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
-			PNonTerminal pat = new PNonTerminal(gamma.grammar, param, node);
-			return new PSymbolPredicate(NezFunc.isa, param, pat, node);
+			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			return new PSymbolPredicate(NezFunc.isa, param, pat);
 		}
 	}
 
@@ -516,8 +514,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
-			PNonTerminal pat = new PNonTerminal(gamma.grammar, param, node);
-			return new PSymbolPredicate(NezFunc.match, param, pat, node);
+			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			return new PSymbolPredicate(NezFunc.match, param, pat);
 		}
 	}
 
@@ -525,12 +523,12 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getText(_name, "");
-			PNonTerminal pat = new PNonTerminal(gamma.grammar, param, node);
+			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			String symbol = node.getText(_symbol, null);
 			if (symbol != null) {
 				param = param + "+" + symbol;
 			}
-			return new PSymbolPredicate(NezFunc.exists, param, pat, node);
+			return new PSymbolPredicate(NezFunc.exists, param, pat);
 		}
 	}
 
@@ -538,14 +536,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String mask = node.getText(_mask, null);
-			return new PScan(mask, gamma.newExpression(node.get(_expr)), node);
+			return new PScan(mask, gamma.newExpression(node.get(_expr)));
 		}
 	}
 
 	public class _Repeat extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PRepeat(gamma.newExpression(node.get(_expr)), node);
+			return new PRepeat(gamma.newExpression(node.get(_expr)));
 		}
 	}
 

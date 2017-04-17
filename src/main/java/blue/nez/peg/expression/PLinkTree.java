@@ -7,8 +7,8 @@ import blue.nez.peg.ExpressionVisitor;
 public class PLinkTree extends PUnary {
 	public Symbol label;
 
-	public PLinkTree(Symbol label, Expression e, Object ref) {
-		super(e, ref);
+	public PLinkTree(Symbol label, Expression e) {
+		super(e);
 		this.label = label;
 	}
 

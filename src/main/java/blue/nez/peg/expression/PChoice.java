@@ -12,8 +12,8 @@ import blue.nez.peg.ExpressionVisitor;
 
 public class PChoice extends PArray {
 
-	public PChoice(Expression[] inners, Object ref) {
-		super(inners, ref);
+	public PChoice(Expression[] inners) {
+		super(inners);
 	}
 
 	@Override
@@ -38,8 +38,7 @@ public class PChoice extends PArray {
 abstract class PArray extends Expression {
 	public Expression[] inners;
 
-	protected PArray(Expression[] inners, Object ref) {
-		super(ref);
+	protected PArray(Expression[] inners) {
 		this.inners = inners;
 	}
 

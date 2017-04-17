@@ -5,8 +5,7 @@ import blue.nez.peg.Expression;
 public abstract class PUnary extends Expression {
 	protected Expression inner;
 
-	protected PUnary(Expression inner, Object ref) {
-		super(ref);
+	protected PUnary(Expression inner) {
 		this.inner = inner;
 	}
 

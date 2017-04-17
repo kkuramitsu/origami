@@ -4,8 +4,8 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 public class PDetree extends PUnary {
-	public PDetree(Expression e, Object ref) {
-		super(e, ref);
+	public PDetree(Expression e) {
+		super(e);
 	}
 
 	@Override

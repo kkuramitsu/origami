@@ -11,12 +11,7 @@ import blue.nez.peg.ExpressionVisitor;
 
 public class PAny extends PTerm {
 
-	public PAny(Object ref) {
-		super(ref);
-	}
-
 	public PAny() {
-		this(null);
 	}
 
 	@Override

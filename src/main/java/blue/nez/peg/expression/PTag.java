@@ -10,8 +10,7 @@ public class PTag extends PTerm {
 		return this.tag;
 	}
 
-	public PTag(Symbol tag, Object ref) {
-		super(ref);
+	public PTag(Symbol tag) {
 		this.tag = tag;
 	}
 

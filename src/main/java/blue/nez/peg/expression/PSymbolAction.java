@@ -7,8 +7,8 @@ import blue.nez.peg.NezFunc;
 public class PSymbolAction extends PFunction<String> {
 	public final Symbol table;
 
-	public PSymbolAction(NezFunc op, String param, PNonTerminal e, Object ref) {
-		super(op, param, e, ref);
+	public PSymbolAction(NezFunc op, String param, PNonTerminal e) {
+		super(op, param, e);
 		this.table = Symbol.nullUnique(param);
 	}
 

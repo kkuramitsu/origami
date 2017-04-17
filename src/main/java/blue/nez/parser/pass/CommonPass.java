@@ -28,7 +28,7 @@ class CommonPass extends ParserPass {
 	@Override
 	public Grammar perform(Grammar g, OOption options) {
 		this.options = options;
-		prepare(g);
+		this.prepare(g);
 		for (Production p : g) {
 			g.setExpression(p.getLocalName(), this.rewrite(p.getExpression(), null));
 		}
@@ -39,10 +39,6 @@ class CommonPass extends ParserPass {
 
 	}
 
-	protected Object ref(Expression e) {
-		return null;
-	}
-
 	private int count = 0;
 	private String message = "";
 
@@ -51,13 +47,13 @@ class CommonPass extends ParserPass {
 		// System.out.printf("%s::\n\t%s\n\t%s\n",
 		// this.getClass().getSimpleName(), oldOne, newOne);
 		// }
-		count++;
+		this.count++;
 		return newOne;
 	}
 
 	protected Expression debug(Expression oldOne, Expression newOne) {
 		System.out.printf("%s::\n\t%s\n\t%s\n", this.getClass().getSimpleName(), oldOne, newOne);
-		count++;
+		this.count++;
 		return newOne;
 	}
 

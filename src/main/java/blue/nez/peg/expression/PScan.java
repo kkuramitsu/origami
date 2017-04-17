@@ -8,8 +8,8 @@ public class PScan extends PFunction<String> {
 	public final long mask;
 	public final int shift;
 
-	public PScan(String pattern, Expression e, Object ref) {
-		super(NezFunc.scanf, pattern, e, ref);
+	public PScan(String pattern, Expression e) {
+		super(NezFunc.scanf, pattern, e);
 		long bits = 0;
 		int shift = 0;
 		if (pattern != null) {

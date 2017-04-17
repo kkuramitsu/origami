@@ -7,8 +7,8 @@ public abstract class PFunction<T> extends PUnary {
 	public final NezFunc funcName;
 	public final T param;
 
-	protected PFunction(NezFunc op, T param, Expression e, Object ref) {
-		super(e == null ? defaultEmpty : e, ref);
+	protected PFunction(NezFunc op, T param, Expression e) {
+		super(e == null ? defaultEmpty : e);
 		this.funcName = op;
 		this.param = param;
 	}

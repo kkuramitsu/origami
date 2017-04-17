@@ -12,7 +12,6 @@ import blue.nez.peg.ExpressionVisitor;
 
 public class PFail extends PTerm {
 	public PFail() {
-		super(null);
 	}
 
 	@Override

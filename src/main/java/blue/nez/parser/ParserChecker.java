@@ -226,7 +226,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	@Override
 	public Boolean visitNonTerminal(PNonTerminal e, Production a) {
 		if (e.getUniqueName().equals(a.getUniqueName())) {
-			this.options.reportError(e.getSourceLocation(), NezFmt.left_recursion_is_forbidden__YY0, a.getLocalName());
+			this.options.reportError(e.getSourcePosition(), NezFmt.left_recursion_is_forbidden__YY0, a.getLocalName());
 			// e.isLeftRecursion = true;
 			return true;
 		}
@@ -461,20 +461,20 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 	public Expression visitNonTerminal(PNonTerminal n, Void a) {
 		Grammar g = n.getGrammar();
 		if (g == null) {
-			this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_grammar, n.getNameSpace());
+			this.options.reportError(n.getSourcePosition(), NezFmt.YY0_is_undefined_grammar, n.getNameSpace());
 			return Expression.defaultFailure;
 		}
 		Production p = n.getProduction();
 		if (p != null) {
 			String cname = this.duplicateName(p);
-			return new PNonTerminal(this.base, cname, this.ref(n));
+			return new PNonTerminal(this.base, cname);
 		}
 		if (p == null) {
 			if (n.getLocalName().startsWith("\"")) {
-				this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_terminal, n.getLocalName());
-				return Expression.newString(OStringUtils.unquoteString(n.getLocalName()), null);
+				this.options.reportError(n.getSourcePosition(), NezFmt.YY0_is_undefined_terminal, n.getLocalName());
+				return Expression.newString(OStringUtils.unquoteString(n.getLocalName()));
 			} else {
-				this.options.reportError(n.getSourceLocation(), NezFmt.YY0_is_undefined_nonterminal, n.getLocalName());
+				this.options.reportError(n.getSourcePosition(), NezFmt.YY0_is_undefined_nonterminal, n.getLocalName());
 			}
 			p = n.getProduction();
 		}

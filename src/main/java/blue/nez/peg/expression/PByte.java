@@ -1,6 +1,5 @@
 package blue.nez.peg.expression;
 
-import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 /**
@@ -17,13 +16,8 @@ public class PByte extends PTerm {
 	 */
 	public final ByteSet byteSet;
 
-	public PByte(int byteChar, Object ref) {
-		super(ref);
-		this.byteSet = ByteSet.CharSet(byteChar & 0xff);
-	}
-
 	public PByte(int byteChar) {
-		this(byteChar, null);
+		this.byteSet = ByteSet.CharSet(byteChar & 0xff);
 	}
 
 	public final int byteChar() {
@@ -46,7 +40,7 @@ public class PByte extends PTerm {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("'");
-		Expression.formatByte(this.byteChar(), "'", "0x%02x", sb);
+		ByteSet.formatByte(this.byteChar(), "'", "0x%02x", sb);
 		sb.append("'");
 	}
 }
