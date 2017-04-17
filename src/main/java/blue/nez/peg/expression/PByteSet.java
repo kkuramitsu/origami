@@ -11,36 +11,37 @@ import blue.nez.peg.ExpressionVisitor;
  */
 
 public class PByteSet extends PTerm {
-	// private ByteSet byteSet;
-	public int bits[];
+	private ByteSet byteSet;
+
+	public PByteSet() {
+		this.byteSet = new ByteSet();
+	}
+
+	public PByteSet(ByteSet bs) {
+		this.byteSet = bs;
+	}
+
+	public ByteSet byteSet() {
+		return this.byteSet;
+	}
 
 	public final boolean is(int n) {
-		return (this.bits[n / 32] & (1 << (n % 32))) != 0;
+		return this.byteSet.is(n);
 	}
 
 	public final void set(int n, boolean b) {
-		if (b) {
-			int mask = 1 << (n % 32);
-			this.bits[n / 32] |= mask;
-		} else {
-			int mask = ~(1 << (n % 32));
-			this.bits[n / 32] &= mask;
-		}
+		this.byteSet.set(n, b);
 	}
 
 	public final void set(int s, int e, boolean b) {
-		for (int i = s; i <= e; i++) {
-			this.set(i, b);
-		}
+		this.byteSet.set(s, e, b);
 	}
 
 	public final void union(PByteSet b) {
-		for (int i = 0; i < this.bits.length; i++) {
-			this.bits[i] = this.bits[i] | b.bits[i];
-		}
+		this.byteSet = this.byteSet.union(b.byteSet);
 	}
 
-	public final boolean[] byteSet() {
+	public final boolean[] bools() {
 		boolean[] b = new boolean[256];
 		for (int i = 0; i < 256; i++) {
 			b[i] = this.is(i);
@@ -48,34 +49,15 @@ public class PByteSet extends PTerm {
 		return b;
 	}
 
-	public final int n(int n) {
-		return this.bits[n];
-	}
-
-	public PByteSet() {
-		this.bits = new int[8];
-	}
-
-	public PByteSet(int[] bits) {
-		for (int i = 0; i < bits.length; i++) {
-			this.bits[i] = bits[i];
-		}
-	}
-
-	// public ByteSet(boolean[] b) {
-	// this(b, null);
+	// public final int n(int n) {
+	// return this.bits[n];
 	// }
 
 	@Override
 	public final boolean equals(Object o) {
 		if (o instanceof PByteSet) {
 			PByteSet e = (PByteSet) o;
-			for (int i = 0; i < this.bits.length; i++) {
-				if (this.bits[i] != e.bits[i]) {
-					return false;
-				}
-			}
-			return true;
+			return this.byteSet.equals(e.byteSet);
 		}
 		return false;
 	}

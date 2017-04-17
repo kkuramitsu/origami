@@ -25,6 +25,61 @@ import blue.nez.parser.ParserContext.SymbolExist;
 import blue.nez.parser.ParserContext.SymbolExistString;
 import blue.nez.parser.ParserContext.SymbolMatch;
 import blue.nez.parser.ParserContext.SymbolReset;
+import blue.nez.parser.pegasm.ASMMlookup;
+import blue.nez.parser.pegasm.ASMMlookupTree;
+import blue.nez.parser.pegasm.ASMMmemoFail;
+import blue.nez.parser.pegasm.ASMMmemoSucc;
+import blue.nez.parser.pegasm.ASMMmemoTree;
+import blue.nez.parser.pegasm.ASMNany;
+import blue.nez.parser.pegasm.ASMNbin;
+import blue.nez.parser.pegasm.ASMNbinset;
+import blue.nez.parser.pegasm.ASMNbset;
+import blue.nez.parser.pegasm.ASMNbyte;
+import blue.nez.parser.pegasm.ASMNstr;
+import blue.nez.parser.pegasm.ASMObin;
+import blue.nez.parser.pegasm.ASMObinset;
+import blue.nez.parser.pegasm.ASMObset;
+import blue.nez.parser.pegasm.ASMObyte;
+import blue.nez.parser.pegasm.ASMOstr;
+import blue.nez.parser.pegasm.ASMRbin;
+import blue.nez.parser.pegasm.ASMRbinset;
+import blue.nez.parser.pegasm.ASMRbset;
+import blue.nez.parser.pegasm.ASMRbyte;
+import blue.nez.parser.pegasm.ASMRstr;
+import blue.nez.parser.pegasm.ASMSDec;
+import blue.nez.parser.pegasm.ASMSScan;
+import blue.nez.parser.pegasm.ASMSbegin;
+import blue.nez.parser.pegasm.ASMSdef;
+import blue.nez.parser.pegasm.ASMSdef2;
+import blue.nez.parser.pegasm.ASMSend;
+import blue.nez.parser.pegasm.ASMSpred;
+import blue.nez.parser.pegasm.ASMSpred2;
+import blue.nez.parser.pegasm.ASMTbegin;
+import blue.nez.parser.pegasm.ASMTend;
+import blue.nez.parser.pegasm.ASMTfold;
+import blue.nez.parser.pegasm.ASMTlink;
+import blue.nez.parser.pegasm.ASMTmut;
+import blue.nez.parser.pegasm.ASMTpop;
+import blue.nez.parser.pegasm.ASMTpush;
+import blue.nez.parser.pegasm.ASMTtag;
+import blue.nez.parser.pegasm.ASMalt;
+import blue.nez.parser.pegasm.ASMany;
+import blue.nez.parser.pegasm.ASMback;
+import blue.nez.parser.pegasm.ASMbin;
+import blue.nez.parser.pegasm.ASMbinset;
+import blue.nez.parser.pegasm.ASMbset;
+import blue.nez.parser.pegasm.ASMbyte;
+import blue.nez.parser.pegasm.ASMcall;
+import blue.nez.parser.pegasm.ASMdfa;
+import blue.nez.parser.pegasm.ASMdispatch;
+import blue.nez.parser.pegasm.ASMfail;
+import blue.nez.parser.pegasm.ASMnop;
+import blue.nez.parser.pegasm.ASMpos;
+import blue.nez.parser.pegasm.ASMret;
+import blue.nez.parser.pegasm.ASMstep;
+import blue.nez.parser.pegasm.ASMsucc;
+import blue.nez.parser.pegasm.ASMtrap;
+import blue.nez.parser.pegasm.PegAsm;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.NezFunc;
@@ -56,61 +111,6 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
-import blue.nez.pegasm.ASMMlookup;
-import blue.nez.pegasm.ASMMlookupTree;
-import blue.nez.pegasm.ASMMmemoFail;
-import blue.nez.pegasm.ASMMmemoSucc;
-import blue.nez.pegasm.ASMMmemoTree;
-import blue.nez.pegasm.ASMNany;
-import blue.nez.pegasm.ASMNbin;
-import blue.nez.pegasm.ASMNbinset;
-import blue.nez.pegasm.ASMNbset;
-import blue.nez.pegasm.ASMNbyte;
-import blue.nez.pegasm.ASMNstr;
-import blue.nez.pegasm.ASMObin;
-import blue.nez.pegasm.ASMObinset;
-import blue.nez.pegasm.ASMObset;
-import blue.nez.pegasm.ASMObyte;
-import blue.nez.pegasm.ASMOstr;
-import blue.nez.pegasm.ASMRbin;
-import blue.nez.pegasm.ASMRbinset;
-import blue.nez.pegasm.ASMRbset;
-import blue.nez.pegasm.ASMRbyte;
-import blue.nez.pegasm.ASMRstr;
-import blue.nez.pegasm.ASMSDec;
-import blue.nez.pegasm.ASMSScan;
-import blue.nez.pegasm.ASMSbegin;
-import blue.nez.pegasm.ASMSdef;
-import blue.nez.pegasm.ASMSdef2;
-import blue.nez.pegasm.ASMSend;
-import blue.nez.pegasm.ASMSpred;
-import blue.nez.pegasm.ASMSpred2;
-import blue.nez.pegasm.ASMTbegin;
-import blue.nez.pegasm.ASMTend;
-import blue.nez.pegasm.ASMTfold;
-import blue.nez.pegasm.ASMTlink;
-import blue.nez.pegasm.ASMTmut;
-import blue.nez.pegasm.ASMTpop;
-import blue.nez.pegasm.ASMTpush;
-import blue.nez.pegasm.ASMTtag;
-import blue.nez.pegasm.ASMalt;
-import blue.nez.pegasm.ASMany;
-import blue.nez.pegasm.ASMback;
-import blue.nez.pegasm.ASMbin;
-import blue.nez.pegasm.ASMbinset;
-import blue.nez.pegasm.ASMbset;
-import blue.nez.pegasm.ASMbyte;
-import blue.nez.pegasm.ASMcall;
-import blue.nez.pegasm.ASMdfa;
-import blue.nez.pegasm.ASMdispatch;
-import blue.nez.pegasm.ASMfail;
-import blue.nez.pegasm.ASMnop;
-import blue.nez.pegasm.ASMpos;
-import blue.nez.pegasm.ASMret;
-import blue.nez.pegasm.ASMstep;
-import blue.nez.pegasm.ASMsucc;
-import blue.nez.pegasm.ASMtrap;
-import blue.nez.pegasm.PegAsm;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
@@ -145,7 +145,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		return code;
 	}
 
-	class CompilerVisitor extends ExpressionVisitor<PegAsmInstruction, PegAsmInstruction> {
+	class CompilerVisitor extends ExpressionVisitor<PegAsmInst, PegAsmInst> {
 
 		final PegAsmCode code;
 		final ParserGrammar grammar;
@@ -168,7 +168,7 @@ public class PegAsmCompiler implements ParserCompiler {
 			for (Production p : this.grammar) {
 				this.compileProduction(this.code.codeList(), p, new ASMret());
 			}
-			for (PegAsmInstruction inst : this.code.codeList()) {
+			for (PegAsmInst inst : this.code.codeList()) {
 				if (inst instanceof ASMcall) {
 					ASMcall call = (ASMcall) inst;
 					if (call.jump == null) {
@@ -180,27 +180,27 @@ public class PegAsmCompiler implements ParserCompiler {
 			return this.code;
 		}
 
-		protected void compileProduction(List<PegAsmInstruction> codeList, Production p, PegAsmInstruction next) {
+		protected void compileProduction(List<PegAsmInst> codeList, Production p, PegAsmInst next) {
 			MemoPoint memoPoint = this.code.getMemoPoint(p.getUniqueName());
 			next = this.compileProductionExpression(memoPoint, p.getExpression(), next);
 			this.code.setInstruction(p.getUniqueName(), next);
-			PegAsmInstruction block = new ASMnop(p.getUniqueName(), next);
+			PegAsmInst block = new ASMnop(p.getUniqueName(), next);
 			this.layoutCode(codeList, block);
 		}
 
-		private PegAsmInstruction compileProductionExpression(MemoPoint memoPoint, Expression p,
-				PegAsmInstruction next) {
+		private PegAsmInst compileProductionExpression(MemoPoint memoPoint, Expression p,
+				PegAsmInst next) {
 			if (memoPoint != null) {
 				if (memoPoint.typeState == Typestate.Unit) {
-					PegAsmInstruction memo = new ASMMmemoSucc(memoPoint, next);
-					PegAsmInstruction inside = this.compile(p, memo);
-					PegAsmInstruction failmemo = new ASMMmemoFail(memoPoint);
+					PegAsmInst memo = new ASMMmemoSucc(memoPoint, next);
+					PegAsmInst inside = this.compile(p, memo);
+					PegAsmInst failmemo = new ASMMmemoFail(memoPoint);
 					inside = new ASMalt(failmemo, inside);
 					return new ASMMlookup(memoPoint, inside, next);
 				} else {
-					PegAsmInstruction memo = new ASMMmemoTree(memoPoint, next);
-					PegAsmInstruction inside = this.compile(p, memo);
-					PegAsmInstruction failmemo = new ASMMmemoFail(memoPoint);
+					PegAsmInst memo = new ASMMmemoTree(memoPoint, next);
+					PegAsmInst inside = this.compile(p, memo);
+					PegAsmInst failmemo = new ASMMmemoFail(memoPoint);
 					inside = new ASMalt(failmemo, inside);
 					return new ASMMlookupTree(memoPoint, inside, next);
 				}
@@ -208,7 +208,7 @@ public class PegAsmCompiler implements ParserCompiler {
 			return this.compile(p, next);
 		}
 
-		private void layoutCode(List<PegAsmInstruction> codeList, PegAsmInstruction inst) {
+		private void layoutCode(List<PegAsmInst> codeList, PegAsmInst inst) {
 			if (inst == null) {
 				return;
 			}
@@ -231,28 +231,28 @@ public class PegAsmCompiler implements ParserCompiler {
 
 		// encoding
 
-		private PegAsmInstruction compile(Expression e, PegAsmInstruction next) {
+		private PegAsmInst compile(Expression e, PegAsmInst next) {
 			return e.visit(this, next);
 		}
 
 		@Override
-		public PegAsmInstruction visitEmpty(PEmpty p, PegAsmInstruction next) {
+		public PegAsmInst visitEmpty(PEmpty p, PegAsmInst next) {
 			return next;
 		}
 
-		private final PegAsmInstruction commonFailure = new ASMfail();
+		private final PegAsmInst commonFailure = new ASMfail();
 
-		public PegAsmInstruction fail(Expression e) {
+		public PegAsmInst fail(Expression e) {
 			return this.commonFailure;
 		}
 
 		@Override
-		public PegAsmInstruction visitFail(PFail p, PegAsmInstruction next) {
+		public PegAsmInst visitFail(PFail p, PegAsmInst next) {
 			return this.commonFailure;
 		}
 
 		@Override
-		public PegAsmInstruction visitByte(PByte p, PegAsmInstruction next) {
+		public PegAsmInst visitByte(PByte p, PegAsmInst next) {
 			if (/* this.BinaryGrammar && */ p.byteChar() == 0) {
 				return new ASMbin(next);
 			}
@@ -260,8 +260,8 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitByteSet(PByteSet p, PegAsmInstruction next) {
-			boolean[] b = p.byteSet();
+		public PegAsmInst visitByteSet(PByteSet p, PegAsmInst next) {
+			boolean[] b = p.bools();
 			if (this.BinaryGrammar && b[0]) {
 				return new ASMbinset(b, next);
 			}
@@ -270,12 +270,12 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitAny(PAny p, PegAsmInstruction next) {
+		public PegAsmInst visitAny(PAny p, PegAsmInst next) {
 			return new ASMany(next);
 		}
 
 		@Override
-		public final PegAsmInstruction visitNonTerminal(PNonTerminal n, PegAsmInstruction next) {
+		public final PegAsmInst visitNonTerminal(PNonTerminal n, PegAsmInst next) {
 			Production p = n.getProduction();
 			return new ASMcall(p.getUniqueName(), next);
 		}
@@ -291,7 +291,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public final PegAsmInstruction visitOption(POption p, PegAsmInstruction next) {
+		public final PegAsmInst visitOption(POption p, PegAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
@@ -301,7 +301,7 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMObyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).byteSet();
+					boolean[] b = ((PByteSet) inner).bools();
 					if (this.BinaryGrammar && b[0]) {
 						return new ASMObinset(b, next);
 					}
@@ -313,20 +313,20 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMOstr(utf8, next);
 				}
 			}
-			PegAsmInstruction pop = new ASMsucc(next);
+			PegAsmInst pop = new ASMsucc(next);
 			return new ASMalt(next, this.compile(p.get(0), pop));
 		}
 
 		@Override
-		public PegAsmInstruction visitRepetition(PRepetition p, PegAsmInstruction next) {
-			PegAsmInstruction next2 = this.compileRepetition(p, next);
+		public PegAsmInst visitRepetition(PRepetition p, PegAsmInst next) {
+			PegAsmInst next2 = this.compileRepetition(p, next);
 			if (p.isOneMore()) {
 				next2 = this.compile(p.get(0), next2);
 			}
 			return next2;
 		}
 
-		private PegAsmInstruction compileRepetition(PRepetition p, PegAsmInstruction next) {
+		private PegAsmInst compileRepetition(PRepetition p, PegAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
@@ -336,7 +336,7 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMRbyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).byteSet();
+					boolean[] b = ((PByteSet) inner).bools();
 					if (this.BinaryGrammar && b[0]) {
 						return new ASMRbinset(b, next);
 					}
@@ -348,20 +348,20 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMRstr(utf8, next);
 				}
 			}
-			PegAsmInstruction skip = new ASMstep();
-			PegAsmInstruction start = this.compile(p.get(0), skip);
+			PegAsmInst skip = new ASMstep();
+			PegAsmInst start = this.compile(p.get(0), skip);
 			skip.next = PegAsm.joinPoint(start);
 			return new ASMalt(next, start);
 		}
 
 		@Override
-		public PegAsmInstruction visitAnd(PAnd p, PegAsmInstruction next) {
-			PegAsmInstruction inner = this.compile(p.get(0), new ASMback(next));
+		public PegAsmInst visitAnd(PAnd p, PegAsmInst next) {
+			PegAsmInst inner = this.compile(p.get(0), new ASMback(next));
 			return new ASMpos(inner);
 		}
 
 		@Override
-		public final PegAsmInstruction visitNot(PNot p, PegAsmInstruction next) {
+		public final PegAsmInst visitNot(PNot p, PegAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
@@ -371,7 +371,7 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMNbyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).byteSet();
+					boolean[] b = ((PByteSet) inner).bools();
 					if (this.BinaryGrammar && b[0] == false) {
 						return new ASMNbinset(b, next);
 					}
@@ -385,13 +385,13 @@ public class PegAsmCompiler implements ParserCompiler {
 					return new ASMNstr(utf8, next);
 				}
 			}
-			PegAsmInstruction fail = new ASMsucc(new ASMfail());
+			PegAsmInst fail = new ASMsucc(new ASMfail());
 			return new ASMalt(next, this.compile(p.get(0), fail));
 		}
 
 		@Override
-		public PegAsmInstruction visitPair(PPair p, PegAsmInstruction next) {
-			PegAsmInstruction nextStart = next;
+		public PegAsmInst visitPair(PPair p, PegAsmInst next) {
+			PegAsmInst nextStart = next;
 			for (int i = p.size() - 1; i >= 0; i--) {
 				Expression e = p.get(i);
 				nextStart = this.compile(e, nextStart);
@@ -400,8 +400,8 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public final PegAsmInstruction visitChoice(PChoice p, PegAsmInstruction next) {
-			PegAsmInstruction nextChoice = this.compile(p.get(p.size() - 1), next);
+		public final PegAsmInst visitChoice(PChoice p, PegAsmInst next) {
+			PegAsmInst nextChoice = this.compile(p.get(p.size() - 1), next);
 			for (int i = p.size() - 2; i >= 0; i--) {
 				Expression e = p.get(i);
 				nextChoice = new ASMalt(nextChoice, this.compile(e, new ASMsucc(next)));
@@ -410,8 +410,8 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public final PegAsmInstruction visitDispatch(PDispatch p, PegAsmInstruction next) {
-			PegAsmInstruction[] compiled = new PegAsmInstruction[p.size() + 1];
+		public final PegAsmInst visitDispatch(PDispatch p, PegAsmInst next) {
+			PegAsmInst[] compiled = new PegAsmInst[p.size() + 1];
 			compiled[0] = this.commonFailure;
 			if (this.isAllD(p)) {
 				for (int i = 0; i < p.size(); i++) {
@@ -453,7 +453,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitTree(PTree p, PegAsmInstruction next) {
+		public PegAsmInst visitTree(PTree p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				next = new ASMTend(p.tag, p.value, p.endShift, next);
 				next = this.compile(p.get(0), next);
@@ -468,7 +468,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitTag(PTag p, PegAsmInstruction next) {
+		public PegAsmInst visitTag(PTag p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				return new ASMTtag(p.tag, next);
 			}
@@ -476,7 +476,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitReplace(PReplace p, PegAsmInstruction next) {
+		public PegAsmInst visitReplace(PReplace p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				return new ASMTmut(p.value, next);
 			}
@@ -486,7 +486,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		// Tree
 
 		@Override
-		public final PegAsmInstruction visitLinkTree(PLinkTree p, PegAsmInstruction next) {
+		public final PegAsmInst visitLinkTree(PLinkTree p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				next = new ASMTlink(p.label, next);
 				next = this.compile(p.get(0), next);
@@ -496,7 +496,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitDetree(PDetree p, PegAsmInstruction next) {
+		public PegAsmInst visitDetree(PDetree p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				next = new ASMTpop(next);
 				next = this.compile(p.get(0), next);
@@ -508,7 +508,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		/* Symbol */
 
 		@Override
-		public PegAsmInstruction visitSymbolScope(PSymbolScope p, PegAsmInstruction next) {
+		public PegAsmInst visitSymbolScope(PSymbolScope p, PegAsmInst next) {
 			if (p.funcName == NezFunc.block) {
 				next = new ASMSend(next);
 				next = this.compile(p.get(0), next);
@@ -522,12 +522,12 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitSymbolAction(PSymbolAction p, PegAsmInstruction next) {
+		public PegAsmInst visitSymbolAction(PSymbolAction p, PegAsmInst next) {
 			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.table, next)));
 		}
 
 		@Override
-		public PegAsmInstruction visitSymbolPredicate(PSymbolPredicate p, PegAsmInstruction next) {
+		public PegAsmInst visitSymbolPredicate(PSymbolPredicate p, PegAsmInst next) {
 			switch (p.funcName) {
 			case exists:
 				if (p.symbol == null) {
@@ -548,20 +548,20 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInstruction visitScan(PScan p, PegAsmInstruction next) {
+		public PegAsmInst visitScan(PScan p, PegAsmInst next) {
 			return new ASMpos(this.compile(p.get(0), new ASMSScan(p.mask, p.shift, next)));
 		}
 
 		@Override
-		public PegAsmInstruction visitRepeat(PRepeat p, PegAsmInstruction next) {
-			PegAsmInstruction check = new ASMSDec(next, null);
-			PegAsmInstruction repeated = this.compile(p.get(0), check);
+		public PegAsmInst visitRepeat(PRepeat p, PegAsmInst next) {
+			PegAsmInst check = new ASMSDec(next, null);
+			PegAsmInst repeated = this.compile(p.get(0), check);
 			check.next = repeated;
 			return check;
 		}
 
 		@Override
-		public PegAsmInstruction visitTrap(PTrap p, PegAsmInstruction next) {
+		public PegAsmInst visitTrap(PTrap p, PegAsmInst next) {
 			if (p.trapid != -1) {
 				return new ASMtrap(p.trapid, p.uid, next);
 			}
@@ -577,13 +577,13 @@ public class PegAsmCompiler implements ParserCompiler {
 		// Unused
 
 		@Override
-		public PegAsmInstruction visitIf(PIfCondition e, PegAsmInstruction next) {
+		public PegAsmInst visitIf(PIfCondition e, PegAsmInst next) {
 			PegAsmCompiler.this.options.verbose("unremoved if condition", e);
 			return next;
 		}
 
 		@Override
-		public PegAsmInstruction visitOn(POnCondition e, PegAsmInstruction next) {
+		public PegAsmInst visitOn(POnCondition e, PegAsmInst next) {
 			PegAsmCompiler.this.options.verbose("unremoved on condition", e);
 			return this.compile(e.get(0), next);
 		}

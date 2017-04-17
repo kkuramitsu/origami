@@ -19,17 +19,17 @@ package blue.nez.parser;
 import java.util.List;
 
 import blue.nez.ast.Source;
+import blue.nez.parser.pegasm.ASMnop;
 import blue.nez.peg.Grammar;
-import blue.nez.pegasm.ASMnop;
 import blue.origami.util.OOption;
 
-public class PegAsmCode extends ParserCode<PegAsmInstruction> {
+public class PegAsmCode extends ParserCode<PegAsmInst> {
 
 	public PegAsmCode(Grammar grammar, OOption options) {
-		super(grammar, options, new PegAsmInstruction[1024]);
+		super(grammar, options, new PegAsmInst[1024]);
 	}
 
-	List<PegAsmInstruction> codeList() {
+	List<PegAsmInst> codeList() {
 		return this.codeList;
 	}
 
@@ -51,7 +51,7 @@ public class PegAsmCode extends ParserCode<PegAsmInstruction> {
 	@Override
 	public final <E> E exec(ParserContext<E> ctx) {
 		int ppos = (int) ctx.getPosition();
-		PegAsmInstruction code = this.getStartInstruction();
+		PegAsmInst code = this.getStartInstruction();
 		boolean result = this.exec((PegAsmContext<E>) ctx, code);
 		if (ctx.left == null && result) {
 			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
@@ -59,11 +59,12 @@ public class PegAsmCode extends ParserCode<PegAsmInstruction> {
 		return result ? ctx.left : null;
 	}
 
-	private <E> boolean exec(PegAsmContext<E> ctx, PegAsmInstruction inst) {
-		PegAsmInstruction cur = inst;
+	private <E> boolean exec(PegAsmContext<E> ctx, PegAsmInst inst) {
+		PegAsmInst cur = inst;
 		try {
 			while (true) {
-				PegAsmInstruction next = cur.exec(ctx);
+				// PegAsmInst next = cur.exec(ctx);
+				PegAsmInst next = cur.apply.exec(ctx);
 				// if (next == null) {
 				// System.out.println("null " + cur);
 				// }
@@ -78,8 +79,8 @@ public class PegAsmCode extends ParserCode<PegAsmInstruction> {
 
 	@Override
 	public void dump() {
-		for (PegAsmInstruction inst : this.codeList) {
-			PegAsmInstruction in = inst;
+		for (PegAsmInst inst : this.codeList) {
+			PegAsmInst in = inst;
 			if (in instanceof ASMnop) {
 				System.out.println(((ASMnop) in).name);
 				continue;

@@ -18,7 +18,7 @@ package blue.nez.parser;
 
 import blue.nez.ast.Source;
 import blue.nez.ast.Symbol;
-import blue.nez.pegasm.ASMexit;
+import blue.nez.parser.pegasm.ASMexit;
 
 public final class PegAsmContext<T> extends ParserContext<T> {
 
@@ -70,7 +70,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 	private int head_pos = 0;
 
 	@Override
-	public final void back(int pos) {
+	public final void backtrack(int pos) {
 		if (this.head_pos < this.pos) {
 			this.head_pos = this.pos;
 		}
@@ -113,7 +113,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 		this.stacks[1].ref = new ASMexit(false);
 		this.stacks[1].value = this.pos;
 		this.stacks[2].ref = this.loadSymbolTable();
-		this.stacks[2].value = this.saveLog();
+		this.stacks[2].value = this.loadTreeLog();
 		this.stacks[3].ref = new ASMexit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
@@ -144,6 +144,12 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 		return s;
 	}
 
+	public final int loadCatchPoint() {
+		int p = this.catchStackTop;
+		this.catchStackTop = this.usedStackTop - 2;
+		return p;
+	}
+
 	// Instruction
 
 	public final void xPos() {
@@ -156,22 +162,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 		return s.value;
 	}
 
-	public final void xBack() {
-		StackData s = this.popStack();
-		this.back(s.value);
-	}
-
-	public final void xCall(String name, PegAsmInstruction jump) {
-		StackData s = this.newUnusedStack();
-		s.ref = jump;
-	}
-
-	public final PegAsmInstruction xRet() {
-		StackData s = this.popStack();
-		return (PegAsmInstruction) s.ref;
-	}
-
-	public final void xAlt(PegAsmInstruction failjump/* op.failjump */) {
+	public final void xAlt(PegAsmInst failjump/* op.failjump */) {
 		StackData s0 = this.newUnusedStack();
 		StackData s1 = this.newUnusedStack();
 		StackData s2 = this.newUnusedStack();
@@ -180,7 +171,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 		s0.ref = this.left; // ADDED
 		s1.value = this.pos;
 		s1.ref = failjump;
-		s2.value = this.saveLog();
+		s2.value = this.loadTreeLog();
 		s2.ref = this.loadSymbolTable();
 	}
 
@@ -199,74 +190,54 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public final PegAsmInstruction xFail() {
+	public final PegAsmInst raiseFail() {
 		StackData s0 = this.stacks[this.catchStackTop];
 		StackData s1 = this.stacks[this.catchStackTop + 1];
 		StackData s2 = this.stacks[this.catchStackTop + 2];
 		this.usedStackTop = this.catchStackTop - 1;
 		this.catchStackTop = s0.value;
 		this.left = (T) s0.ref;
-		// if (s1.value < this.pos) {
-		// // if (this.lprof != null) {
-		// // this.lprof.statBacktrack(s1.value, this.pos);
-		// // }
-		this.back(s1.value);
-		// }
-		this.backLog(s2.value);
+		this.backtrack(s1.value);
+		this.storeTreeLog(s2.value);
 		this.storeSymbolTable(s2.ref);
 		assert (s1.ref != null);
-		return (PegAsmInstruction) s1.ref;
+		return (PegAsmInst) s1.ref;
 	}
 
-	// public final void statFail(int memoPoint) {
-	// StackData s1 = stacks[catchStackTop + 1];
-	// statBack(s1.value, this.pos);
-	// }
-
-	public final PegAsmInstruction xStep(PegAsmInstruction next) {
+	public final PegAsmInst xStep(PegAsmInst next) {
 		StackData s1 = this.stacks[this.catchStackTop + 1];
 		if (s1.value == this.pos) {
-			return this.xFail();
+			return this.raiseFail();
 		}
 		s1.value = this.pos;
 		StackData s0 = this.stacks[this.catchStackTop];
 		s0.ref = this.left;
 		StackData s2 = this.stacks[this.catchStackTop + 2];
-		s2.value = this.saveLog();
+		s2.value = this.loadTreeLog();
 		s2.ref = this.loadSymbolTable();
 		return next;
 	}
 
-	public final void xTPush() {
-		StackData s = this.newUnusedStack();
-		s.ref = this.left;
-		s.value = this.saveLog();
-	}
-
 	@SuppressWarnings("unchecked")
-	public final void xTLink(Symbol label) {
+	public final void linkTree(Symbol label) {
 		StackData s = this.popStack();
-		this.backLog(s.value);
+		this.storeTreeLog(s.value);
 		this.linkTree((T) s.ref, label);
 		this.left = (T) s.ref;
 	}
 
-	@SuppressWarnings("unchecked")
-	public final void xTPop() {
-		StackData s = this.popStack();
-		this.backLog(s.value);
-		this.left = (T) s.ref;
+	public final void pushTree() {
+		StackData s = this.newUnusedStack();
+		s.ref = this.left;
+		s.value = this.loadTreeLog();
 	}
 
-	// public final void xSOpen() {
-	// StackData s = this.newUnusedStack();
-	// s.value = this.saveSymbolPoint();
-	// }
-	//
-	// public final void xSClose() {
-	// StackData s = this.popStack();
-	// this.backSymbolPoint(s.value);
-	// }
+	@SuppressWarnings("unchecked")
+	public final void popTree() {
+		StackData s = this.popStack();
+		this.storeTreeLog(s.value);
+		this.left = (T) s.ref;
+	}
 
 	/* ----------------------------------------------------------------- */
 

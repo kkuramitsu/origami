@@ -20,6 +20,10 @@ public class PByte extends PTerm {
 		this.byteSet = ByteSet.CharSet(byteChar & 0xff);
 	}
 
+	public final ByteSet byteSet() {
+		return this.byteSet;
+	}
+
 	public final int byteChar() {
 		return this.byteSet.getUnsignedByte();
 	}

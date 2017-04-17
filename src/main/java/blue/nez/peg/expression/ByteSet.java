@@ -9,6 +9,10 @@ public class ByteSet implements StringCombinator {
 		this.bits = new int[8];
 	}
 
+	ByteSet(int[] bits) {
+		this.bits = bits;
+	}
+
 	public final boolean is(int n) {
 		return (this.bits[n / 32] & (1 << (n % 32))) != 0;
 	}
@@ -34,6 +38,14 @@ public class ByteSet implements StringCombinator {
 	// this.bits[i] = this.bits[i] | b.bits[i];
 	// }
 	// }
+
+	public ByteSet union(ByteSet b) {
+		ByteSet bs = new ByteSet();
+		for (int i = 0; i < 256; i++) {
+			bs.set(i, this.is(i) || b.is(i));
+		}
+		return bs;
+	}
 
 	public final boolean[] byteSet() {
 		boolean[] b = new boolean[256];

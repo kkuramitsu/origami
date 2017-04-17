@@ -414,7 +414,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		@Override
 		public Expression visitByteSet(PByteSet e, A a) {
 			if (this.enableFullDuplication) {
-				return new PByteSet(e.bits);
+				return new PByteSet(e.byteSet());
 			}
 			return e;
 		}

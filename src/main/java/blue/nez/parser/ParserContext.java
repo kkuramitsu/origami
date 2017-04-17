@@ -75,7 +75,7 @@ public abstract class ParserContext<T> {
 		this.pos += shift;
 	}
 
-	public void back(int pos) {
+	public void backtrack(int pos) {
 		this.pos = pos;
 	}
 
@@ -191,7 +191,7 @@ public abstract class ParserContext<T> {
 				}
 			}
 		}
-		this.backLog(start_index);
+		this.storeTreeLog(start_index);
 	}
 
 	public final T newTree(Symbol tag, int start, int end, int n, String value) {
@@ -201,11 +201,11 @@ public abstract class ParserContext<T> {
 		return this.newTree.newTree(tag, this.source, start, (end - start), n, value);
 	}
 
-	public final int saveLog() {
+	public final int loadTreeLog() {
 		return this.unused_log;
 	}
 
-	public final void backLog(int log) {
+	public final void storeTreeLog(int log) {
 		if (this.unused_log > log) {
 			this.unused_log = log;
 		}
