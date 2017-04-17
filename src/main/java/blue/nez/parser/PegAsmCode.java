@@ -20,15 +20,16 @@ import java.util.List;
 
 import blue.nez.ast.Source;
 import blue.nez.peg.Grammar;
+import blue.nez.pegasm.ASMnop;
 import blue.origami.util.OOption;
 
-public class NZ86Code extends ParserCode<NZ86Instruction> {
+public class PegAsmCode extends ParserCode<PegAsmInstruction> {
 
-	public NZ86Code(Grammar grammar, OOption options) {
-		super(grammar, options, new NZ86Instruction[1024]);
+	public PegAsmCode(Grammar grammar, OOption options) {
+		super(grammar, options, new PegAsmInstruction[1024]);
 	}
 
-	List<NZ86Instruction> codeList() {
+	List<PegAsmInstruction> codeList() {
 		return this.codeList;
 	}
 
@@ -38,7 +39,7 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 
 	@Override
 	public <T> ParserContext<T> newContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-		NZ86ParserContext<T> ctx = new NZ86ParserContext<>(s, pos, newTree, linkTree);
+		PegAsmContext<T> ctx = new PegAsmContext<>(s, pos, newTree, linkTree);
 		ctx.setTrap((TrapAction[]) this.options.get(ParserOption.TrapActions));
 		int w = this.options.intValue(ParserOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
@@ -50,19 +51,19 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 	@Override
 	public final <E> E exec(ParserContext<E> ctx) {
 		int ppos = (int) ctx.getPosition();
-		NZ86Instruction code = this.getStartInstruction();
-		boolean result = this.exec((NZ86ParserContext<E>) ctx, code);
+		PegAsmInstruction code = this.getStartInstruction();
+		boolean result = this.exec((PegAsmContext<E>) ctx, code);
 		if (ctx.left == null && result) {
 			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
 		}
 		return result ? ctx.left : null;
 	}
 
-	private <E> boolean exec(NZ86ParserContext<E> ctx, NZ86Instruction inst) {
-		NZ86Instruction cur = inst;
+	private <E> boolean exec(PegAsmContext<E> ctx, PegAsmInstruction inst) {
+		PegAsmInstruction cur = inst;
 		try {
 			while (true) {
-				NZ86Instruction next = cur.exec(ctx);
+				PegAsmInstruction next = cur.exec(ctx);
 				// if (next == null) {
 				// System.out.println("null " + cur);
 				// }
@@ -77,10 +78,10 @@ public class NZ86Code extends ParserCode<NZ86Instruction> {
 
 	@Override
 	public void dump() {
-		for (NZ86Instruction inst : this.codeList) {
-			NZ86Instruction in = inst;
-			if (in instanceof NZ86.Nop) {
-				System.out.println(((NZ86.Nop) in).name);
+		for (PegAsmInstruction inst : this.codeList) {
+			PegAsmInstruction in = inst;
+			if (in instanceof ASMnop) {
+				System.out.println(((ASMnop) in).name);
 				continue;
 			}
 			if (in.joinPoint) {

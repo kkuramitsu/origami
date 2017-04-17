@@ -56,12 +56,22 @@ public class Symbol {
 		this.symbol = symbol;
 	}
 
+	@Override
+	public final int hashCode() {
+		return this.id;
+	}
+
+	@Override
+	public final boolean equals(Object o) {
+		return this == o;
+	}
+
 	public final int id() {
 		return this.id;
 	}
 
 	public final String getSymbol() {
-		return symbol;
+		return this.symbol;
 	}
 
 	@Override

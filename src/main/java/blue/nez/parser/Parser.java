@@ -47,7 +47,7 @@ public final class Parser {
 	}
 
 	public final ParserExecutable compile() {
-		ParserCompiler compl = this.options.newInstance(NZ86Compiler.class);
+		ParserCompiler compl = this.options.newInstance(PegAsmCompiler.class);
 		long t = this.options.nanoTime(null, 0);
 		ParserGrammar g = new ParserChecker(this.options, this.start).checkParserGrammar();
 		this.code = compl.compile(g);

@@ -19,7 +19,7 @@ package blue.origami.main;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.nez.parser.NZ86ParserContext;
+import blue.nez.parser.PegAsmContext;
 import blue.nez.parser.ParserOption;
 import blue.nez.parser.TrapAction;
 import blue.nez.peg.Expression;
@@ -104,7 +104,7 @@ public class Otest extends Oexample {
 
 		class EnterAction implements TrapAction {
 			@Override
-			public void performed(NZ86ParserContext<?> context, int uid) {
+			public void performed(PegAsmContext<?> context, int uid) {
 				Coverage.this.enterCounts[uid]++;
 
 			}
@@ -112,7 +112,7 @@ public class Otest extends Oexample {
 
 		class ExitAction implements TrapAction {
 			@Override
-			public void performed(NZ86ParserContext<?> context, int uid) {
+			public void performed(PegAsmContext<?> context, int uid) {
 				Coverage.this.exitCounts[uid]++;
 			}
 		}

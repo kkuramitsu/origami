@@ -18,44 +18,39 @@ package blue.nez.parser;
 
 import blue.nez.ast.Source;
 import blue.nez.ast.Symbol;
+import blue.nez.pegasm.ASMexit;
 
-public final class NZ86ParserContext<T> extends ParserContext<T> {
+public final class PegAsmContext<T> extends ParserContext<T> {
 
-	// public NZ86ParserContext(String s, TreeConstructor<T> newTree,
-	// TreeConnector<T> linkTree) {
-	// super(s, newTree, linkTree);
-	// initVM();
-	// }
-
-	public NZ86ParserContext(Source source, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
+	public PegAsmContext(Source source, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		super(source, pos, newTree, linkTree);
-		initVM();
+		this.initVM();
 	}
 
 	@Override
-	public <E> NZ86ParserContext<E> newInstance(Source source, long pos, TreeConstructor<E> newTree,
+	public <E> PegAsmContext<E> newInstance(Source source, long pos, TreeConstructor<E> newTree,
 			TreeConnector<E> linkTree) {
-		return new NZ86ParserContext<>(source, pos, newTree, linkTree);
+		return new PegAsmContext<>(source, pos, newTree, linkTree);
 	}
 
 	@Override
 	public final boolean eof() {
-		return this.source.eof(pos);
+		return this.source.eof(this.pos);
 	}
 
 	@Override
 	public final int read() {
-		return this.source.byteAt(pos++);
+		return this.source.byteAt(this.pos++);
 	}
 
 	@Override
 	public final int prefetch() {
-		return this.source.byteAt(pos);
+		return this.source.byteAt(this.pos);
 	}
 
 	@Override
 	public final boolean match(byte[] utf8) {
-		if (source.match(pos, utf8)) {
+		if (this.source.match(this.pos, utf8)) {
 			this.move(utf8.length);
 			return true;
 		}
@@ -64,19 +59,19 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 
 	@Override
 	public final byte[] subByte(int start, int end) {
-		return source.subByte(start, end);
+		return this.source.subByte(start, end);
 	}
 
 	@Override
 	public final byte byteAt(int pos) {
-		return (byte) source.byteAt(pos);
+		return (byte) this.source.byteAt(pos);
 	}
 
 	private int head_pos = 0;
 
 	@Override
 	public final void back(int pos) {
-		if (head_pos < this.pos) {
+		if (this.head_pos < this.pos) {
 			this.head_pos = this.pos;
 		}
 		this.pos = pos;
@@ -89,7 +84,7 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 
 	@Override
 	public final long getMaximumPosition() {
-		return head_pos;
+		return this.head_pos;
 	}
 
 	public final void setPosition(long pos) {
@@ -103,7 +98,7 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 		public Object ref;
 	}
 
-	private static int StackSize = 64;
+	private static int StackSize = 512;
 	private StackData[] stacks = null;
 	private int usedStackTop;
 	private int catchStackTop;
@@ -115,36 +110,36 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 		}
 		this.stacks[0].ref = null;
 		this.stacks[0].value = 0;
-		this.stacks[1].ref = new NZ86.Exit(false);
-		this.stacks[1].value = pos;
-		this.stacks[2].ref = this.saveLog();
-		this.stacks[2].value = this.saveSymbolPoint();
-		this.stacks[3].ref = new NZ86.Exit(true);
+		this.stacks[1].ref = new ASMexit(false);
+		this.stacks[1].value = this.pos;
+		this.stacks[2].ref = this.loadSymbolTable();
+		this.stacks[2].value = this.saveLog();
+		this.stacks[3].ref = new ASMexit(true);
 		this.stacks[3].value = 0;
 		this.catchStackTop = 0;
 		this.usedStackTop = 3;
 	}
 
 	public final StackData getUsedStackTop() {
-		return stacks[usedStackTop];
+		return this.stacks[this.usedStackTop];
 	}
 
 	public final StackData newUnusedStack() {
-		usedStackTop++;
-		if (stacks.length == usedStackTop) {
-			StackData[] newstack = new StackData[stacks.length * 2];
-			System.arraycopy(stacks, 0, newstack, 0, stacks.length);
+		this.usedStackTop++;
+		if (this.stacks.length == this.usedStackTop) {
+			StackData[] newstack = new StackData[this.stacks.length * 2];
+			System.arraycopy(this.stacks, 0, newstack, 0, this.stacks.length);
 			for (int i = this.stacks.length; i < newstack.length; i++) {
 				newstack[i] = new StackData();
 			}
-			stacks = newstack;
+			this.stacks = newstack;
 		}
-		return stacks[usedStackTop];
+		return this.stacks[this.usedStackTop];
 	}
 
 	public final StackData popStack() {
-		StackData s = stacks[this.usedStackTop];
-		usedStackTop--;
+		StackData s = this.stacks[this.usedStackTop];
+		this.usedStackTop--;
 		// assert(this.catchStackTop <= this.usedStackTop);
 		return s;
 	}
@@ -166,50 +161,50 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 		this.back(s.value);
 	}
 
-	public final void xCall(String name, NZ86Instruction jump) {
+	public final void xCall(String name, PegAsmInstruction jump) {
 		StackData s = this.newUnusedStack();
 		s.ref = jump;
 	}
 
-	public final NZ86Instruction xRet() {
+	public final PegAsmInstruction xRet() {
 		StackData s = this.popStack();
-		return (NZ86Instruction) s.ref;
+		return (PegAsmInstruction) s.ref;
 	}
 
-	public final void xAlt(NZ86Instruction failjump/* op.failjump */) {
-		StackData s0 = newUnusedStack();
-		StackData s1 = newUnusedStack();
-		StackData s2 = newUnusedStack();
-		s0.value = catchStackTop;
-		catchStackTop = usedStackTop - 2;
+	public final void xAlt(PegAsmInstruction failjump/* op.failjump */) {
+		StackData s0 = this.newUnusedStack();
+		StackData s1 = this.newUnusedStack();
+		StackData s2 = this.newUnusedStack();
+		s0.value = this.catchStackTop;
+		this.catchStackTop = this.usedStackTop - 2;
 		s0.ref = this.left; // ADDED
-		s1.ref = failjump;
 		s1.value = this.pos;
+		s1.ref = failjump;
 		s2.value = this.saveLog();
-		s2.ref = this.saveSymbolPoint();
+		s2.ref = this.loadSymbolTable();
 	}
 
 	public final void xSucc() {
-		StackData s0 = stacks[catchStackTop];
-		usedStackTop = catchStackTop - 1;
-		catchStackTop = s0.value;
+		StackData s0 = this.stacks[this.catchStackTop];
+		this.usedStackTop = this.catchStackTop - 1;
+		this.catchStackTop = s0.value;
 	}
 
 	public final int xSuccPos() { // used in succ
-		StackData s0 = stacks[catchStackTop];
-		StackData s1 = stacks[catchStackTop + 1];
-		usedStackTop = catchStackTop - 1;
-		catchStackTop = s0.value;
+		StackData s0 = this.stacks[this.catchStackTop];
+		StackData s1 = this.stacks[this.catchStackTop + 1];
+		this.usedStackTop = this.catchStackTop - 1;
+		this.catchStackTop = s0.value;
 		return s1.value;
 	}
 
 	@SuppressWarnings("unchecked")
-	public final NZ86Instruction xFail() {
-		StackData s0 = stacks[catchStackTop];
-		StackData s1 = stacks[catchStackTop + 1];
-		StackData s2 = stacks[catchStackTop + 2];
-		usedStackTop = catchStackTop - 1;
-		catchStackTop = s0.value;
+	public final PegAsmInstruction xFail() {
+		StackData s0 = this.stacks[this.catchStackTop];
+		StackData s1 = this.stacks[this.catchStackTop + 1];
+		StackData s2 = this.stacks[this.catchStackTop + 2];
+		this.usedStackTop = this.catchStackTop - 1;
+		this.catchStackTop = s0.value;
 		this.left = (T) s0.ref;
 		// if (s1.value < this.pos) {
 		// // if (this.lprof != null) {
@@ -218,9 +213,9 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 		this.back(s1.value);
 		// }
 		this.backLog(s2.value);
-		this.backSymbolPoint((Integer) s2.ref); // FIXME slow
+		this.storeSymbolTable(s2.ref);
 		assert (s1.ref != null);
-		return (NZ86Instruction) s1.ref;
+		return (PegAsmInstruction) s1.ref;
 	}
 
 	// public final void statFail(int memoPoint) {
@@ -228,17 +223,17 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 	// statBack(s1.value, this.pos);
 	// }
 
-	public final NZ86Instruction xStep(NZ86Instruction next) {
-		StackData s1 = stacks[catchStackTop + 1];
+	public final PegAsmInstruction xStep(PegAsmInstruction next) {
+		StackData s1 = this.stacks[this.catchStackTop + 1];
 		if (s1.value == this.pos) {
-			return xFail();
+			return this.xFail();
 		}
 		s1.value = this.pos;
-		StackData s0 = stacks[catchStackTop];
+		StackData s0 = this.stacks[this.catchStackTop];
 		s0.ref = this.left;
-		StackData s2 = stacks[catchStackTop + 2];
+		StackData s2 = this.stacks[this.catchStackTop + 2];
 		s2.value = this.saveLog();
-		s2.ref = this.saveSymbolPoint(); // FIXME slow
+		s2.ref = this.loadSymbolTable();
 		return next;
 	}
 
@@ -263,15 +258,15 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 		this.left = (T) s.ref;
 	}
 
-	public final void xSOpen() {
-		StackData s = this.newUnusedStack();
-		s.value = this.saveSymbolPoint();
-	}
-
-	public final void xSClose() {
-		StackData s = this.popStack();
-		this.backSymbolPoint(s.value);
-	}
+	// public final void xSOpen() {
+	// StackData s = this.newUnusedStack();
+	// s.value = this.saveSymbolPoint();
+	// }
+	//
+	// public final void xSClose() {
+	// StackData s = this.popStack();
+	// this.backSymbolPoint(s.value);
+	// }
 
 	/* ----------------------------------------------------------------- */
 
@@ -297,7 +292,7 @@ public final class NZ86ParserContext<T> extends ParserContext<T> {
 	}
 
 	public final void trap(int trapid, int uid) {
-		actions[trapid].performed(this, uid);
+		this.actions[trapid].performed(this, uid);
 	}
 
 }

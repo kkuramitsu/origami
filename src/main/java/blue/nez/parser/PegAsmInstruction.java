@@ -17,13 +17,15 @@
 package blue.nez.parser;
 
 import blue.nez.peg.Expression;
+import blue.nez.pegasm.PegAsm;
+import blue.nez.pegasm.PegAsmVisitor;
 
-public abstract class NZ86Instruction {
+public abstract class PegAsmInstruction {
 	public int id;
 	public boolean joinPoint = false;
-	public NZ86Instruction next;
+	public PegAsmInstruction next;
 
-	public NZ86Instruction(NZ86Instruction next) {
+	public PegAsmInstruction(PegAsmInstruction next) {
 		this.id = -1;
 		this.next = next;
 	}
@@ -35,13 +37,13 @@ public abstract class NZ86Instruction {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		NZ86.stringfy(this, sb);
+		PegAsm.stringfy(this, sb);
 		return sb.toString();
 	}
 
-	public abstract void visit(NZ86Visitor v);
+	public abstract void visit(PegAsmVisitor v);
 
-	public abstract NZ86Instruction exec(NZ86ParserContext<?> sc) throws ParserTerminationException;
+	public abstract PegAsmInstruction exec(PegAsmContext<?> sc) throws ParserTerminationException;
 
 	public final boolean isIncrementedNext() {
 		if (this.next != null) {
@@ -50,7 +52,7 @@ public abstract class NZ86Instruction {
 		return true; // RET or instructions that are unnecessary to go next
 	}
 
-	NZ86Instruction branch() {
+	public PegAsmInstruction branch() {
 		return null;
 	}
 
