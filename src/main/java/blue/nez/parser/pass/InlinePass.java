@@ -23,32 +23,32 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
-import blue.nez.peg.Expression.PAnd;
-import blue.nez.peg.Expression.PAny;
-import blue.nez.peg.Expression.PByte;
-import blue.nez.peg.Expression.PByteSet;
-import blue.nez.peg.Expression.PChoice;
-import blue.nez.peg.Expression.PDetree;
-import blue.nez.peg.Expression.PDispatch;
-import blue.nez.peg.Expression.PEmpty;
-import blue.nez.peg.Expression.PFail;
-import blue.nez.peg.Expression.PIfCondition;
-import blue.nez.peg.Expression.PLinkTree;
-import blue.nez.peg.Expression.PNonTerminal;
-import blue.nez.peg.Expression.PNot;
-import blue.nez.peg.Expression.POnCondition;
-import blue.nez.peg.Expression.POption;
-import blue.nez.peg.Expression.PPair;
-import blue.nez.peg.Expression.PRepeat;
-import blue.nez.peg.Expression.PRepetition;
-import blue.nez.peg.Expression.PReplace;
-import blue.nez.peg.Expression.PScan;
-import blue.nez.peg.Expression.PSymbolAction;
-import blue.nez.peg.Expression.PSymbolPredicate;
-import blue.nez.peg.Expression.PSymbolScope;
-import blue.nez.peg.Expression.PTag;
-import blue.nez.peg.Expression.PTrap;
-import blue.nez.peg.Expression.PTree;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 import blue.origami.util.OOption;
 
 public class InlinePass extends CommonPass {
@@ -63,12 +63,12 @@ public class InlinePass extends CommonPass {
 	}
 
 	private void count(Expression e) {
-		if (e instanceof Expression.PNonTerminal) {
-			String uname = ((Expression.PNonTerminal) e).getUniqueName();
+		if (e instanceof PNonTerminal) {
+			String uname = ((PNonTerminal) e).getUniqueName();
 			Integer n = countMap.get(uname);
 			if (n == null) {
 				countMap.put(uname, 1);
-				count(((Expression.PNonTerminal) e).getProduction().getExpression());
+				count(((PNonTerminal) e).getProduction().getExpression());
 			} else {
 				countMap.put(uname, n + 1);
 			}
@@ -101,7 +101,7 @@ public class InlinePass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitNonTerminal(Expression.PNonTerminal e, Void a) {
+	public Expression visitNonTerminal(PNonTerminal e, Void a) {
 		Expression deref = Expression.deref(e.getProduction().getExpression());
 		Integer c = countMap.get(e.getUniqueName());
 		if (c == 1) {
@@ -161,7 +161,7 @@ public class InlinePass extends CommonPass {
 
 		@Override
 		public Integer visitPair(PPair e, Integer step) {
-			if (e.get(0) instanceof Expression.PByte) {
+			if (e.get(0) instanceof PByte) {
 				Expression remaining = Expression.extractString(e, null);
 				return remaining.visit(this, step + 1);
 			}

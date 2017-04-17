@@ -19,6 +19,11 @@ package blue.nez.parser.pass;
 import blue.nez.peg.Expression;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.PPair;
 
 public class NotCharPass extends CommonPass {
 
@@ -35,13 +40,13 @@ public class NotCharPass extends CommonPass {
 		if (this.BinaryGrammar) {
 			return;
 		}
-		if (e instanceof Expression.PByte) {
-			if (((Expression.PByte) e).byteChar == 0) {
+		if (e instanceof PByte) {
+			if (((PByte) e).byteChar == 0) {
 				this.BinaryGrammar = true;
 			}
 		}
-		if (e instanceof Expression.PByteSet) {
-			Expression.PByteSet c1 = (Expression.PByteSet) e;
+		if (e instanceof PByteSet) {
+			PByteSet c1 = (PByteSet) e;
 			if (c1.is(0) == true) {
 				this.BinaryGrammar = true;
 			}
@@ -52,9 +57,9 @@ public class NotCharPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitPair(Expression.PPair e, Void a) {
+	public Expression visitPair(PPair e, Void a) {
 		Expression p = super.visitPair(e, a);
-		if (p instanceof Expression.PPair) {
+		if (p instanceof PPair) {
 			Expression nc = NotChar(p.get(0));
 			Expression c = Char(p.get(1));
 			if (nc != null && c != null) {
@@ -66,9 +71,9 @@ public class NotCharPass extends CommonPass {
 	}
 
 	private Expression NotChar(Expression e) {
-		if (e instanceof Expression.PNot) {
+		if (e instanceof PNot) {
 			Expression nc = Expression.deref(e.get(0));
-			if (nc instanceof Expression.PByte || nc instanceof Expression.PByteSet) {
+			if (nc instanceof PByte || nc instanceof PByteSet) {
 				return nc;
 			}
 		}
@@ -76,41 +81,41 @@ public class NotCharPass extends CommonPass {
 	}
 
 	private Expression Char(Expression e) {
-		if (e instanceof Expression.PPair) {
+		if (e instanceof PPair) {
 			e = e.get(0);
 		}
 		e = Expression.deref(e);
-		if (e instanceof Expression.PAny || e instanceof Expression.PByteSet) {
+		if (e instanceof PAny || e instanceof PByteSet) {
 			return e;
 		}
 		return null;
 	}
 
 	private Expression Remain(Expression e) {
-		if (e instanceof Expression.PPair) {
+		if (e instanceof PPair) {
 			e = e.get(1);
 		}
 		return Expression.defaultEmpty;
 	}
 
 	private Expression merge(Expression nc, Expression c) {
-		Expression.PByteSet bs = new Expression.PByteSet(ref(c));
-		if (c instanceof Expression.PAny) {
+		PByteSet bs = new PByteSet(ref(c));
+		if (c instanceof PAny) {
 			bs.set(BinaryGrammar ? 0 : 1, 255, true);
 		}
-		if (c instanceof Expression.PByteSet) {
-			Expression.PByteSet c1 = (Expression.PByteSet) c;
+		if (c instanceof PByteSet) {
+			PByteSet c1 = (PByteSet) c;
 			for (int i = 0; i < 256; i++) {
 				if (c1.is(i)) {
 					bs.set(i, true);
 				}
 			}
 		}
-		if (nc instanceof Expression.PByte) {
-			bs.set(((Expression.PByte) nc).byteChar, false);
+		if (nc instanceof PByte) {
+			bs.set(((PByte) nc).byteChar, false);
 		}
-		if (nc instanceof Expression.PByteSet) {
-			Expression.PByteSet c1 = (Expression.PByteSet) nc;
+		if (nc instanceof PByteSet) {
+			PByteSet c1 = (PByteSet) nc;
 			for (int i = 0; i < 256; i++) {
 				if (c1.is(i)) {
 					bs.set(i, false);

@@ -16,7 +16,32 @@
 
 package blue.nez.peg;
 
-import blue.nez.peg.Expression.PNonTerminal;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 
 public enum Typestate {
 	Unit, Tree, Fold, TreeMutation, Immutation, Undecided;
@@ -54,7 +79,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitNonTerminal(Expression.PNonTerminal e, Void memo) {
+		public Typestate visitNonTerminal(PNonTerminal e, Void memo) {
 			if (e.getGrammar() == null || e.getProduction() == null) {
 				return Typestate.Unit;
 			}
@@ -62,32 +87,32 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitEmpty(Expression.PEmpty e, Void memo) {
+		public Typestate visitEmpty(PEmpty e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitFail(Expression.PFail e, Void memo) {
+		public Typestate visitFail(PFail e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitByte(Expression.PByte e, Void memo) {
+		public Typestate visitByte(PByte e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitByteSet(Expression.PByteSet e, Void memo) {
+		public Typestate visitByteSet(PByteSet e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitAny(Expression.PAny e, Void memo) {
+		public Typestate visitAny(PAny e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitPair(Expression.PPair e, Void memo) {
+		public Typestate visitPair(PPair e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Unit) {
 				return this.compute(e.get(1), memo);
@@ -96,7 +121,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitChoice(Expression.PChoice e, Void memo) {
+		public Typestate visitChoice(PChoice e, Void memo) {
 			Typestate t = this.compute(e.get(0), memo);
 			if (t == Typestate.Tree || t == Typestate.Fold || t == Typestate.TreeMutation) {
 				return t;
@@ -111,7 +136,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitDispatch(Expression.PDispatch e, Void memo) {
+		public Typestate visitDispatch(PDispatch e, Void memo) {
 			Typestate t = Typestate.Unit;
 			for (int i = 1; i < e.size(); i++) {
 				t = this.compute(e.get(i), memo);
@@ -123,7 +148,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitOption(Expression.POption e, Void memo) {
+		public Typestate visitOption(POption e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
@@ -132,7 +157,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitRepetition(Expression.PRepetition e, Void memo) {
+		public Typestate visitRepetition(PRepetition e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
@@ -141,7 +166,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitAnd(Expression.PAnd e, Void memo) {
+		public Typestate visitAnd(PAnd e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
@@ -150,57 +175,57 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitNot(Expression.PNot e, Void memo) {
+		public Typestate visitNot(PNot e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public Typestate visitTree(Expression.PTree e, Void memo) {
+		public Typestate visitTree(PTree e, Void memo) {
 			return e.folding ? Typestate.Fold : Typestate.Tree;
 		}
 
 		@Override
-		public Typestate visitLinkTree(Expression.PLinkTree e, Void memo) {
+		public Typestate visitLinkTree(PLinkTree e, Void memo) {
 			return Typestate.TreeMutation;
 		}
 
 		@Override
-		public Typestate visitTag(Expression.PTag e, Void memo) {
+		public Typestate visitTag(PTag e, Void memo) {
 			return Typestate.TreeMutation;
 		}
 
 		@Override
-		public Typestate visitReplace(Expression.PReplace e, Void memo) {
+		public Typestate visitReplace(PReplace e, Void memo) {
 			return Typestate.TreeMutation;
 		}
 
 		@Override
-		public Typestate visitDetree(Expression.PDetree e, Void memo) {
+		public Typestate visitDetree(PDetree e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Typestate visitSymbolScope(Expression.PSymbolScope e, Void memo) {
+		public final Typestate visitSymbolScope(PSymbolScope e, Void memo) {
 			return this.compute(e.get(0), memo);
 		}
 
 		@Override
-		public final Typestate visitSymbolAction(Expression.PSymbolAction e, Void memo) {
+		public final Typestate visitSymbolAction(PSymbolAction e, Void memo) {
 			return this.compute(e.get(0), memo);
 		}
 
 		@Override
-		public final Typestate visitSymbolPredicate(Expression.PSymbolPredicate e, Void memo) {
+		public final Typestate visitSymbolPredicate(PSymbolPredicate e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Typestate visitScan(Expression.PScan e, Void memo) {
+		public final Typestate visitScan(PScan e, Void memo) {
 			return this.compute(e.get(0), memo);
 		}
 
 		@Override
-		public final Typestate visitRepeat(Expression.PRepeat e, Void memo) {
+		public final Typestate visitRepeat(PRepeat e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
@@ -209,17 +234,17 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Typestate visitIf(Expression.PIfCondition e, Void memo) {
+		public final Typestate visitIf(PIfCondition e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Typestate visitOn(Expression.POnCondition e, Void memo) {
+		public final Typestate visitOn(POnCondition e, Void memo) {
 			return this.compute(e.get(0), memo);
 		}
 
 		@Override
-		public Typestate visitTrap(Expression.PTrap e, Void memo) {
+		public Typestate visitTrap(PTrap e, Void memo) {
 			return Typestate.Unit;
 		}
 

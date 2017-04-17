@@ -22,6 +22,16 @@ import java.util.List;
 
 import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Symbol;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PTag;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
@@ -104,13 +114,13 @@ public class ParserCombinator {
 				return Expression.newString(t.substring(1, t.length() - 1), src());
 			}
 			if (t.startsWith("@")) {
-				return new Expression.PNonTerminal(grammar, t.substring(1), src());
+				return new PNonTerminal(grammar, t.substring(1), src());
 			}
 			if (t.startsWith("#")) {
-				return new Expression.PTag(Symbol.unique(t.substring(1)), src());
+				return new PTag(Symbol.unique(t.substring(1)), src());
 			}
 			if (t.startsWith("`") && t.endsWith("`")) {
-				return new Expression.PReplace(t.substring(1, t.length() - 1), src());
+				return new PReplace(t.substring(1, t.length() - 1), src());
 			}
 			return Expression.newString(t, src());
 		}
@@ -154,7 +164,7 @@ public class ParserCombinator {
 	}
 
 	protected final Expression Range(Character... chars) {
-		Expression.PByteSet b = new Expression.PByteSet(src());
+		PByteSet b = new PByteSet(src());
 		for (int i = 0; i < chars.length; i += 2) {
 			char s = chars[i];
 			char e = chars[i + 1];
@@ -172,31 +182,31 @@ public class ParserCombinator {
 	}
 
 	protected final Expression Option(Object... exprs) {
-		return new Expression.POption(Expr(exprs), src());
+		return new POption(Expr(exprs), src());
 	}
 
 	protected final Expression ZeroMore(Object... exprs) {
-		return new Expression.PRepetition(Expr(exprs), 0, src());
+		return new PRepetition(Expr(exprs), 0, src());
 	}
 
 	protected final Expression OneMore(Object... exprs) {
-		return new Expression.PRepetition(Expr(exprs), 1, src());
+		return new PRepetition(Expr(exprs), 1, src());
 	}
 
 	protected final Expression And(Object... exprs) {
-		return new Expression.PAnd(Expr(exprs), src());
+		return new PAnd(Expr(exprs), src());
 	}
 
 	protected final Expression Not(Object... exprs) {
-		return new Expression.PNot(Expr(exprs), src());
+		return new PNot(Expr(exprs), src());
 	}
 
 	protected final Expression AnyChar() {
-		return new Expression.PAny(src());
+		return new PAny(src());
 	}
 
 	protected final Expression NotAny(Object... exprs) {
-		return Expr(new Expression.PNot(Expr(exprs), src()), AnyChar());
+		return Expr(new PNot(Expr(exprs), src()), AnyChar());
 	}
 
 	protected final Expression Tree(Object... exprs) {
@@ -219,26 +229,26 @@ public class ParserCombinator {
 
 	protected final Expression OptionalFold(String label, Object... exprs) {
 		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new Expression.POption(fold, src());
+		return new POption(fold, src());
 	}
 
 	protected final Expression ZeroMoreFold(String label, Object... exprs) {
 		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new Expression.PRepetition(fold, 0, src());
+		return new PRepetition(fold, 0, src());
 	}
 
 	protected final Expression OneMoreFold(String label, Object... exprs) {
 		Expression fold = Expression.newFoldTree(toSymbol(label), Expr(exprs), src());
-		return new Expression.PRepetition(fold, 1, src());
+		return new PRepetition(fold, 1, src());
 	}
 
 	protected Expression Link(String label, Expression e) {
-		return new Expression.PLinkTree(toSymbol(label), e, src());
+		return new PLinkTree(toSymbol(label), e, src());
 	}
 
 	protected Expression Link(String label, String nonTerminal) {
 		assert (nonTerminal.startsWith("@"));
-		return new Expression.PLinkTree(toSymbol(label), e(nonTerminal), src());
+		return new PLinkTree(toSymbol(label), e(nonTerminal), src());
 	}
 
 }

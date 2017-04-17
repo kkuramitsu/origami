@@ -25,6 +25,7 @@ import blue.nez.parser.TrapAction;
 import blue.nez.peg.Expression;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
+import blue.nez.peg.expression.PTrap;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 
@@ -82,8 +83,8 @@ public class Otest extends Oexample {
 			for (Production p : g) {
 				int uid = nameList.size();
 				nameList.add(p.getUniqueName());
-				Expression enterTrap = new Expression.PTrap(enterId, uid, null);
-				Expression exitTrap = new Expression.PTrap(exitId, uid++, null);
+				Expression enterTrap = new PTrap(enterId, uid, null);
+				Expression exitTrap = new PTrap(exitId, uid++, null);
 				Expression e = Expression.append(p.getExpression(), exitTrap);
 				g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap, e, null));
 			}

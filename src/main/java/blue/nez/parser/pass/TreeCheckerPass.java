@@ -21,6 +21,19 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PUnary;
 import blue.origami.util.OOption;
 
 public class TreeCheckerPass extends CommonPass {
@@ -80,11 +93,11 @@ public class TreeCheckerPass extends CommonPass {
 		Expression ue = index == -1 ? e : e.get(index);
 		if (req != Typestate.Unit) {
 			options.reportWarning(src(ue), "removed mutation in %s", ue);
-			if (!(ue instanceof Expression.PNonTerminal)) {
+			if (!(ue instanceof PNonTerminal)) {
 				this.req = Typestate.Unit;
 				ue = ue.visit(this, null);
 			}
-			ue = new Expression.PDetree(ue, ref(ue));
+			ue = new PDetree(ue, ref(ue));
 		}
 		if (after != null) {
 			this.req = after;
@@ -99,16 +112,16 @@ public class TreeCheckerPass extends CommonPass {
 	private Expression insertLink(Expression e, int index) {
 		if (index == -1) {
 			options.reportNotice(src(e), "inserted unlabeled link");
-			return new Expression.PLinkTree(null, e, ref(e));
+			return new PLinkTree(null, e, ref(e));
 		} else {
 			options.reportNotice(src(e.get(index)), "inserted unlabeled link");
-			e.set(index, new Expression.PLinkTree(null, e.get(index), ref(e.get(index))));
+			e.set(index, new PLinkTree(null, e.get(index), ref(e.get(index))));
 			return e;
 		}
 	}
 
 	@Override
-	public Expression visitNonTerminal(Expression.PNonTerminal n, Void a) {
+	public Expression visitNonTerminal(PNonTerminal n, Void a) {
 		Production p = n.getProduction();
 		Typestate innerState = typeState(n);
 		// System.out.println("@@@ Production " + n + " inner=" + innerState + "
@@ -139,7 +152,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitTree(Expression.PTree p, Void a) {
+	public Expression visitTree(PTree p, Void a) {
 		Typestate innerState = typeState(p.get(0));
 		if (p.folding) {
 			if (req != Typestate.Immutation) {
@@ -164,7 +177,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitTag(Expression.PTag p, Void a) {
+	public Expression visitTag(PTag p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
 			options.reportWarning(src(p), "removed %s", p);
 			return Expression.defaultEmpty;
@@ -173,7 +186,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitReplace(Expression.PReplace p, Void a) {
+	public Expression visitReplace(PReplace p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
 			options.reportWarning(src(p), "removed %s", p);
 			return Expression.defaultEmpty;
@@ -182,12 +195,12 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitLinkTree(Expression.PLinkTree p, Void a) {
+	public Expression visitLinkTree(PLinkTree p, Void a) {
 		Typestate innerState = typeState(p.get(0));
 		if (this.req == Typestate.TreeMutation) {
 			this.check(p, 0, innerState, Typestate.TreeMutation);
 			if (innerState != Typestate.Tree) {
-				p.set(0, new Expression.PTree(p.get(0), ref(p)));
+				p.set(0, new PTree(p.get(0), ref(p)));
 			}
 			return p;
 		} else {
@@ -197,7 +210,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitChoice(Expression.PChoice p, Void a) {
+	public Expression visitChoice(PChoice p, Void a) {
 		Typestate req = this.req;
 		Typestate next = this.req;
 		for (int i = 0; i < p.size(); i++) {
@@ -211,7 +224,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitDispatch(Expression.PDispatch p, Void a) {
+	public Expression visitDispatch(PDispatch p, Void a) {
 		Typestate req = this.req;
 		Typestate next = this.req;
 		for (int i = 0; i < p.size(); i++) {
@@ -225,21 +238,21 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitRepetition(Expression.PRepetition p, Void a) {
+	public Expression visitRepetition(PRepetition p, Void a) {
 		return this.visitUnary(p, a);
 	}
 
 	@Override
-	public Expression visitOption(Expression.POption p, Void a) {
+	public Expression visitOption(POption p, Void a) {
 		return this.visitUnary(p, a);
 	}
 
 	@Override
-	public Expression visitAnd(Expression.PAnd p, Void a) {
+	public Expression visitAnd(PAnd p, Void a) {
 		return this.visitUnary(p, a);
 	}
 
-	private Expression visitUnary(Expression.PUnary p, Void a) {
+	private Expression visitUnary(PUnary p, Void a) {
 		Typestate innerState = typeState(p.get(0));
 		if (innerState == Typestate.Tree) {
 			if (this.req == Typestate.TreeMutation) {
@@ -254,7 +267,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitNot(Expression.PNot p, Void a) {
+	public Expression visitNot(PNot p, Void a) {
 		Typestate innerState = typeState(p.get(0));
 		return detree(p, 0, innerState, this.req);
 	}

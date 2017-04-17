@@ -26,8 +26,6 @@ import blue.nez.parser.pass.NotCharPass;
 import blue.nez.parser.pass.TreeCheckerPass;
 import blue.nez.parser.pass.TreePass;
 import blue.nez.peg.Expression;
-import blue.nez.peg.Expression.PNonTerminal;
-import blue.nez.peg.Expression.PTrap;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.GrammarFlag;
@@ -35,6 +33,32 @@ import blue.nez.peg.NezFmt;
 import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
@@ -121,8 +145,8 @@ public class ParserChecker {
 	}
 
 	private void visitProduction(Expression e) {
-		if (e instanceof Expression.PNonTerminal) {
-			PNonTerminal n = ((Expression.PNonTerminal) e);
+		if (e instanceof PNonTerminal) {
+			PNonTerminal n = ((PNonTerminal) e);
 			Grammar g = n.getGrammar();
 			if (g == null) {
 				return;
@@ -135,21 +159,21 @@ public class ParserChecker {
 			return;
 		}
 		if (this.usedChars != null) {
-			if (e instanceof Expression.PByte) {
-				this.usedChars[((Expression.PByte) e).byteChar] = true;
+			if (e instanceof PByte) {
+				this.usedChars[((PByte) e).byteChar] = true;
 				return;
 			}
-			if (e instanceof Expression.PByteSet) {
+			if (e instanceof PByteSet) {
 				for (int i = 0; i < this.usedChars.length; i++) {
-					if (((Expression.PByteSet) e).is(i)) {
+					if (((PByteSet) e).is(i)) {
 						this.usedChars[i] = true;
 					}
 				}
 				return;
 			}
 		}
-		if (e instanceof Expression.PIfCondition) {
-			this.countFlag(((Expression.PIfCondition) e).flagName());
+		if (e instanceof PIfCondition) {
+			this.countFlag(((PIfCondition) e).flagName());
 		}
 		for (Expression ei : e) {
 			this.visitProduction(ei);
@@ -200,7 +224,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitNonTerminal(Expression.PNonTerminal e, Production a) {
+	public Boolean visitNonTerminal(PNonTerminal e, Production a) {
 		if (e.getUniqueName().equals(a.getUniqueName())) {
 			this.options.reportError(e.getSourceLocation(), NezFmt.left_recursion_is_forbidden__YY0, a.getLocalName());
 			// e.isLeftRecursion = true;
@@ -217,32 +241,32 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitEmpty(Expression.PEmpty e, Production a) {
+	public Boolean visitEmpty(PEmpty e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitFail(Expression.PFail e, Production a) {
+	public Boolean visitFail(PFail e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitByte(Expression.PByte e, Production a) {
+	public Boolean visitByte(PByte e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitByteSet(Expression.PByteSet e, Production a) {
+	public Boolean visitByteSet(PByteSet e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitAny(Expression.PAny e, Production a) {
+	public Boolean visitAny(PAny e, Production a) {
 		return false;
 	}
 
 	@Override
-	public Boolean visitPair(Expression.PPair e, Production a) {
+	public Boolean visitPair(PPair e, Production a) {
 		if (this.check(e.get(0), a) == false) {
 			return false;
 		}
@@ -250,7 +274,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitChoice(Expression.PChoice e, Production a) {
+	public Boolean visitChoice(PChoice e, Production a) {
 		boolean unconsumed = false;
 		for (Expression sub : e) {
 			boolean c = this.check(sub, a);
@@ -262,7 +286,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitDispatch(Expression.PDispatch e, Production a) {
+	public Boolean visitDispatch(PDispatch e, Production a) {
 		boolean unconsumed = false;
 		for (int i = 1; i < e.size(); i++) {
 			boolean c = this.check(e.get(i), a);
@@ -274,12 +298,12 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitOption(Expression.POption e, Production a) {
+	public Boolean visitOption(POption e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitRepetition(Expression.PRepetition e, Production a) {
+	public Boolean visitRepetition(PRepetition e, Production a) {
 		if (e.isOneMore()) {
 			return this.check(e.get(0), a);
 		}
@@ -287,52 +311,52 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitAnd(Expression.PAnd e, Production a) {
+	public Boolean visitAnd(PAnd e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitNot(Expression.PNot e, Production a) {
+	public Boolean visitNot(PNot e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitTree(Expression.PTree e, Production a) {
+	public Boolean visitTree(PTree e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitLinkTree(Expression.PLinkTree e, Production a) {
+	public Boolean visitLinkTree(PLinkTree e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitTag(Expression.PTag e, Production a) {
+	public Boolean visitTag(PTag e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitReplace(Expression.PReplace e, Production a) {
+	public Boolean visitReplace(PReplace e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitDetree(Expression.PDetree e, Production a) {
+	public Boolean visitDetree(PDetree e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolScope(Expression.PSymbolScope e, Production a) {
+	public Boolean visitSymbolScope(PSymbolScope e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolAction(Expression.PSymbolAction e, Production a) {
+	public Boolean visitSymbolAction(PSymbolAction e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitSymbolPredicate(Expression.PSymbolPredicate e, Production a) {
+	public Boolean visitSymbolPredicate(PSymbolPredicate e, Production a) {
 		if (e.funcName == NezFunc.exists) {
 			return true;
 		}
@@ -340,22 +364,22 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitScan(Expression.PScan e, Production a) {
+	public Boolean visitScan(PScan e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
 	@Override
-	public Boolean visitRepeat(Expression.PRepeat e, Production a) {
+	public Boolean visitRepeat(PRepeat e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitIf(Expression.PIfCondition e, Production a) {
+	public Boolean visitIf(PIfCondition e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitOn(Expression.POnCondition e, Production a) {
+	public Boolean visitOn(POnCondition e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
@@ -458,7 +482,7 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 	}
 
 	@Override
-	public Expression visitOn(Expression.POnCondition p, Void a) {
+	public Expression visitOn(POnCondition p, Void a) {
 		// if (fac.is("strict-check", false)) {
 		// if (!GrammarFlag.hasFlag(p.get(0), p.flagName())) {
 		// fac.reportWarning(p.getSourceLocation(), "unused condition: " +
@@ -474,7 +498,7 @@ class EliminateFlags extends Expression.Duplicator<Void> {
 	}
 
 	@Override
-	public Expression visitIf(Expression.PIfCondition p, Void a) {
+	public Expression visitIf(PIfCondition p, Void a) {
 		if (this.isFlag(p.flagName())) { /* true */
 			return p.isPositive() ? Expression.defaultEmpty : Expression.defaultFailure;
 		}

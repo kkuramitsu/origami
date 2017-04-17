@@ -22,13 +22,19 @@ import java.util.List;
 
 import blue.nez.peg.ByteAcceptance;
 import blue.nez.peg.Expression;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PPair;
 
 public class DispatchPass extends CommonPass {
 
 	/* Choice Prediction */
 
 	@Override
-	public Expression visitChoice(Expression.PChoice choice, Void a) {
+	public Expression visitChoice(PChoice choice, Void a) {
 		ArrayList<Expression> bufferList = new ArrayList<>(256);
 		HashMap<String, Byte> bufferIndex = new HashMap<>();
 		ArrayList<Expression[]> uniqueList = new ArrayList<>();
@@ -58,14 +64,14 @@ public class DispatchPass extends CommonPass {
 			inners[c] = mergeExpression(seq);
 			c++;
 		}
-		return optimized(choice, new Expression.PDispatch(inners, charMap, ref(choice)));
+		return optimized(choice, new PDispatch(inners, charMap, ref(choice)));
 	}
 
-	private void selectPredictedChoice(Expression.PChoice choice, int ch, ArrayList<Expression> bufferList) {
+	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<Expression> bufferList) {
 		for (Expression e : choice) {
 			Expression deref = Expression.deref(e);
-			if (deref instanceof Expression.PChoice) {
-				selectPredictedChoice((Expression.PChoice) deref, ch, bufferList);
+			if (deref instanceof PChoice) {
+				selectPredictedChoice((PChoice) deref, ch, bufferList);
 			} else {
 				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
 				if (acc != ByteAcceptance.Reject) {
@@ -94,8 +100,8 @@ public class DispatchPass extends CommonPass {
 				Expression.addChoice(l, nextExpression(e));
 			}
 			Expression choice = Expression.newChoice(l, null);
-			if (choice instanceof Expression.PChoice) {
-				choice = visitChoice((Expression.PChoice) choice, null);
+			if (choice instanceof PChoice) {
+				choice = visitChoice((PChoice) choice, null);
 			}
 			return Expression.newSequence(Expression.defaultAny, choice, null);
 		} else {
@@ -117,10 +123,10 @@ public class DispatchPass extends CommonPass {
 
 	private boolean isCharacterConsumed(Expression e) {
 		e = Expression.deref(e);
-		if (e instanceof Expression.PPair) {
+		if (e instanceof PPair) {
 			e = Expression.deref(e.get(0));
 		}
-		if (e instanceof Expression.PByte || e instanceof Expression.PByteSet || e instanceof Expression.PAny) {
+		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny) {
 			return true;
 		}
 		return false;
@@ -128,9 +134,9 @@ public class DispatchPass extends CommonPass {
 
 	private Expression nextExpression(Expression e) {
 		e = Expression.deref(e);
-		if (e instanceof Expression.PPair) {
+		if (e instanceof PPair) {
 			Expression first = Expression.deref(e.get(0));
-			if (first instanceof Expression.PPair) {
+			if (first instanceof PPair) {
 				List<Expression> l = Expression.newList(16);
 				Expression.addSequence(l, first.get(1));
 				Expression.addSequence(l, e.get(1));

@@ -19,8 +19,8 @@ package blue.nez.peg;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.nez.peg.Expression.PIfCondition;
-import blue.nez.peg.Expression.PNonTerminal;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PNonTerminal;
 
 public enum GrammarFlag {
 	Yes, No, Unsure;

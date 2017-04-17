@@ -35,6 +35,32 @@ import blue.nez.peg.NezFunc;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -479,8 +505,8 @@ public abstract class ParserGenerator
 	HashMap<String, Integer> memoPointMap = new HashMap<>();
 
 	private String _funcname(Expression e) {
-		if (e instanceof Expression.PNonTerminal) {
-			return this._funcname(((Expression.PNonTerminal) e).getUniqueName());
+		if (e instanceof PNonTerminal) {
+			return this._funcname(((PNonTerminal) e).getUniqueName());
 		}
 		String key = e.toString();
 		return this.exprMap.get(key);
@@ -595,7 +621,7 @@ public abstract class ParserGenerator
 		}
 
 		private void checkInner(Expression e) {
-			if (e instanceof Expression.PNonTerminal) {
+			if (e instanceof PNonTerminal) {
 				e.visit(this, null);
 				return;
 			}
@@ -617,7 +643,7 @@ public abstract class ParserGenerator
 
 		private void checkNonLexicalInner(Expression e) {
 			if (ParserGenerator.this.Optimization) {
-				if (e instanceof Expression.PByte || e instanceof Expression.PByteSet || e instanceof Expression.PAny) {
+				if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny) {
 					e.visit(this, null);
 					return;
 				}
@@ -633,33 +659,33 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitNonTerminal(Expression.PNonTerminal e, Object a) {
+		public Object visitNonTerminal(PNonTerminal e, Object a) {
 			return this.decl(e.getProduction());
 		}
 
 		@Override
-		public Object visitEmpty(Expression.PEmpty e, Object a) {
+		public Object visitEmpty(PEmpty e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitFail(Expression.PFail e, Object a) {
+		public Object visitFail(PFail e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitByte(Expression.PByte e, Object a) {
+		public Object visitByte(PByte e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitByteSet(Expression.PByteSet e, Object a) {
+		public Object visitByteSet(PByteSet e, Object a) {
 			ParserGenerator.this.DeclSet(e.byteSet(), false);
 			return null;
 		}
 
 		@Override
-		public Object visitAny(Expression.PAny e, Object a) {
+		public Object visitAny(PAny e, Object a) {
 			return null;
 		}
 
@@ -670,12 +696,12 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitPair(Expression.PPair e, Object a) {
+		public Object visitPair(PPair e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitChoice(Expression.PChoice e, Object a) {
+		public Object visitChoice(PChoice e, Object a) {
 			// if (e.predicted != null) {
 			// DeclIndex(e.predicted.indexMap);
 			// }
@@ -691,7 +717,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitDispatch(Expression.PDispatch e, Object a) {
+		public Object visitDispatch(PDispatch e, Object a) {
 			ParserGenerator.this.DeclIndex(e.indexMap);
 			for (Expression sub : e) {
 				this.checkInner(sub);
@@ -700,15 +726,15 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitOption(Expression.POption e, Object a) {
+		public Object visitOption(POption e, Object a) {
 			this.checkNonLexicalInner(e.get(0));
 			return null;
 		}
 
 		@Override
-		public Object visitRepetition(Expression.PRepetition e, Object a) {
-			if (ParserGenerator.this.Optimization && e.get(0) instanceof Expression.PByteSet) {
-				ParserGenerator.this.DeclSet(((Expression.PByteSet) e.get(0)).byteSet(), true);
+		public Object visitRepetition(PRepetition e, Object a) {
+			if (ParserGenerator.this.Optimization && e.get(0) instanceof PByteSet) {
+				ParserGenerator.this.DeclSet(((PByteSet) e.get(0)).byteSet(), true);
 				return null;
 			}
 			this.checkNonLexicalInner(e.get(0));
@@ -726,13 +752,13 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitAnd(Expression.PAnd e, Object a) {
+		public Object visitAnd(PAnd e, Object a) {
 			this.checkNonLexicalInner(e.get(0));
 			return null;
 		}
 
 		@Override
-		public Object visitNot(Expression.PNot e, Object a) {
+		public Object visitNot(PNot e, Object a) {
 			this.checkNonLexicalInner(e.get(0));
 			return null;
 		}
@@ -743,7 +769,7 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitTree(Expression.PTree e, Object a) {
+		public Object visitTree(PTree e, Object a) {
 			if (e.label != null) {
 				ParserGenerator.this.DeclTrap(e.label.getSymbol());
 			}
@@ -757,7 +783,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitLinkTree(Expression.PLinkTree e, Object a) {
+		public Object visitLinkTree(PLinkTree e, Object a) {
 			if (e.label != null) {
 				ParserGenerator.this.DeclTrap(e.label.getSymbol());
 			}
@@ -765,35 +791,35 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitTag(Expression.PTag e, Object a) {
+		public Object visitTag(PTag e, Object a) {
 			ParserGenerator.this.DeclTag(e.tag.getSymbol());
 			return null;
 		}
 
 		@Override
-		public Object visitReplace(Expression.PReplace e, Object a) {
+		public Object visitReplace(PReplace e, Object a) {
 			ParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
 			return null;
 		}
 
 		@Override
-		public Object visitDetree(Expression.PDetree e, Object a) {
+		public Object visitDetree(PDetree e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitSymbolScope(Expression.PSymbolScope e, Object a) {
+		public Object visitSymbolScope(PSymbolScope e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitSymbolAction(Expression.PSymbolAction e, Object a) {
+		public Object visitSymbolAction(PSymbolAction e, Object a) {
 			ParserGenerator.this.DeclTable(e.table);
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitSymbolPredicate(Expression.PSymbolPredicate e, Object a) {
+		public Object visitSymbolPredicate(PSymbolPredicate e, Object a) {
 			ParserGenerator.this.DeclTable(e.table);
 			return this.visitInnerAll(e);
 		}
@@ -815,27 +841,27 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitScan(Expression.PScan e, Object a) {
+		public Object visitScan(PScan e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitRepeat(Expression.PRepeat e, Object a) {
+		public Object visitRepeat(PRepeat e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitIf(Expression.PIfCondition e, Object a) {
+		public Object visitIf(PIfCondition e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitOn(Expression.POnCondition e, Object a) {
+		public Object visitOn(POnCondition e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
 		@Override
-		public Object visitTrap(Expression.PTrap e, Object a) {
+		public Object visitTrap(PTrap e, Object a) {
 			return null;
 		}
 	}
@@ -1022,7 +1048,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitNonTerminal(Expression.PNonTerminal e, Object a) {
+		public Object visitNonTerminal(PNonTerminal e, Object a) {
 			String f = this._eval(e.getUniqueName());
 			ParserGenerator.this.If(ParserGenerator.this._Not(f));
 			{
@@ -1033,18 +1059,18 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitEmpty(Expression.PEmpty e, Object a) {
+		public Object visitEmpty(PEmpty e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitFail(Expression.PFail e, Object a) {
+		public Object visitFail(PFail e, Object a) {
 			ParserGenerator.this.Fail();
 			return null;
 		}
 
 		@Override
-		public Object visitByte(Expression.PByte e, Object a) {
+		public Object visitByte(PByte e, Object a) {
 			ParserGenerator.this.If(ParserGenerator.this._Func("read"), ParserGenerator.this._NotEq(),
 					ParserGenerator.this._byte(e.byteChar));
 			{
@@ -1056,7 +1082,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitByteSet(Expression.PByteSet e, Object a) {
+		public Object visitByteSet(PByteSet e, Object a) {
 			boolean[] byteset = e.byteSet();
 			ParserGenerator.this.If(ParserGenerator.this._Not(this.MatchByteArray(byteset, true)));
 			{
@@ -1101,7 +1127,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitAny(Expression.PAny e, Object a) {
+		public Object visitAny(PAny e, Object a) {
 			if (ParserGenerator.this.BinaryGrammar) {
 				ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
 				ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
@@ -1130,7 +1156,7 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitPair(Expression.PPair e, Object a) {
+		public Object visitPair(PPair e, Object a) {
 			for (Expression sub : e) {
 				this.visit(sub, a);
 			}
@@ -1138,7 +1164,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitChoice(Expression.PChoice e, Object a) {
+		public Object visitChoice(PChoice e, Object a) {
 			// if (e.predicted != null && SupportedSwitchCase) {
 			// generateSwitch(e, e.predicted);
 			// } else {
@@ -1206,7 +1232,7 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitDispatch(Expression.PDispatch e, Object a) {
+		public Object visitDispatch(PDispatch e, Object a) {
 			String temp = this.InitVal(ParserGenerator.this._temp(), ParserGenerator.this._True());
 			ParserGenerator.this.Switch(ParserGenerator.this._GetArray(ParserGenerator.this._index(e.indexMap),
 					ParserGenerator.this._Func("prefetch")));
@@ -1232,7 +1258,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitOption(Expression.POption e, Object a) {
+		public Object visitOption(POption e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryOptionOptimization(sub)) {
 				String f = this._eval(sub);
@@ -1248,7 +1274,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitRepetition(Expression.PRepetition e, Object a) {
+		public Object visitRepetition(PRepetition e, Object a) {
 			if (e.isOneMore()) {
 				if (!this.tryRepetitionOptimization(e.get(0), true)) {
 					String f = this._eval(e.get(0));
@@ -1301,7 +1327,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitAnd(Expression.PAnd e, Object a) {
+		public Object visitAnd(PAnd e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryAndOptimization(sub)) {
 				String f = this._eval(sub);
@@ -1320,7 +1346,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitNot(Expression.PNot e, Object a) {
+		public Object visitNot(PNot e, Object a) {
 			Expression sub = e.get(0);
 			if (!this.tryNotOptimization(sub)) {
 				String f = this._eval(sub);
@@ -1340,8 +1366,8 @@ public abstract class ParserGenerator
 
 		private boolean tryOptionOptimization(Expression inner) {
 			if (ParserGenerator.this.Optimization) {
-				if (inner instanceof Expression.PByte) {
-					Expression.PByte e = (Expression.PByte) inner;
+				if (inner instanceof PByte) {
+					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
 							ParserGenerator.this._byte(e.byteChar));
 					{
@@ -1358,8 +1384,8 @@ public abstract class ParserGenerator
 					ParserGenerator.this.EndIf();
 					return true;
 				}
-				if (inner instanceof Expression.PByteSet) {
-					Expression.PByteSet e = (Expression.PByteSet) inner;
+				if (inner instanceof PByteSet) {
+					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.byteSet();
 					ParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
@@ -1381,7 +1407,7 @@ public abstract class ParserGenerator
 				// Statement(_Match(e.byteseq));
 				// return true;
 				// }
-				if (inner instanceof Expression.PAny) {
+				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
 					{
@@ -1396,8 +1422,8 @@ public abstract class ParserGenerator
 
 		private boolean tryRepetitionOptimization(Expression inner, boolean isOneMore) {
 			if (ParserGenerator.this.Optimization) {
-				if (inner instanceof Expression.PByte) {
-					Expression.PByte e = (Expression.PByte) inner;
+				if (inner instanceof PByte) {
+					PByte e = (PByte) inner;
 					if (isOneMore) {
 						this.visit(inner, null);
 					}
@@ -1416,8 +1442,8 @@ public abstract class ParserGenerator
 					ParserGenerator.this.EndWhile();
 					return true;
 				}
-				if (inner instanceof Expression.PByteSet) {
-					Expression.PByteSet e = (Expression.PByteSet) inner;
+				if (inner instanceof PByteSet) {
+					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.byteSet();
 					if (ParserGenerator.this.SSEOption) {
 						String name = ParserGenerator.this._range(byteset);
@@ -1467,7 +1493,7 @@ public abstract class ParserGenerator
 				// EndWhile();
 				// return true;
 				// }
-				if (inner instanceof Expression.PAny) {
+				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
 					if (isOneMore) {
 						this.visit(inner, null);
@@ -1485,8 +1511,8 @@ public abstract class ParserGenerator
 
 		private boolean tryAndOptimization(Expression inner) {
 			if (ParserGenerator.this.Optimization) {
-				if (inner instanceof Expression.PByte) {
-					Expression.PByte e = (Expression.PByte) inner;
+				if (inner instanceof PByte) {
+					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._NotEq(),
 							ParserGenerator.this._byte(e.byteChar));
 					{
@@ -1496,8 +1522,8 @@ public abstract class ParserGenerator
 					this.checkBinaryEOF(e.byteChar == 0);
 					return true;
 				}
-				if (inner instanceof Expression.PByteSet) {
-					Expression.PByteSet e = (Expression.PByteSet) inner;
+				if (inner instanceof PByteSet) {
+					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.byteSet();
 					ParserGenerator.this.If(ParserGenerator.this._Not(this.MatchByteArray(byteset, false)));
 					{
@@ -1516,7 +1542,7 @@ public abstract class ParserGenerator
 				// EndIf();
 				// return true;
 				// }
-				if (inner instanceof Expression.PAny) {
+				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
 					{
@@ -1531,8 +1557,8 @@ public abstract class ParserGenerator
 
 		private boolean tryNotOptimization(Expression inner) {
 			if (ParserGenerator.this.Optimization) {
-				if (inner instanceof Expression.PByte) {
-					Expression.PByte e = (Expression.PByte) inner;
+				if (inner instanceof PByte) {
+					PByte e = (PByte) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
 							ParserGenerator.this._byte(e.byteChar));
 					{
@@ -1542,8 +1568,8 @@ public abstract class ParserGenerator
 					this.checkBinaryEOF(e.byteChar != 0);
 					return true;
 				}
-				if (inner instanceof Expression.PByteSet) {
-					Expression.PByteSet e = (Expression.PByteSet) inner;
+				if (inner instanceof PByteSet) {
+					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.byteSet();
 					ParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
@@ -1562,7 +1588,7 @@ public abstract class ParserGenerator
 				// EndIf();
 				// return true;
 				// }
-				if (inner instanceof Expression.PAny) {
+				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
 					ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
 					{
@@ -1578,7 +1604,7 @@ public abstract class ParserGenerator
 		/* Tree Construction */
 
 		@Override
-		public Object visitTree(Expression.PTree e, Object a) {
+		public Object visitTree(PTree e, Object a) {
 			if (e.folding) {
 				ParserGenerator.this.Statement(ParserGenerator.this._Func("foldTree",
 						ParserGenerator.this._int(e.beginShift), ParserGenerator.this._label(e.label)));
@@ -1593,7 +1619,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitLinkTree(Expression.PLinkTree e, Object a) {
+		public Object visitLinkTree(PLinkTree e, Object a) {
 			this.BeginScope();
 			String tree = this.SaveTree();
 			this.visit(e.get(0), a);
@@ -1605,20 +1631,20 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitTag(Expression.PTag e, Object a) {
+		public Object visitTag(PTag e, Object a) {
 			ParserGenerator.this.Statement(ParserGenerator.this._Func("tagTree", ParserGenerator.this._tag(e.tag)));
 			return null;
 		}
 
 		@Override
-		public Object visitReplace(Expression.PReplace e, Object a) {
+		public Object visitReplace(PReplace e, Object a) {
 			ParserGenerator.this
 					.Statement(ParserGenerator.this._Func("valueTree", ParserGenerator.this._text(e.value)));
 			return null;
 		}
 
 		@Override
-		public Object visitDetree(Expression.PDetree e, Object a) {
+		public Object visitDetree(PDetree e, Object a) {
 			this.BeginScope();
 			String n1 = this.SaveTree();
 			String n2 = this.SaveLog();
@@ -1630,7 +1656,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitSymbolScope(Expression.PSymbolScope e, Object a) {
+		public Object visitSymbolScope(PSymbolScope e, Object a) {
 			this.BeginScope();
 			String n = this.SaveSymbolTable();
 			if (e.funcName == NezFunc.local) {
@@ -1644,7 +1670,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitSymbolAction(Expression.PSymbolAction e, Object a) {
+		public Object visitSymbolAction(PSymbolAction e, Object a) {
 			// BeginScope();
 			// String ppos = SavePos();
 			// visit(e.get(0), a);
@@ -1654,7 +1680,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitSymbolPredicate(Expression.PSymbolPredicate e, Object a) {
+		public Object visitSymbolPredicate(PSymbolPredicate e, Object a) {
 			// BeginScope();
 			// String ppos = SavePos();
 			// visit(e.get(0), a);
@@ -1706,7 +1732,7 @@ public abstract class ParserGenerator
 		// }
 
 		@Override
-		public Object visitScan(Expression.PScan e, Object a) {
+		public Object visitScan(PScan e, Object a) {
 			this.BeginScope();
 			String ppos = this.SavePos();
 			this.visit(e.get(0), a);
@@ -1717,7 +1743,7 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitRepeat(Expression.PRepeat e, Object a) {
+		public Object visitRepeat(PRepeat e, Object a) {
 			ParserGenerator.this.While(ParserGenerator.this._Func("decCount"));
 			{
 				this.visit(e.get(0), a);
@@ -1727,18 +1753,18 @@ public abstract class ParserGenerator
 		}
 
 		@Override
-		public Object visitIf(Expression.PIfCondition e, Object a) {
+		public Object visitIf(PIfCondition e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitOn(Expression.POnCondition e, Object a) {
+		public Object visitOn(POnCondition e, Object a) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Object visitTrap(Expression.PTrap e, Object a) {
+		public Object visitTrap(PTrap e, Object a) {
 			// TODO Auto-generated method stub
 			return null;
 		}

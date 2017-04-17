@@ -20,11 +20,23 @@ import java.util.List;
 
 import blue.nez.ast.Symbol;
 import blue.nez.peg.Expression;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTree;
 
 public class TreePass extends CommonPass {
 
 	@Override
-	public Expression visitTree(Expression.PTree tree, Void a) {
+	public Expression visitTree(PTree tree, Void a) {
 		List<Expression> l = Expression.newList(64);
 		Expression.addSequence(l, rewrite(tree.get(0), a));
 		List<Expression> factored = Expression.newList(l.size());
@@ -35,12 +47,12 @@ public class TreePass extends CommonPass {
 		int i;
 		for (i = 0; i < l.size(); i++) {
 			Expression e = l.get(i);
-			if (e instanceof Expression.PTag) {
-				foundTag = ((Expression.PTag) e).tag;
+			if (e instanceof PTag) {
+				foundTag = ((PTag) e).tag;
 				continue;
 			}
-			if (e instanceof Expression.PReplace) {
-				foundReplace = ((Expression.PReplace) e).value;
+			if (e instanceof PReplace) {
+				foundReplace = ((PReplace) e).value;
 				continue;
 			}
 			int len = consumed(e, 0);
@@ -55,8 +67,8 @@ public class TreePass extends CommonPass {
 		for (; i < l.size(); i++) {
 			Expression e = l.get(i);
 			if (movableTag) {
-				if (e instanceof Expression.PTag) {
-					foundTag = ((Expression.PTag) e).tag;
+				if (e instanceof PTag) {
+					foundTag = ((PTag) e).tag;
 					continue;
 				}
 				movableTag = checkTag(e, 0);
@@ -65,8 +77,8 @@ public class TreePass extends CommonPass {
 				}
 			}
 			if (movableReplace) {
-				if (e instanceof Expression.PReplace) {
-					foundReplace = ((Expression.PReplace) e).value;
+				if (e instanceof PReplace) {
+					foundReplace = ((PReplace) e).value;
 					continue;
 				}
 				movableReplace = checkReplace(e, 0);
@@ -83,25 +95,25 @@ public class TreePass extends CommonPass {
 			foundReplace = tree.value;
 		}
 		Expression inner = Expression.newSequence(inners, ref(tree));
-		Expression.PTree newTree = new Expression.PTree(tree.folding, tree.label, beginShift, inner, foundTag,
+		PTree newTree = new PTree(tree.folding, tree.label, beginShift, inner, foundTag,
 				foundReplace, tree.endShift, ref(tree));
 		return optimized(tree, Expression.newSequence(Expression.newSequence(factored, ref(tree)), newTree, null));
 	}
 
 	private int consumed(Expression e, int depth) {
-		if (e instanceof Expression.PNot || e instanceof Expression.PEmpty) {
+		if (e instanceof PNot || e instanceof PEmpty) {
 			return 0;
 		}
-		if (e instanceof Expression.PByte || e instanceof Expression.PAny || e instanceof Expression.PByteSet) {
+		if (e instanceof PByte || e instanceof PAny || e instanceof PByteSet) {
 			return 1;
 		}
-		if (e instanceof Expression.PNonTerminal) {
+		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
 				return consumed(Expression.deref(e), depth + 1);
 			}
 			return -1;
 		}
-		if (e instanceof Expression.PPair) {
+		if (e instanceof PPair) {
 			int len = consumed(e.get(0), depth);
 			if (len == -1) {
 				return -1;
@@ -112,7 +124,7 @@ public class TreePass extends CommonPass {
 			}
 			return len + len2;
 		}
-		if (e instanceof Expression.PChoice) {
+		if (e instanceof PChoice) {
 			int len = consumed(e.get(0), depth);
 			if (len == -1) {
 				return -1;
@@ -128,13 +140,13 @@ public class TreePass extends CommonPass {
 	}
 
 	private boolean checkTag(Expression e, int depth) {
-		if (e instanceof Expression.PNonTerminal) {
+		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
 				return checkTag(Expression.deref(e), depth + 1);
 			}
 			return false; // unchecked
 		}
-		if (e instanceof Expression.PTag) {
+		if (e instanceof PTag) {
 			return false;
 		}
 		for (Expression sub : e) {
@@ -146,13 +158,13 @@ public class TreePass extends CommonPass {
 	}
 
 	private boolean checkReplace(Expression e, int depth) {
-		if (e instanceof Expression.PNonTerminal) {
+		if (e instanceof PNonTerminal) {
 			if (depth < 10) {
 				return checkTag(Expression.deref(e), depth + 1);
 			}
 			return false; // unchecked
 		}
-		if (e instanceof Expression.PReplace) {
+		if (e instanceof PReplace) {
 			return false;
 		}
 		for (Expression sub : e) {
@@ -164,9 +176,9 @@ public class TreePass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitPair(Expression.PPair pair, Void a) {
-		if (pair.get(0) instanceof Expression.PTree) {
-			Expression.PTree tree = (Expression.PTree) pair.get(0);
+	public Expression visitPair(PPair pair, Void a) {
+		if (pair.get(0) instanceof PTree) {
+			PTree tree = (PTree) pair.get(0);
 			List<Expression> inners = Expression.newList(64);
 			Expression.addSequence(inners, tree.get(0));
 			List<Expression> l = Expression.newList(64);
@@ -186,7 +198,7 @@ public class TreePass extends CommonPass {
 			for (; i < l.size(); i++) {
 				remained.add(l.get(i));
 			}
-			tree = new Expression.PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners, null),
+			tree = new PTree(tree.folding, tree.label, tree.beginShift, Expression.newSequence(inners, null),
 					tree.tag, tree.value, endShift, null);
 			return optimized(pair,
 					Expression.newSequence(visitTree(tree, a), Expression.newSequence(remained, null), null));
@@ -195,13 +207,13 @@ public class TreePass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitLinkTree(Expression.PLinkTree p, Void a) {
-		if (p.get(0) instanceof Expression.PChoice) {
+	public Expression visitLinkTree(PLinkTree p, Void a) {
+		if (p.get(0) instanceof PChoice) {
 			Expression choice = p.get(0);
 			List<Expression> l = Expression.newList(choice.size());
 			for (Expression inner : choice) {
 				inner = rewrite(inner, a);
-				l.add(new Expression.PLinkTree(p.label, inner, null));
+				l.add(new PLinkTree(p.label, inner, null));
 			}
 			return optimized(p, Expression.newChoice(l, null));
 		}

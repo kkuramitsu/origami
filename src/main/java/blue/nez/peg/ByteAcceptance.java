@@ -16,7 +16,32 @@
 
 package blue.nez.peg;
 
-import blue.nez.peg.Expression.PNonTerminal;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 
 public enum ByteAcceptance {
 	Accept, Unconsumed, Reject;
@@ -70,7 +95,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitNonTerminal(Expression.PNonTerminal e, Integer ch) {
+		public ByteAcceptance visitNonTerminal(PNonTerminal e, Integer ch) {
 			Production p = e.getProduction();
 			return ByteAcceptance.acc(p, ch);
 			// if (this.memo != null) {
@@ -85,33 +110,33 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitEmpty(Expression.PEmpty e, Integer ch) {
+		public ByteAcceptance visitEmpty(PEmpty e, Integer ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitFail(Expression.PFail e, Integer ch) {
+		public ByteAcceptance visitFail(PFail e, Integer ch) {
 			return Reject;
 		}
 
 		@Override
-		public ByteAcceptance visitByte(Expression.PByte e, Integer ch) {
+		public ByteAcceptance visitByte(PByte e, Integer ch) {
 			return (e.byteChar == ch) ? Accept : Reject;
 		}
 
 		@Override
-		public ByteAcceptance visitByteSet(Expression.PByteSet e, Integer ch) {
+		public ByteAcceptance visitByteSet(PByteSet e, Integer ch) {
 			return (e.is(ch)) ? Accept : Reject;
 		}
 
 		@Override
-		public ByteAcceptance visitAny(Expression.PAny e, Integer ch) {
+		public ByteAcceptance visitAny(PAny e, Integer ch) {
 			return (ch == 0) ? Reject : Accept;
 			// return Accept;
 		}
 
 		@Override
-		public ByteAcceptance visitPair(Expression.PPair e, Integer ch) {
+		public ByteAcceptance visitPair(PPair e, Integer ch) {
 			ByteAcceptance r = accept(e.get(0), ch);
 			if (r == Unconsumed) {
 				return accept(e.get(1), ch);
@@ -120,7 +145,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitChoice(Expression.PChoice e, Integer ch) {
+		public ByteAcceptance visitChoice(PChoice e, Integer ch) {
 			boolean hasUnconsumed = false;
 			for (int i = 0; i < e.size(); i++) {
 				ByteAcceptance r = accept(e.get(i), ch);
@@ -135,7 +160,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitDispatch(Expression.PDispatch e, Integer ch) {
+		public ByteAcceptance visitDispatch(PDispatch e, Integer ch) {
 			int index = e.indexMap[ch] & 0xff;
 			if (index == 0) {
 				return Reject;
@@ -144,13 +169,13 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitOption(Expression.POption e, Integer ch) {
+		public ByteAcceptance visitOption(POption e, Integer ch) {
 			ByteAcceptance r = accept(e.get(0), ch);
 			return (r == Accept) ? r : Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitRepetition(Expression.PRepetition e, Integer ch) {
+		public ByteAcceptance visitRepetition(PRepetition e, Integer ch) {
 			if (e.isOneMore()) {
 				return accept(e.get(0), ch);
 			}
@@ -159,16 +184,16 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitAnd(Expression.PAnd e, Integer ch) {
+		public ByteAcceptance visitAnd(PAnd e, Integer ch) {
 			ByteAcceptance r = accept(e.get(0), ch);
 			return (r == Reject) ? r : Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitNot(Expression.PNot e, Integer ch) {
+		public ByteAcceptance visitNot(PNot e, Integer ch) {
 			Expression inner = e.get(0);
-			if (inner instanceof Expression.PByte || inner instanceof Expression.PByteSet
-					|| inner instanceof Expression.PAny) {
+			if (inner instanceof PByte || inner instanceof PByteSet
+					|| inner instanceof PAny) {
 				return accept(inner, ch) == Accept ? Reject : Unconsumed;
 			}
 			/* The code below works only if a single character in !(e) */
@@ -177,42 +202,42 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitTree(Expression.PTree e, Integer ch) {
+		public ByteAcceptance visitTree(PTree e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitLinkTree(Expression.PLinkTree e, Integer ch) {
+		public ByteAcceptance visitLinkTree(PLinkTree e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitTag(Expression.PTag e, Integer ch) {
+		public ByteAcceptance visitTag(PTag e, Integer ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitReplace(Expression.PReplace e, Integer ch) {
+		public ByteAcceptance visitReplace(PReplace e, Integer ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitDetree(Expression.PDetree e, Integer ch) {
+		public ByteAcceptance visitDetree(PDetree e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitSymbolScope(Expression.PSymbolScope e, Integer ch) {
+		public ByteAcceptance visitSymbolScope(PSymbolScope e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitSymbolAction(Expression.PSymbolAction e, Integer ch) {
+		public ByteAcceptance visitSymbolAction(PSymbolAction e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitSymbolPredicate(Expression.PSymbolPredicate e, Integer ch) {
+		public ByteAcceptance visitSymbolPredicate(PSymbolPredicate e, Integer ch) {
 			if (e.funcName == NezFunc.exists) {
 				return Unconsumed;
 			}
@@ -220,27 +245,27 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitScan(Expression.PScan e, Integer ch) {
+		public ByteAcceptance visitScan(PScan e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitRepeat(Expression.PRepeat e, Integer ch) {
+		public ByteAcceptance visitRepeat(PRepeat e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitIf(Expression.PIfCondition e, Integer ch) {
+		public ByteAcceptance visitIf(PIfCondition e, Integer ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitOn(Expression.POnCondition e, Integer ch) {
+		public ByteAcceptance visitOn(POnCondition e, Integer ch) {
 			return accept(e.get(0), ch);
 		}
 
 		@Override
-		public ByteAcceptance visitTrap(Expression.PTrap e, Integer ch) {
+		public ByteAcceptance visitTrap(PTrap e, Integer ch) {
 			return Unconsumed;
 		}
 	}

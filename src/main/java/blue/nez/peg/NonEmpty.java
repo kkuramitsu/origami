@@ -16,6 +16,33 @@
 
 package blue.nez.peg;
 
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
+
 public enum NonEmpty {
 	True, False, Unsure;
 
@@ -45,7 +72,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitNonTerminal(Expression.PNonTerminal e, Void a) {
+		public NonEmpty visitNonTerminal(PNonTerminal e, Void a) {
 			if (e.getGrammar() == null || e.getProduction() == null) {
 				return NonEmpty.False;
 			}
@@ -53,32 +80,32 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitEmpty(Expression.PEmpty e, Void a) {
+		public NonEmpty visitEmpty(PEmpty e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitFail(Expression.PFail e, Void a) {
+		public NonEmpty visitFail(PFail e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitByte(Expression.PByte e, Void a) {
+		public NonEmpty visitByte(PByte e, Void a) {
 			return NonEmpty.True;
 		}
 
 		@Override
-		public NonEmpty visitByteSet(Expression.PByteSet e, Void a) {
+		public NonEmpty visitByteSet(PByteSet e, Void a) {
 			return NonEmpty.True;
 		}
 
 		@Override
-		public NonEmpty visitAny(Expression.PAny e, Void a) {
+		public NonEmpty visitAny(PAny e, Void a) {
 			return NonEmpty.True;
 		}
 
 		@Override
-		public NonEmpty visitPair(Expression.PPair e, Void a) {
+		public NonEmpty visitPair(PPair e, Void a) {
 			if (this.check(e.get(0), a) == NonEmpty.True) {
 				return NonEmpty.True;
 			}
@@ -86,7 +113,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitChoice(Expression.PChoice e, Void a) {
+		public NonEmpty visitChoice(PChoice e, Void a) {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
@@ -106,7 +133,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitDispatch(Expression.PDispatch e, Void a) {
+		public NonEmpty visitDispatch(PDispatch e, Void a) {
 			boolean unconsumed = false;
 			boolean undecided = false;
 			for (Expression sub : e) {
@@ -126,12 +153,12 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitOption(Expression.POption e, Void a) {
+		public NonEmpty visitOption(POption e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitRepetition(Expression.PRepetition e, Void a) {
+		public NonEmpty visitRepetition(PRepetition e, Void a) {
 			if (e.isOneMore()) {
 				return this.check(e.get(0), a);
 			}
@@ -139,52 +166,52 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitAnd(Expression.PAnd e, Void a) {
+		public NonEmpty visitAnd(PAnd e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitNot(Expression.PNot e, Void a) {
+		public NonEmpty visitNot(PNot e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitTree(Expression.PTree e, Void a) {
+		public NonEmpty visitTree(PTree e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitLinkTree(Expression.PLinkTree e, Void a) {
+		public NonEmpty visitLinkTree(PLinkTree e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitTag(Expression.PTag e, Void a) {
+		public NonEmpty visitTag(PTag e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitReplace(Expression.PReplace e, Void a) {
+		public NonEmpty visitReplace(PReplace e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitDetree(Expression.PDetree e, Void a) {
+		public NonEmpty visitDetree(PDetree e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitSymbolScope(Expression.PSymbolScope e, Void a) {
+		public NonEmpty visitSymbolScope(PSymbolScope e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitSymbolAction(Expression.PSymbolAction e, Void a) {
+		public NonEmpty visitSymbolAction(PSymbolAction e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitSymbolPredicate(Expression.PSymbolPredicate e, Void a) {
+		public NonEmpty visitSymbolPredicate(PSymbolPredicate e, Void a) {
 			if (e.funcName == NezFunc.exists) {
 				return NonEmpty.Unsure;
 			}
@@ -192,28 +219,28 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitScan(Expression.PScan e, Void a) {
+		public NonEmpty visitScan(PScan e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitRepeat(Expression.PRepeat e, Void a) {
+		public NonEmpty visitRepeat(PRepeat e, Void a) {
 			/* There is a case where we repeat 0 times */
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitIf(Expression.PIfCondition e, Void a) {
+		public NonEmpty visitIf(PIfCondition e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitOn(Expression.POnCondition e, Void a) {
+		public NonEmpty visitOn(POnCondition e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
 		@Override
-		public NonEmpty visitTrap(Expression.PTrap e, Void a) {
+		public NonEmpty visitTrap(PTrap e, Void a) {
 			return NonEmpty.False;
 		}
 	}

@@ -25,6 +25,32 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.NezFunc;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
+import blue.nez.peg.expression.PAnd;
+import blue.nez.peg.expression.PAny;
+import blue.nez.peg.expression.PByte;
+import blue.nez.peg.expression.PByteSet;
+import blue.nez.peg.expression.PChoice;
+import blue.nez.peg.expression.PDetree;
+import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PEmpty;
+import blue.nez.peg.expression.PFail;
+import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PNonTerminal;
+import blue.nez.peg.expression.PNot;
+import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POption;
+import blue.nez.peg.expression.PPair;
+import blue.nez.peg.expression.PRepeat;
+import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PScan;
+import blue.nez.peg.expression.PSymbolAction;
+import blue.nez.peg.expression.PSymbolPredicate;
+import blue.nez.peg.expression.PSymbolScope;
+import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PTrap;
+import blue.nez.peg.expression.PTree;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
@@ -154,7 +180,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitEmpty(Expression.PEmpty p, NZ86Instruction next) {
+		public NZ86Instruction visitEmpty(PEmpty p, NZ86Instruction next) {
 			return next;
 		}
 
@@ -165,12 +191,12 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitFail(Expression.PFail p, NZ86Instruction next) {
+		public NZ86Instruction visitFail(PFail p, NZ86Instruction next) {
 			return this.commonFailure;
 		}
 
 		@Override
-		public NZ86Instruction visitByte(Expression.PByte p, NZ86Instruction next) {
+		public NZ86Instruction visitByte(PByte p, NZ86Instruction next) {
 			if (/* this.BinaryGrammar && */ p.byteChar == 0) {
 				return new NZ86.BinaryByte(next);
 			}
@@ -178,7 +204,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitByteSet(Expression.PByteSet p, NZ86Instruction next) {
+		public NZ86Instruction visitByteSet(PByteSet p, NZ86Instruction next) {
 			boolean[] b = p.byteSet();
 			if (this.BinaryGrammar && b[0]) {
 				return new NZ86.BinarySet(b, next);
@@ -188,12 +214,12 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitAny(Expression.PAny p, NZ86Instruction next) {
+		public NZ86Instruction visitAny(PAny p, NZ86Instruction next) {
 			return new NZ86.Any(next);
 		}
 
 		@Override
-		public final NZ86Instruction visitNonTerminal(Expression.PNonTerminal n, NZ86Instruction next) {
+		public final NZ86Instruction visitNonTerminal(PNonTerminal n, NZ86Instruction next) {
 			Production p = n.getProduction();
 			return new NZ86.Call(p.getUniqueName(), next);
 		}
@@ -209,17 +235,17 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public final NZ86Instruction visitOption(Expression.POption p, NZ86Instruction next) {
+		public final NZ86Instruction visitOption(POption p, NZ86Instruction next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof Expression.PByte) {
-					if (/* this.BinaryGrammar && */ ((Expression.PByte) inner).byteChar == 0) {
+				if (inner instanceof PByte) {
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar == 0) {
 						return new NZ86.BinaryOByte(next);
 					}
-					return new NZ86.OByte(((Expression.PByte) inner).byteChar, next);
+					return new NZ86.OByte(((PByte) inner).byteChar, next);
 				}
-				if (inner instanceof Expression.PByteSet) {
-					boolean[] b = ((Expression.PByteSet) inner).byteSet();
+				if (inner instanceof PByteSet) {
+					boolean[] b = ((PByteSet) inner).byteSet();
 					if (this.BinaryGrammar && b[0]) {
 						return new NZ86.BinaryOSet(b, next);
 					}
@@ -236,7 +262,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitRepetition(Expression.PRepetition p, NZ86Instruction next) {
+		public NZ86Instruction visitRepetition(PRepetition p, NZ86Instruction next) {
 			NZ86Instruction next2 = this.compileRepetition(p, next);
 			if (p.isOneMore()) {
 				next2 = this.compile(p.get(0), next2);
@@ -244,17 +270,17 @@ public class NZ86Compiler implements ParserCompiler {
 			return next2;
 		}
 
-		private NZ86Instruction compileRepetition(Expression.PRepetition p, NZ86Instruction next) {
+		private NZ86Instruction compileRepetition(PRepetition p, NZ86Instruction next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof Expression.PByte) {
-					if (/* this.BinaryGrammar && */ ((Expression.PByte) inner).byteChar == 0) {
+				if (inner instanceof PByte) {
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar == 0) {
 						return new NZ86.BinaryRByte(next);
 					}
-					return new NZ86.RByte(((Expression.PByte) inner).byteChar, next);
+					return new NZ86.RByte(((PByte) inner).byteChar, next);
 				}
-				if (inner instanceof Expression.PByteSet) {
-					boolean[] b = ((Expression.PByteSet) inner).byteSet();
+				if (inner instanceof PByteSet) {
+					boolean[] b = ((PByteSet) inner).byteSet();
 					if (this.BinaryGrammar && b[0]) {
 						return new NZ86.BinaryRSet(b, next);
 					}
@@ -273,29 +299,29 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitAnd(Expression.PAnd p, NZ86Instruction next) {
+		public NZ86Instruction visitAnd(PAnd p, NZ86Instruction next) {
 			NZ86Instruction inner = this.compile(p.get(0), new NZ86.Back(next));
 			return new NZ86.Pos(inner);
 		}
 
 		@Override
-		public final NZ86Instruction visitNot(Expression.PNot p, NZ86Instruction next) {
+		public final NZ86Instruction visitNot(PNot p, NZ86Instruction next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof Expression.PByte) {
-					if (/* this.BinaryGrammar && */ ((Expression.PByte) inner).byteChar != 0) {
-						return new NZ86.BinaryNByte(((Expression.PByte) inner).byteChar, next);
+				if (inner instanceof PByte) {
+					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar != 0) {
+						return new NZ86.BinaryNByte(((PByte) inner).byteChar, next);
 					}
-					return new NZ86.NByte(((Expression.PByte) inner).byteChar, next);
+					return new NZ86.NByte(((PByte) inner).byteChar, next);
 				}
-				if (inner instanceof Expression.PByteSet) {
-					boolean[] b = ((Expression.PByteSet) inner).byteSet();
+				if (inner instanceof PByteSet) {
+					boolean[] b = ((PByteSet) inner).byteSet();
 					if (this.BinaryGrammar && b[0] == false) {
 						return new NZ86.BinaryNSet(b, next);
 					}
 					return new NZ86.NSet(b, next);
 				}
-				if (inner instanceof Expression.PAny) {
+				if (inner instanceof PAny) {
 					return new NZ86.NAny(next);
 				}
 				if (Expression.isString(inner)) {
@@ -308,7 +334,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitPair(Expression.PPair p, NZ86Instruction next) {
+		public NZ86Instruction visitPair(PPair p, NZ86Instruction next) {
 			NZ86Instruction nextStart = next;
 			for (int i = p.size() - 1; i >= 0; i--) {
 				Expression e = p.get(i);
@@ -318,7 +344,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public final NZ86Instruction visitChoice(Expression.PChoice p, NZ86Instruction next) {
+		public final NZ86Instruction visitChoice(PChoice p, NZ86Instruction next) {
 			NZ86Instruction nextChoice = this.compile(p.get(p.size() - 1), next);
 			for (int i = p.size() - 2; i >= 0; i--) {
 				Expression e = p.get(i);
@@ -328,7 +354,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public final NZ86Instruction visitDispatch(Expression.PDispatch p, NZ86Instruction next) {
+		public final NZ86Instruction visitDispatch(PDispatch p, NZ86Instruction next) {
 			NZ86Instruction[] compiled = new NZ86Instruction[p.size() + 1];
 			compiled[0] = this.commonFailure;
 			if (this.isAllD(p)) {
@@ -344,7 +370,7 @@ public class NZ86Compiler implements ParserCompiler {
 			}
 		}
 
-		private boolean isAllD(Expression.PDispatch p) {
+		private boolean isAllD(PDispatch p) {
 			for (int i = 0; i < p.size(); i++) {
 				if (!this.isD(p.get(i))) {
 					return false;
@@ -354,24 +380,24 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		private boolean isD(Expression e) {
-			if (e instanceof Expression.PPair) {
-				if (e.get(0) instanceof Expression.PAny) {
+			if (e instanceof PPair) {
+				if (e.get(0) instanceof PAny) {
 					return true;
 				}
 				return false;
 			}
-			return (e instanceof Expression.PAny);
+			return (e instanceof PAny);
 		}
 
 		private Expression nextD(Expression e) {
-			if (e instanceof Expression.PPair) {
+			if (e instanceof PPair) {
 				return e.get(1);
 			}
 			return Expression.defaultEmpty;
 		}
 
 		@Override
-		public NZ86Instruction visitTree(Expression.PTree p, NZ86Instruction next) {
+		public NZ86Instruction visitTree(PTree p, NZ86Instruction next) {
 			if (this.TreeConstruction) {
 				next = new NZ86.TEnd(p.tag, p.value, p.endShift, next);
 				next = this.compile(p.get(0), next);
@@ -386,7 +412,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitTag(Expression.PTag p, NZ86Instruction next) {
+		public NZ86Instruction visitTag(PTag p, NZ86Instruction next) {
 			if (this.TreeConstruction) {
 				return new NZ86.TTag(p.tag, next);
 			}
@@ -394,7 +420,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitReplace(Expression.PReplace p, NZ86Instruction next) {
+		public NZ86Instruction visitReplace(PReplace p, NZ86Instruction next) {
 			if (this.TreeConstruction) {
 				return new NZ86.TReplace(p.value, next);
 			}
@@ -404,7 +430,7 @@ public class NZ86Compiler implements ParserCompiler {
 		// Tree
 
 		@Override
-		public final NZ86Instruction visitLinkTree(Expression.PLinkTree p, NZ86Instruction next) {
+		public final NZ86Instruction visitLinkTree(PLinkTree p, NZ86Instruction next) {
 			if (this.TreeConstruction) {
 				next = new NZ86.TLink(p.label, next);
 				next = this.compile(p.get(0), next);
@@ -414,7 +440,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitDetree(Expression.PDetree p, NZ86Instruction next) {
+		public NZ86Instruction visitDetree(PDetree p, NZ86Instruction next) {
 			if (this.TreeConstruction) {
 				next = new NZ86.TPop(next);
 				next = this.compile(p.get(0), next);
@@ -426,7 +452,7 @@ public class NZ86Compiler implements ParserCompiler {
 		/* Symbol */
 
 		@Override
-		public NZ86Instruction visitSymbolScope(Expression.PSymbolScope p, NZ86Instruction next) {
+		public NZ86Instruction visitSymbolScope(PSymbolScope p, NZ86Instruction next) {
 			if (p.funcName == NezFunc.block) {
 				next = new NZ86.SClose(next);
 				next = this.compile(p.get(0), next);
@@ -439,12 +465,12 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitSymbolAction(Expression.PSymbolAction p, NZ86Instruction next) {
+		public NZ86Instruction visitSymbolAction(PSymbolAction p, NZ86Instruction next) {
 			return new NZ86.Pos(this.compile(p.get(0), new NZ86.SDef(p.table, next)));
 		}
 
 		@Override
-		public NZ86Instruction visitSymbolPredicate(Expression.PSymbolPredicate p, NZ86Instruction next) {
+		public NZ86Instruction visitSymbolPredicate(PSymbolPredicate p, NZ86Instruction next) {
 			switch (p.funcName) {
 			case exists:
 				if (p.symbol == null) {
@@ -465,12 +491,12 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitScan(Expression.PScan p, NZ86Instruction next) {
+		public NZ86Instruction visitScan(PScan p, NZ86Instruction next) {
 			return new NZ86.Pos(this.compile(p.get(0), new NZ86.NScan(p.mask, p.shift, next)));
 		}
 
 		@Override
-		public NZ86Instruction visitRepeat(Expression.PRepeat p, NZ86Instruction next) {
+		public NZ86Instruction visitRepeat(PRepeat p, NZ86Instruction next) {
 			NZ86Instruction check = new NZ86.NDec(next, null);
 			NZ86Instruction repeated = this.compile(p.get(0), check);
 			check.next = repeated;
@@ -478,7 +504,7 @@ public class NZ86Compiler implements ParserCompiler {
 		}
 
 		@Override
-		public NZ86Instruction visitTrap(Expression.PTrap p, NZ86Instruction next) {
+		public NZ86Instruction visitTrap(PTrap p, NZ86Instruction next) {
 			if (p.trapid != -1) {
 				return new NZ86.Trap(p.trapid, p.uid, next);
 			}
@@ -494,13 +520,13 @@ public class NZ86Compiler implements ParserCompiler {
 		// Unused
 
 		@Override
-		public NZ86Instruction visitIf(Expression.PIfCondition e, NZ86Instruction next) {
+		public NZ86Instruction visitIf(PIfCondition e, NZ86Instruction next) {
 			NZ86Compiler.this.options.verbose("unremoved if condition", e);
 			return next;
 		}
 
 		@Override
-		public NZ86Instruction visitOn(Expression.POnCondition e, NZ86Instruction next) {
+		public NZ86Instruction visitOn(POnCondition e, NZ86Instruction next) {
 			NZ86Compiler.this.options.verbose("unremoved on condition", e);
 			return this.compile(e.get(0), next);
 		}
