@@ -16,8 +16,10 @@
 
 package blue.nez.parser;
 
-import blue.nez.parser.ParserContext.SymbolAction;
+import blue.nez.ast.Symbol;
 import blue.nez.parser.ParserContext.SymbolDefinition;
+import blue.nez.parser.ParserContext.SymbolExist;
+import blue.nez.parser.ParserContext.SymbolReset;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.expression.PAnd;
@@ -85,22 +87,21 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitPair(PPair e, ParserContext<T> px) {
-		if (this.parse(e.get(0), px)) {
-			return this.parse(e.get(1), px);
+		if (!this.parse(e.get(0), px)) {
+			return false;
 		}
-		return false;
+		return this.parse(e.get(1), px);
 	}
 
 	@Override
 	public Boolean visitChoice(PChoice e, ParserContext<T> px) {
 		int pos = px.pos;
-		T node = px.saveTree();
+		T node = px.loadTree();
 		int treeLog = px.loadTreeLog();
 		Object state = px.loadSymbolTable();
 		for (Expression sub : e) {
 			px.backtrack(pos);
-			px.left = node;
-			px.backTree(node);
+			px.storeTree(node);
 			px.storeTreeLog(treeLog);
 			px.storeSymbolTable(state);
 			if (this.parse(sub, px)) {
@@ -119,13 +120,12 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitOption(POption e, ParserContext<T> px) {
 		int pos = px.pos;
-		T node = px.saveTree();
+		T node = px.loadTree();
 		int treeLog = px.loadTreeLog();
 		Object state = px.loadSymbolTable();
 		if (!this.parse(e.get(0), px)) {
 			px.backtrack(pos);
-			px.left = node;
-			px.backTree(node);
+			px.storeTree(node);
 			px.storeTreeLog(treeLog);
 			px.storeSymbolTable(state);
 		}
@@ -135,7 +135,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitRepetition(PRepetition e, ParserContext<T> px) {
 		int pos = px.pos;
-		T node = px.saveTree();
+		T node = px.loadTree();
 		int treeLog = px.loadTreeLog();
 		Object state = px.loadSymbolTable();
 		int c = 0;
@@ -144,14 +144,14 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 				break;
 			}
 			pos = px.pos;
-			node = px.saveTree();
+			node = px.loadTree();
 			treeLog = px.loadTreeLog();
 			state = px.loadSymbolTable();
 		}
 		if (c > e.min) {
 			px.backtrack(pos);
 			px.left = node;
-			px.backTree(node);
+			px.storeTree(node);
 			px.storeTreeLog(treeLog);
 			px.storeSymbolTable(state);
 			return true;
@@ -162,25 +162,24 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitAnd(PAnd e, ParserContext<T> px) {
 		int pos = px.pos;
-		T node = px.saveTree();
-		if (this.parse(e.get(0), px)) {
-			px.backtrack(pos);
-			px.left = node;
-			return true;
+		T node = px.loadTree();
+		if (!this.parse(e.get(0), px)) {
+			return false;
 		}
-		return false;
+		px.backtrack(pos);
+		px.storeTree(node);
+		return true;
 	}
 
 	@Override
 	public Boolean visitNot(PNot e, ParserContext<T> px) {
 		int pos = px.pos;
-		T node = px.saveTree();
+		T node = px.loadTree();
 		int treeLog = px.loadTreeLog();
 		Object state = px.loadSymbolTable();
 		if (!this.parse(e.get(0), px)) {
 			px.backtrack(pos);
-			px.left = node;
-			px.backTree(node);
+			px.storeTree(node);
 			px.storeTreeLog(treeLog);
 			px.storeSymbolTable(state);
 			return true;
@@ -190,31 +189,40 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitTree(PTree e, ParserContext<T> px) {
-
+		if (e.folding) {
+			px.foldTree(e.beginShift, e.label);
+		} else {
+			px.beginTree(e.beginShift);
+		}
 		if (!this.parse(e.get(0), px)) {
 			return false;
 		}
-
-		return null;
+		px.endTree(e.endShift, e.tag, e.value);
+		return true;
 	}
 
 	@Override
 	public Boolean visitDetree(PDetree e, ParserContext<T> px) {
-
+		T node = px.loadTree();
+		int treeLog = px.loadTreeLog();
 		if (!this.parse(e.get(0), px)) {
 			return false;
 		}
-
-		return null;
+		px.storeTreeLog(treeLog);
+		px.storeTree(node);
+		return true;
 	}
 
 	@Override
 	public Boolean visitLinkTree(PLinkTree e, ParserContext<T> px) {
-
+		T node = px.loadTree();
+		int treeLog = px.loadTreeLog();
 		if (!this.parse(e.get(0), px)) {
 			return false;
 		}
-
+		px.storeTreeLog(treeLog);
+		px.linkTree(node, e.label);
+		px.storeTree(node);
 		return true;
 	}
 
@@ -234,7 +242,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	public Boolean visitSymbolScope(PSymbolScope e, ParserContext<T> px) {
 		Object state = px.loadSymbolTable();
 		if (e.label != null) { // localScope
-
+			new SymbolReset().mutate(px, e.label, 0);
 		}
 		if (!this.parse(e.get(0), px)) {
 			return false;
@@ -246,46 +254,70 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	@Override
 	public Boolean visitSymbolAction(PSymbolAction e, ParserContext<T> px) {
 		int ppos = px.pos;
-		SymbolAction action = new SymbolDefinition();
-		action.mutate(px, e.label, ppos);
-		// TODO Auto-generated method stub
-		return null;
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
+		e.action.mutate(px, e.label, ppos);
+		return true;
 	}
 
 	@Override
 	public Boolean visitSymbolPredicate(PSymbolPredicate e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		int ppos = px.pos;
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
+		e.pred.match(px, e.label, ppos, e.option);
+		return true;
 	}
 
 	@Override
 	public Boolean visitIf(PIfCondition e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		Symbol label = Symbol.unique(e.flagName());
+		boolean b = new SymbolExist().match(px, label, px.pos, null);
+		return e.isPositive() ? b : !b;
 	}
 
 	@Override
 	public Boolean visitOn(POnCondition e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		Symbol label = Symbol.unique(e.flagName());
+		Object state = px.loadSymbolTable();
+		if (e.isPositive()) {
+			new SymbolDefinition().mutate(px, label, px.pos);
+		} else {
+			new SymbolReset().mutate(px, label, px.pos);
+		}
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
+		px.storeSymbolTable(state);
+		return true;
 	}
 
 	@Override
-	public Boolean visitScan(PScan scanf, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+	public Boolean visitScan(PScan e, ParserContext<T> px) {
+		int ppos = px.pos;
+		if (!this.parse(e.get(0), px)) {
+			return false;
+		}
+		px.scanCount(ppos, e.mask, e.shift);
+		return true;
 	}
 
 	@Override
 	public Boolean visitRepeat(PRepeat e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		// int ppos = px.pos;
+		while (this.parse(e.get(0), px)) {
+			if (!px.decCount()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
 	public Boolean visitTrap(PTrap e, ParserContext<T> px) {
-		// TODO Auto-generated method stub
-		return null;
+		return true;
 	}
 
 }

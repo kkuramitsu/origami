@@ -211,11 +211,11 @@ public abstract class ParserContext<T> {
 		}
 	}
 
-	public final T saveTree() {
+	public final T loadTree() {
 		return this.left;
 	}
 
-	public final void backTree(T tree) {
+	public final void storeTree(T tree) {
 		this.left = tree;
 	}
 
@@ -412,7 +412,6 @@ public abstract class ParserContext<T> {
 		public String toString() {
 			return "is";
 		}
-
 	}
 
 	public static class SymbolContains implements SymbolPredicate {
@@ -434,198 +433,7 @@ public abstract class ParserContext<T> {
 		public String toString() {
 			return "contains";
 		}
-
 	}
-
-	// private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to
-	// distinguish
-	//
-	// // others
-	// private SymbolTableEntry[] tables = new SymbolTableEntry[0];
-	// private int tableSize = 0;
-	//
-	// private int stateValue = 0;
-	// private int stateCount = 0;
-	//
-	// static final class SymbolTableEntry {
-	// int stateValue;
-	// Symbol table;
-	// long code;
-	// byte[] symbol; // if uft8 is null, hidden
-	//
-	// // @Override
-	// // public String toString() {
-	// // StringBuilder sb = new StringBuilder();
-	// // sb.append('[');
-	// // sb.append(stateValue);
-	// // sb.append(", ");
-	// // sb.append(table);
-	// // sb.append(", ");
-	// // sb.append((symbol == null) ? "<masked>" : new String(symbol));
-	// // sb.append("]");
-	// // return sb.toString();
-	// // }
-	// }
-	//
-	// private final static long hash(byte[] utf8, int ppos, int pos) {
-	// long hashCode = 1;
-	// for (int i = ppos; i < pos; i++) {
-	// hashCode = hashCode * 31 + (utf8[i] & 0xff);
-	// }
-	// return hashCode;
-	// }
-	//
-	// private final static boolean equalsBytes(byte[] utf8, byte[] b) {
-	// if (utf8.length == b.length) {
-	// for (int i = 0; i < utf8.length; i++) {
-	// if (utf8[i] != b[i]) {
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// private void push(Symbol table, long code, byte[] utf8) {
-	// if (!(this.tableSize < this.tables.length)) {
-	// SymbolTableEntry[] newtable = new SymbolTableEntry[this.tables.length +
-	// 256];
-	// System.arraycopy(this.tables, 0, newtable, 0, this.tables.length);
-	// for (int i = this.tables.length; i < newtable.length; i++) {
-	// newtable[i] = new SymbolTableEntry();
-	// }
-	// this.tables = newtable;
-	// }
-	// SymbolTableEntry entry = this.tables[this.tableSize];
-	// this.tableSize++;
-	// if (entry.table == table && equalsBytes(entry.symbol, utf8)) {
-	// // reuse state value
-	// entry.code = code;
-	// this.stateValue = entry.stateValue;
-	// } else {
-	// entry.table = table;
-	// entry.code = code;
-	// entry.symbol = utf8;
-	//
-	// this.stateCount += 1;
-	// this.stateValue = this.stateCount;
-	// entry.stateValue = this.stateCount;
-	// }
-	// }
-	//
-	// public final int saveSymbolPoint() {
-	// return this.tableSize;
-	// }
-	//
-	// public final void backSymbolPoint(int savePoint) {
-	// if (this.tableSize != savePoint) {
-	// this.tableSize = savePoint;
-	// if (this.tableSize == 0) {
-	// this.stateValue = 0;
-	// } else {
-	// this.stateValue = this.tables[savePoint - 1].stateValue;
-	// }
-	// }
-	// }
-	//
-	// public final void addSymbol(Symbol table, int ppos) {
-	// byte[] b = this.subByte(ppos, this.pos);
-	// this.push(table, hash(b, 0, b.length), b);
-	// }
-	//
-	// public final void addSymbolMask(Symbol table) {
-	// this.push(table, 0, NullSymbol);
-	// }
-	//
-	// public final boolean exists(Symbol table) {
-	// for (int i = this.tableSize - 1; i >= 0; i--) {
-	// SymbolTableEntry entry = this.tables[i];
-	// if (entry.table == table) {
-	// return entry.symbol != NullSymbol;
-	// }
-	// }
-	// return false;
-	// }
-	//
-	// public final boolean existsSymbol(Symbol table, byte[] symbol) {
-	// long code = hash(symbol, 0, symbol.length);
-	// for (int i = this.tableSize - 1; i >= 0; i--) {
-	// SymbolTableEntry entry = this.tables[i];
-	// if (entry.table == table) {
-	// if (entry.symbol == NullSymbol) {
-	// return false; // masked
-	// }
-	// if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
-	// return true;
-	// }
-	// }
-	// }
-	// return false;
-	// }
-	//
-	// public final boolean matchSymbol(Symbol table) {
-	// for (int i = this.tableSize - 1; i >= 0; i--) {
-	// SymbolTableEntry entry = this.tables[i];
-	// if (entry.table == table) {
-	// if (entry.symbol == NullSymbol) {
-	// return false; // masked
-	// }
-	// return this.match(entry.symbol);
-	// }
-	// }
-	// return false;
-	// }
-	//
-	// private final long hashInputs(int ppos, int pos) {
-	// long hashCode = 1;
-	// for (int i = ppos; i < pos; i++) {
-	// hashCode = hashCode * 31 + (this.byteAt(i) & 0xff);
-	// }
-	// return hashCode;
-	// }
-	//
-	// private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
-	// if ((pos - ppos) == b2.length) {
-	// for (int i = 0; i < b2.length; i++) {
-	// if (this.byteAt(ppos + i) != b2[i]) {
-	// return false;
-	// }
-	// }
-	// return true;
-	// }
-	// return false;
-	// }
-	//
-	// public final boolean equals(Symbol table, int ppos) {
-	// for (int i = this.tableSize - 1; i >= 0; i--) {
-	// SymbolTableEntry entry = this.tables[i];
-	// if (entry.table == table) {
-	// if (entry.symbol == NullSymbol) {
-	// return false; // masked
-	// }
-	// return this.equalsInputs(ppos, this.pos, entry.symbol);
-	// }
-	// }
-	// return false;
-	// }
-	//
-	// public boolean contains(Symbol table, int ppos) {
-	// long code = this.hashInputs(ppos, this.pos);
-	// for (int i = this.tableSize - 1; i >= 0; i--) {
-	// SymbolTableEntry entry = this.tables[i];
-	// if (entry.table == table) {
-	// if (entry.symbol == NullSymbol) {
-	// return false; // masked
-	// }
-	// if (code == entry.code && this.equalsInputs(ppos, this.pos,
-	// entry.symbol)) {
-	// return true;
-	// }
-	// }
-	// }
-	// return false;
-	// }
 
 	// Counter ------------------------------------------------------------
 

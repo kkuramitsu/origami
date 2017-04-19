@@ -223,12 +223,12 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 		StackData s = this.popStack();
 		this.storeTreeLog(s.value);
 		this.linkTree((T) s.ref, label);
-		this.left = (T) s.ref;
+		this.storeTree((T) s.ref);
 	}
 
 	public final void pushTree() {
 		StackData s = this.newUnusedStack();
-		s.ref = this.left;
+		s.ref = this.loadTree();
 		s.value = this.loadTreeLog();
 	}
 
@@ -236,7 +236,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 	public final void popTree() {
 		StackData s = this.popStack();
 		this.storeTreeLog(s.value);
-		this.left = (T) s.ref;
+		this.storeTree((T) s.ref);
 	}
 
 	/* ----------------------------------------------------------------- */

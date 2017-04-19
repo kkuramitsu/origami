@@ -688,12 +688,6 @@ public abstract class ParserGenerator
 			return null;
 		}
 
-		// @Override
-		// public Object visitMultiByte(Expression.MultiByte e, Object a) {
-		// DeclMatchText(e.byteseq);
-		// return null;
-		// }
-
 		@Override
 		public Object visitPair(PPair e, Object a) {
 			return this.visitInnerAll(e);
@@ -739,16 +733,6 @@ public abstract class ParserGenerator
 			this.checkNonLexicalInner(e.get(0));
 			return null;
 		}
-
-		// @Override
-		// public Object visitOneMore(Expression.OneMore e, Object a) {
-		// if (Optimization && e.get(0) instanceof Expression.ByteSet) {
-		// DeclSet(((Expression.ByteSet) e.get(0)).byteset(), true);
-		// return null;
-		// }
-		// checkNonLexicalInner(e.get(0));
-		// return null;
-		// }
 
 		@Override
 		public Object visitAnd(PAnd e, Object a) {
