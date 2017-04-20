@@ -41,7 +41,7 @@ public abstract class ParserSource implements Source {
 
 	@Override
 	public Source subSource(long startIndex, long endIndex) {
-		return new StringSource(this.getResourceName(), this.linenum(startIndex), this.subByte(startIndex, endIndex),
+		return new StringSource(this.getResourceName(), this.linenum(startIndex), this.subBytes(startIndex, endIndex),
 				false);
 	}
 

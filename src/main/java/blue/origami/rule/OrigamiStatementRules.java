@@ -136,8 +136,8 @@ public class OrigamiStatementRules implements OImportable {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Set<String> option = NoSubSymbols;
-			String alias = t.getText(_name, null);
-			String path = t.get(_path).toText();
+			String alias = t.getStringAt(_name, null);
+			String path = t.get(_path).getString();
 			if (path.endsWith(".*")) {
 				option = AllSubSymbols;
 				path = path.substring(0, path.length() - 2);
@@ -159,7 +159,7 @@ public class OrigamiStatementRules implements OImportable {
 			if (t != null) {
 				Set<String> ops = new HashSet<>();
 				for (Tree<?> sub : t) {
-					ops.add(sub.toText());
+					ops.add(sub.getString());
 				}
 				return ops;
 			}
@@ -171,7 +171,7 @@ public class OrigamiStatementRules implements OImportable {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OAnno anno = this.parseAnno(env, "public,static,final", t.get(_anno, null));
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
 			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null),
 					this.getDefaultParamType(env));
@@ -226,9 +226,9 @@ public class OrigamiStatementRules implements OImportable {
 			}
 			if (t.has(_expr)) {
 				OCode expr = this.typeExpr(env, t.get(_expr));
-				return new BreakCode(env, t.getText(_label, null), expr);
+				return new BreakCode(env, t.getStringAt(_label, null), expr);
 			}
-			return new BreakCode(env, t.getText(_label, null));
+			return new BreakCode(env, t.getStringAt(_label, null));
 		}
 	};
 
@@ -241,9 +241,9 @@ public class OrigamiStatementRules implements OImportable {
 			}
 			if (t.has(_expr)) {
 				OCode expr = this.typeExpr(env, t.get(_expr));
-				return new ContinueCode(env, t.getText(_label, null), expr);
+				return new ContinueCode(env, t.getStringAt(_label, null), expr);
 			}
-			return new ContinueCode(env, t.getText(_label, null));
+			return new ContinueCode(env, t.getStringAt(_label, null));
 
 		}
 	};
@@ -279,7 +279,7 @@ public class OrigamiStatementRules implements OImportable {
 				Tree<?> catchNode = t.get(_catch);
 				int i = 0;
 				for (Tree<?> sub : catchNode) {
-					String name = sub.getText(_name, "");
+					String name = sub.getStringAt(_name, "");
 					OType type = this.parseType(env, sub.get(_type, null), env.t(Exception.class));
 					OEnv lenv = env.newEnv();
 					lenv.add(sub.get(_name), name, new OLocalVariable(name, type));

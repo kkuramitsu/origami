@@ -165,7 +165,7 @@ public class FileSource extends ParserSource {
 	}
 
 	@Override
-	public final byte[] subByte(long startIndex, long endIndex) {
+	public final byte[] subBytes(long startIndex, long endIndex) {
 		byte[] b = null;
 		if (endIndex > startIndex) {
 			long off_s = buffer_alignment(startIndex);

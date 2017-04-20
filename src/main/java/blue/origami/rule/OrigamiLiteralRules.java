@@ -52,7 +52,7 @@ public class OrigamiLiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule CharExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String s = OStringUtils.unquoteString(t.toText());
+			String s = OStringUtils.unquoteString(t.getString());
 			Object v = null;
 			if (s.length() == 1) {
 				v = s.charAt(0);
@@ -67,7 +67,7 @@ public class OrigamiLiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule StringExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return env.v(OStringUtils.unquoteString(t.toText()));
+			return env.v(OStringUtils.unquoteString(t.getString()));
 		}
 
 	};
@@ -97,7 +97,7 @@ public class OrigamiLiteralRules implements OImportable, TypeAnalysis {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			Messenger m = new Messenger();
-			String text = t.toText().replace("_", "");
+			String text = t.getString().replace("_", "");
 			int radix = 10;
 			if (text.endsWith("L") || text.endsWith("l")) {
 				text = text.substring(0, text.length() - 1);

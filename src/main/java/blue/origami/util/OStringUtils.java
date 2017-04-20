@@ -1,21 +1,13 @@
 package blue.origami.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 
 public abstract class OStringUtils {
-
-	private final static int E = 1;
-
-	final static int[] utf8LengthMatrix = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, E, E, E, E, E,
-			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E,
-			E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, E, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4,
-			4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, E, E, 0 /* EOF */
-	};
 
 	public final static String newString(byte[] utf8) {
 		try {
@@ -35,22 +27,31 @@ public abstract class OStringUtils {
 		return text.getBytes();
 	}
 
-	public final static byte[] utf8(String text, int padding) {
-		byte[] u = utf8(text);
-		if (padding > 0) {
-			byte[] n = new byte[u.length + padding];
-			System.arraycopy(u, 0, n, 0, u.length);
-			u = n;
+	public static boolean isValidUTF8(byte[] input) {
+		CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
+		try {
+			cs.decode(ByteBuffer.wrap(input));
+			return true;
+		} catch (CharacterCodingException e) {
+			return false;
 		}
-		return u;
 	}
 
-	// public final static int lengthOfUtf8(int ch) {
-	// return StringUtils.utf8LengthMatrix[ch];
+	public static void formatBytes(StringBuilder sb, byte[] chunks) {
+		sb.append("0x");
+		for (byte c : chunks) {
+			sb.append(String.format("%02x", c & 0xff));
+		}
+	}
+
+	// public final static byte[] utf8(String text, int padding) {
+	// byte[] u = utf8(text);
+	// if (padding > 0) {
+	// byte[] n = new byte[u.length + padding];
+	// System.arraycopy(u, 0, n, 0, u.length);
+	// u = n;
 	// }
-	//
-	// public final static int lengthOfUtf8(byte ch) {
-	// return StringUtils.utf8LengthMatrix[ch & 0xff];
+	// return u;
 	// }
 
 	/* format */
@@ -221,7 +222,7 @@ public abstract class OStringUtils {
 		}
 
 		final boolean hasChar() {
-			return (pos < this.text.length());
+			return (this.pos < this.text.length());
 		}
 
 		public final char readChar() {

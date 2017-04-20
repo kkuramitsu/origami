@@ -162,7 +162,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OCode expr = IrohaRules.this.typeExpr(env, t.get(_expr));
 			OCode file = env.v(t.getSource().getResourceName());
 			OCode linenum = env.v(t.getSource().linenum(t.getSourcePosition()));
-			OCode code = env.v(t.get(_expr).toText());
+			OCode code = env.v(t.get(_expr).getString());
 			OCode type = env.v(expr.getType().toString());
 			return OCallSite.findParamCode(env, OFuncCallSite.class, "p", expr, file, linenum, code, type);
 		}
@@ -273,7 +273,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			HashSet<String> duplicatedChecker = new HashSet<>();
 			for (int i = 0; i < t.size(); i++) {
 				Tree<?> e = t.get(i);
-				String key = e.getText(_name, "#");
+				String key = e.getStringAt(_name, "#");
 				OCode element = IrohaRules.this.typeExpr(env, e.get(_value));
 				if (vtype.isUntyped()) {
 					vtype = element.getType();
@@ -343,7 +343,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			HashSet<String> duplicatedChecker = new HashSet<>();
 			for (int i = 0; i < t.size(); i++) {
 				Tree<?> e = t.get(i);
-				String key = e.getText(_name, "#");
+				String key = e.getStringAt(_name, "#");
 				OCode element = IrohaRules.this.typeExpr(env, e.get(_value));
 				if (e.has(_name) && "NameExpr".equals(e.get(_name).getTag().getSymbol())) {
 					OType ty = OTypeName.getType(env, key);
@@ -398,7 +398,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 	public OTypeRule ForEachExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 			OCode iterCode = OrigamiIterator.newIteratorCode(env, IrohaRules.this.ensureTypedExpr(env, t.get(_expr)));
 			OCode nextCode = ForEachCode.nextCode(env, iterCode);
 			OType nameType = nextCode.getType();
@@ -543,7 +543,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			/* annotations */
 			OAnno anno = IrohaRules.this.parseAnno(env, "public", t.get(_anno, null));
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 
 			/* extends */
 			OType superType = env.t(Object.class);
@@ -589,7 +589,7 @@ public class IrohaRules implements OImportable, OSymbols, SyntaxAnalysis {
 			OAnno anno = IrohaRules.this.parseAnno(env, "public", t.get(_anno, null));
 			OType rtype = IrohaRules.this.parseType(env, t.get(_type, null), env.t(OUntypedType.class));
 
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			String[] paramNames = IrohaRules.this.parseParamNames(env, t.get(_param, null));
 			OType[] paramTypes = IrohaRules.this.parseParamTypes(env, paramNames, t.get(_param, null),
 					env.t(AnyType.class));

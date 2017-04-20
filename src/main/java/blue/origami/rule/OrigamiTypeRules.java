@@ -43,19 +43,19 @@ public class OrigamiTypeRules implements OImportable, OSymbols, TypeAnalysis {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OType type = this.parseType(env, t);
 			if (type == null) {
-				throw new TypeNotFoundException(env, t, OFmt.undefined_type__YY0, t.toText());
+				throw new TypeNotFoundException(env, t, OFmt.undefined_type__YY0, t.getString());
 			}
 			return new TypeValueCode(type);
 		}
 
 		@Override
 		public OType parseType(OEnv env, Tree<?> t) {
-			String name = t.toText();
+			String name = t.getString();
 			if (name.indexOf('.') > 0) {
 				try {
 					return env.t(Class.forName(name));
 				} catch (ClassNotFoundException e) {
-					throw new TypeNotFoundException(env, t, OFmt.unfound_class__YY0_by_YY1, t.toText(), e);
+					throw new TypeNotFoundException(env, t, OFmt.unfound_class__YY0_by_YY1, t.getString(), e);
 				}
 			}
 			return OTypeName.getType(env, name);

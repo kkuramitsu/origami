@@ -39,7 +39,7 @@ public class JSStatementRules implements OImportable, SyntaxAnalysis, TypeAnalys
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OAnno anno = parseAnno(env, "public,static", t.get(_anno, null));
 
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 
 			String[] paramNames = parseParamNames(env, t.get(_param, null));
 			OType[] paramTypes = parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));

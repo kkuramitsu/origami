@@ -53,7 +53,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 	public OTypeRule StringExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			return new ValueCode(OStringUtils.unquoteString(t.toText()), env.t(String.class));
+			return new ValueCode(OStringUtils.unquoteString(t.getString()), env.t(String.class));
 		}
 	};
 
@@ -85,7 +85,7 @@ public class JSLiteralRules implements OImportable, TypeAnalysis {
 			// return node;
 			// }
 			Messenger m = new Messenger();
-			String text = t.toText().replace("_", "");
+			String text = t.getString().replace("_", "");
 			int radix = 10;
 			if (text.endsWith("L") || text.endsWith("l")) {
 				text = text.substring(0, text.length() - 1);

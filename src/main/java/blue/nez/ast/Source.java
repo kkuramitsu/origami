@@ -30,7 +30,7 @@ public interface Source {
 
 	public String subString(long startIndex, long endIndex);
 
-	public byte[] subByte(long startIndex, long endIndex);
+	public byte[] subBytes(long startIndex, long endIndex);
 
 	public Source subSource(long startIndex, long endIndex);
 

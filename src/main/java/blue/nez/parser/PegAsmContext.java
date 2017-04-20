@@ -59,7 +59,7 @@ public final class PegAsmContext<T> extends ParserContext<T> {
 
 	@Override
 	public final byte[] subByte(int start, int end) {
-		return this.source.subByte(start, end);
+		return this.source.subBytes(start, end);
 	}
 
 	@Override

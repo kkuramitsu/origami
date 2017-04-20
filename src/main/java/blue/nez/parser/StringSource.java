@@ -93,7 +93,7 @@ public class StringSource extends ParserSource {
 	}
 
 	@Override
-	public final byte[] subByte(long startIndex, long endIndex) {
+	public final byte[] subBytes(long startIndex, long endIndex) {
 		byte[] b = new byte[(int) (endIndex - startIndex)];
 		System.arraycopy(this.inputs, (int) (startIndex), b, 0, b.length);
 		return b;

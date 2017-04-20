@@ -48,7 +48,7 @@ public class OrigamiClassRules implements OImportable {
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			/* annotations */
 			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 
 			/* extends */
 			OType superClass = env.get(DefaultSuperType, OType.class);
@@ -107,10 +107,10 @@ public class OrigamiClassRules implements OImportable {
 			for (Tree<?> sub : listNode) {
 				String name;
 				if (sub.get(_name).getTag().equals(Symbol.unique("ArrayName"))) {
-					name = sub.get(_name).getText(_name, null);
+					name = sub.get(_name).getStringAt(_name, null);
 					type = new OArrayType(type);
 				} else {
-					name = sub.getText(_name, null);
+					name = sub.getStringAt(_name, null);
 				}
 				OCode expr = null;
 				if (sub.has(_expr)) {
@@ -132,7 +132,7 @@ public class OrigamiClassRules implements OImportable {
 				throw new ErrorCode(env, t, "not in class");
 			}
 			OAnno anno = this.parseAnno(env, "public", t.get(_anno, null));
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			String[] paramNames = this.parseParamNames(env, t.get(_param, null));
 			OType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), env.t(AnyType.class));
 			OType ret = this.parseType(env, t.get(_type, null), env.t(AnyType.class));

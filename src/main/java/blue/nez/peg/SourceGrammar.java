@@ -81,10 +81,6 @@ public class SourceGrammar extends Grammar {
 
 	// ----------------------------------------------------------------------
 
-	public final static Grammar loadFile(String file) throws IOException {
-		return loadFile(file, null);
-	}
-
 	public final static Grammar loadFile(String file, String[] paths) throws IOException {
 		SourceGrammar g = new SourceGrammar(SourcePosition.extractFileName(file));
 		GrammarParser parser = new GrammarParser();

@@ -56,7 +56,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptA
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = "[" + t.toText() + "]";
+			String name = "[" + t.getString() + "]";
 			OType ty = OTypeName.getType(env, name);
 			if (ty == null) {
 				throw new ErrorCode(env, t, OFmt.undefined_unit__YY0, name);
@@ -70,12 +70,12 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptA
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			try {
-				double d = Double.valueOf(t.getText(_value, "0"));
+				double d = Double.valueOf(t.getStringAt(_value, "0"));
 				try {
 					OType ty = parseType(env, t.get(_type));
 					return ty.newConstructorCode(env, env.v(d));
 				} catch (ErrorCode e) {
-					return new WarningCode(env.v(d), OFmt.undefined_unit__YY0, t.get(_type).toText());
+					return new WarningCode(env.v(d), OFmt.undefined_unit__YY0, t.get(_type).getString());
 				}
 			} catch (NumberFormatException e) {
 				throw new ErrorCode(env, t.get(_value), OFmt.syntax_error);
@@ -93,13 +93,13 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptA
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 			OType baseUnit = parseType(env, t.get(_base));
 			double shift = 0.0;
 			if (t.has(_shift)) {
-				shift = Double.valueOf(t.getText(_shift, "0"));
+				shift = Double.valueOf(t.getStringAt(_shift, "0"));
 			} else if (t.has(_ishift)) {
-				shift = -Double.valueOf(t.getText(_ishift, "0"));
+				shift = -Double.valueOf(t.getStringAt(_ishift, "0"));
 			}
 			double scale = 1.0;
 			boolean inv = false;
@@ -109,7 +109,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptA
 				if (sc.getTag().toString().equals("UnitType")) {
 					otherUnit = parseType(env, sc);
 				} else {
-					scale = Double.valueOf(sc.toText());
+					scale = Double.valueOf(sc.getString());
 				}
 			}
 			if (t.has(_iscale)) {
@@ -118,7 +118,7 @@ public class UnitRules implements OImportable, OSymbols, SyntaxAnalysis, ScriptA
 				if (sc.getTag().toString().equals("UnitType")) {
 					otherUnit = parseType(env, sc);
 				} else {
-					scale = 1.0 / Double.valueOf(sc.toText());
+					scale = 1.0 / Double.valueOf(sc.getString());
 				}
 			}
 			OClassDeclType targetUnit = createUnitType(env, name);

@@ -1,5 +1,6 @@
 package blue.nez.peg;
 
+import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -219,10 +220,10 @@ public abstract class Grammar extends AbstractList<Production> implements String
 
 	// ----------------------------------------------------------------------
 
-	// public final static Grammar loadFile(String file) throws IOException {
-	// return loadFile(file, null);
-	// }
-	//
+	public final static Grammar loadFile(String file) throws IOException {
+		return SourceGrammar.loadFile(file, null);
+	}
+
 	// public final static Grammar loadFile(String file, String[] paths) throws
 	// IOException {
 	// Grammar g = new Grammar(file);
@@ -249,8 +250,8 @@ public abstract class Grammar extends AbstractList<Production> implements String
 		return new Parser(this.getStartProduction(), new OOption());
 	}
 
-	public final Parser newParser(String name) {
-		return this.newParser(name, new OOption());
+	public final Parser newParser(String start) {
+		return this.newParser(start, new OOption());
 	}
 
 	public Parser newParser(OOption options) {

@@ -1,44 +1,43 @@
 package blue.nez.ast;
 
-import java.io.UnsupportedEncodingException;
 import java.util.AbstractList;
-import java.util.Arrays;
 
 import blue.nez.parser.ParserSource;
 import blue.nez.parser.TreeConnector;
 import blue.nez.parser.TreeConstructor;
 import blue.origami.util.OStringUtils;
+import blue.origami.util.StringCombinator;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
-		implements SourcePosition, TreeConstructor<E>, TreeConnector<E> {
+		implements SourcePosition, StringCombinator, TreeConstructor<E>, TreeConnector<E> {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
-	protected Source source;
+	// protected Source source;
 	protected int pos;
 	protected int length;
-	protected Symbol[] labels;
+	protected Symbol[] subTreeLabels;
 	protected E[] subTree;
 	protected Object value;
 
 	protected Tree() {
 		this.tag = Symbol.Null;
-		this.source = null;
+		// this.source = null;
 		this.pos = 0;
 		this.length = 0;
 		this.subTree = null;
 		this.value = null;
-		this.labels = EmptyLabels;
+		this.subTreeLabels = EmptyLabels;
 	}
 
 	protected Tree(Symbol tag, Source source, long pos, int len, E[] subTree, Object value) {
 		this.tag = tag;
-		this.source = source;
+		// this.source = source;
 		this.pos = (int) pos;
 		this.length = len;
 		this.subTree = subTree;
-		this.value = value;
-		this.labels = (this.subTree != null) ? new Symbol[this.subTree.length] : EmptyLabels;
+		this.value = value == null ? source : value;
+		this.subTreeLabels = (this.subTree != null) ? new Symbol[this.subTree.length] : EmptyLabels;
 	}
 
 	@Override
@@ -49,12 +48,12 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	protected abstract E dupImpl();
 
 	public final E dup() {
-		E t = dupImpl();
+		E t = this.dupImpl();
 		if (this.subTree != null) {
-			for (int i = 0; i < subTree.length; i++) {
+			for (int i = 0; i < this.subTree.length; i++) {
 				if (this.subTree[i] != null) {
 					t.subTree[i] = this.subTree[i].dup();
-					t.labels[i] = this.labels[i];
+					t.subTreeLabels[i] = this.subTreeLabels[i];
 				}
 			}
 		}
@@ -65,17 +64,15 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 
 	@Override
 	public final Source getSource() {
-		return this.source;
+		if (this.value instanceof Source) {
+			return (Source) this.value;
+		}
+		return null;
 	}
 
 	@Override
 	public final long getSourcePosition() {
 		return this.pos;
-	}
-
-	public final void setPosition(int pos, int len) {
-		this.pos = pos;
-		this.length = len;
 	}
 
 	public final int getLength() {
@@ -88,17 +85,13 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		return this.tag;
 	}
 
-	public final void setTag(Symbol tag) {
-		this.tag = tag;
-	}
-
 	public final boolean is(Symbol tag) {
 		return tag == this.getTag();
 	}
 
 	@Override
 	public int size() {
-		return this.labels.length;
+		return this.subTreeLabels.length;
 	}
 
 	@Override
@@ -106,39 +99,13 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		return this.size() == 0;
 	}
 
-	public final Symbol getLabel(int index) {
-		return this.labels[index];
-	}
-
-	public final boolean isAllLabeled() {
-		for (int i = 0; i < this.labels.length; i++) {
-			if (labels[i] == null) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public final int countSubNodes() {
-		int c = 1;
-		for (E t : this) {
-			if (t != null) {
-				c += t.countSubNodes();
-			}
-		}
-		return c;
-	}
-
 	@Override
 	public E get(int index) {
 		return this.subTree[index];
 	}
 
-	public final E get(int index, E defaultValue) {
-		if (index < this.size()) {
-			return this.subTree[index];
-		}
-		return defaultValue;
+	public final Symbol getLabel(int index) {
+		return this.subTreeLabels[index];
 	}
 
 	@Override
@@ -146,18 +113,17 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		E oldValue = null;
 		oldValue = this.subTree[index];
 		this.subTree[index] = node;
-		// node.setParent(this);
 		return oldValue;
 	}
 
 	public final void set(int index, Symbol label, E node) {
-		this.labels[index] = label;
+		this.subTreeLabels[index] = label;
 		this.subTree[index] = node;
 	}
 
 	public final int indexOf(Symbol label) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
 				return i;
 			}
 		}
@@ -165,30 +131,21 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	}
 
 	public final boolean has(Symbol label) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public final int size(Symbol label, int size) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
-				return subTree[i].size();
-			}
-		}
-		return size;
-	}
-
 	public final E get(Symbol label) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
 				return this.subTree[i];
 			}
 		}
-		throw newNoSuchLabel(label);
+		throw this.newNoSuchLabel(label);
 	}
 
 	protected RuntimeException newNoSuchLabel(Symbol label) {
@@ -196,39 +153,24 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	}
 
 	public final E get(Symbol label, E defval) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
 				return this.subTree[i];
 			}
 		}
 		return defval;
 	}
 
-	public final void set(Symbol label, E defval) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
-				this.subTree[i] = defval;
-				return;
+	public final int size(Symbol label, int size) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
+				return this.subTree[i].size();
 			}
 		}
-	}
-
-	public final void rename(Symbol oldlabel, Symbol newlabel) {
-		if (tag == oldlabel) {
-			this.tag = newlabel;
-		}
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == oldlabel) {
-				labels[i] = newlabel;
-			}
-		}
+		return size;
 	}
 
 	/* Value */
-
-	public final byte[] getRawCharacters() {
-		return this.source.subByte(this.getSourcePosition(), this.getSourcePosition() + this.getLength());
-	}
 
 	public final Object getValue() {
 		return this.value;
@@ -238,96 +180,59 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		this.value = value;
 	}
 
-	public final String toText() {
-		if (this.value != null) {
-			if (!(this.value instanceof Tree<?>)) {
-				return this.value.toString();
-			}
-		}
-		if (this.source != null) {
+	public final byte[] getBytes() {
+		if (this.getSource() != null) {
 			long pos = this.getSourcePosition();
 			long epos = pos + this.length;
-			String s = this.source.subString(pos, epos);
-			/* Binary */
-			byte[] tmp = this.source.subByte(pos, epos);
-			try {
-				if (Arrays.equals(tmp, s.getBytes("UTF8"))) {
-					this.value = s;
-				}
-			} catch (UnsupportedEncodingException e) {
+			return this.getSource().subBytes(pos, epos);
+		}
+		return new byte[0];
+	}
+
+	public final String getString() {
+		Source s = this.getSource();
+		if (s != null) {
+			long pos = this.getSourcePosition();
+			long epos = pos + this.length;
+			byte[] chunks = s.subBytes(pos, epos);
+			if (OStringUtils.isValidUTF8(chunks)) {
+				return OStringUtils.newString(chunks);
 			}
-			if (this.value == null) {
-				if (tmp != null) {
-					StringBuilder sb = new StringBuilder();
-					sb.append("0x");
-					for (byte c : tmp) {
-						sb.append(String.format("%02x", c & 0xff));
-					}
-					this.value = sb.toString();
-				} else {
-					this.value = "";
-				}
-			}
-			return this.value.toString();
+			StringBuilder sb = new StringBuilder();
+			OStringUtils.formatBytes(sb, chunks);
+			return sb.toString();
+		}
+		if (this.value instanceof String) {
+			return (String) this.value;
 		}
 		return "";
 	}
 
-	public final boolean is(Symbol label, Symbol tag) {
-		for (int i = 0; i < labels.length; i++) {
-			if (labels[i] == label) {
+	// subtree method
+
+	public final boolean isAt(Symbol label, Symbol tag) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
 				return this.subTree[i].is(tag);
 			}
 		}
 		return false;
 	}
 
-	public final String getText(int index, String defval) {
+	public final String getStringAt(int index, String defval) {
 		if (index < this.size()) {
-			return this.get(index).toText();
+			return this.get(index).getString();
 		}
 		return defval;
 	}
 
-	public final String getText(Symbol label, String defval) {
-		for (int i = 0; i < this.labels.length; i++) {
-			if (labels[i] == label) {
-				return getText(i, defval);
+	public final String getStringAt(Symbol label, String defval) {
+		for (int i = 0; i < this.subTreeLabels.length; i++) {
+			if (this.subTreeLabels[i] == label) {
+				return this.getStringAt(i, defval);
 			}
 		}
 		return defval;
-	}
-
-	public final int toInt(int defvalue) {
-		if (this.value instanceof Number) {
-			return ((Number) this.value).intValue();
-		}
-		try {
-			String s = this.toText();
-			int num = Integer.parseInt(s);
-			if (this.value == null) {
-				this.value = new Integer(num);
-			}
-			return num;
-		} catch (NumberFormatException e) {
-		}
-		return defvalue;
-	}
-
-	public final int getInt(int index, int defvalue) {
-		if (index < this.size()) {
-			return this.get(index).toInt(defvalue);
-		}
-		return defvalue;
-	}
-
-	public final int getInt(Symbol label, int defvalue) {
-		for (int i = 0; i < this.labels.length; i++) {
-			if (labels[i] == label) {
-				return getInt(i, defvalue);
-			}
-		}
-		return defvalue;
 	}
 
 	/**
@@ -338,54 +243,39 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 
 	public final Source toSource() {
 		return ParserSource.newStringSource(this.getSource().getResourceName(),
-				this.getSource().linenum(this.getSourcePosition()), this.toText());
-	}
-
-	public final boolean containsToken(String token) {
-		for (E sub : this) {
-			if (sub.containsToken(token)) {
-				return true;
-			}
-		}
-		return token.equals(toText());
+				this.getSource().linenum(this.getSourcePosition()), this.getString());
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		this.appendStringfied(sb);
-		return sb.toString();
+		return StringCombinator.stringfy(this);
 	}
 
-	protected void appendStringfied(StringBuilder sb) {
+	@Override
+	public void strOut(StringBuilder sb) {
 		sb.append("[#");
 		if (this.getTag() != null) {
 			sb.append(this.getTag().getSymbol());
 		}
 		if (this.subTree == null) {
 			sb.append(" ");
-			OStringUtils.formatStringLiteral(sb, '\'', this.toText(), '\'');
+			byte[] chunks = this.getBytes();
+			if (OStringUtils.isValidUTF8(chunks)) {
+				OStringUtils.formatStringLiteral(sb, '\'', this.getString(), '\'');
+			} else {
+				OStringUtils.formatBytes(sb, chunks);
+			}
 		} else {
 			for (int i = 0; i < this.size(); i++) {
 				sb.append(" ");
-				if (this.labels[i] != null) {
+				if (this.subTreeLabels[i] != null) {
 					sb.append("$");
-					sb.append(this.labels[i].getSymbol());
+					sb.append(this.subTreeLabels[i].getSymbol());
 					sb.append("=");
 				}
-				if (this.subTree[i] == null) {
-					sb.append("null");
-				} else {
-					this.subTree[i].appendStringfied(sb);
-				}
+				StringCombinator.append(sb, this.subTree[i]);
 			}
 		}
-		appendExtraStringfied(sb);
 		sb.append("]");
 	}
-
-	protected void appendExtraStringfied(StringBuilder sb) {
-
-	}
-
 }

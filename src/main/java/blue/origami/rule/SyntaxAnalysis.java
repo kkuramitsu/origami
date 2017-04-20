@@ -82,11 +82,11 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 	}
 
 	public default void defineName(OEnv env, Tree<?> t, Object d) {
-		String name = t.getText(_name, null);
+		String name = t.getStringAt(_name, null);
 		if (name != null) {
 			env.add(t, name, d);
 		}
-		name = t.getText(_alias, null);
+		name = t.getStringAt(_alias, null);
 		if (name != null) {
 			env.add(t, name, d);
 		}
@@ -108,7 +108,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		if (annos != null) {
 			for (Tree<?> sub : annos) {
 				if (sub.is(_Annotation)) {
-					String name = sub.getText(_name, null);
+					String name = sub.getStringAt(_name, null);
 					Map<String, Object> value = null; // FIXME
 					Class<?> c = env.get("@" + name, OType.class).unwrap();
 					if (c == null || !c.isAnnotation()) {
@@ -142,7 +142,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		String[] p = new String[names.size()];
 		int i = 0;
 		for (Tree<?> sub : names) {
-			p[i] = sub.toText();
+			p[i] = sub.getString();
 			i++;
 		}
 		return p;
@@ -152,12 +152,12 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		if (params == null) {
 			return emptyNames;
 		} else if (params.has(_name)) {
-			return new String[] { params.getText(_name, "") };
+			return new String[] { params.getStringAt(_name, "") };
 		} else {
 			String[] paramNames = new String[params.size()];
 			int i = 0;
 			for (Tree<?> sub : params) {
-				paramNames[i] = sub.getText(_name, "");
+				paramNames[i] = sub.getStringAt(_name, "");
 				i++;
 			}
 			return paramNames;
@@ -207,7 +207,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		}
 		if (ty == null) {
 			if (defaultType == null) {
-				throw new ErrorCode(env, param, OFmt.no_typing_hint__YY0, param.toText());
+				throw new ErrorCode(env, param, OFmt.no_typing_hint__YY0, param.getString());
 			}
 			ty = defaultType;
 		}
@@ -217,7 +217,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 
 	public default OType parseTypeArity(OEnv env, OType ty, Tree<?> param) {
 		if (param.has(_suffix)) {
-			String suffix = param.getText(_suffix, "");
+			String suffix = param.getStringAt(_suffix, "");
 			if (suffix.equals("?")) {
 				ty = env.getTypeSystem().newNullableType(ty);
 				ODebug.trace("arity %s", ty);
@@ -254,7 +254,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isInterface()) {
-				throw new ErrorCode(env, sub, OFmt.YY0_is_not_interface, sub.toText());
+				throw new ErrorCode(env, sub, OFmt.YY0_is_not_interface, sub.getString());
 			}
 			i++;
 		}
@@ -270,7 +270,7 @@ public interface SyntaxAnalysis extends OSymbols, TypeAnalysis {
 		for (Tree<?> sub : types) {
 			p[i] = parseType(env, sub, null);
 			if (p[i] == null || !p[i].isA(Throwable.class)) {
-				throw new ErrorCode(env, sub, OFmt.YY0_is_not_throwable, sub.toText());
+				throw new ErrorCode(env, sub, OFmt.YY0_is_not_throwable, sub.getString());
 			}
 			i++;
 		}

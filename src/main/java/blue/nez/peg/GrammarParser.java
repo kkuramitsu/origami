@@ -26,11 +26,11 @@ import blue.nez.ast.Symbol;
 import blue.nez.ast.Tree;
 import blue.nez.ast.TreeVisitorMap;
 import blue.nez.parser.Parser;
+import blue.nez.parser.ParserContext.SymbolContains;
 import blue.nez.parser.ParserContext.SymbolDefinition;
+import blue.nez.parser.ParserContext.SymbolEquals;
 import blue.nez.parser.ParserContext.SymbolExist;
 import blue.nez.parser.ParserContext.SymbolExistString;
-import blue.nez.parser.ParserContext.SymbolEquals;
-import blue.nez.parser.ParserContext.SymbolContains;
 import blue.nez.parser.ParserContext.SymbolMatch;
 import blue.nez.parser.ParserSource;
 import blue.nez.peg.expression.PAnd;
@@ -140,7 +140,6 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class SyntaxRule implements ExpressionTransducer {
 		@Override
 		public Expression accept(Gamma e, Tree<?> node) throws IOException {
-			// undefined(node);
 			return null;
 		}
 	}
@@ -151,7 +150,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String ns = null;
-			String name = node.toText();
+			String name = node.getString();
 			int loc = name.indexOf('.');
 			if (loc > 0) {
 				ns = name.substring(0, loc);
@@ -164,7 +163,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _String extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String name = Production.terminalName(node.toText());
+			String name = Production.terminalName(node.getString());
 			return new PNonTerminal(gamma.grammar, name);
 		}
 	}
@@ -172,7 +171,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Character extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma e, Tree<?> node) throws IOException {
-			return Expression.newString(OStringUtils.unquoteString(node.toText()));
+			return Expression.newString(OStringUtils.unquoteString(node.getString()));
 		}
 	}
 
@@ -184,9 +183,9 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 				for (int i = 0; i < node.size(); i++) {
 					Tree<?> o = node.get(i);
 					if (o.size() == 2) { // range
-						l.add(this.newCharSet(o.getText(0, ""), o.getText(1, "")));
+						l.add(this.newCharSet(o.getStringAt(0, ""), o.getStringAt(1, "")));
 					} else { // single
-						l.add(this.newCharSet(o.toText(), o.toText()));
+						l.add(this.newCharSet(o.getString(), o.getString()));
 					}
 				}
 			}
@@ -261,7 +260,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _ByteChar extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String t = node.toText();
+			String t = node.getString();
 			if (t.startsWith("U+")) {
 				int c = this.parseHexicalNumber(t.charAt(2));
 				c = (c * 16) + this.parseHexicalNumber(t.charAt(3));
@@ -296,7 +295,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _ByteClass extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String t = node.toText();
+			String t = node.getString();
 			return this.parseByteClass(t);
 		}
 
@@ -411,7 +410,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		Symbol label = null;
 		Tree<?> labelNode = node.get(_name, null);
 		if (labelNode != null) {
-			label = Symbol.unique(labelNode.toText());
+			label = Symbol.unique(labelNode.getString());
 		}
 		return label;
 	}
@@ -435,28 +434,28 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Tagging extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PTag(Symbol.unique(node.toText()));
+			return new PTag(Symbol.unique(node.getString()));
 		}
 	}
 
 	public class _Replace extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PReplace(node.toText());
+			return new PReplace(node.getString());
 		}
 	}
 
 	public class _If extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PIfCondition(node.getText(_name, ""));
+			return new PIfCondition(node.getStringAt(_name, ""));
 		}
 	}
 
 	public class _On extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new POnCondition(node.getText(_name, ""), gamma.newExpression(node.get(_expr)));
+			return new POnCondition(node.getStringAt(_name, ""), gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -470,7 +469,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Local extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			return new PSymbolScope(Symbol.unique(node.getText(_name, "")), gamma.newExpression(node.get(_expr)));
+			return new PSymbolScope(Symbol.unique(node.getStringAt(_name, "")), gamma.newExpression(node.get(_expr)));
 		}
 	}
 
@@ -491,7 +490,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Symbol extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String param = node.getText(_name, "");
+			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			return new PSymbolAction(new SymbolDefinition(), param, pat);
 		}
@@ -500,7 +499,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Is extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String param = node.getText(_name, "");
+			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			return new PSymbolPredicate(new SymbolEquals(), param, pat, null);
 		}
@@ -509,7 +508,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Isa extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String param = node.getText(_name, "");
+			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			return new PSymbolPredicate(new SymbolContains(), param, pat, null);
 		}
@@ -518,7 +517,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Match extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String param = node.getText(_name, "");
+			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
 			return new PSymbolPredicate(new SymbolMatch(), param, pat, null);
 		}
@@ -527,9 +526,9 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Exists extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String param = node.getText(_name, "");
+			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
-			String symbol = node.getText(_symbol, null);
+			String symbol = node.getStringAt(_symbol, null);
 			if (symbol != null) {
 				return new PSymbolPredicate(new SymbolExistString(), param, pat, symbol);
 			}
@@ -540,7 +539,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Scanf extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String mask = node.getText(_mask, null);
+			String mask = node.getStringAt(_mask, null);
 			return new PScan(mask, gamma.newExpression(node.get(_expr)));
 		}
 	}
@@ -585,7 +584,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			Tree<?> nameNode = node.get(_name);
-			String name = nameNode.toText();
+			String name = nameNode.getString();
 			if (nameNode.is(_String)) {
 				name = Production.terminalName(name);
 			}
@@ -617,7 +616,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Grammar extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String name = node.getText(_name, null);
+			String name = node.getStringAt(_name, null);
 			gamma = gamma.newLocalGramma(node.get(_name), name);
 			return gamma.newExpression(node.get(_body));
 		}
@@ -626,7 +625,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class _Import extends SyntaxRule {
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
-			String name = node.getText(_name, null);
+			String name = node.getStringAt(_name, null);
 			String path = name;
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = SourcePosition.extractFilePath(node.getSource().getResourceName()) + "/" + name;

@@ -44,7 +44,7 @@ public class JSExpressionRule implements OImportable, SyntaxAnalysis, TypeAnalys
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			OAnno anno = parseAnno(env, "public,static", t.get(_anno, null));
 			anno.setReadOnly(this.isReadOnly);
 			OCode right = null;

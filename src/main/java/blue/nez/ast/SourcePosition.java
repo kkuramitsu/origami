@@ -86,7 +86,7 @@ public interface SourcePosition {
 		}
 
 		@Override
-		public byte[] subByte(long startIndex, long endIndex) {
+		public byte[] subBytes(long startIndex, long endIndex) {
 			return new byte[0];
 		}
 

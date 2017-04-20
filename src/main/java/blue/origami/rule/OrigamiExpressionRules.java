@@ -52,7 +52,7 @@ public class OrigamiExpressionRules implements OImportable, SyntaxAnalysis, OArr
 	public OTypeRule NameExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.toText();
+			String name = t.getString();
 			ONameEntity nameDecl = env.get(name, ONameEntity.class, (e, c) -> e.isName(env) ? e : null);
 			if (nameDecl == null) {
 				throw new ErrorCode(env, t, OFmt.undefined_name__YY0, name);
@@ -70,7 +70,7 @@ public class OrigamiExpressionRules implements OImportable, SyntaxAnalysis, OArr
 
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			OAnno anno = OrigamiExpressionRules.this.parseAnno(env, "public,static", t.get(_anno, null));
 			anno.setReadOnly(this.isReadOnly);
 			OCode right = null;
@@ -193,7 +193,7 @@ public class OrigamiExpressionRules implements OImportable, SyntaxAnalysis, OArr
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
 			OCode[] params = OrigamiExpressionRules.this.typeParams(env, t);
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			OCode recv = OrigamiExpressionRules.this.typeExpr(env, t.get(_recv));
 			return recv.newMethodCode(env, name, params);
 		}
@@ -202,7 +202,7 @@ public class OrigamiExpressionRules implements OImportable, SyntaxAnalysis, OArr
 	public OTypeRule GetExpr = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, "");
+			String name = t.getStringAt(_name, "");
 			OCode recv = OrigamiExpressionRules.this.typeExpr(env, t.get(_recv));
 			return recv.newGetterCode(env, name);
 		}

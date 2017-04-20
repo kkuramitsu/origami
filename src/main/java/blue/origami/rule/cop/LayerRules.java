@@ -51,8 +51,8 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 	public OTypeRule LayerDecl = new TypeRule() {
 		@Override
 		public OCode typeRule(OEnv env, Tree<?> t) {
-			String name = t.getText(_name, "");
-			String ext = t.getText(_extends, null);
+			String name = t.getStringAt(_name, "");
+			String ext = t.getStringAt(_extends, null);
 			OEnv caseEnv = null;
 			if (ext != null) {
 				OContextGroup base = env.get(ext, OContextGroup.class);

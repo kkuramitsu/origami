@@ -29,9 +29,10 @@ import blue.nez.peg.Production;
 import blue.origami.util.OOption;
 
 public final class Parser {
+
 	private final Production start;
 	private final OOption options;
-	private ParserExecutable code = null;
+	private ParserExecutable compiledParserCode = null;
 
 	public Parser(Production start, OOption options) {
 		this.options = options;
@@ -40,34 +41,34 @@ public final class Parser {
 	}
 
 	public final Grammar getGrammar() {
-		if (this.code == null) {
+		if (this.compiledParserCode == null) {
 			this.compile();
 		}
-		return this.code.getGrammar();
+		return this.compiledParserCode.getGrammar();
 	}
 
 	public final ParserExecutable compile() {
 		ParserCompiler compl = this.options.newInstance(PegAsmCompiler.class);
 		long t = this.options.nanoTime(null, 0);
 		ParserGrammar g = new ParserChecker(this.options, this.start).checkParserGrammar();
-		this.code = compl.compile(g);
+		this.compiledParserCode = compl.compile(g);
 		this.options.nanoTime("ParserCompilingTime@" + this.start.getUniqueName(), t);
-		return this.code;
+		return this.compiledParserCode;
 	}
 
 	public final ParserExecutable getExecutable() {
-		if (this.code == null) {
+		if (this.compiledParserCode == null) {
 			this.compile();
 		}
-		return this.code;
+		return this.compiledParserCode;
 	}
 
 	/* --------------------------------------------------------------------- */
 
-	final <T> T performNull(ParserContext<T> ctx, Source s) {
-		ctx.start();
-		T matched = this.code.exec(ctx);
-		ctx.end();
+	final <T> T exec(ParserContext<T> px, Source s) {
+		px.start();
+		T matched = this.compiledParserCode.exec(px);
+		px.end();
 		return matched;
 	}
 
@@ -75,7 +76,7 @@ public final class Parser {
 			throws IOException {
 		ParserExecutable parser = this.getExecutable();
 		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
-		T matched = this.performNull(ctx, s);
+		T matched = this.exec(ctx, s);
 		if (matched == null) {
 			this.perror(SourcePosition.newInstance(s, ctx.getMaximumPosition()), NezFmt.syntax_error);
 			return null;
@@ -89,14 +90,14 @@ public final class Parser {
 	public final <T> long match(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		ParserExecutable parser = this.getExecutable();
 		ParserContext<T> ctx = parser.newContext(s, pos, newTree, linkTree);
-		T matched = this.performNull(ctx, s);
+		T matched = this.exec(ctx, s);
 		if (matched == null) {
 			return -1;
 		}
 		return ctx.getPosition();
 	}
 
-	/* --------------------------------------------------------------------- */
+	/* wrapper */
 
 	private static CommonTree defaultTree = new CommonTree();
 
@@ -116,7 +117,7 @@ public final class Parser {
 		return this.parse(ParserSource.newStringSource(str));
 	}
 
-	/* Errors */
+	/* Error Handling */
 
 	private void perror(SourcePosition s, LocaleFormat message) throws IOException {
 		if (this.options.is(ParserOption.ThrowingParserError, true)) {

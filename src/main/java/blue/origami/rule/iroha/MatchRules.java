@@ -97,7 +97,7 @@ public class MatchRules implements OImportable {
 		private ICase parseCaseBody(OEnv env, Tree<?> tbody) {
 			OTypeSystem ts = env.getTypeSystem();
 			Tree<?> t = tbody.get(_expr);
-			String name = t.getText(_name, null);
+			String name = t.getStringAt(_name, null);
 			String tag = t.getTag().getSymbol();
 			switch (tag) {
 			case "AnyCase": {
@@ -175,7 +175,7 @@ public class MatchRules implements OImportable {
 				for (Tree<?> e : t) {
 					l[i] = this.parseCaseBody(env, e);
 					if (l[i].getName() == null) {
-						throw new ErrorCode(env, e, "no field name %s", e.toText());
+						throw new ErrorCode(env, e, "no field name %s", e.getString());
 					}
 					i++;
 				}

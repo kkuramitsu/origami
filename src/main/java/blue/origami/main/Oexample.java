@@ -115,7 +115,7 @@ public class Oexample extends OCommand {
 			return;
 		}
 		if (node.is(GrammarParser._Grammar)) {
-			String name = node.getText(GrammarParser._name, null);
+			String name = node.getStringAt(GrammarParser._name, null);
 			Grammar lg = g.getGrammar(name);
 			Tree<?> body = node.get(GrammarParser._body);
 			for (Tree<?> sub : body) {
@@ -124,7 +124,7 @@ public class Oexample extends OCommand {
 			return;
 		}
 		if (node.is(GrammarParser._Import)) {
-			String name = node.getText(GrammarParser._name, null);
+			String name = node.getStringAt(GrammarParser._name, null);
 			String path = name;
 			if (!name.startsWith("/") && !name.startsWith("\\")) {
 				path = SourcePosition.extractFilePath(node.getSource().getResourceName()) + "/" + name;
@@ -136,7 +136,7 @@ public class Oexample extends OCommand {
 
 	public void parseExample(Tree<?> node, Grammar g, OOption options) throws IOException {
 		Tree<?> nameNode = node.get(GrammarParser._name, null);
-		String uname = nameNode.toText();
+		String uname = nameNode.getString();
 		Parser p = this.getParser(g, uname, nameNode, options);
 		if (p != null) {
 			this.performExample(p, uname, node);
@@ -144,7 +144,7 @@ public class Oexample extends OCommand {
 		if (this instanceof Otest) {
 			nameNode = node.get(_name2, null);
 			if (nameNode != null) {
-				uname = nameNode.toText();
+				uname = nameNode.getString();
 				p = this.getParser(g, uname, nameNode, options);
 				if (p != null) {
 					this.performExample(p, uname, node);
@@ -182,7 +182,7 @@ public class Oexample extends OCommand {
 			p(Green, "[PASS] " + name);
 			if (!(this instanceof Otest)) {
 				if (node != null) {
-					OConsole.dump(" ", bold(textNode.toText()));
+					OConsole.dump(" ", bold(textNode.getString()));
 					display(this.treeWriter, node);
 				}
 			}
@@ -190,10 +190,10 @@ public class Oexample extends OCommand {
 		} catch (IOException e) {
 			p(Red, e.toString());
 			p(Red, "[FAIL] " + name);
-			p(Red, bold(textNode.toText()));
+			p(Red, bold(textNode.getString()));
 		} catch (Throwable e) {
 			p(Red, "[FAIL] " + name);
-			p(Red, bold(textNode.toText()));
+			p(Red, bold(textNode.getString()));
 			e.printStackTrace();
 			ODebug.traceException(e);
 		}
