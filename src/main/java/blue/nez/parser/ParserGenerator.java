@@ -574,7 +574,8 @@ abstract class CodeBase {
 							this.visit(nextNode, this.nodes.get(nextNode));
 						} else if (v == this.Visiting) {
 							if (!key.equals(nextNode)) {
-								System.out.println("Cyclic " + key + " => " + nextNode);
+								// System.out.println("Cyclic " + key + " => " +
+								// nextNode);
 								CodeBase.this.crossRefNames.add(nextNode);
 							}
 						}
