@@ -27,6 +27,7 @@ public class OConsole {
 
 	public static void exit(int status, Throwable e) {
 		OConsole.println("EXIT by " + e);
+		e.printStackTrace();
 		System.exit(status);
 	}
 

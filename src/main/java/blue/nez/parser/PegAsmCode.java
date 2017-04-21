@@ -20,12 +20,11 @@ import java.util.List;
 
 import blue.nez.ast.Source;
 import blue.nez.parser.pegasm.ASMnop;
-import blue.nez.peg.Grammar;
 import blue.origami.util.OOption;
 
 public class PegAsmCode extends ParserCode<PegAsmInst> {
 
-	public PegAsmCode(Grammar grammar, OOption options) {
+	public PegAsmCode(ParserGrammar grammar, OOption options) {
 		super(grammar, options, new PegAsmInst[1024]);
 	}
 

@@ -1,0 +1,712 @@
+
+/* Embedded ParserContext from nez.parser.ParserContext */
+
+public final static <T> T parse(String text, NewFunc<T> f, SetFunc<T> f2) {
+	T left = null;
+	ParserContext<T> c = new ParserContext<T>(text, f, f2);
+	c.initMemo(64, 1);
+	if (start(c)) {
+		left = c.left;
+		if (left == null) {
+			left = c.f.newTree(0, c.inputs, 0, c.pos, 0);
+		}
+		return left;
+	}
+	return null;
+}
+
+public final static SimpleTree parse(String text) {
+	SimpleTree f = new SimpleTree();
+	return parse(text, f, f);
+}
+
+public final static int match(String text) {
+	NoneTree f = new NoneTree();
+	ParserContext<NoneTree> c = new ParserContext<NoneTree>(text, f, f);
+	c.initMemo(64, 1);
+	if (start(c)) {
+		return c.pos;
+	}
+	return -1;
+}
+
+public static interface NewFunc<T> {
+	T newTree(int tag, byte[] inputs, int pos, int len, int size);
+}
+
+public static interface SetFunc<T> {
+	void setTree(T parent, int n, int label, T child);
+}
+
+private static final int[] EmptyLabels = new int[0];
+private static final SimpleTree[] EmptyTrees = new SimpleTree[0];
+
+public static class SimpleTree implements NewFunc<SimpleTree>, SetFunc<SimpleTree> {
+	public int tag;
+	public byte[] text;
+	public int start;
+	public int len;
+	public int[] labels;
+	public SimpleTree[] childs;
+	
+	@Override
+	public SimpleTree newTree(int tag, byte[] inputs, int pos, int len, int size) {
+		SimpleTree t = new SimpleTree();
+		t.tag = tag;
+		t.text = inputs;
+		t.start = pos;
+		t.len = len;
+		if(size == 0) {
+			t.labels = EmptyLabels;
+			t.childs = EmptyTrees;
+		}
+		else {
+			t.labels = new int[size];
+			t.childs = new SimpleTree[size];
+		}
+		return t;
+	}
+
+	@Override
+	public void setTree(SimpleTree parent, int n, int label, SimpleTree child) {
+		parent.labels[n] = label;
+		parent.childs[n] = child;
+	}
+	
+	@Override
+   	public String toString() {
+   		StringBuilder sb = new StringBuilder();
+   		this.appendStringfied(sb);
+   		return sb.toString();
+   	}
+	
+	private void appendStringfied(StringBuilder sb) {
+		sb.append("[#");
+		sb.append(_tags[this.tag]);
+		if(this.childs.length == 0) {
+			sb.append(" '");
+			for(int i = 0; i < len; i++) {
+				char ch = (char)this.text[i + this.start];
+				sb.append(ch);
+			}
+			sb.append("'");
+		}
+		else {
+			for(int i = 0; i < labels.length; i++) {
+				if(labels[i] != 0) {
+					sb.append(" $");
+					sb.append(_labels[this.labels[i]]);
+					sb.append("=");
+				}
+				else {
+					sb.append(" ");
+				}
+				childs[i].appendStringfied(sb);
+			}
+		}
+		sb.append("]");
+	}
+}
+
+public static class NoneTree implements NewFunc<NoneTree>, SetFunc<NoneTree> {
+	@Override
+	public void setTree(NoneTree parent, int n, int label, NoneTree child) {
+	}
+
+	@Override
+	public NoneTree newTree(int tag, byte[] inputs, int pos, int len, int size) {
+		return null;
+	}
+
+}
+
+static final class ParserContext<T> {
+	public int pos = 0;
+	public T left;
+	NewFunc<T> f;
+	SetFunc<T> f2;
+	
+	public ParserContext(String s, NewFunc<T> f, SetFunc<T> f2) {
+		inputs = toUTF8(s + "\0");
+		length = inputs.length - 1;
+		this.pos = 0;
+		this.left = null;
+		this.f = f;
+		this.f2 = f2;
+	}
+
+	private byte[] inputs;
+	private int length;
+
+	public boolean eof() {
+		return !(pos < length);
+	}
+
+	public int read() {
+		return inputs[pos++] & 0xff;
+	}
+
+	public int prefetch() {
+		return inputs[pos] & 0xff;
+	}
+
+	public final void move(int shift) {
+		pos += shift;
+	}
+
+	public void back(int pos) {
+		this.pos = pos;
+	}
+
+	public boolean match(byte[] text) {
+		int len = text.length;
+		if (pos + len > this.length) {
+			return false;
+		}
+		for (int i = 0; i < len; i++) {
+			if (text[i] != this.inputs[pos + i]) {
+				return false;
+			}
+		}
+		pos += len;
+		return true;
+	}
+
+	// AST
+
+	private enum Operation {
+		Link, Tag, Replace, New;
+	}
+
+	static class TreeLog {
+		Operation op;
+		int iValue;
+		Object oValue;
+	}
+
+	private TreeLog[] logs = new TreeLog[0];
+	private int unused_log = 0;
+
+	private void log2(Operation op, int iValue, Object oValue) {
+		if (!(unused_log < logs.length)) {
+			TreeLog[] newlogs = new TreeLog[logs.length + 1024];
+			System.arraycopy(logs, 0, newlogs, 0, logs.length);
+			for (int i = logs.length; i < newlogs.length; i++) {
+				newlogs[i] = new TreeLog();
+			}
+			logs = newlogs;
+		}
+		TreeLog l = logs[unused_log];
+		l.op = op;
+		l.iValue = iValue;
+		l.oValue = oValue;
+		this.unused_log++;
+	}
+
+	public final void beginTree(int shift) {
+		log2(Operation.New, pos + shift, null);
+	}
+
+	public final void linkTree(int label) {
+		log2(Operation.Link, label, left);
+	}
+
+	public final void tagTree(int tag) {
+		log2(Operation.Tag, tag, null);
+	}
+
+	public final void valueTree(byte[] value) {
+		log2(Operation.Replace, 0, value);
+	}
+
+	public final void foldTree(int shift, int label) {
+		log2(Operation.New, pos + shift,  null);
+		log2(Operation.Link, label, left);
+	}
+
+	@SuppressWarnings("unchecked")
+	public final void endTree(int shift, int tag, byte[] value) {
+		int objectSize = 0;
+		TreeLog start = null;
+		int start_index = 0;
+		for (int i = unused_log - 1; i >= 0; i--) {
+			TreeLog l = logs[i];
+			if (l.op == Operation.Link) {
+				objectSize++;
+				continue;
+			}
+			if (l.op == Operation.New) {
+				start = l;
+				start_index = i;
+				break;
+			}
+			if (l.op == Operation.Tag && tag == 0) {
+				tag = l.iValue;
+			}
+			if (l.op == Operation.Replace && value == null) {
+				value = (byte[]) l.oValue;
+			}
+		}
+		if(value == null) {
+			left = f.newTree(tag, this.inputs, start.iValue, (pos + shift) - start.iValue, objectSize);
+		}
+		else {
+			left = f.newTree(tag, value, 0, value.length, objectSize);
+		}
+		if (objectSize > 0) {
+			int n = 0;
+			for (int j = start_index; j < unused_log; j++) {
+				TreeLog l = logs[j];
+				if (l.op == Operation.Link) {
+					f2.setTree(left, n++, l.iValue, (T)l.oValue);
+					l.oValue = null;
+				}
+			}
+		}
+		this.backLog(start_index);
+	}
+
+	public final int saveLog() {
+		return unused_log;
+	}
+
+	public final void backLog(int log) {
+		if (this.unused_log > log) {
+			this.unused_log = log;
+		}
+	}
+
+	public final T saveTree() {
+		return this.left;
+	}
+
+	public final void backTree(T tree) {
+		this.left = tree;
+	}
+
+	// int Table
+	// ---------------------------------------------------------
+
+	private final static byte[] NullSymbol = { 0, 0, 0, 0 }; // to
+																// distinguish
+	// others
+	private SymbolTableEntry[] tables = new SymbolTableEntry[0];
+	private int tableSize = 0;
+	private int stateValue = 0;
+	private int stateCount = 0;
+
+	static final class SymbolTableEntry {
+		int stateValue;
+		int table;
+		long code;
+		byte[] symbol; // if symbol is null, hidden
+	}
+
+	private final static long hash(byte[] utf8, int ppos, int pos) {
+		long hashCode = 1;
+		for (int i = ppos; i < pos; i++) {
+			hashCode = hashCode * 31 + (utf8[i] & 0xff);
+		}
+		return hashCode;
+	}
+
+	private final static boolean equalsBytes(byte[] utf8, byte[] b) {
+		if (utf8.length == b.length) {
+			for (int i = 0; i < utf8.length; i++) {
+				if (utf8[i] != b[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public final byte[] subByte(int startIndex, int endIndex) {
+		byte[] b = new byte[endIndex - startIndex];
+		System.arraycopy(this.inputs, (startIndex), b, 0, b.length);
+		return b;
+	}
+
+	private void push(int table, long code, byte[] utf8) {
+		if (!(tableSize < tables.length)) {
+			SymbolTableEntry[] newtable = new SymbolTableEntry[tables.length + 256];
+			System.arraycopy(this.tables, 0, newtable, 0, tables.length);
+			for (int i = tables.length; i < newtable.length; i++) {
+				newtable[i] = new SymbolTableEntry();
+			}
+			this.tables = newtable;
+		}
+		SymbolTableEntry entry = tables[tableSize];
+		tableSize++;
+		if (entry.table == table && equalsBytes(entry.symbol, utf8)) {
+			// reuse state value
+			entry.code = code;
+			this.stateValue = entry.stateValue;
+		} else {
+			entry.table = table;
+			entry.code = code;
+			entry.symbol = utf8;
+
+			this.stateCount += 1;
+			this.stateValue = stateCount;
+			entry.stateValue = stateCount;
+		}
+	}
+
+	public final int saveSymbolPoint() {
+		return this.tableSize;
+	}
+
+	public final void backSymbolPoint(int savePoint) {
+		if (this.tableSize != savePoint) {
+			this.tableSize = savePoint;
+			if (this.tableSize == 0) {
+				this.stateValue = 0;
+			} else {
+				this.stateValue = tables[savePoint - 1].stateValue;
+			}
+		}
+	}
+
+	public final void addSymbol(int table, int ppos) {
+		byte[] b = this.subByte(ppos, pos);
+		push(table, hash(b, 0, b.length), b);
+	}
+
+	public final void addSymbolMask(int table) {
+		push(table, 0, NullSymbol);
+	}
+
+	public final boolean exists(int table) {
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				return entry.symbol != NullSymbol;
+			}
+		}
+		return false;
+	}
+
+	public final boolean existsSymbol(int table, byte[] symbol) {
+		long code = hash(symbol, 0, symbol.length);
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				if (entry.code == code && equalsBytes(entry.symbol, symbol)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public final boolean matchSymbol(int table) {
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				return this.match(entry.symbol);
+			}
+		}
+		return false;
+	}
+
+	private final long hashInputs(int ppos, int pos) {
+		long hashCode = 1;
+		for (int i = ppos; i < pos; i++) {
+			hashCode = hashCode * 31 + (this.inputs[ppos + i] & 0xff);
+		}
+		return hashCode;
+	}
+
+	private final boolean equalsInputs(int ppos, int pos, byte[] b2) {
+		if ((pos - ppos) == b2.length) {
+			for (int i = 0; i < b2.length; i++) {
+				if (this.inputs[ppos + i] != b2[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public final boolean equals(int table, int ppos) {
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				return equalsInputs(ppos, pos, entry.symbol);
+			}
+		}
+		return false;
+	}
+
+	public boolean contains(int table, int ppos) {
+		long code = hashInputs(ppos, pos);
+		for (int i = tableSize - 1; i >= 0; i--) {
+			SymbolTableEntry entry = tables[i];
+			if (entry.table == table) {
+				if (entry.symbol == NullSymbol) {
+					return false; // masked
+				}
+				if (code == entry.code && equalsInputs(ppos, pos, entry.symbol)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	// Counter ------------------------------------------------------------
+
+	private int count = 0;
+
+	public final void scanCount(int ppos, long mask, int shift) {
+		if (mask == 0) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = ppos; i < pos; i++) {
+				sb.append((char)inputs[i]);
+			}
+			count = (int) Long.parseLong(sb.toString());
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (int i = ppos; i < pos; i++) {
+				sb.append(Integer.toBinaryString(inputs[i] & 0xff));
+			}
+			long v = Long.parseUnsignedLong(sb.toString(), 2);
+			count = (int) ((v & mask) >> shift);
+		}
+		// Verbose.println("set count %d", count);
+	}
+
+	public final boolean decCount() {
+		return count-- > 0;
+	}
+
+	// Memotable
+	// ------------------------------------------------------------
+
+	public final static int NotFound = 0;
+	public final static int SuccFound = 1;
+	public final static int FailFound = 2;
+
+	private static class MemoEntry {
+		long key = -1;
+		public int consumed;
+		public Object memoTree;
+		public int result;
+		public int stateValue = 0;
+	}
+
+	private MemoEntry[] memoArray = null;
+	private int shift = 0;
+
+	public void initMemo(int w, int n) {
+		this.memoArray = new MemoEntry[w * n + 1];
+		for (int i = 0; i < this.memoArray.length; i++) {
+			this.memoArray[i] = new MemoEntry();
+			this.memoArray[i].key = -1;
+			this.memoArray[i].result = NotFound;
+		}
+		// this.initStat();
+	}
+
+	final long longkey(long pos, int memoPoint, int shift) {
+		return ((pos << 12) | memoPoint);
+	}
+
+	public final int memoLookup(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key) {
+			this.pos += m.consumed;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	@SuppressWarnings("unchecked")
+	public final int memoLookupTree(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key) {
+			this.pos += m.consumed;
+			this.left = (T)m.memoTree;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	public void memoSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = -1;
+		// this.CountStored += 1;
+	}
+
+	public void memoTreeSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = -1;
+		// this.CountStored += 1;
+	}
+
+	public void memoFail(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = 0;
+		m.result = FailFound;
+		m.stateValue = -1;
+	}
+
+	/* State Version */
+
+	public final int lookupStateMemo(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key) {
+			this.pos += m.consumed;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	public final int lookupStateTreeMemo(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		if (m.key == key && m.stateValue == this.stateValue) {
+			this.pos += m.consumed;
+			this.left = (T) m.memoTree;
+			return m.result;
+		}
+		return NotFound;
+	}
+
+	public void memoStateSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = this.stateValue;
+		// this.CountStored += 1;
+	}
+
+	public void memoStateTreeSucc(int memoPoint, int ppos) {
+		long key = longkey(ppos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = pos - ppos;
+		m.result = SuccFound;
+		m.stateValue = this.stateValue;
+		// this.CountStored += 1;
+	}
+
+	public void memoStateFail(int memoPoint) {
+		long key = longkey(pos, memoPoint, shift);
+		int hash = (int) (key % memoArray.length);
+		MemoEntry m = this.memoArray[hash];
+		m.key = key;
+		m.memoTree = left;
+		m.consumed = 0;
+		m.result = FailFound;
+		m.stateValue = this.stateValue;
+	}
+}
+
+final static byte[] toUTF8(String text) {
+	try {
+		return text.getBytes("UTF8");
+	} catch (java.io.UnsupportedEncodingException e) {
+	}
+	return text.getBytes();
+}
+
+final static String getInput(String filePath) {
+	Path path = Paths.get(filePath);
+	// file or input string
+	if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
+		try {
+			byte[] content = Files.readAllBytes(path);
+			return new String(content, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	return filePath;
+}
+
+final static double calcTimeDiff(double start, double end) {
+	return (end - start) / 1.0e6;
+}
+
+final static void jnez_main(String[] arg) {
+	if (arg.length == 0) {
+		String className = Thread.currentThread().getStackTrace()[1].getClassName();
+		System.out.println("Usage: java " + className + " file [or input text]");
+		System.exit(1);
+	}
+	for (int i = 0; i < arg.length; i++) {
+		String input;
+		input = getInput(arg[i]);
+		if (System.getenv("BENCH") != null) {
+			double sum = 0.0;
+			double start;
+			double end;
+			double[] results = new double[5];
+			for (int j = 0; j < 5; j++) {
+				start = System.nanoTime();
+				SimpleTree t = parse(input);
+				end = System.nanoTime();
+				if (t == null) {
+					System.err.println(arg[i] + " FAIL " + calcTimeDiff(start, end) + "[ms]");
+					break;
+				}
+				results[j] = calcTimeDiff(start, end);
+				sum += results[j];
+			}
+			if (sum != 0.0) {
+				System.out.println(String.format("%s OK %.4f [ms] %.3f %.3f %.3f %.3f %.3f", arg[i], (sum / 5), results[0], results[1], results[2], results[3], results[4]));
+			}
+		} else {
+			SimpleTree t = parse(input);
+			System.out.println(t);
+			if (System.getenv("MEM") != null) {
+				// TODO add memory usage info from JVM
+			}
+		}
+	}
+}
+

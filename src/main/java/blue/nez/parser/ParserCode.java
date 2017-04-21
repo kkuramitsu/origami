@@ -29,11 +29,11 @@ import blue.origami.util.OptionalFactory;
 public abstract class ParserCode<I> implements ParserExecutable {
 
 	protected final OOption options;
-	protected final Grammar grammar;
+	protected final ParserGrammar grammar;
 	protected ArrayList<I> codeList;
 	protected HashMap<String, I> codeMap;
 
-	protected ParserCode(Grammar grammar, OOption options, I[] initArray) {
+	protected ParserCode(ParserGrammar grammar, OOption options, I[] initArray) {
 		this.options = options;
 		this.grammar = grammar;
 		this.codeList = initArray != null ? new ArrayList<>() : null;
@@ -41,7 +41,7 @@ public abstract class ParserCode<I> implements ParserExecutable {
 	}
 
 	@Override
-	public final Grammar getGrammar() {
+	public final ParserGrammar getGrammar() {
 		return this.grammar;
 	}
 

@@ -250,7 +250,7 @@ public interface SourcePosition {
 		return path;
 	}
 
-	public static String extractFileBodyName(String path) {
+	public static String extractFileBaseName(String path) {
 		String f = extractFileName(path);
 		int loc = f.lastIndexOf('.');
 		if (loc > 0) {

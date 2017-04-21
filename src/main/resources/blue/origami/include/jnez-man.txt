@@ -1,0 +1,4 @@
+ Make a parser               javac $cmd$.java
+ Run a parser                java $cmd$ <file> or 'input-text'
+ Test performance            BENCH=1 java $cmd$ <file> or 'input-text'
+ Test memory usage           MEM=1 java $cmd$ <file> or 'input-text' //unimplemented

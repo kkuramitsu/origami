@@ -55,9 +55,9 @@ public class ByteSet implements StringCombinator {
 		return b;
 	}
 
-	// public final int n(int n) {
-	// return this.bits[n];
-	// }
+	public final int[] bits() {
+		return this.bits;
+	}
 
 	@Override
 	public final boolean equals(Object o) {

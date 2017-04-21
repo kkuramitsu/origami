@@ -19,6 +19,9 @@ public abstract class OStringUtils {
 	}
 
 	public final static byte[] utf8(String text) {
+		if (text == null) {
+			return new byte[0];
+		}
 		try {
 			return text.getBytes("UTF8");
 		} catch (UnsupportedEncodingException e) {

@@ -26,7 +26,7 @@ public abstract class Grammar extends AbstractList<Production> implements String
 		this.parent = parent;
 		this.nameList = new ArrayList<>(16);
 		this.exprMap = new HashMap<>();
-		String id = name == null ? "g" + Objects.hashCode(this) : SourcePosition.extractFileBodyName(name);
+		String id = name == null ? "g" + Objects.hashCode(this) : SourcePosition.extractFileBaseName(name);
 		if (parent != null) {
 			id = parent.getName() + "." + id;
 		}

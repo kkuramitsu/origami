@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 import blue.nez.ast.LocaleFormat;
 
-public abstract class OCommonWriter {
+public class OCommonWriter {
 	protected String fileName = null;
 	private PrintStream out;
 
@@ -38,10 +38,11 @@ public abstract class OCommonWriter {
 
 	/* IO management */
 
-	protected void open(String path) throws IOException {
+	public void open(String path) throws IOException {
 		this.close();
 		if (path != null) {
 			this.out = new PrintStream(new FileOutputStream(path));
+			OConsole.println("writing %s ...", path);
 			this.isColor = false;
 		} else {
 			this.out = System.out;

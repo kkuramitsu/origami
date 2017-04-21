@@ -32,12 +32,7 @@ public class OCodeWriter extends OCommonWriter implements OptionalFactory<OCodeW
 
 	@Override
 	public OCodeWriter clone() {
-		try {
-			return this.getClass().newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
-			OConsole.exit(1, e);
-			return null;
-		}
+		return this.newClone();
 	}
 
 	protected OOption options;

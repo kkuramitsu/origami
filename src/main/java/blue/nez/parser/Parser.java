@@ -23,7 +23,6 @@ import blue.nez.ast.LocaleFormat;
 import blue.nez.ast.Source;
 import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Tree;
-import blue.nez.peg.Grammar;
 import blue.nez.peg.NezFmt;
 import blue.nez.peg.Production;
 import blue.origami.util.OOption;
@@ -40,7 +39,7 @@ public final class Parser {
 		assert start != null;
 	}
 
-	public final Grammar getGrammar() {
+	public final ParserGrammar getParserGrammar() {
 		if (this.compiledParserCode == null) {
 			this.compile();
 		}

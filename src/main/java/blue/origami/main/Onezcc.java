@@ -14,34 +14,24 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.origami.main;
 
+import blue.nez.parser.ParserGenerator;
 import blue.nez.peg.Grammar;
-import blue.nez.peg.Production;
+import blue.origami.util.OOption;
 
-class ParserGrammar extends Grammar {
-	private boolean isBinary = false;
+public class Onezcc extends OCommand {
 
-	ParserGrammar(String name, boolean isBinary) {
-		super(name, null);
-		this.isBinary = isBinary;
-	}
-
-	public boolean isBinary() {
-		return this.isBinary;
-	}
+	// protected void initOption(OOption options) {
+	// super.initOption(options);
+	// options.set(ParserOption.ThrowingParserError, false);
+	// }
 
 	@Override
-	public String getUniqueName(String name) {
-		return name;
+	public void exec(OOption options) throws Throwable {
+		Grammar g = this.getGrammar(options);
+		ParserGenerator pg = options.newInstance(ParserGenerator.class);
+		pg.generate(g);
 	}
 
-	@Override
-	public void addPublicProduction(String name) {
-	}
-
-	@Override
-	public Production[] getPublicProductions() {
-		return new Production[0];
-	}
 }
