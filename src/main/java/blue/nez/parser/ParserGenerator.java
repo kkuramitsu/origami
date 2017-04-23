@@ -32,6 +32,7 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
+import blue.nez.peg.Typestate;
 import blue.nez.peg.expression.ByteSet;
 import blue.nez.peg.expression.PAnd;
 import blue.nez.peg.expression.PAny;
@@ -67,12 +68,12 @@ import blue.origami.util.OptionalFactory;
 public class ParserGenerator extends CodeBase implements OptionalFactory<ParserGenerator> {
 
 	@Override
-	public Class<?> keyClass() {
+	public final Class<?> keyClass() {
 		return ParserGenerator.class;
 	}
 
 	@Override
-	public ParserGenerator clone() {
+	public final ParserGenerator clone() {
 		return this.newClone();
 	}
 
@@ -81,9 +82,6 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 	@Override
 	public void init(OOption options) {
 		this.options = options;
-		this.defineSymbol("bool", "int");
-		this.defineSymbol("true", "1");
-		this.defineSymbol("false", "0");
 	}
 
 	protected final String getFileBaseName() {
@@ -91,7 +89,7 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 		return SourcePosition.extractFileBaseName(file);
 	}
 
-	public void generate(Grammar g) throws IOException {
+	public final void generate(Grammar g) throws IOException {
 		ParserGeneratorVisitor pgv = new ParserGeneratorVisitor();
 		if (g instanceof ParserGrammar) {
 			pgv.start((ParserGrammar) g, this);
@@ -100,34 +98,29 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 			pgv.start(p.getParserGrammar(), this);
 		}
 		this.writeHeader();
-		this.writeBody();
-		this.writeFooter();
-	}
-
-	private void writeHeader() throws IOException {
-		this.out.open(this.getFileBaseName() + ".h");
-		this.out.importResourceContent("/blue/origami/include/cparser-runtime.c");
 		this.out.println(this.head.toString());
-	}
-
-	private void writeBody() throws IOException {
 		ArrayList<String> funcList = this.sortFuncList("start");
 		for (String funcName : this.crossRefNames) {
-			// System.out.println("prototype " + funcName);
-			this.out.println("%s %s(Nez *px);", this.s("bool"), funcName);
+			this.definePrototype(funcName);
 		}
 		for (String funcName : funcList) {
 			SourceFragment s = this.codeMap.get(funcName);
 			if (s != null) {
-				if (!this.crossRefNames.contains(funcName)) {
-					this.out.print("static inline");
-				}
+				// if (!this.crossRefNames.contains(funcName)) {
+				// this.out.print("static inline");
+				// }
 				this.out.p(s);
 			}
 		}
+		this.writeFooter();
 	}
 
-	private void writeFooter() throws IOException {
+	protected void writeHeader() throws IOException {
+		this.out.open(this.getFileBaseName() + ".h");
+		this.out.importResourceContent("/blue/origami/include/cparser-runtime.c");
+	}
+
+	protected void writeFooter() throws IOException {
 		this.out.open(this.getFileBaseName() + ".c");
 		this.out.println("#include \"%s.h\"", this.getFileBaseName());
 		this.out.importResourceContent("/blue/origami/include/cparser-main.c");
@@ -143,22 +136,21 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 		this.L("%s %s = %s;", typeName, constName, literal);
 	}
 
+	public void definePrototype(String funcName) {
+		this.L("%s %s(Nez *px);", this.s("bool"), funcName);
+	}
+
 	public void beginDefine(String funcName, Expression e) {
-		this.openFragment(funcName);
-		//
-		this.currentFunc = funcName;
 		this.L("%s %s(Nez *px) {", this.s("bool"), funcName);
 		this.L("// " + e);
 		this.incIndent();
 		this.L("%s %s = %s;", this.s("bool"), this.s("r"), this.s("true"));
 	}
 
-	public void endDefine() {
+	public void endDefine(String funcName) {
 		this.L("return %s;", this.s("r"));
 		this.decIndent();
 		this.L("}");
-		//
-		this.closeFlagment();
 	}
 
 	public void matchSucc() {
@@ -170,11 +162,11 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 	}
 
 	public void matchAny() {
-		this.L("%s = !Nez_eof(%s);", this.s("r"), this.s("px"));
+		this.L("%s = !Nez_eof(px);", this.s("r"));
 	}
 
 	public void matchByte(int uchar) {
-		this.L("%s = (Nez_read(%s) == %s);", this.s("r"), this.s("px"), uchar);
+		this.L("%s = (Nez_read(px) == %s);", this.s("r"), uchar);
 	}
 
 	public void matchByteSet(ByteSet byteSet) {
@@ -182,17 +174,8 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 		this.L("%s = Nez_bitis(%s, %s, Nez_read(%s));", this.s("r"), this.s("px"), constName, this.s("px"));
 	}
 
-	private String currentFunc = null;
-
 	public void matchNonTerminal(String func) {
-		this.addFunctionDependency(this.currentFunc, func);
 		this.L("%s = %s(%s);", this.s("r"), func, this.s("px"));
-	}
-
-	private int u = 0;
-
-	public int unique() {
-		return this.u++;
 	}
 
 	public void pushLoadPos(int uid) {
@@ -229,7 +212,6 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 
 	public void storePos(int uid) {
 		this.L("Nez_setpos(px, %s);", this.s("pos") + uid);
-
 	}
 
 	public void storeTree(int uid) {
@@ -244,12 +226,12 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 		this.L("Nez_storeSymbolTable(px, %s);", this.s("state") + uid);
 	}
 
-	public void beginIfTrue() {
+	public void beginIfSucc() {
 		this.L("if(%s) {", this.s("r"));
 		this.incIndent();
 	}
 
-	public void beginIfFailure() {
+	public void beginIfFail() {
 		this.L("if(!%s) {", this.s("r"));
 		this.incIndent();
 	}
@@ -265,7 +247,7 @@ public class ParserGenerator extends CodeBase implements OptionalFactory<ParserG
 		this.L("}");
 	}
 
-	public void beginWhileTrue() {
+	public void beginWhileSucc() {
 		this.L("while(%s) {", this.s("r"));
 		this.incIndent();
 
@@ -480,6 +462,27 @@ abstract class CodeBase {
 		this.body = null;
 	}
 
+	private String currentFuncName = null;
+
+	void setCurrentFuncName(String funcName) {
+		this.currentFuncName = funcName;
+		this.u = 0;
+	}
+
+	String getCurrentFuncName() {
+		return this.currentFuncName;
+	}
+
+	private int u = 0;
+
+	public final int unique() {
+		return this.u++;
+	}
+
+	public final String v(String name, int uid) {
+		return uid == 0 ? name : name + uid;
+	}
+
 	HashMap<String, String> symbolMap = new HashMap<>();
 
 	protected void defineSymbol(String key, String symbol) {
@@ -619,9 +622,12 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 				e = ((PNonTerminal) e).getExpression();
 			}
 			if (!px.isDefined(funcName)) {
+				px.openFragment(funcName);
+				px.setCurrentFuncName(funcName);
 				px.beginDefine(funcName, e);
 				this.matchInline(e, px);
-				px.endDefine();
+				px.endDefine(funcName);
+				px.closeFlagment();
 			}
 		}
 	}
@@ -636,6 +642,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		} else {
 			String funcName = px.getFuncName(e);
 			this.waitingList.add(e);
+			px.addFunctionDependency(px.getCurrentFuncName(), funcName);
 			px.matchNonTerminal(funcName);
 		}
 	}
@@ -654,6 +661,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 	public Boolean visitNonTerminal(PNonTerminal e, ParserGenerator px) {
 		String funcName = px.getFuncName(e);
 		this.waitingList.add(e);
+		px.addFunctionDependency(px.getCurrentFuncName(), funcName);
 		px.matchNonTerminal(funcName);
 		return null;
 	}
@@ -691,20 +699,18 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 	@Override
 	public Boolean visitPair(PPair e, ParserGenerator px) {
 		this.match(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		this.match(e.get(1), px);
 		px.endIf();
 		return null;
 	}
 
 	private boolean isStateful(Expression e) {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	private boolean isCons(Expression e) {
-		// TODO Auto-generated method stub
-		return false;
+		return Typestate.compute(e) != Typestate.Unit;
 	}
 
 	@Override
@@ -720,7 +726,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		}
 		this.match(e.get(0), px);
 		for (int i = 1; i < e.size(); i++) {
-			px.beginIfFailure();
+			px.beginIfFail();
 			px.storePos(uid);
 			if (this.isCons(e)) {
 				px.storeTree(uid);
@@ -742,8 +748,11 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		int uid = px.unique();
 		px.pushIndexMap(uid, e.indexMap);
 		px.beginSwitch(uid);
+		px.beginCase(uid, 0);
+		px.matchFail();
+		px.endCase();
 		for (int i = 0; i < e.size(); i++) {
-			px.beginCase(uid, i);
+			px.beginCase(uid, i + 1);
 			this.match(e.get(i), px);
 			px.endCase();
 		}
@@ -763,7 +772,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.loadSymbolTable(uid);
 		}
 		this.match(e.get(0), px);
-		px.beginIfFailure();
+		px.beginIfFail();
 		px.storePos(uid);
 		if (this.isCons(e.get(0))) {
 			px.storeTree(uid);
@@ -791,10 +800,10 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		if (e.isOneMore()) {
 			px.initCounter(uid);
 		}
-		px.beginWhileTrue();
+		px.beginWhileSucc();
 		this.match(e.get(0), px);
 		// px.checkEmpty(uid, e.get(0));
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.updatePos(uid);
 		if (this.isCons(e.get(0))) {
 			px.updateTree(uid);
@@ -817,6 +826,8 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		}
 		px.endIf();
 		px.endWhile();
+		px.matchSucc();
+
 		if (e.isOneMore()) {
 			px.checkCounter(uid);
 		}
@@ -831,7 +842,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.loadTree(uid);
 		}
 		this.match(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.storePos(uid);
 		if (this.isCons(e.get(0))) {
 			px.storeTree(uid);
@@ -852,7 +863,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.loadSymbolTable(uid);
 		}
 		this.match(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.matchFail();
 		px.orElse();
 		px.storePos(uid);
@@ -876,7 +887,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.beginTree(e.beginShift);
 		}
 		this.matchInline(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.endTree(e.endShift, e.tag, e.value);
 		px.endIf();
 		return null;
@@ -888,7 +899,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 		px.loadTree(uid);
 		px.loadTreeLog(uid);
 		this.match(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.storeTree(uid);
 		px.storeTreeLog(uid);
 		px.endIf();
@@ -902,7 +913,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.loadTree(uid);
 			px.loadTreeLog(uid);
 			this.match(e.get(0), px);
-			px.beginIfTrue();
+			px.beginIfSucc();
 			px.storeTreeLog(uid);
 			px.linkTree(uid, e.label);
 			px.storeTree(uid);
@@ -933,7 +944,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			px.callSymbolAction(new SymbolReset(), e.label);
 		}
 		this.match(e.get(0), px);
-		px.beginIfTrue();
+		px.beginIfSucc();
 		px.storeSymbolTable(uid);
 		px.endIf();
 		return null;
@@ -947,7 +958,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			int uid = px.unique();
 			px.pushLoadPos(uid);
 			this.match(e.get(0), px);
-			px.beginIfTrue();
+			px.beginIfSucc();
 			px.callSymbolAction(e.action, e.label, uid);
 			px.endIf();
 		}
@@ -962,7 +973,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<Boolean, ParserGenerator>
 			int uid = px.unique();
 			px.pushLoadPos(uid);
 			this.match(e.get(0), px);
-			px.beginIfTrue();
+			px.beginIfSucc();
 			px.callSymbolPredicate(e.pred, e.label, uid, e.option);
 			px.endIf();
 		}
