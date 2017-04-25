@@ -30,6 +30,7 @@ import blue.nez.parser.ParserContext.SymbolAction;
 import blue.nez.parser.ParserContext.SymbolPredicate;
 import blue.nez.parser.ParserContext.SymbolReset;
 import blue.nez.parser.ParserGrammar;
+import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
@@ -65,6 +66,7 @@ import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
 import blue.origami.util.OCommonWriter;
+import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OptionalFactory;
@@ -101,11 +103,11 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 			Parser p = this.options == null ? g.newParser() : g.newParser(this.options);
 			pgv.start(p.getParserGrammar(), this);
 		}
-		this.writeHeader();
 		ArrayList<String> funcList = this.sortFuncList("start");
 		for (String funcName : this.crossRefNames) {
 			this.definePrototype(funcName);
 		}
+		this.writeHeader();
 		this.out.println(this.head.toString());
 		for (String funcName : funcList) {
 			SourceFragment s = this.codeMap.get(funcName);
@@ -117,6 +119,10 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 			}
 		}
 		this.writeFooter();
+	}
+
+	protected void log(String line, Object... args) {
+		OConsole.println(line, args);
 	}
 
 	protected abstract void writeHeader() throws IOException;
@@ -300,6 +306,14 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 		return null;
 	}
 
+	protected abstract String memoDispatch(String lookup, String main);
+
+	protected abstract String memoLookup(int memoId, boolean withTree);
+
+	protected abstract String memoSucc(int varid, int memoId, boolean withTree);
+
+	protected abstract String memoFail(int varid, int memoId);
+
 }
 
 class SourceFragment {
@@ -355,12 +369,7 @@ abstract class CodeBase {
 	}
 
 	protected SourceFragment head = new SourceFragment();
-
-	protected void initHeader() {
-		this.head = new SourceFragment();
-	}
-
-	private SourceFragment body;
+	private SourceFragment body = this.head;
 
 	protected String Line(String fmt, Object... args) {
 		return this.body.Line(fmt, args);
@@ -396,7 +405,7 @@ abstract class CodeBase {
 
 	protected void closeFlagment() {
 		// System.out.println("DEBUG " + this.out);
-		this.body = null;
+		this.body = this.head;
 	}
 
 	private String currentFuncName = null;
@@ -552,26 +561,45 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 
 	public void start(ParserGrammar g, ParserGenerator px) {
 		Production p = g.getStartProduction();
-
+		px.defineConst("int", "MEMOSIZE", "" + g.getMemoPointSize());
+		px.log("memosize: %d", g.getMemoPointSize());
+		int c = 0;
 		this.waitingList.add(p.getExpression());
 		for (int i = 0; i < this.waitingList.size(); i++) {
 			Expression e = this.waitingList.get(i);
 			String funcName = px.getFuncName(e);
+			MemoPoint memoPoint = null;
 			if (e instanceof PNonTerminal) {
+				memoPoint = g.getMemoPoint(((PNonTerminal) e).getUniqueName());
 				e = ((PNonTerminal) e).getExpression();
 			}
 			if (!px.isDefined(funcName)) {
 				px.openFragment(funcName);
 				px.setCurrentFuncName(funcName);
 				px.beginDefine(funcName, e);
-				String pe = this.match(e, px, false);
-				if (pe == null) {
-					System.out.println("DEBUG " + funcName + " " + e);
-				}
+				String pe = this.match(e, px, memoPoint);
 				px.endDefine(funcName, pe);
 				px.closeFlagment();
 			}
+			c++;
 		}
+		px.log("funcsize: %d", c);
+	}
+
+	public String match(Expression e, ParserGenerator px, MemoPoint m) {
+		// if (m == null) {
+		return this.match(e, px, false);
+		// }
+		// int varid = px.uniqueVarId();
+		// String funcName = px.getFuncName(e);
+		// this.waitingList.add(e);
+		// px.addFunctionDependency(px.getCurrentFuncName(), funcName);
+		// String main = px.matchNonTerminal(funcName);
+		// boolean withTree = Typestate.compute(e) == Typestate.Tree;
+		// main = px.matchPair(main, px.memoSucc(varid, m.id, withTree));
+		// main = px.matchChoice(main, px.memoFail(varid, m.id));
+		// return this.letVar(varid, POS, px.memoDispatch(px.memoLookup(m.id,
+		// withTree), main), px);
 	}
 
 	public String match(Expression e, ParserGenerator px, boolean asFunction) {

@@ -1,9 +1,9 @@
 package blue.nez.parser.pegasm;
 
-import blue.nez.parser.PegAsmInst;
-import blue.nez.parser.PegAsmContext;
+import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.ParserCode.MemoPoint;
+import blue.nez.parser.PegAsmContext;
+import blue.nez.parser.PegAsmInst;
 import blue.nez.parser.pegasm.PegAsm.AbstMemo;
 
 public final class ASMMmemoTree extends AbstMemo {

@@ -18,7 +18,7 @@ package blue.origami.xlocal;
 
 import blue.nez.peg.Grammar;
 
-public class JavaParserGenerator extends ParserGenerator {
+public class JavaParserGenerator extends OldParserGenerator {
 
 	@Override
 	protected void initLanguageSpec() {

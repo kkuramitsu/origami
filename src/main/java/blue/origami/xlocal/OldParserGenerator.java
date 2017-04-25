@@ -26,7 +26,7 @@ import java.util.Map;
 import blue.nez.ast.Symbol;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserCode;
-import blue.nez.parser.ParserCode.MemoPoint;
+import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
@@ -66,7 +66,7 @@ import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OVerbose;
 
-public abstract class ParserGenerator
+public abstract class OldParserGenerator
 		extends OCommonWriter /* implements GrammarWriter */ {
 
 	protected boolean verboseMode = true;
@@ -554,7 +554,7 @@ public abstract class ParserGenerator
 							if (!key.equals(nextNode)) {
 								// Verbose.println("Cyclic " + key + " => " +
 								// nextNode);
-								ParserGenerator.this.crossRefNames.add(nextNode);
+								OldParserGenerator.this.crossRefNames.add(nextNode);
 							}
 						}
 					}
@@ -578,9 +578,9 @@ public abstract class ParserGenerator
 	private class SymbolAnalysis extends ExpressionVisitor<Object, Object> {
 
 		SymbolAnalysis() {
-			ParserGenerator.this.DeclTag("");
-			ParserGenerator.this.DeclTrap("");
-			ParserGenerator.this.DeclTable(Symbol.Null);
+			OldParserGenerator.this.DeclTag("");
+			OldParserGenerator.this.DeclTrap("");
+			OldParserGenerator.this.DeclTable(Symbol.Null);
 		}
 
 		private Object decl(Production p) {
@@ -593,28 +593,28 @@ public abstract class ParserGenerator
 		String cur = null; // name
 
 		private boolean checkFuncName(Production p) {
-			String f = ParserGenerator.this._funcname(p.getUniqueName());
-			if (!ParserGenerator.this.funcMap.containsKey(f)) {
+			String f = OldParserGenerator.this._funcname(p.getUniqueName());
+			if (!OldParserGenerator.this.funcMap.containsKey(f)) {
 				String stacked2 = this.cur;
 				this.cur = f;
-				ParserGenerator.this.funcMap.put(f, p.getExpression());
-				ParserGenerator.this.funcList.add(f);
-				MemoPoint memoPoint = ParserGenerator.this.code.getMemoPoint(p.getUniqueName());
+				OldParserGenerator.this.funcMap.put(f, p.getExpression());
+				OldParserGenerator.this.funcList.add(f);
+				MemoPoint memoPoint = OldParserGenerator.this.code.getMemoPoint(p.getUniqueName());
 				if (memoPoint != null) {
-					ParserGenerator.this.memoPointMap.put(f, memoPoint.id);
+					OldParserGenerator.this.memoPointMap.put(f, memoPoint.id);
 					String stacked = this.cur;
 					this.cur = f;
 					this.checkInner(p.getExpression());
 					this.cur = stacked;
-					ParserGenerator.this.addEdge(this.cur, f);
+					OldParserGenerator.this.addEdge(this.cur, f);
 				} else {
 					p.getExpression().visit(this, null);
 				}
 				this.cur = stacked2;
-				ParserGenerator.this.addEdge(this.cur, f);
+				OldParserGenerator.this.addEdge(this.cur, f);
 				return true;
 			}
-			ParserGenerator.this.addEdge(this.cur, f);
+			OldParserGenerator.this.addEdge(this.cur, f);
 			// crossRefNames.add(f);
 			return false;
 		}
@@ -625,23 +625,23 @@ public abstract class ParserGenerator
 				return;
 			}
 			String key = e.toString();
-			String f = ParserGenerator.this.exprMap.get(key);
+			String f = OldParserGenerator.this.exprMap.get(key);
 			if (f == null) {
-				f = "e" + ParserGenerator.this.exprMap.size();
-				ParserGenerator.this.exprMap.put(key, f);
-				ParserGenerator.this.funcList.add(f);
-				ParserGenerator.this.funcMap.put(f, e);
+				f = "e" + OldParserGenerator.this.exprMap.size();
+				OldParserGenerator.this.exprMap.put(key, f);
+				OldParserGenerator.this.funcList.add(f);
+				OldParserGenerator.this.funcMap.put(f, e);
 				String stacked = this.cur;
 				this.cur = f;
 				e.visit(this, null);
 				this.cur = stacked;
 			}
-			ParserGenerator.this.addEdge(this.cur, f);
+			OldParserGenerator.this.addEdge(this.cur, f);
 			// crossRefNames.add(f);
 		}
 
 		private void checkNonLexicalInner(Expression e) {
-			if (ParserGenerator.this.Optimization) {
+			if (OldParserGenerator.this.Optimization) {
 				if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny) {
 					e.visit(this, null);
 					return;
@@ -679,7 +679,7 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitByteSet(PByteSet e, Object a) {
-			ParserGenerator.this.DeclSet(e.bools(), false);
+			OldParserGenerator.this.DeclSet(e.bools(), false);
 			return null;
 		}
 
@@ -711,7 +711,7 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitDispatch(PDispatch e, Object a) {
-			ParserGenerator.this.DeclIndex(e.indexMap);
+			OldParserGenerator.this.DeclIndex(e.indexMap);
 			for (Expression sub : e) {
 				this.checkInner(sub);
 			}
@@ -726,8 +726,8 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitRepetition(PRepetition e, Object a) {
-			if (ParserGenerator.this.Optimization && e.get(0) instanceof PByteSet) {
-				ParserGenerator.this.DeclSet(((PByteSet) e.get(0)).bools(), true);
+			if (OldParserGenerator.this.Optimization && e.get(0) instanceof PByteSet) {
+				OldParserGenerator.this.DeclSet(((PByteSet) e.get(0)).bools(), true);
 				return null;
 			}
 			this.checkNonLexicalInner(e.get(0));
@@ -754,13 +754,13 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitTree(PTree e, Object a) {
 			if (e.label != null) {
-				ParserGenerator.this.DeclTrap(e.label.getSymbol());
+				OldParserGenerator.this.DeclTrap(e.label.getSymbol());
 			}
 			if (e.tag != null) {
-				ParserGenerator.this.DeclTag(e.tag.getSymbol());
+				OldParserGenerator.this.DeclTag(e.tag.getSymbol());
 			}
 			if (e.value != null) {
-				ParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
+				OldParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
 			}
 			return this.visitInnerAll(e);
 		}
@@ -768,20 +768,20 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitLinkTree(PLinkTree e, Object a) {
 			if (e.label != null) {
-				ParserGenerator.this.DeclTrap(e.label.getSymbol());
+				OldParserGenerator.this.DeclTrap(e.label.getSymbol());
 			}
 			return this.visitInnerAll(e);
 		}
 
 		@Override
 		public Object visitTag(PTag e, Object a) {
-			ParserGenerator.this.DeclTag(e.tag.getSymbol());
+			OldParserGenerator.this.DeclTag(e.tag.getSymbol());
 			return null;
 		}
 
 		@Override
 		public Object visitReplace(PReplace e, Object a) {
-			ParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
+			OldParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
 			return null;
 		}
 
@@ -797,13 +797,13 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitSymbolAction(PSymbolAction e, Object a) {
-			ParserGenerator.this.DeclTable(e.label);
+			OldParserGenerator.this.DeclTable(e.label);
 			return this.visitInnerAll(e);
 		}
 
 		@Override
 		public Object visitSymbolPredicate(PSymbolPredicate e, Object a) {
-			ParserGenerator.this.DeclTable(e.label);
+			OldParserGenerator.this.DeclTable(e.label);
 			return this.visitInnerAll(e);
 		}
 
@@ -852,28 +852,28 @@ public abstract class ParserGenerator
 	class ParserGeneratorVisitor extends ExpressionVisitor<Object, Object> {
 
 		void generate() {
-			for (String f : ParserGenerator.this.funcList) {
-				this.generateFunction(f, ParserGenerator.this.funcMap.get(f));
+			for (String f : OldParserGenerator.this.funcList) {
+				this.generateFunction(f, OldParserGenerator.this.funcMap.get(f));
 			}
 		}
 
 		private String _eval(Expression e) {
-			String f = ParserGenerator.this._funcname(e);
+			String f = OldParserGenerator.this._funcname(e);
 			if (f == null) {
 				return null;
 			}
-			return ParserGenerator.this._funccall(f);
+			return OldParserGenerator.this._funccall(f);
 		}
 
 		private String _eval(String uname) {
-			return ParserGenerator.this._funccall(ParserGenerator.this._funcname(uname));
+			return OldParserGenerator.this._funccall(OldParserGenerator.this._funcname(uname));
 		}
 
 		private void generateFunction(String name, Expression e) {
-			Integer memoPoint = ParserGenerator.this.memoPointMap.get(name);
-			ParserGenerator.this.pVerbose(e.toString());
+			Integer memoPoint = OldParserGenerator.this.memoPointMap.get(name);
+			OldParserGenerator.this.pVerbose(e.toString());
 			this.initLocal();
-			ParserGenerator.this.BeginFunc(name);
+			OldParserGenerator.this.BeginFunc(name);
 			{
 				if (memoPoint != null) {
 					String memoLookup = "memoLookupTree";
@@ -893,34 +893,34 @@ public abstract class ParserGenerator
 					// memoSucc = memoSucc.replace("State", "");
 					// memoFail = memoFail.replace("State", "");
 					// }
-					this.InitVal("memo", ParserGenerator.this._Func(memoLookup, ParserGenerator.this._int(memoPoint)));
-					ParserGenerator.this.If("memo", ParserGenerator.this._Eq(), "0");
+					this.InitVal("memo", OldParserGenerator.this._Func(memoLookup, OldParserGenerator.this._int(memoPoint)));
+					OldParserGenerator.this.If("memo", OldParserGenerator.this._Eq(), "0");
 					{
 						String f = this._eval(e);
 						String[] n = this.SaveState(e);
-						ParserGenerator.this.If(f);
+						OldParserGenerator.this.If(f);
 						{
-							ParserGenerator.this.Statement(
-									ParserGenerator.this._Func(memoSucc, ParserGenerator.this._int(memoPoint), n[0]));
-							ParserGenerator.this.Succ();
+							OldParserGenerator.this.Statement(
+									OldParserGenerator.this._Func(memoSucc, OldParserGenerator.this._int(memoPoint), n[0]));
+							OldParserGenerator.this.Succ();
 						}
-						ParserGenerator.this.Else();
+						OldParserGenerator.this.Else();
 						{
 							this.BackState(e, n);
-							ParserGenerator.this.Statement(
-									ParserGenerator.this._Func(memoFail, ParserGenerator.this._int(memoPoint)));
-							ParserGenerator.this.Fail();
+							OldParserGenerator.this.Statement(
+									OldParserGenerator.this._Func(memoFail, OldParserGenerator.this._int(memoPoint)));
+							OldParserGenerator.this.Fail();
 						}
-						ParserGenerator.this.EndIf();
+						OldParserGenerator.this.EndIf();
 					}
-					ParserGenerator.this.EndIf();
-					ParserGenerator.this.Return(ParserGenerator.this._Binary("memo", ParserGenerator.this._Eq(), "1"));
+					OldParserGenerator.this.EndIf();
+					OldParserGenerator.this.Return(OldParserGenerator.this._Binary("memo", OldParserGenerator.this._Eq(), "1"));
 				} else {
 					this.visit(e, null);
-					ParserGenerator.this.Succ();
+					OldParserGenerator.this.Succ();
 				}
 			}
-			ParserGenerator.this.EndFunc();
+			OldParserGenerator.this.EndFunc();
 		}
 
 		void initFunc(Expression e) {
@@ -939,13 +939,13 @@ public abstract class ParserGenerator
 
 		protected void BeginScope() {
 			if (this.nested > 0) {
-				ParserGenerator.this.BeginLocalScope();
+				OldParserGenerator.this.BeginLocalScope();
 			}
 		}
 
 		protected void EndScope() {
 			if (this.nested > 0) {
-				ParserGenerator.this.EndLocalScope();
+				OldParserGenerator.this.EndLocalScope();
 			}
 		}
 
@@ -964,43 +964,43 @@ public abstract class ParserGenerator
 		}
 
 		private String InitVal(String name, String expr) {
-			String type = ParserGenerator.this.type(name);
+			String type = OldParserGenerator.this.type(name);
 			String lname = this.local(name);
-			ParserGenerator.this.VarDecl(type, lname, expr);
+			OldParserGenerator.this.VarDecl(type, lname, expr);
 			return lname;
 		}
 
 		private String SavePos() {
-			return this.InitVal(ParserGenerator.this._pos(),
-					ParserGenerator.this._Field(ParserGenerator.this._state(), "pos"));
+			return this.InitVal(OldParserGenerator.this._pos(),
+					OldParserGenerator.this._Field(OldParserGenerator.this._state(), "pos"));
 		}
 
 		private void BackPos(String lname) {
-			ParserGenerator.this.VarAssign(ParserGenerator.this._Field(ParserGenerator.this._state(), "pos"), lname);
+			OldParserGenerator.this.VarAssign(OldParserGenerator.this._Field(OldParserGenerator.this._state(), "pos"), lname);
 		}
 
 		private String SaveTree() {
-			return this.InitVal(ParserGenerator.this._tree(), ParserGenerator.this._Func("saveTree"));
+			return this.InitVal(OldParserGenerator.this._tree(), OldParserGenerator.this._Func("saveTree"));
 		}
 
 		private void BackTree(String lname) {
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("backTree", lname));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("backTree", lname));
 		}
 
 		private String SaveLog() {
-			return this.InitVal(ParserGenerator.this._log(), ParserGenerator.this._Func("saveLog"));
+			return this.InitVal(OldParserGenerator.this._log(), OldParserGenerator.this._Func("saveLog"));
 		}
 
 		private void BackLog(String lname) {
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("backLog", lname));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("backLog", lname));
 		}
 
 		private String SaveSymbolTable() {
-			return this.InitVal(ParserGenerator.this._table(), ParserGenerator.this._Func("saveSymbolPoint"));
+			return this.InitVal(OldParserGenerator.this._table(), OldParserGenerator.this._Func("saveSymbolPoint"));
 		}
 
 		private void BackSymbolTable(String lname) {
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("backSymbolPoint", lname));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("backSymbolPoint", lname));
 		}
 
 		private String[] SaveState(Expression inner) {
@@ -1033,11 +1033,11 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitNonTerminal(PNonTerminal e, Object a) {
 			String f = this._eval(e.getUniqueName());
-			ParserGenerator.this.If(ParserGenerator.this._Not(f));
+			OldParserGenerator.this.If(OldParserGenerator.this._Not(f));
 			{
-				ParserGenerator.this.Fail();
+				OldParserGenerator.this.Fail();
 			}
-			ParserGenerator.this.EndIf();
+			OldParserGenerator.this.EndIf();
 			return null;
 		}
 
@@ -1048,18 +1048,18 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitFail(PFail e, Object a) {
-			ParserGenerator.this.Fail();
+			OldParserGenerator.this.Fail();
 			return null;
 		}
 
 		@Override
 		public Object visitByte(PByte e, Object a) {
-			ParserGenerator.this.If(ParserGenerator.this._Func("read"), ParserGenerator.this._NotEq(),
-					ParserGenerator.this._byte(e.byteChar()));
+			OldParserGenerator.this.If(OldParserGenerator.this._Func("read"), OldParserGenerator.this._NotEq(),
+					OldParserGenerator.this._byte(e.byteChar()));
 			{
-				ParserGenerator.this.Fail();
+				OldParserGenerator.this.Fail();
 			}
-			ParserGenerator.this.EndIf();
+			OldParserGenerator.this.EndIf();
 			this.checkBinaryEOF(e.byteChar() == 0);
 			return null;
 		}
@@ -1067,63 +1067,63 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitByteSet(PByteSet e, Object a) {
 			boolean[] byteset = e.bools();
-			ParserGenerator.this.If(ParserGenerator.this._Not(this.MatchByteArray(byteset, true)));
+			OldParserGenerator.this.If(OldParserGenerator.this._Not(this.MatchByteArray(byteset, true)));
 			{
-				ParserGenerator.this.Fail();
+				OldParserGenerator.this.Fail();
 			}
-			ParserGenerator.this.EndIf();
+			OldParserGenerator.this.EndIf();
 			this.checkBinaryEOF(byteset[0]);
 			return null;
 		}
 
 		private void checkBinaryEOF(boolean checked) {
-			if (ParserGenerator.this.BinaryGrammar && checked) {
-				ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
+			if (OldParserGenerator.this.BinaryGrammar && checked) {
+				OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
 				{
-					ParserGenerator.this.Fail();
+					OldParserGenerator.this.Fail();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			}
 		}
 
 		private String MatchByteArray(boolean[] byteMap, boolean inc) {
-			String c = inc ? ParserGenerator.this._Func("read") : ParserGenerator.this._Func("prefetch");
-			if (ParserGenerator.this.SupportedRange) {
-				int[] range = ParserGenerator.this.range(byteMap);
+			String c = inc ? OldParserGenerator.this._Func("read") : OldParserGenerator.this._Func("prefetch");
+			if (OldParserGenerator.this.SupportedRange) {
+				int[] range = OldParserGenerator.this.range(byteMap);
 				if (range != null) {
 					String s = "("
-							+ ParserGenerator.this._Binary(
-									ParserGenerator.this._Binary(ParserGenerator.this._byte(range[0]), "<=",
-											ParserGenerator.this._Func("prefetch")),
-									ParserGenerator.this._And(),
-									ParserGenerator.this._Binary(c, "<", ParserGenerator.this._byte(range[1])))
+							+ OldParserGenerator.this._Binary(
+									OldParserGenerator.this._Binary(OldParserGenerator.this._byte(range[0]), "<=",
+											OldParserGenerator.this._Func("prefetch")),
+									OldParserGenerator.this._And(),
+									OldParserGenerator.this._Binary(c, "<", OldParserGenerator.this._byte(range[1])))
 							+ ")";
 					// System.out.println(s);
 					return s;
 				}
 			}
-			if (ParserGenerator.this.UsingBitmap) {
-				return ParserGenerator.this._Func("bitis", ParserGenerator.this._set(byteMap), c);
+			if (OldParserGenerator.this.UsingBitmap) {
+				return OldParserGenerator.this._Func("bitis", OldParserGenerator.this._set(byteMap), c);
 			} else {
-				return ParserGenerator.this._GetArray(ParserGenerator.this._set(byteMap), c);
+				return OldParserGenerator.this._GetArray(OldParserGenerator.this._set(byteMap), c);
 			}
 		}
 
 		@Override
 		public Object visitAny(PAny e, Object a) {
-			if (ParserGenerator.this.BinaryGrammar) {
-				ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
-				ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
+			if (OldParserGenerator.this.BinaryGrammar) {
+				OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
+				OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
 				{
-					ParserGenerator.this.Fail();
+					OldParserGenerator.this.Fail();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			} else {
-				ParserGenerator.this.If(ParserGenerator.this._Func("read"), ParserGenerator.this._Eq(), "0");
+				OldParserGenerator.this.If(OldParserGenerator.this._Func("read"), OldParserGenerator.this._Eq(), "0");
 				{
-					ParserGenerator.this.Fail();
+					OldParserGenerator.this.Fail();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			}
 			return null;
 		}
@@ -1152,30 +1152,30 @@ public abstract class ParserGenerator
 			// generateSwitch(e, e.predicted);
 			// } else {
 			this.BeginScope();
-			String temp = this.InitVal(ParserGenerator.this._temp(), ParserGenerator.this._True());
+			String temp = this.InitVal(OldParserGenerator.this._temp(), OldParserGenerator.this._True());
 			for (Expression sub : e) {
 				String f = this._eval(sub);
-				ParserGenerator.this.If(temp);
+				OldParserGenerator.this.If(temp);
 				{
 					String[] n = this.SaveState(sub);
-					ParserGenerator.this.pVerbose(sub.toString());
-					ParserGenerator.this.If(f);
+					OldParserGenerator.this.pVerbose(sub.toString());
+					OldParserGenerator.this.If(f);
 					{
-						ParserGenerator.this.VarAssign(temp, ParserGenerator.this._False());
+						OldParserGenerator.this.VarAssign(temp, OldParserGenerator.this._False());
 					}
-					ParserGenerator.this.Else();
+					OldParserGenerator.this.Else();
 					{
 						this.BackState(sub, n);
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			}
-			ParserGenerator.this.If(temp);
+			OldParserGenerator.this.If(temp);
 			{
-				ParserGenerator.this.Fail();
+				OldParserGenerator.this.Fail();
 			}
-			ParserGenerator.this.EndIf();
+			OldParserGenerator.this.EndIf();
 			this.EndScope();
 			// }
 			return null;
@@ -1216,27 +1216,27 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitDispatch(PDispatch e, Object a) {
-			String temp = this.InitVal(ParserGenerator.this._temp(), ParserGenerator.this._True());
-			ParserGenerator.this.Switch(ParserGenerator.this._GetArray(ParserGenerator.this._index(e.indexMap),
-					ParserGenerator.this._Func("prefetch")));
-			ParserGenerator.this.Case("0");
-			ParserGenerator.this.Fail();
+			String temp = this.InitVal(OldParserGenerator.this._temp(), OldParserGenerator.this._True());
+			OldParserGenerator.this.Switch(OldParserGenerator.this._GetArray(OldParserGenerator.this._index(e.indexMap),
+					OldParserGenerator.this._Func("prefetch")));
+			OldParserGenerator.this.Case("0");
+			OldParserGenerator.this.Fail();
 			int caseIndex = 1;
 			for (Expression sub : e) {
-				ParserGenerator.this.Case(ParserGenerator.this._int(caseIndex));
+				OldParserGenerator.this.Case(OldParserGenerator.this._int(caseIndex));
 				String f = this._eval(sub);
-				ParserGenerator.this.pVerbose(sub.toString());
-				ParserGenerator.this.VarAssign(temp, f);
-				ParserGenerator.this.Break();
-				ParserGenerator.this.EndCase();
+				OldParserGenerator.this.pVerbose(sub.toString());
+				OldParserGenerator.this.VarAssign(temp, f);
+				OldParserGenerator.this.Break();
+				OldParserGenerator.this.EndCase();
 				caseIndex++;
 			}
-			ParserGenerator.this.EndSwitch();
-			ParserGenerator.this.If(ParserGenerator.this._Not(temp));
+			OldParserGenerator.this.EndSwitch();
+			OldParserGenerator.this.If(OldParserGenerator.this._Not(temp));
 			{
-				ParserGenerator.this.Fail();
+				OldParserGenerator.this.Fail();
 			}
-			ParserGenerator.this.EndIf();
+			OldParserGenerator.this.EndIf();
 			return null;
 		}
 
@@ -1246,12 +1246,12 @@ public abstract class ParserGenerator
 			if (!this.tryOptionOptimization(sub)) {
 				String f = this._eval(sub);
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.pVerbose(sub.toString());
-				ParserGenerator.this.If(ParserGenerator.this._Not(f));
+				OldParserGenerator.this.pVerbose(sub.toString());
+				OldParserGenerator.this.If(OldParserGenerator.this._Not(f));
 				{
 					this.BackState(sub, n);
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			}
 			return null;
 		}
@@ -1262,11 +1262,11 @@ public abstract class ParserGenerator
 				if (!this.tryRepetitionOptimization(e.get(0), true)) {
 					String f = this._eval(e.get(0));
 					if (f != null) {
-						ParserGenerator.this.If(ParserGenerator.this._Not(f));
+						OldParserGenerator.this.If(OldParserGenerator.this._Not(f));
 						{
-							ParserGenerator.this.Fail();
+							OldParserGenerator.this.Fail();
 						}
-						ParserGenerator.this.EndIf();
+						OldParserGenerator.this.EndIf();
 					} else {
 						this.visit(e.get(0), a);
 					}
@@ -1283,29 +1283,29 @@ public abstract class ParserGenerator
 		private void generateWhile(Expression e, Object a) {
 			Expression sub = e.get(0);
 			String f = this._eval(sub);
-			ParserGenerator.this.While(ParserGenerator.this._True());
+			OldParserGenerator.this.While(OldParserGenerator.this._True());
 			{
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.pVerbose(sub.toString());
-				ParserGenerator.this.If(ParserGenerator.this._Not(f));
+				OldParserGenerator.this.pVerbose(sub.toString());
+				OldParserGenerator.this.If(OldParserGenerator.this._Not(f));
 				{
 					this.BackState(sub, n);
-					ParserGenerator.this.Break();
+					OldParserGenerator.this.Break();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 				this.CheckInfiniteLoop(sub, n[0]);
 			}
-			ParserGenerator.this.EndWhile();
+			OldParserGenerator.this.EndWhile();
 		}
 
 		private void CheckInfiniteLoop(Expression e, String var) {
 			if (!NonEmpty.isAlwaysConsumed(e)) {
-				ParserGenerator.this.If(var, ParserGenerator.this._Eq(),
-						ParserGenerator.this._Field(ParserGenerator.this._state(), "pos"));
+				OldParserGenerator.this.If(var, OldParserGenerator.this._Eq(),
+						OldParserGenerator.this._Field(OldParserGenerator.this._state(), "pos"));
 				{
-					ParserGenerator.this.Break();
+					OldParserGenerator.this.Break();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 			}
 		}
 
@@ -1316,12 +1316,12 @@ public abstract class ParserGenerator
 				String f = this._eval(sub);
 				this.BeginScope();
 				String n = this.SavePos();
-				ParserGenerator.this.pVerbose(sub.toString());
-				ParserGenerator.this.If(ParserGenerator.this._Not(f));
+				OldParserGenerator.this.pVerbose(sub.toString());
+				OldParserGenerator.this.If(OldParserGenerator.this._Not(f));
 				{
-					ParserGenerator.this.Fail();
+					OldParserGenerator.this.Fail();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 				this.BackPos(n);
 				this.EndScope();
 			}
@@ -1335,12 +1335,12 @@ public abstract class ParserGenerator
 				String f = this._eval(sub);
 				this.BeginScope();
 				String[] n = this.SaveState(sub);
-				ParserGenerator.this.pVerbose(sub.toString());
-				ParserGenerator.this.If(f);
+				OldParserGenerator.this.pVerbose(sub.toString());
+				OldParserGenerator.this.If(f);
 				{
-					ParserGenerator.this.Fail();
+					OldParserGenerator.this.Fail();
 				}
-				ParserGenerator.this.EndIf();
+				OldParserGenerator.this.EndIf();
 				this.BackState(sub, n);
 				this.EndScope();
 			}
@@ -1348,41 +1348,41 @@ public abstract class ParserGenerator
 		}
 
 		private boolean tryOptionOptimization(Expression inner) {
-			if (ParserGenerator.this.Optimization) {
+			if (OldParserGenerator.this.Optimization) {
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
-							ParserGenerator.this._byte(e.byteChar()));
+					OldParserGenerator.this.If(OldParserGenerator.this._Func("prefetch"), OldParserGenerator.this._Eq(),
+							OldParserGenerator.this._byte(e.byteChar()));
 					{
-						if (ParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
-							ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
+						if (OldParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
+							OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 							{
-								ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+								OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 							}
-							ParserGenerator.this.EndIf();
+							OldParserGenerator.this.EndIf();
 						} else {
-							ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+							OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 						}
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					return true;
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.bools();
-					ParserGenerator.this.If(this.MatchByteArray(byteset, false));
+					OldParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
-						if (ParserGenerator.this.BinaryGrammar && byteset[0]) {
-							ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
+						if (OldParserGenerator.this.BinaryGrammar && byteset[0]) {
+							OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 							{
-								ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+								OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 							}
-							ParserGenerator.this.EndIf();
+							OldParserGenerator.this.EndIf();
 						} else {
-							ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+							OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 						}
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					return true;
 				}
 				// if (inner instanceof Expression.MultiByte) {
@@ -1392,11 +1392,11 @@ public abstract class ParserGenerator
 				// }
 				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
+					OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 					{
-						ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+						OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					return true;
 				}
 			}
@@ -1404,45 +1404,45 @@ public abstract class ParserGenerator
 		}
 
 		private boolean tryRepetitionOptimization(Expression inner, boolean isOneMore) {
-			if (ParserGenerator.this.Optimization) {
+			if (OldParserGenerator.this.Optimization) {
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
 					if (isOneMore) {
 						this.visit(inner, null);
 					}
-					ParserGenerator.this.While(ParserGenerator.this._Binary(ParserGenerator.this._Func("prefetch"),
-							ParserGenerator.this._Eq(), ParserGenerator.this._byte(e.byteChar())));
+					OldParserGenerator.this.While(OldParserGenerator.this._Binary(OldParserGenerator.this._Func("prefetch"),
+							OldParserGenerator.this._Eq(), OldParserGenerator.this._byte(e.byteChar())));
 					{
-						if (ParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
-							ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
+						if (OldParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
+							OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
 							{
-								ParserGenerator.this.Break();
+								OldParserGenerator.this.Break();
 							}
-							ParserGenerator.this.EndIf();
+							OldParserGenerator.this.EndIf();
 						}
-						ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+						OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 					}
-					ParserGenerator.this.EndWhile();
+					OldParserGenerator.this.EndWhile();
 					return true;
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.bools();
-					if (ParserGenerator.this.SSEOption) {
-						String name = ParserGenerator.this._range(byteset);
+					if (OldParserGenerator.this.SSEOption) {
+						String name = OldParserGenerator.this._range(byteset);
 						if (name != null) {
-							byte[] r = ParserGenerator.this.rangeSEE(byteset);
+							byte[] r = OldParserGenerator.this.rangeSEE(byteset);
 							OVerbose.println("range: " + name + " " + e);
 							if (isOneMore) {
-								ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this
-										._Func("checkOneMoreRange", name, ParserGenerator.this._int(r.length))));
+								OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this
+										._Func("checkOneMoreRange", name, OldParserGenerator.this._int(r.length))));
 								{
-									ParserGenerator.this.Fail();
+									OldParserGenerator.this.Fail();
 								}
-								ParserGenerator.this.EndIf();
+								OldParserGenerator.this.EndIf();
 							} else {
-								ParserGenerator.this.Statement(ParserGenerator.this._Func("skipRange", name,
-										ParserGenerator.this._int(r.length)));
+								OldParserGenerator.this.Statement(OldParserGenerator.this._Func("skipRange", name,
+										OldParserGenerator.this._int(r.length)));
 							}
 							return true;
 						}
@@ -1450,18 +1450,18 @@ public abstract class ParserGenerator
 					if (isOneMore) {
 						this.visit(inner, null);
 					}
-					ParserGenerator.this.While(this.MatchByteArray(byteset, false));
+					OldParserGenerator.this.While(this.MatchByteArray(byteset, false));
 					{
-						if (ParserGenerator.this.BinaryGrammar && byteset[0]) {
-							ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
+						if (OldParserGenerator.this.BinaryGrammar && byteset[0]) {
+							OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
 							{
-								ParserGenerator.this.Break();
+								OldParserGenerator.this.Break();
 							}
-							ParserGenerator.this.EndIf();
+							OldParserGenerator.this.EndIf();
 						}
-						ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+						OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 					}
-					ParserGenerator.this.EndWhile();
+					OldParserGenerator.this.EndWhile();
 					return true;
 				}
 				// if (inner instanceof Expression.MultiByte) {
@@ -1481,11 +1481,11 @@ public abstract class ParserGenerator
 					if (isOneMore) {
 						this.visit(inner, null);
 					}
-					ParserGenerator.this.While(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
+					OldParserGenerator.this.While(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 					{
-						ParserGenerator.this.Statement(ParserGenerator.this._Func("move", "1"));
+						OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 					}
-					ParserGenerator.this.EndWhile();
+					OldParserGenerator.this.EndWhile();
 					return true;
 				}
 			}
@@ -1493,26 +1493,26 @@ public abstract class ParserGenerator
 		}
 
 		private boolean tryAndOptimization(Expression inner) {
-			if (ParserGenerator.this.Optimization) {
+			if (OldParserGenerator.this.Optimization) {
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._NotEq(),
-							ParserGenerator.this._byte(e.byteChar()));
+					OldParserGenerator.this.If(OldParserGenerator.this._Func("prefetch"), OldParserGenerator.this._NotEq(),
+							OldParserGenerator.this._byte(e.byteChar()));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					this.checkBinaryEOF(e.byteChar() == 0);
 					return true;
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.bools();
-					ParserGenerator.this.If(ParserGenerator.this._Not(this.MatchByteArray(byteset, false)));
+					OldParserGenerator.this.If(OldParserGenerator.this._Not(this.MatchByteArray(byteset, false)));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					this.checkBinaryEOF(byteset[0]);
 					return true;
 				}
@@ -1527,11 +1527,11 @@ public abstract class ParserGenerator
 				// }
 				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Func("eof"));
+					OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					return true;
 				}
 			}
@@ -1539,26 +1539,26 @@ public abstract class ParserGenerator
 		}
 
 		private boolean tryNotOptimization(Expression inner) {
-			if (ParserGenerator.this.Optimization) {
+			if (OldParserGenerator.this.Optimization) {
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Func("prefetch"), ParserGenerator.this._Eq(),
-							ParserGenerator.this._byte(e.byteChar()));
+					OldParserGenerator.this.If(OldParserGenerator.this._Func("prefetch"), OldParserGenerator.this._Eq(),
+							OldParserGenerator.this._byte(e.byteChar()));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					this.checkBinaryEOF(e.byteChar() != 0);
 					return true;
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
 					boolean[] byteset = e.bools();
-					ParserGenerator.this.If(this.MatchByteArray(byteset, false));
+					OldParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					this.checkBinaryEOF(!byteset[0]);
 					return true;
 				}
@@ -1573,11 +1573,11 @@ public abstract class ParserGenerator
 				// }
 				if (inner instanceof PAny) {
 					// Expression.Any e = (Expression.Any) inner;
-					ParserGenerator.this.If(ParserGenerator.this._Not(ParserGenerator.this._Func("eof")));
+					OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 					{
-						ParserGenerator.this.Fail();
+						OldParserGenerator.this.Fail();
 					}
-					ParserGenerator.this.EndIf();
+					OldParserGenerator.this.EndIf();
 					return true;
 				}
 			}
@@ -1589,15 +1589,15 @@ public abstract class ParserGenerator
 		@Override
 		public Object visitTree(PTree e, Object a) {
 			if (e.folding) {
-				ParserGenerator.this.Statement(ParserGenerator.this._Func("foldTree",
-						ParserGenerator.this._int(e.beginShift), ParserGenerator.this._label(e.label)));
+				OldParserGenerator.this.Statement(OldParserGenerator.this._Func("foldTree",
+						OldParserGenerator.this._int(e.beginShift), OldParserGenerator.this._label(e.label)));
 			} else {
-				ParserGenerator.this
-						.Statement(ParserGenerator.this._Func("beginTree", ParserGenerator.this._int(e.beginShift)));
+				OldParserGenerator.this
+						.Statement(OldParserGenerator.this._Func("beginTree", OldParserGenerator.this._int(e.beginShift)));
 			}
 			this.visit(e.get(0), a);
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("endTree", ParserGenerator.this._int(e.endShift),
-					ParserGenerator.this._tag(e.tag), ParserGenerator.this._text(e.value)));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("endTree", OldParserGenerator.this._int(e.endShift),
+					OldParserGenerator.this._tag(e.tag), OldParserGenerator.this._text(e.value)));
 			return null;
 		}
 
@@ -1606,8 +1606,8 @@ public abstract class ParserGenerator
 			this.BeginScope();
 			String tree = this.SaveTree();
 			this.visit(e.get(0), a);
-			ParserGenerator.this.Statement(
-					ParserGenerator.this._Func("linkTree", /* _Null(), */ParserGenerator.this._label(e.label)));
+			OldParserGenerator.this.Statement(
+					OldParserGenerator.this._Func("linkTree", /* _Null(), */OldParserGenerator.this._label(e.label)));
 			this.BackTree(tree);
 			this.EndScope();
 			return null;
@@ -1615,14 +1615,14 @@ public abstract class ParserGenerator
 
 		@Override
 		public Object visitTag(PTag e, Object a) {
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("tagTree", ParserGenerator.this._tag(e.tag)));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("tagTree", OldParserGenerator.this._tag(e.tag)));
 			return null;
 		}
 
 		@Override
 		public Object visitReplace(PReplace e, Object a) {
-			ParserGenerator.this
-					.Statement(ParserGenerator.this._Func("valueTree", ParserGenerator.this._text(e.value)));
+			OldParserGenerator.this
+					.Statement(OldParserGenerator.this._Func("valueTree", OldParserGenerator.this._text(e.value)));
 			return null;
 		}
 
@@ -1643,8 +1643,8 @@ public abstract class ParserGenerator
 			this.BeginScope();
 			String n = this.SaveSymbolTable();
 			if (e.label != null) {
-				ParserGenerator.this
-						.Statement(ParserGenerator.this._Func("addSymbolMask", ParserGenerator.this._table(e.label)));
+				OldParserGenerator.this
+						.Statement(OldParserGenerator.this._Func("addSymbolMask", OldParserGenerator.this._table(e.label)));
 			}
 			this.visit(e.get(0), a);
 			this.BackSymbolTable(n);
@@ -1719,19 +1719,19 @@ public abstract class ParserGenerator
 			this.BeginScope();
 			String ppos = this.SavePos();
 			this.visit(e.get(0), a);
-			ParserGenerator.this.Statement(ParserGenerator.this._Func("scanCount", ppos,
-					ParserGenerator.this._long(e.mask), ParserGenerator.this._int(e.shift)));
+			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("scanCount", ppos,
+					OldParserGenerator.this._long(e.mask), OldParserGenerator.this._int(e.shift)));
 			this.EndScope();
 			return null;
 		}
 
 		@Override
 		public Object visitRepeat(PRepeat e, Object a) {
-			ParserGenerator.this.While(ParserGenerator.this._Func("decCount"));
+			OldParserGenerator.this.While(OldParserGenerator.this._Func("decCount"));
 			{
 				this.visit(e.get(0), a);
 			}
-			ParserGenerator.this.EndWhile();
+			OldParserGenerator.this.EndWhile();
 			return null;
 		}
 

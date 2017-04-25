@@ -228,7 +228,6 @@ static class NezParserContext<T> {
 		for (int i = 0; i < this.memoArray.length; i++) {
 			this.memoArray[i] = new MemoEntry<>();
 			this.memoArray[i].key = -1;
-			this.memoArray[i].result = NotFound;
 		}
 	}
 
@@ -262,32 +261,32 @@ static class NezParserContext<T> {
 		return NotFound;
 	}
 
-	public void memoSucc(int memoPoint, int ppos) {
+	public final boolean memoSucc(int memoPoint, int ppos) {
+		long key = this.longkey(this.pos, memoPoint);
+		MemoEntry<T> m = this.getMemo(key);
+		m.key = key;
+		m.consumed = this.pos - ppos;
+		m.result = SuccFound;
+		return true;
+	}
+
+	public final boolean memoSuccTree(int memoPoint, int ppos) {
 		long key = this.longkey(this.pos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.memoTree = this.tree;
 		m.consumed = this.pos - ppos;
 		m.result = SuccFound;
-		// m.stateValue = -1;
+		return true;
 	}
 
-	public void memoTreeSucc(int memoPoint, int ppos) {
-		long key = this.longkey(this.pos, memoPoint);
+	public final boolean memoFail(int memoPoint, int ppos) {
+		long key = this.longkey(ppos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
-		m.memoTree = this.tree;
-		m.consumed = this.pos - ppos;
-		m.result = SuccFound;
-	}
-
-	public void memoFail(int memoPoint) {
-		long key = this.longkey(this.pos, memoPoint);
-		MemoEntry<T> m = this.getMemo(key);
-		m.key = key;
-		m.memoTree = this.tree;
 		m.consumed = 0;
 		m.result = FailFound;
+		return false;
 	}
 
 }

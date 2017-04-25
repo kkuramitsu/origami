@@ -124,12 +124,12 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String matchPair(String pe, String pe2) {
-		return pe + " " + this.s("&&") + " " + pe2;
+		return String.format("%s %s %s", pe, this.s("&&"), pe2);
 	}
 
 	@Override
 	protected String matchChoice(String pe, String pe2) {
-		return pe + " " + this.s("||") + " (" + pe2 + ")";
+		return String.format("(%s) %s (%s)", pe, this.s("||"), pe2);
 	}
 
 	@Override
@@ -497,6 +497,34 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	public String matchCombinator(String combi, String f) {
 		return String.format("%s(px, %s::%s)", combi, this.getFileBaseName(), f);
+	}
+
+	@Override
+	protected String memoDispatch(String lookup, String main) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.Line("switch(%s) {", lookup));
+		this.incIndent();
+		sb.append(this.Line("case 0: return %s;", main));
+		sb.append(this.Line("case 1: return %s;", this.s("true")));
+		sb.append(this.Line("default: return %s;", this.s("false")));
+		this.decIndent();
+		sb.append(this.Line("}"));
+		return sb.toString();
+	}
+
+	@Override
+	protected String memoLookup(int memoId, boolean withTree) {
+		return String.format("px.memoLookup%s(%d)", withTree ? "Tree" : "", memoId);
+	}
+
+	@Override
+	protected String memoSucc(int varid, int memoId, boolean withTree) {
+		return String.format("px.memoSucc%s(%d, %s)", withTree ? "Tree" : "", memoId, this.v("pos", varid));
+	}
+
+	@Override
+	protected String memoFail(int varid, int memoId) {
+		return String.format("px.memoFail(%d, %s)", memoId, this.v("pos", varid));
 	}
 
 }

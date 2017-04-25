@@ -53,8 +53,6 @@
 		}
 		return sb.toString();
 	}
-
-	final static int MEMOSIZE = 0;
 	
 	static NezParserContext<KeyValueTree> getSampleParserContext(String[] a) {
 		NewFunc<KeyValueTree> f = (String tag, byte[] inputs, int pos, int len, int size, String value) -> {

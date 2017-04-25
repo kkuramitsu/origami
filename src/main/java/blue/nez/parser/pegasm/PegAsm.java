@@ -20,7 +20,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 
 import blue.nez.ast.Symbol;
-import blue.nez.parser.ParserCode.MemoPoint;
+import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.PegAsmInst;
 import blue.origami.util.OStringUtils;
 

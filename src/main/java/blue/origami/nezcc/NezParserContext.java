@@ -290,7 +290,7 @@ class NezParserContext<T> {
 		return NotFound;
 	}
 
-	public void memoSucc(int memoPoint, int ppos) {
+	public final boolean memoSucc(int memoPoint, int ppos) {
 		long key = this.longkey(this.pos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
@@ -298,24 +298,26 @@ class NezParserContext<T> {
 		m.consumed = this.pos - ppos;
 		m.result = SuccFound;
 		// m.stateValue = -1;
+		return true;
 	}
 
-	public void memoTreeSucc(int memoPoint, int ppos) {
+	public final boolean memoSuccTree(int memoPoint, int ppos) {
 		long key = this.longkey(this.pos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.memoTree = this.tree;
 		m.consumed = this.pos - ppos;
 		m.result = SuccFound;
+		return true;
 	}
 
-	public void memoFail(int memoPoint) {
-		long key = this.longkey(this.pos, memoPoint);
+	public final boolean memoFail(int memoPoint, int ppos) {
+		long key = this.longkey(ppos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
-		m.memoTree = this.tree;
 		m.consumed = 0;
 		m.result = FailFound;
+		return false;
 	}
 
 	// Utils

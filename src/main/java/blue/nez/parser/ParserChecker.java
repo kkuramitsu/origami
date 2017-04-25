@@ -85,7 +85,7 @@ public class ParserChecker {
 				treeChecker.check(p, this.options);
 			}
 		}
-		ParserGrammar g = new ParserGrammar("@" + this.start.getUniqueName(), this.usedChars[0]);
+		ParserGrammar g = new ParserGrammar("@" + this.start.getUniqueName(), this.usedChars[0], this.options);
 		String[] flags = this.flagNames();
 		GrammarFlag.checkFlag(this.prodList, flags);
 		EliminateFlags dup = new EliminateFlags(this.options, g, flags);

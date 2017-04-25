@@ -19,9 +19,9 @@ package blue.nez.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.nez.parser.ParserCode.MemoPoint;
 import blue.nez.parser.ParserContext.SymbolDefinition;
 import blue.nez.parser.ParserContext.SymbolReset;
+import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.pegasm.ASMMlookup;
 import blue.nez.parser.pegasm.ASMMlookupTree;
 import blue.nez.parser.pegasm.ASMMmemoFail;

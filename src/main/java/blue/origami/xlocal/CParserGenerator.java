@@ -19,7 +19,7 @@ package blue.origami.xlocal;
 import blue.nez.peg.Grammar;
 import blue.origami.util.OStringUtils;
 
-public class CParserGenerator extends ParserGenerator {
+public class CParserGenerator extends OldParserGenerator {
 
 	public CParserGenerator() {
 		// this.fileBase = "cnez";
