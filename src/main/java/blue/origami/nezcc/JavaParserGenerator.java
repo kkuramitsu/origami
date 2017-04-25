@@ -6,9 +6,9 @@ import java.util.Objects;
 import blue.nez.ast.Symbol;
 import blue.nez.parser.ParserContext.SymbolAction;
 import blue.nez.parser.ParserContext.SymbolPredicate;
-import blue.nez.parser.ParserGenerator;
 import blue.nez.peg.Expression;
 import blue.nez.peg.expression.ByteSet;
+import blue.nez.peg.expression.PLinkTree;
 import blue.origami.util.OStringUtils;
 
 public class JavaParserGenerator extends ParserGenerator {
@@ -37,261 +37,386 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public void definePrototype(String funcName) {
+	protected void definePrototype(String funcName) {
 	}
 
 	@Override
-	public void beginDefine(String funcName, Expression e) {
+	protected void beginDefine(String funcName, Expression e) {
 		this.L("static final <T> boolean %s(%s px) {", funcName, this.s("NezParserContext<T>"));
 		this.L("// " + e);
 		this.incIndent();
-		// this.L("System.out.printf(\"=> %s pos=%%s\\n\", px.pos);", funcName);
-		this.L("boolean r = %s;", this.s("true"));
+		if (this.isDebug()) {
+			this.L("System.out.printf(\"=> %s pos=%%s\\n\", px.pos);", funcName);
+		}
 	}
 
 	@Override
-	public void endDefine(String funcName) {
-		// this.L("System.out.printf(\"<= %s pos=%%s, %%s\\n\", px.pos, r);",
-		// funcName);
-		this.L("return r;");
+	protected void endDefine(String funcName, String pe) {
+		if (pe.startsWith(" ") || pe.startsWith("\t")) {
+			this.L(pe.trim());
+		} else {
+			this.L(this.result(pe).trim());
+		}
 		this.decIndent();
 		this.L("}");
 	}
 
 	@Override
-	public void matchSucc() {
-		this.L("r = %s;", this.s("true"));
+	protected String result(String pe) {
+		return this.Line("return %s;", pe);
+	}
+
+	// @Override
+	// protected void jump(String pe) {
+	// if (this.isDebug()) {
+	// this.L("boolean r = %s;", pe);
+	// this.L("System.out.printf(\"<= %s pos=%%s, %%s\\n\", px.pos, r);",
+	// this.getCurrentFuncName());
+	// this.L("return r;");
+	// } else {
+	// this.L("return %s;", pe);
+	// }
+	// }
+	//
+	// @Override
+	// protected void jumpSucc() {
+	// if (this.isDebug()) {
+	// this.L("System.out.printf(\"<= %s pos=%%s, %s\\n\", px.pos);",
+	// this.getCurrentFuncName(), this.s("true"));
+	// }
+	// this.L("return %s;", this.s("true"));
+	// }
+	//
+	// @Override
+	// protected void jumpFail() {
+	// if (this.isDebug()) {
+	// this.L("System.out.printf(\"<= %s pos=%%s, %s\\n\", px.pos);",
+	// this.getCurrentFuncName(), this.s("false"));
+	// }
+	// this.L("return %s;", this.s("false"));
+	// }
+
+	@Override
+	protected String matchSucc() {
+		return this.s("true");
 	}
 
 	@Override
-	public void matchFail() {
-		this.L("r = %s;", this.s("false"));
+	protected String matchFail() {
+		return this.s("false");
 	}
 
 	@Override
-	public void matchAny() {
-		this.L("r = !px.eof();");
-		this.L("px.move(1);");
+	protected String matchAny() {
+		return String.format("(!px.eof()) %s (px.read() != 0)", this.s("&&"));
 	}
 
 	@Override
-	public void matchByte(int uchar) {
-		this.L("r = (px.read() == %s);", uchar);
+	protected String matchByte(int uchar) {
+		return String.format("(px.read() == %s)", uchar);
 	}
 
 	@Override
-	public void matchByteSet(ByteSet byteSet) {
+	protected String matchByteSet(ByteSet byteSet) {
 		String constName = this.getConstName("boolean[256]", this.toLiteral(byteSet));
-		this.L("r = %s[px.read()];", constName);
+		return String.format("%s[px.read()]", constName);
 	}
 
 	@Override
-	public void matchNonTerminal(String func) {
-		this.L("r = %s(px);", func);
+	protected String matchPair(String pe, String pe2) {
+		return pe + " " + this.s("&&") + " " + pe2;
 	}
 
 	@Override
-	public void pushLoadPos(int uid) {
-		this.L("%s %s = px.pos;", this.s("int"), this.v("pos", uid));
+	protected String matchChoice(String pe, String pe2) {
+		return pe + " " + this.s("||") + " (" + pe2 + ")";
 	}
 
 	@Override
-	public void loadTree(int uid) {
-		this.L("%s %s = px.tree;", this.s("T"), this.v("tree", uid));
+	protected String matchIf(String pe, String pe2, String pe3) {
+		return String.format("(%s) ? (%s) : (%s)", pe, pe2, pe3);
 	}
 
 	@Override
-	public void loadTreeLog(int uid) {
-		this.L("%s %s = px.treeLog;", this.s("TreeLog<T>"), this.v("treeLog", uid));
-	}
-
-	@Override
-	public void loadSymbolTable(int uid) {
-		this.L("%s %s = px.state;", this.s("SymbolTable"), this.v("state", uid));
-	}
-
-	@Override
-	public void updatePos(int uid) {
-		this.L("%s = px.pos;", this.v("pos", uid));
-	}
-
-	@Override
-	public void updateTree(int uid) {
-		this.L("%s = px.tree;", this.v("tree", uid));
-	}
-
-	@Override
-	public void updateTreeLog(int uid) {
-		this.L("%s = px.treeLog;", this.v("treeLog", uid));
-	}
-
-	@Override
-	public void updateSymbolTable(int uid) {
-		this.L("%s = px.state;", this.v("state", uid));
-	}
-
-	@Override
-	public void storePos(int uid) {
-		this.L("px.pos = %s;", this.v("pos", uid));
-
-	}
-
-	@Override
-	public void storeTree(int uid) {
-		this.L("px.tree = %s;", this.v("tree", uid));
-	}
-
-	@Override
-	public void storeTreeLog(int uid) {
-		this.L("px.treeLog = %s;", this.v("treeLog", uid));
-	}
-
-	@Override
-	public void storeSymbolTable(int uid) {
-		this.L("px.state = %s;", this.v("state", uid));
-	}
-
-	@Override
-	public void beginIfSucc() {
-		this.L("if(%s) {", this.s("r"));
+	protected String matchLoop(String pe, String pe2, String pe3) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.Line("while(%s) {", pe));
 		this.incIndent();
-	}
-
-	@Override
-	public void beginIfFail() {
-		this.L("if(!%s) {", this.s("r"));
-		this.incIndent();
-	}
-
-	@Override
-	public void orElse() {
+		sb.append(this.Line(pe2));
 		this.decIndent();
-		this.L("} else {");
+		sb.append(this.Line("}"));
+		sb.append(this.result(pe3));
+		return sb.toString();
+	}
+
+	@Override
+	protected String checkNonEmpty(int varid) {
+		return String.format("(px.pos > %s)", this.v("pos", varid));
+	}
+
+	@Override
+	protected String matchCase(String pe, String[] exprs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.Line("switch(%s) {", pe));
 		this.incIndent();
-	}
-
-	@Override
-	public void endIf() {
+		for (int i = 0; i < exprs.length; i++) {
+			sb.append(this.Line("case %s: return %s;", i + 1, exprs[i]));
+		}
+		sb.append(this.Line("default: return %s;", this.s("false")));
 		this.decIndent();
-		this.L("}");
+		sb.append(this.Line("}"));
+		return sb.toString();
 	}
 
 	@Override
-	public void beginWhileSucc() {
-		this.L("while(%s) {", this.s("r"));
-		this.incIndent();
-
+	protected String matchNonTerminal(String func) {
+		return String.format("%s(px)", func);
 	}
 
 	@Override
-	public void endWhile() {
-		this.decIndent();
-		this.L("}");
+	protected String initPosVar(int varid) {
+		return this.Line("%s %s = px.pos;", this.s("int"), this.v("pos", varid));
 	}
 
 	@Override
-	public void initCounter(int uid) {
-		this.L("int %s = 0;", "c" + uid);
+	protected String initTreeVar(int varid) {
+		return this.Line("%s %s = px.tree;", this.s("T"), this.v("tree", varid));
 	}
 
 	@Override
-	public void countCounter(int uid) {
-		this.L("%s++;", "c" + uid);
-
+	protected String initLogVar(int varid) {
+		return this.Line("%s %s = px.treeLog;", this.s("TreeLog<T>"), this.v("treeLog", varid));
 	}
 
 	@Override
-	public void checkCounter(int uid) {
-		this.L("if(%s == 0) %s = %s;", "c" + uid, this.s("r"), this.s("false"));
+	protected String initStateVar(int varid) {
+		return this.Line("%s %s = px.state;", this.s("SymbolTable"), this.v("state", varid));
+	}
+
+	@Override
+	protected String backPos(int varid) {
+		return String.format("px.back(%s)", this.v("pos", varid));
+	}
+
+	@Override
+	protected String backTree(int varid) {
+		return String.format("px.back(%s)", this.v("tree", varid));
+	}
+
+	@Override
+	protected String backTreeLog(int varid) {
+		return String.format("px.back(%s)", this.v("treeLog", varid));
+	}
+
+	@Override
+	protected String backSymbolTable(int varid) {
+		return String.format("px.back(%s)", this.v("state", varid));
+	}
+
+	@Override
+	protected String updatePos(int varid) {
+		return this.Line("%s = px.pos;", this.v("pos", varid));
+	}
+
+	@Override
+	protected String updateTree(int varid) {
+		return this.Line("%s = px.tree;", this.v("tree", varid));
+	}
+
+	@Override
+	protected String updateTreeLog(int varid) {
+		return this.Line("%s = px.treeLog;", this.v("treeLog", varid));
+	}
+
+	@Override
+	protected String updateSymbolTable(int varid) {
+		return this.Line("%s = px.state;", this.v("state", varid));
+	}
+
+	// @Override
+	// protected void storePos(int varid) {
+	// this.L("px.pos = %s;", this.v("pos", varid));
+	// }
+	//
+	// @Override
+	// protected void storeTree(int varid) {
+	// this.L("px.tree = %s;", this.v("tree", varid));
+	// }
+	//
+	// @Override
+	// protected void storeTreeLog(int varid) {
+	// this.L("px.treeLog = %s;", this.v("treeLog", varid));
+	// }
+	//
+	// @Override
+	// protected void storeSymbolTable(int varid) {
+	// this.L("px.state = %s;", this.v("state", varid));
+	// }
+	//
+	// @Override
+	// protected void beginIfSucc(String pe) {
+	// this.L("if(%s) {", pe);
+	// this.incIndent();
+	// }
+	//
+	// @Override
+	// protected void beginIfFail(String pe) {
+	// this.L("if(!(%s)) {", pe);
+	// this.incIndent();
+	// }
+	//
+	// @Override
+	// protected void orElse() {
+	// this.decIndent();
+	// this.L("} else {");
+	// this.incIndent();
+	// }
+	//
+	// @Override
+	// protected void endIf() {
+	// this.decIndent();
+	// this.L("}");
+	// }
+	//
+	// @Override
+	// protected void beginWhileSucc(String pe) {
+	// this.L("while(%s) {", pe);
+	// this.incIndent();
+	//
+	// }
+	//
+	// @Override
+	// protected void endWhile() {
+	// this.decIndent();
+	// this.L("}");
+	// }
+
+	@Override
+	protected String initCountVar(int varid) {
+		return this.Line("int %s = 0;", this.v("cnt", varid));
+	}
+
+	@Override
+	protected String updateCountVar(int varid) {
+		return this.Line("%s++;", this.v("cnt", varid));
+	}
+
+	@Override
+	protected String checkCountVar(int varid) {
+		return String.format("(%s > 0)", this.v("cnt", varid));
 	}
 
 	/* Tree Operation */
 	@Override
-	public void tagTree(Symbol tag) {
-		this.L("px.tagTree(%s);", this.toLiteral(tag));
+	protected String tagTree(Symbol tag) {
+		return String.format("px.tagTree(%s)", this.toLiteral(tag));
 	}
 
 	@Override
-	public void valueTree(String value) {
-		this.L("px.valueTree(%s);", this.toLiteral(value));
+	protected String valueTree(String value) {
+		return String.format("px.valueTree(%s)", this.toLiteral(value));
 	}
 
 	@Override
-	public void linkTree(int uid, Symbol label) {
-		this.L("px.linkTree(%s);", this.toLiteral(label));
+	protected String linkTree(int varid, Symbol label) {
+		return String.format("px.linkTree(%s)", this.toLiteral(label));
 	}
 
 	@Override
-	public void foldTree(int beginShift, Symbol label) {
-		this.L("px.foldTree(%d, %s);", beginShift, this.toLiteral(label));
+	protected String foldTree(int beginShift, Symbol label) {
+		return String.format("px.foldTree(%d, %s)", beginShift, this.toLiteral(label));
 	}
 
 	@Override
-	public void beginTree(int beginShift) {
-		this.L("px.beginTree(%d);", beginShift);
+	protected String beginTree(int beginShift) {
+		return String.format("px.beginTree(%d)", beginShift);
 	}
 
 	@Override
-	public void endTree(int endShift, Symbol tag, String value) {
-		this.L("px.endTree(%d, %s, %s);", endShift, this.toLiteral(tag), this.toLiteral(value));
+	protected String endTree(int endShift, Symbol tag, String value) {
+		return String.format("px.endTree(%d, %s, %s)", endShift, this.toLiteral(tag), this.toLiteral(value));
 	}
 
 	@Override
-	public void callSymbolAction(SymbolAction action, Symbol label) {
-		this.L("px.callSymbolAction(%s, label)", action, this.toLiteral(label));
+	protected String callSymbolAction(SymbolAction action, Symbol label) {
+		return String.format("px.callSymbolAction(%s, label)", action, this.toLiteral(label));
 	}
 
 	@Override
-	public void callSymbolAction(SymbolAction action, Symbol label, int uid) {
-		this.L("px.callSymbolAction(%s, label, %s)", action, this.toLiteral(label), this.v("pos", uid));
+	protected String callSymbolAction(SymbolAction action, Symbol label, int varid) {
+		return String.format("px.callSymbolAction(%s, label, %s)", action, this.toLiteral(label), this.v("pos", varid));
 	}
 
 	@Override
-	public void callSymbolPredicate(SymbolPredicate pred, Symbol label, Object option) {
-		this.L("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label),
+	protected String callSymbolPredicate(SymbolPredicate pred, Symbol label, Object option) {
+		return String.format("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label),
 				this.toLiteral(Objects.toString(option)));
 	}
 
 	@Override
-	public void callSymbolPredicate(SymbolPredicate pred, Symbol label, int uid, Object option) {
-		this.L("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label), this.v("pos", uid),
+	protected String callSymbolPredicate(SymbolPredicate pred, Symbol label, int varid, Object option) {
+		return String.format("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label), this.v("pos", varid),
 				this.toLiteral(Objects.toString(option)));
 	}
 
+	/* dispatch */
+
+	// @Override
+	// public String getFuncMap(PDispatch e) {
+	// String cname = this.getFileBaseName();
+	// StringBuilder sb = new StringBuilder();
+	// sb.append("{");
+	// sb.append(cname);
+	// sb.append("::fail");
+	// for (Expression sub : e) {
+	// sb.append(", ");
+	// sb.append(cname);
+	// sb.append("::");
+	// sb.append(this.getFuncName(sub));
+	// }
+	// sb.append("}");
+	// return this.getConstName("ParserFunc<T>[]", sb.toString());
+	// }
+	//
+	// @Override
+	// public String matchFuncMap(String funcMap, String jumpIndex) {
+	// return String.format("%s[%s].match(px)", funcMap, jumpIndex);
+	// }
+
 	@Override
-	public void pushIndexMap(int uid, byte[] indexMap) {
+	protected String fetchJumpIndex(byte[] indexMap) {
 		String constName = this.getConstName("int[256]", this.toLiteral(indexMap));
-		this.L("int %s = %s[px.getbyte()];", this.v("d", uid), constName);
+		return String.format("%s[px.getbyte()]", constName);
 	}
+
+	// @Override
+	// protected void beginSwitch(String pe) {
+	// this.L("switch(%s) {", pe);
+	// this.incIndent();
+	// }
+	//
+	// @Override
+	// protected void endSwitch() {
+	// this.decIndent();
+	// this.L("}");
+	//
+	// }
+	//
+	// @Override
+	// protected void beginCase(int varid, int i) {
+	// this.L("case %d: {", i);
+	// this.incIndent();
+	//
+	// }
+	//
+	// @Override
+	// protected void endCase() {
+	// this.decIndent();
+	// this.L("}");
+	// }
 
 	@Override
-	public void beginSwitch(int uid) {
-		this.L("switch(%s) {", this.v("d", uid));
-		this.incIndent();
-	}
-
-	@Override
-	public void endSwitch() {
-		this.decIndent();
-		this.L("}");
-
-	}
-
-	@Override
-	public void beginCase(int uid, int i) {
-		this.L("case %d: {", i);
-		this.incIndent();
-
-	}
-
-	@Override
-	public void endCase() {
-		this.L("break;");
-		this.decIndent();
-		this.L("}");
-	}
-
-	private String toLiteral(String s) {
+	protected String toLiteral(String s) {
 		if (s != null) {
 			StringBuilder sb = new StringBuilder();
 			OStringUtils.formatStringLiteral(sb, '"', s, '"');
@@ -300,7 +425,8 @@ public class JavaParserGenerator extends ParserGenerator {
 		return this.s("null");
 	}
 
-	private String toLiteral(Symbol s) {
+	@Override
+	protected String toLiteral(Symbol s) {
 		if (s != null) {
 			StringBuilder sb = new StringBuilder();
 			OStringUtils.formatStringLiteral(sb, '"', s.toString(), '"');
@@ -309,7 +435,8 @@ public class JavaParserGenerator extends ParserGenerator {
 		return this.s("null");
 	}
 
-	private String toLiteral(byte[] indexMap) {
+	@Override
+	protected String toLiteral(byte[] indexMap) {
 		boolean overflow = false;
 		int last = 0;
 		for (int i = 0; i < 256; i++) {
@@ -342,7 +469,8 @@ public class JavaParserGenerator extends ParserGenerator {
 		return sb.toString();
 	}
 
-	private String toLiteral(ByteSet bs) {
+	@Override
+	protected String toLiteral(ByteSet bs) {
 		int last = 0;
 		for (int i = 0; i < 256; i++) {
 			if (bs.is(i)) {
@@ -356,6 +484,19 @@ public class JavaParserGenerator extends ParserGenerator {
 		}
 		sb.append("\")");
 		return sb.toString();
+	}
+
+	@Override
+	public String getCombinator(Expression e) {
+		if (e instanceof PLinkTree) {
+			return "pLink";
+		}
+		return null;
+	}
+
+	@Override
+	public String matchCombinator(String combi, String f) {
+		return String.format("%s(px, %s::%s)", combi, this.getFileBaseName(), f);
 	}
 
 }

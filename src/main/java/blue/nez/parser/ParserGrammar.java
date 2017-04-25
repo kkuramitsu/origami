@@ -19,7 +19,7 @@ package blue.nez.parser;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 
-class ParserGrammar extends Grammar {
+public class ParserGrammar extends Grammar {
 	private boolean isBinary = false;
 
 	ParserGrammar(String name, boolean isBinary) {

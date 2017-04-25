@@ -14,9 +14,10 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.origami.nezcc;
 
 import blue.nez.ast.Symbol;
+import blue.nez.parser.ParserContext;
 import blue.nez.parser.ParserContext.SymbolDefinition;
 import blue.nez.parser.ParserContext.SymbolExist;
 import blue.nez.parser.ParserContext.SymbolReset;

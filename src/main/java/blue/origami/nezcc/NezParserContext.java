@@ -76,28 +76,33 @@ class NezParserContext<T> {
 		this.treeLog = new TreeLog<>(op, pos, symbol, tree, this.treeLog);
 	}
 
-	public final void beginTree(int shift) {
+	public final boolean beginTree(int shift) {
 		this.log(TreeOp.New, this.pos + shift, null, null);
+		return true;
 	}
 
-	public final void linkTree(String label) {
+	public final boolean linkTree(String label) {
 		this.log(TreeOp.Link, 0, label, this.tree);
+		return true;
 	}
 
-	public final void tagTree(String tag) {
+	public final boolean tagTree(String tag) {
 		this.log(TreeOp.Tag, 0, tag, null);
+		return true;
 	}
 
-	public final void valueTree(String value) {
+	public final boolean valueTree(String value) {
 		this.log(TreeOp.Value, 0, value, null);
+		return true;
 	}
 
-	public final void foldTree(int shift, String label) {
+	public final boolean foldTree(int shift, String label) {
 		this.log(TreeOp.New, this.pos + shift, null, null);
 		this.log(TreeOp.Link, 0, label, this.tree);
+		return true;
 	}
 
-	public final void endTree(int shift, String tag, String value) {
+	public final boolean endTree(int shift, String tag, String value) {
 		int ppos = 0;
 		int objectSize = 0;
 		TreeLog<T> sub = null;
@@ -129,16 +134,17 @@ class NezParserContext<T> {
 				this.tree = this.setFunc.setTree(this.tree, n++, l.symbol, l.tree);
 			}
 		}
+		return true;
 	}
 
 	// Tree Construction Functions
 
 	public static interface NewFunc<T> {
-		T newTree(String tag, byte[] inputs, int pos, int len, int size, String value);
+		public T newTree(String tag, byte[] inputs, int pos, int len, int size, String value);
 	}
 
 	public static interface SetFunc<T> {
-		T setTree(T parent, int n, String label, T child);
+		public T setTree(T parent, int n, String label, T child);
 	}
 
 	private NewFunc<T> newFunc = (tag, inputs, pos, len, size, value) -> null;
@@ -180,6 +186,26 @@ class NezParserContext<T> {
 
 	public interface SymbolPredicate {
 		public boolean match(NezParserContext<?> px, String label, int ppos, Object option);
+	}
+
+	public final boolean back(int pos) {
+		this.pos = pos;
+		return true;
+	}
+
+	public final boolean back(T tree) {
+		this.tree = tree;
+		return true;
+	}
+
+	public final boolean back(TreeLog<T> treeLog) {
+		this.treeLog = treeLog;
+		return true;
+	}
+
+	public final boolean back(SymbolTable state) {
+		this.state = state;
+		return true;
 	}
 
 	// Counter ------------------------------------------------------------
@@ -391,4 +417,96 @@ class NezParserContext<T> {
 		SetFunc<KeyValueTree> f2 = NezParserContext::setTree1;
 		return new NezParserContext<>(inputs, memo, f, f2);
 	}
+
+	public static interface ParserFunc<T> {
+		boolean match(NezParserContext<T> px);
+	}
+
+	static final <T> boolean pOption(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		if (!f.match(px)) {
+			px.pos = pos;
+		}
+		return true;
+	}
+
+	static final <T> boolean pOptionT(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		T tree = px.tree;
+		TreeLog<T> treeLog = px.treeLog;
+		if (!f.match(px)) {
+			px.pos = pos;
+			px.tree = tree;
+			px.treeLog = treeLog;
+		}
+		return true;
+	}
+
+	static final <T> boolean pMany(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		while (f.match(px)) {
+			pos = px.pos;
+		}
+		px.pos = pos;
+		return true;
+	}
+
+	static final <T> boolean pManyT(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		T tree = px.tree;
+		TreeLog<T> treeLog = px.treeLog;
+		while (f.match(px)) {
+			pos = px.pos;
+			tree = px.tree;
+			treeLog = px.treeLog;
+		}
+		px.pos = pos;
+		px.tree = tree;
+		px.treeLog = treeLog;
+		return true;
+	}
+
+	static final <T> boolean pAnd(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		if (f.match(px)) {
+			px.pos = pos;
+			return true;
+		}
+		return false;
+	}
+
+	static final <T> boolean pNot(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		if (f.match(px)) {
+			return false;
+		}
+		px.pos = pos;
+		return true;
+	}
+
+	static final <T> boolean pNotT(NezParserContext<T> px, ParserFunc<T> f) {
+		int pos = px.pos;
+		T tree = px.tree;
+		TreeLog<T> treeLog = px.treeLog;
+		if (f.match(px)) {
+			return false;
+		}
+		px.pos = pos;
+		px.tree = tree;
+		px.treeLog = treeLog;
+		return true;
+	}
+
+	static final <T> boolean pLink(NezParserContext<T> px, ParserFunc<T> f, String label) {
+		T tree = px.tree;
+		TreeLog<T> treeLog = px.treeLog;
+		if (f.match(px)) {
+			return false;
+		}
+		px.linkTree(label);
+		px.tree = tree;
+		px.treeLog = treeLog;
+		return true;
+	}
+
 }
