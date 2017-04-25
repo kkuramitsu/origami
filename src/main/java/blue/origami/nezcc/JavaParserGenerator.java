@@ -45,9 +45,6 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.L("static final <T> boolean %s(%s px) {", funcName, this.s("NezParserContext<T>"));
 		this.L("// " + e);
 		this.incIndent();
-		if (this.isDebug()) {
-			this.L("System.out.printf(\"=> %s pos=%%s\\n\", px.pos);", funcName);
-		}
 	}
 
 	@Override
@@ -63,6 +60,10 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String result(String pe) {
+		if (this.isDebug()) {
+			return this.Line("return B(\"%s\", px) && E(\"%s\", px, %s);", this.getCurrentFuncName(),
+					this.getCurrentFuncName(), pe);
+		}
 		return this.Line("return %s;", pe);
 	}
 

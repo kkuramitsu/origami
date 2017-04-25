@@ -587,19 +587,18 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	}
 
 	public String match(Expression e, ParserGenerator px, MemoPoint m) {
-		// if (m == null) {
-		return this.match(e, px, false);
-		// }
-		// int varid = px.uniqueVarId();
-		// String funcName = px.getFuncName(e);
-		// this.waitingList.add(e);
-		// px.addFunctionDependency(px.getCurrentFuncName(), funcName);
-		// String main = px.matchNonTerminal(funcName);
-		// boolean withTree = Typestate.compute(e) == Typestate.Tree;
-		// main = px.matchPair(main, px.memoSucc(varid, m.id, withTree));
-		// main = px.matchChoice(main, px.memoFail(varid, m.id));
-		// return this.letVar(varid, POS, px.memoDispatch(px.memoLookup(m.id,
-		// withTree), main), px);
+		if (m == null) {
+			return this.match(e, px, false);
+		}
+		int varid = px.uniqueVarId();
+		String funcName = px.getFuncName(e);
+		this.waitingList.add(e);
+		px.addFunctionDependency(px.getCurrentFuncName(), funcName);
+		String main = px.matchNonTerminal(funcName);
+		boolean withTree = Typestate.compute(e) == Typestate.Tree;
+		main = px.matchPair(main, px.memoSucc(varid, m.id, withTree));
+		main = px.matchChoice(main, px.memoFail(varid, m.id));
+		return this.letVar(varid, POS, px.memoDispatch(px.memoLookup(m.id, withTree), main), px);
 	}
 
 	public String match(Expression e, ParserGenerator px, boolean asFunction) {
@@ -716,6 +715,9 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		}
 		if ((flag & STATE) == STATE) {
 			code += px.updateSymbolTable(varid);
+		}
+		if ((flag & CNT) == CNT) {
+			code += px.updateCountVar(varid);
 		}
 		return code;
 	}
