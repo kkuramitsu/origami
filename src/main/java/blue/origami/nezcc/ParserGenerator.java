@@ -182,7 +182,7 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 
 	protected abstract String backTreeLog(int varid);
 
-	protected abstract String backSymbolTable(int varid);
+	protected abstract String backState(int varid);
 
 	protected abstract String updatePos(int varid);
 
@@ -190,7 +190,7 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 
 	protected abstract String updateTreeLog(int varid);
 
-	protected abstract String updateSymbolTable(int varid);
+	protected abstract String updateState(int varid);
 
 	protected abstract String initCountVar(int varid);
 
@@ -208,13 +208,13 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 
 	protected abstract String endTree(int endShift, Symbol tag, String value);
 
-	protected abstract String callSymbolAction(SymbolAction action, Symbol label);
+	protected abstract String callAction(SymbolAction action, Symbol label, Object thunk);
 
-	protected abstract String callSymbolAction(SymbolAction action, Symbol label, int varid);
+	protected abstract String callAction(SymbolAction action, Symbol label, int varid, Object thunk);
 
-	protected abstract String callSymbolPredicate(SymbolPredicate pred, Symbol label, Object option);
+	protected abstract String callPredicate(SymbolPredicate pred, Symbol label, Object thunk);
 
-	protected abstract String callSymbolPredicate(SymbolPredicate pred, Symbol label, int varid, Object option);
+	protected abstract String callPredicate(SymbolPredicate pred, Symbol label, int varid, Object thunk);
 
 	protected String toLiteral(String s) {
 		if (s != null) {
@@ -259,7 +259,7 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 	/* Optimiztion */
 
 	protected String back2(int varid) {
-		return this.matchPair(this.backPos(varid), this.backSymbolTable(varid));
+		return this.matchPair(this.backPos(varid), this.backState(varid));
 	}
 
 	protected String back3(int varid) {
@@ -268,12 +268,16 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 	}
 
 	protected String back4(int varid) {
-		return this.matchPair(this.back3(varid), this.backSymbolTable(varid));
+		return this.matchPair(this.back3(varid), this.backState(varid));
 	}
 
 	protected String backLink(int varid, Symbol label) {
 		String pe = this.matchPair(this.linkTree(varid, label), this.backTree(varid));
 		return this.matchPair(this.backTreeLog(varid), pe);
+	}
+
+	protected boolean useMultiBytes() {
+		return false;
 	}
 
 	protected String matchBytes(byte[] bytes) {
@@ -287,10 +291,6 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 			c++;
 		}
 		return sb.toString();
-	}
-
-	protected boolean useMultiBytes() {
-		return false;
 	}
 
 	protected boolean useLexicalOptimization() {
@@ -349,15 +349,15 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 		return null;
 	}
 
-	protected String matchCombinator(String combi, String funcName) {
+	protected String callCombinator(String combi, String funcName) {
 		return null;
 	}
 
-	protected String matchCombinator(String combi, Symbol label, String funcName) {
+	protected String callCombinator(String combi, Symbol label, String funcName) {
 		return null;
 	}
 
-	protected String matchCombinator(String combi, int memoPoint, String funcName) {
+	protected String callCombinator(String combi, int memoPoint, String funcName) {
 		return null;
 	}
 
@@ -656,7 +656,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 				combi += "T";
 			}
 			String func = this.getInnerFunction(e, px);
-			return px.matchCombinator(combi, m.id, func);
+			return px.callCombinator(combi, m.id, func);
 		}
 		int varid = px.uniqueVarId();
 		String funcName = px.getFuncName(e);
@@ -807,7 +807,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			code += px.updateTreeLog(varid);
 		}
 		if ((flag & STATE) == STATE) {
-			code += px.updateSymbolTable(varid);
+			code += px.updateState(varid);
 		}
 		if ((flag & CNT) == CNT) {
 			code += px.updateCountVar(varid);
@@ -834,7 +834,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			if ((flag & TREE) == TREE) {
 				return px.matchPair(px.backTree(varid), px.backTreeLog(varid));
 			}
-			return px.backSymbolTable(varid);
+			return px.backState(varid);
 		}
 	}
 
@@ -883,7 +883,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		String combi = this.getCombinator(px.getOptionCombinator(), this.flag(e.get(0)));
 		String innerFunc = this.getInnerFunction(e.get(0), px);
 		if (combi != null && innerFunc != null) {
-			return px.matchCombinator(combi, innerFunc);
+			return px.callCombinator(combi, innerFunc);
 		}
 		return null;
 	}
@@ -921,7 +921,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		String combi = this.getCombinator(px.getRepetitionCombinator(), this.flag(e.get(0)));
 		String innerFunc = this.getInnerFunction(e.get(0), px);
 		if (combi != null && innerFunc != null) {
-			String zeroMore = px.matchCombinator(combi, innerFunc);
+			String zeroMore = px.callCombinator(combi, innerFunc);
 			if (e.isOneMore()) {
 				return px.matchPair(this.match(e.get(0), px), zeroMore);
 			}
@@ -953,7 +953,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		String combi = px.getAndCombinator();
 		String innerFunc = this.getInnerFunction(e.get(0), px);
 		if (combi != null && innerFunc != null) {
-			return px.matchCombinator(combi, innerFunc);
+			return px.callCombinator(combi, innerFunc);
 		}
 		return null;
 	}
@@ -982,7 +982,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		String combi = this.getCombinator(px.getNotCombinator(), this.flag(e.get(0)));
 		String innerFunc = this.getInnerFunction(e.get(0), px);
 		if (combi != null && innerFunc != null) {
-			return px.matchCombinator(combi, innerFunc);
+			return px.callCombinator(combi, innerFunc);
 		}
 		return null;
 	}
@@ -1039,7 +1039,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		String combi = px.getLinkCombinator();
 		String innerFunc = this.getInnerFunction(e.get(0), px);
 		if (combi != null && innerFunc != null) {
-			return px.matchCombinator(combi, e.label, innerFunc);
+			return px.callCombinator(combi, e.label, innerFunc);
 		}
 		return null;
 	}
@@ -1059,7 +1059,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		int varid = px.uniqueVarId();
 		String main = px.matchPair(this.match(e.get(0), px), this.backtrack(varid, STATE, px));
 		if (e.label != null) {
-			main = px.matchPair(px.callSymbolAction(new SymbolReset(), e.label), main);
+			main = px.matchPair(px.callAction(new SymbolReset(), e.label, null), main);
 		}
 		return this.letVar(varid, STATE, px.result(main), px);
 	}
@@ -1067,10 +1067,11 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	@Override
 	public String visitSymbolAction(PSymbolAction e, ParserGenerator px) {
 		if (e.isEmpty()) {
-			return px.callSymbolAction(e.action, e.label);
+			return px.callAction(e.action, e.label, e.thunk);
 		} else {
 			int varid = px.uniqueVarId();
-			String main = px.matchPair(this.match(e.get(0), px), px.callSymbolAction(e.action, e.label, varid));
+			String main = px.matchPair(this.match(e.get(0), px),
+					px.callAction(e.action, e.label, varid, e.thunk));
 			return this.letVar(varid, POS, px.result(main), px);
 		}
 	}
@@ -1078,11 +1079,11 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	@Override
 	public String visitSymbolPredicate(PSymbolPredicate e, ParserGenerator px) {
 		if (e.isEmpty()) {
-			return px.callSymbolPredicate(e.pred, e.label, e.option);
+			return px.callPredicate(e.pred, e.label, e.thunk);
 		} else {
 			int varid = px.uniqueVarId();
 			String main = px.matchPair(this.match(e.get(0), px),
-					px.callSymbolPredicate(e.pred, e.label, varid, e.option));
+					px.callPredicate(e.pred, e.label, varid, e.thunk));
 			return this.letVar(varid, POS, px.result(main), px);
 		}
 	}

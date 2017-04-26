@@ -511,23 +511,23 @@ public class PegAsmCompiler implements ParserCompiler {
 			} else {
 				next = new ASMSend(next);
 				next = this.compile(p.get(0), next);
-				next = new ASMSdef2(new SymbolReset(), p.label, next);
+				next = new ASMSdef2(new SymbolReset(), p.label, null, next);
 				return new ASMSbegin(next);
 			}
 		}
 
 		@Override
 		public PegAsmInst visitSymbolAction(PSymbolAction p, PegAsmInst next) {
-			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.label, next)));
+			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.label, null, next)));
 		}
 
 		@Override
 		public PegAsmInst visitSymbolPredicate(PSymbolPredicate p, PegAsmInst next) {
 			if (p.isEmpty()) {
-				if (p.option == null) {
+				if (p.thunk == null) {
 					return new ASMSpred2(p.pred, p.label, null, next);
 				} else {
-					return new ASMSpred2(p.pred, p.label, OStringUtils.utf8(p.option.toString()), next);
+					return new ASMSpred2(p.pred, p.label, OStringUtils.utf8(p.thunk.toString()), next);
 				}
 			} else {
 				return new ASMpos(this.compile(p.get(0), new ASMSpred(p.pred, p.label, next)));

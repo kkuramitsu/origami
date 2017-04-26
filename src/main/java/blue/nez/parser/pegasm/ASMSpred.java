@@ -9,12 +9,12 @@ import blue.nez.parser.PegAsmInst;
 
 public final class ASMSpred extends AbstractTableInstruction {
 	public final SymbolPredicate pred;
-	public final Object option;
+	public final Object thunk;
 
 	public ASMSpred(SymbolPredicate pred, Symbol label, Object option, PegAsmInst next) {
 		super(label, next);
 		this.pred = pred;
-		this.option = option;
+		this.thunk = option;
 	}
 
 	public ASMSpred(SymbolPredicate pred, Symbol label, PegAsmInst next) {
@@ -28,6 +28,6 @@ public final class ASMSpred extends AbstractTableInstruction {
 
 	@Override
 	public PegAsmInst exec(PegAsmContext<?> sc) throws ParserTerminationException {
-		return this.pred.match(sc, this.label, sc.xPPos(), this.option) ? this.next : sc.raiseFail();
+		return this.pred.match(sc, this.label, sc.xPPos(), this.thunk) ? this.next : sc.raiseFail();
 	}
 }

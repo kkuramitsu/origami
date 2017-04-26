@@ -168,7 +168,7 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String initStateVar(int varid) {
-		return this.Line("%s %s = px.state;", this.s("SymbolTable"), this.v("state", varid));
+		return this.Line("%s %s = px.state;", this.s("Object"), this.v("state", varid));
 	}
 
 	@Override
@@ -187,8 +187,8 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String backSymbolTable(int varid) {
-		return String.format("px.back(%s)", this.v("state", varid));
+	protected String backState(int varid) {
+		return String.format("px.backS(%s)", this.v("state", varid));
 	}
 
 	@Override
@@ -207,7 +207,7 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String updateSymbolTable(int varid) {
+	protected String updateState(int varid) {
 		return this.Line("%s = px.state;", this.v("state", varid));
 	}
 
@@ -258,25 +258,27 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String callSymbolAction(SymbolAction action, Symbol label) {
-		return String.format("px.callSymbolAction(%s, label)", action, this.toLiteral(label));
+	protected String callAction(SymbolAction action, Symbol label, Object thunk) {
+		return String.format("callSymbolAction(px, %s, %s, -1, %s)", this.refFunc(action.toString()),
+				this.toLiteral(label), this.toLiteral(Objects.toString(thunk)));
 	}
 
 	@Override
-	protected String callSymbolAction(SymbolAction action, Symbol label, int varid) {
-		return String.format("px.callSymbolAction(%s, label, %s)", action, this.toLiteral(label), this.v("pos", varid));
+	protected String callAction(SymbolAction action, Symbol label, int varid, Object thunk) {
+		return String.format("callSymbolAction(px, %s, %s, %s, %s)", this.refFunc(action.toString()),
+				this.toLiteral(label), this.v("pos", varid), this.toLiteral(Objects.toString(thunk)));
 	}
 
 	@Override
-	protected String callSymbolPredicate(SymbolPredicate pred, Symbol label, Object option) {
-		return String.format("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label),
-				this.toLiteral(Objects.toString(option)));
+	protected String callPredicate(SymbolPredicate pred, Symbol label, Object thunk) {
+		return String.format("callSymbolPredicate(px, %s, %s, -1, %s)", this.refFunc(pred.toString()),
+				this.toLiteral(label), this.toLiteral(Objects.toString(thunk)));
 	}
 
 	@Override
-	protected String callSymbolPredicate(SymbolPredicate pred, Symbol label, int varid, Object option) {
-		return String.format("px.callSymbolPredicate(%s, label)", pred, this.toLiteral(label), this.v("pos", varid),
-				this.toLiteral(Objects.toString(option)));
+	protected String callPredicate(SymbolPredicate pred, Symbol label, int varid, Object thunk) {
+		return String.format("callSymbolPredicate(px, %s, %s, %s, %s)", this.refFunc(pred.toString()),
+				this.toLiteral(label), this.v("pos", varid), this.toLiteral(Objects.toString(thunk)));
 	}
 
 	/* dispatch */
@@ -406,17 +408,17 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public String matchCombinator(String combi, String f) {
+	public String callCombinator(String combi, String f) {
 		return String.format("%s(px, %s)", combi, f);
 	}
 
 	@Override
-	public String matchCombinator(String combi, Symbol label, String f) {
+	public String callCombinator(String combi, Symbol label, String f) {
 		return String.format("%s(px, %s, %s)", combi, f, this.toLiteral(label));
 	}
 
 	@Override
-	public String matchCombinator(String combi, int memoPoint, String f) {
+	public String callCombinator(String combi, int memoPoint, String f) {
 		return String.format("%s(px, %s, %s)", combi, f, memoPoint);
 	}
 

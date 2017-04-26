@@ -7,11 +7,13 @@ import blue.nez.peg.ExpressionVisitor;
 public class PSymbolAction extends PUnary {
 	public final SymbolAction action;
 	public final Symbol label;
+	public final Object thunk;
 
 	public PSymbolAction(SymbolAction func, Symbol label, PNonTerminal e) {
 		super(e);
 		this.action = func;
 		this.label = label;
+		this.thunk = null;
 	}
 
 	public PSymbolAction(SymbolAction func, String label, PNonTerminal e) {

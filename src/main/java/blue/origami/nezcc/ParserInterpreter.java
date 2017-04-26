@@ -243,7 +243,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	public Boolean visitSymbolScope(PSymbolScope e, ParserContext<T> px) {
 		Object state = px.loadSymbolTable();
 		if (e.label != null) { // localScope
-			new SymbolReset().mutate(px, e.label, 0);
+			new SymbolReset().mutate(px, e.label, 0, null);
 		}
 		if (!this.parse(e.get(0), px)) {
 			return false;
@@ -258,7 +258,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 		if (!this.parse(e.get(0), px)) {
 			return false;
 		}
-		e.action.mutate(px, e.label, ppos);
+		e.action.mutate(px, e.label, ppos, e.thunk);
 		return true;
 	}
 
@@ -268,7 +268,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 		if (!this.parse(e.get(0), px)) {
 			return false;
 		}
-		e.pred.match(px, e.label, ppos, e.option);
+		e.pred.match(px, e.label, ppos, e.thunk);
 		return true;
 	}
 
@@ -284,9 +284,9 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 		Symbol label = Symbol.unique(e.flagName());
 		Object state = px.loadSymbolTable();
 		if (e.isPositive()) {
-			new SymbolDefinition().mutate(px, label, px.pos);
+			new SymbolDefinition().mutate(px, label, px.pos, null);
 		} else {
-			new SymbolReset().mutate(px, label, px.pos);
+			new SymbolReset().mutate(px, label, px.pos, null);
 		}
 		if (!this.parse(e.get(0), px)) {
 			return false;

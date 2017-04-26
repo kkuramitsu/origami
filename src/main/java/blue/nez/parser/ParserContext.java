@@ -300,16 +300,16 @@ public abstract class ParserContext<T> {
 	}
 
 	public interface SymbolAction {
-		public void mutate(ParserContext<?> px, Symbol label, int ppos);
+		public void mutate(ParserContext<?> px, Symbol label, int ppos, Object thunk);
 	}
 
 	public interface SymbolPredicate {
-		public boolean match(ParserContext<?> px, Symbol label, int ppos, Object option);
+		public boolean match(ParserContext<?> px, Symbol label, int ppos, Object thunk);
 	}
 
 	public static class SymbolDefinition implements SymbolAction {
 		@Override
-		public void mutate(ParserContext<?> px, Symbol label, int ppos) {
+		public void mutate(ParserContext<?> px, Symbol label, int ppos, Object thunk) {
 			byte[] extracted = px.subByte(ppos, px.pos);
 			if (px.symbolTable == null) {
 				px.symbolTable = new SymbolTable(label, extracted);
@@ -326,7 +326,7 @@ public abstract class ParserContext<T> {
 
 	public static class SymbolReset implements SymbolAction {
 		@Override
-		public void mutate(ParserContext<?> px, Symbol label, int ppos) {
+		public void mutate(ParserContext<?> px, Symbol label, int ppos, Object thunk) {
 			if (px.symbolTable != null) {
 				px.symbolTable = px.symbolTable.removeEntry(label);
 			}

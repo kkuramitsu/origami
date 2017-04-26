@@ -21,25 +21,25 @@ static class NezParserContext<T> {
 	}
 
 	byte[] inputs;
-	public int pos;
+	int pos;
 
-	public final boolean eof() {
+	final boolean eof() {
 		return !(this.pos < this.inputs.length - 1);
 	}
 
-	public final int getbyte() {
+	final int getbyte() {
 		return this.inputs[this.pos] & 0xff;
 	}
 
-	public final void move(int shift) {
+	final void move(int shift) {
 		this.pos += shift;
 	}
 
-	public final int read() {
+	final int read() {
 		return this.inputs[this.pos++] & 0xff;
 	}
 
-	public final boolean matchBytes(byte[] text) {
+	final boolean matchBytes(byte[] text) {
 		int len = text.length;
 		if (this.pos + len > this.inputs.length) {
 			return false;
@@ -55,9 +55,11 @@ static class NezParserContext<T> {
 
 	// Tree Construction
 
-	public T tree;
+	private NewFunc<T> newFunc = (tag, inputs, pos, len, size, value) -> null;
+	private SetFunc<T> setFunc = (parent, n, label, child) -> null;
 
-	public TreeLog<T> treeLog = null;
+	T tree;
+	TreeLog<T> treeLog = null;
 
 	private void log(TreeOp op, int pos, String symbol, T tree) {
 		this.treeLog = new TreeLog<>(op, pos, symbol, tree, this.treeLog);
@@ -125,34 +127,9 @@ static class NezParserContext<T> {
 		return true;
 	}
 
-	private NewFunc<T> newFunc = (tag, inputs, pos, len, size, value) -> null;
-	private SetFunc<T> setFunc = (parent, n, label, child) -> null;
-
 	// SymbolTable
-	// ---------------------------------------------------------
 
-	public SymbolTable state = null;
-
-	public void addSymbolEntry(String label, String value) {
-		this.state = new SymbolTable(label, value, this.state);
-	}
-
-	public SymbolTable getSymbolEntry(String label) {
-		for (SymbolTable st = this.state; st != null; st = st.prev) {
-			if (label.equals(st.value)) {
-				return st;
-			}
-		}
-		return null;
-	}
-
-	public interface SymbolAction {
-		public void mutate(NezParserContext<?> px, String label, int ppos);
-	}
-
-	public interface SymbolPredicate {
-		public boolean match(NezParserContext<?> px, String label, int ppos, Object option);
-	}
+	Object state = null;
 
 	// Backtrack
 	
@@ -171,7 +148,7 @@ static class NezParserContext<T> {
 		return true;
 	}
 	
-	public final boolean back(SymbolTable state) {
+	public final boolean backS(Object state) {
 		this.state = state;
 		return true;
 	}
@@ -182,7 +159,7 @@ static class NezParserContext<T> {
 		return this.inputs[this.pos++] == ch;
 	}
 	
-	final boolean back2(int pos, SymbolTable state) {
+	final boolean back2(int pos, Object state) {
 		this.pos = pos;
 		this.state = state;
 		return true;
@@ -195,39 +172,12 @@ static class NezParserContext<T> {
 		return true;
 	}
 
-	final boolean back4(int pos, T tree, TreeLog<T> treeLog, SymbolTable state) {
+	final boolean back4(int pos, T tree, TreeLog<T> treeLog, Object state) {
 		this.pos = pos;
 		this.tree = tree;
 		this.treeLog = treeLog;
 		this.state = state;
 		return true;
-	}
-
-
-	// Counter ------------------------------------------------------------
-
-	private int count = 0;
-
-	public final void scanCount(int ppos, long mask, int shift) {
-		if (mask == 0) {
-			StringBuilder sb = new StringBuilder();
-			for (int i = ppos; i < this.pos; i++) {
-				sb.append((char) this.inputs[i]);
-			}
-			this.count = (int) Long.parseLong(sb.toString());
-		} else {
-			StringBuilder sb = new StringBuilder();
-			for (int i = ppos; i < this.pos; i++) {
-				sb.append(Integer.toBinaryString(this.inputs[i] & 0xff));
-			}
-			long v = Long.parseUnsignedLong(sb.toString(), 2);
-			this.count = (int) ((v & mask) >> shift);
-		}
-		// Verbose.println("set count %d", count);
-	}
-
-	public final boolean decCount() {
-		return this.count-- > 0;
 	}
 
 	// Memotable
@@ -237,7 +187,7 @@ static class NezParserContext<T> {
 		int consumed;
 		T memoTree;
 		int result;
-		SymbolTable state;
+		Object state;
 	}
 
 	private MemoEntry<T>[] memoArray = null;
@@ -334,19 +284,6 @@ static class TreeLog<T> {
 		this.prev = prev;
 	}
 }
-
-static class SymbolTable {
-	String label;
-	String value;
-	SymbolTable prev;
-
-	SymbolTable(String label, String value, SymbolTable prev) {
-		this.label = label;
-		this.value = value;
-		this.prev = prev;
-	}
-}
-
 
 // Utils
 

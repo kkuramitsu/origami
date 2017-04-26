@@ -28,7 +28,7 @@ static final <T> boolean pOptionTS(NezParserContext<T> px, ParserFunc<T> f) {
 	int pos = px.pos;
 	T tree = px.tree;
 	TreeLog<T> treeLog = px.treeLog;
-	SymbolTable state = px.state;
+	Object state = px.state;
 	if (!f.match(px)) {
 		px.pos = pos;
 		px.tree = tree;
@@ -66,7 +66,7 @@ static final <T> boolean pManyTS(NezParserContext<T> px, ParserFunc<T> f) {
 	int pos = px.pos;
 	T tree = px.tree;
 	TreeLog<T> treeLog = px.treeLog;
-	SymbolTable state = px.state;
+	Object state = px.state;
 	while (f.match(px) && pos < px.pos) {
 		pos = px.pos;
 		tree = px.tree;
@@ -115,7 +115,7 @@ static final <T> boolean pNotTS(NezParserContext<T> px, ParserFunc<T> f) {
 	int pos = px.pos;
 	T tree = px.tree;
 	TreeLog<T> treeLog = px.treeLog;
-	SymbolTable state = px.state;
+	Object state = px.state;
 	if (f.match(px)) {
 		return false;
 	}
