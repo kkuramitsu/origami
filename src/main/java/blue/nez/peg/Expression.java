@@ -102,11 +102,11 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	/* Unary */
 
-	public final static boolean isString(Expression e) {
+	public final static boolean isMultiBytes(Expression e) {
 		if (e instanceof PPair) {
 			Expression left = ((PPair) e).left;
 			if (left instanceof PByte) {
-				return isString(((PPair) e).right);
+				return isMultiBytes(((PPair) e).right);
 			}
 			return false;
 		}
@@ -116,14 +116,14 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		return false;
 	}
 
-	public final static Expression extractString(Expression e, List<java.lang.Integer> l) {
+	public final static Expression extractMultiBytes(Expression e, List<java.lang.Integer> l) {
 		if (e instanceof PPair) {
 			Expression left = ((PPair) e).left;
 			if (left instanceof PByte) {
 				if (l != null) {
 					l.add(((PByte) left).byteChar());
 				}
-				return extractString(((PPair) e).right, l);
+				return extractMultiBytes(((PPair) e).right, l);
 			}
 			return e;
 		}
@@ -134,6 +134,14 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			return Expression.defaultEmpty;
 		}
 		return e;
+	}
+
+	public final static byte[] toMultiBytes(List<java.lang.Integer> l) {
+		byte[] b = new byte[l.size()];
+		for (int i = 0; i < b.length; i++) {
+			b[i] = (byte) (int) l.get(i);
+		}
+		return b;
 	}
 
 	/* AST */

@@ -277,7 +277,7 @@ public class PegAsmCompiler implements ParserCompiler {
 
 		private byte[] toMultiChar(Expression e) {
 			ArrayList<Integer> l = new ArrayList<>();
-			Expression.extractString(e, l);
+			Expression.extractMultiBytes(e, l);
 			byte[] utf8 = new byte[l.size()];
 			for (int i = 0; i < l.size(); i++) {
 				utf8[i] = (byte) (int) l.get(i);
@@ -303,7 +303,7 @@ public class PegAsmCompiler implements ParserCompiler {
 					b[0] = false;
 					return new ASMObset(b, next);
 				}
-				if (Expression.isString(inner)) {
+				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
 					return new ASMOstr(utf8, next);
 				}
@@ -338,7 +338,7 @@ public class PegAsmCompiler implements ParserCompiler {
 					b[0] = false;
 					return new ASMRbset(b, next);
 				}
-				if (Expression.isString(inner)) {
+				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
 					return new ASMRstr(utf8, next);
 				}
@@ -375,7 +375,7 @@ public class PegAsmCompiler implements ParserCompiler {
 				if (inner instanceof PAny) {
 					return new ASMNany(next);
 				}
-				if (Expression.isString(inner)) {
+				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
 					return new ASMNstr(utf8, next);
 				}

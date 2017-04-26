@@ -8,10 +8,6 @@ public static interface SetFunc<T> {
 	public T setTree(T parent, int n, String label, T child);
 }
 
-public static interface ParserFunc<T> {
-	boolean match(NezParserContext<T> px);
-}
-
 static class NezParserContext<T> {
 
 	NezParserContext(String inputs, int memo, NewFunc<T> newFunc, SetFunc<T> setFunc) {
@@ -27,11 +23,11 @@ static class NezParserContext<T> {
 	byte[] inputs;
 	public int pos;
 
-	public boolean eof() {
-		return !(this.pos < this.inputs.length);
+	public final boolean eof() {
+		return !(this.pos < this.inputs.length - 1);
 	}
 
-	public int getbyte() {
+	public final int getbyte() {
 		return this.inputs[this.pos] & 0xff;
 	}
 
@@ -39,11 +35,11 @@ static class NezParserContext<T> {
 		this.pos += shift;
 	}
 
-	public int read() {
+	public final int read() {
 		return this.inputs[this.pos++] & 0xff;
 	}
 
-	public boolean match(byte[] text) {
+	public final boolean matchBytes(byte[] text) {
 		int len = text.length;
 		if (this.pos + len > this.inputs.length) {
 			return false;
@@ -179,6 +175,34 @@ static class NezParserContext<T> {
 		this.state = state;
 		return true;
 	}
+	
+	// short cut 
+
+	final boolean is(int ch) {
+		return this.inputs[this.pos++] == ch;
+	}
+	
+	final boolean back2(int pos, SymbolTable state) {
+		this.pos = pos;
+		this.state = state;
+		return true;
+	}
+
+	final boolean back3(int pos, T tree, TreeLog<T> treeLog) {
+		this.pos = pos;
+		this.tree = tree;
+		this.treeLog = treeLog;
+		return true;
+	}
+
+	final boolean back4(int pos, T tree, TreeLog<T> treeLog, SymbolTable state) {
+		this.pos = pos;
+		this.tree = tree;
+		this.treeLog = treeLog;
+		this.state = state;
+		return true;
+	}
+
 
 	// Counter ------------------------------------------------------------
 
@@ -262,7 +286,7 @@ static class NezParserContext<T> {
 	}
 
 	public final boolean memoSucc(int memoPoint, int ppos) {
-		long key = this.longkey(this.pos, memoPoint);
+		long key = this.longkey(ppos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.consumed = this.pos - ppos;
@@ -271,7 +295,7 @@ static class NezParserContext<T> {
 	}
 
 	public final boolean memoSuccTree(int memoPoint, int ppos) {
-		long key = this.longkey(this.pos, memoPoint);
+		long key = this.longkey(ppos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.memoTree = this.tree;
@@ -349,39 +373,27 @@ static int[] indexMap(String s) {
 	return b;
 }
 
-//trace
-
-private static int indent = 0;
-
-static <T> boolean B(String s, NezParserContext<T> px) {
-	for(int i = 0; i < indent; i++) System.out.print(" ");
-	System.out.printf("%s => pos=%d, %s\n", s, px.pos, px.tree);
-	indent++;
-	return true;
-}
-
-static <T> boolean E(String s, NezParserContext<T> px, boolean r) {
-	indent--;
-	for(int i = 0; i < indent; i++) System.out.print(" ");
-	System.out.printf("%s <= %s pos=%d, %s\n", s, r, px.pos, px.tree);
-	return r;
-}
-
-// Combinator
-
-static final <T> boolean fail(NezParserContext<T> px) {
-	return false;
-}
-
-static final <T> boolean pLink(NezParserContext<T> px, ParserFunc<T> f, String label) {
-	T tree = px.tree;
-	TreeLog<T> treeLog = px.treeLog;
-	if (f.match(px)) {
-		return false;
+static byte[] t(String s) {
+	int len = s.length();
+	for (int i = 0; i < s.length(); i++) {
+		char c = s.charAt(i);
+		if(c == '~') len -= 2;
+	}	
+	byte[] b = new byte [len];
+	int p = 0;
+	for (int i = 0; i < s.length(); i++) {
+		char c = s.charAt(i);
+		if(c != '~') {
+			b[p] = (byte)c;
+		}
+		else {
+			String hex2 = s.substring(i+1, i+3);
+			b[p] = (byte)Integer.parseInt(hex2, 16);
+			i+=2;
+		}
+		p++;
 	}
-	px.linkTree(label);
-	px.tree = tree;
-	px.treeLog = treeLog;
-	return true;
+	//System.out.println("DEBUG " + s + " => " + new String(b));
+	return b;
 }
 

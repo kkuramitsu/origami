@@ -33,7 +33,7 @@ public abstract class PUnary extends Expression {
 		String pre = "(";
 		String post = ")";
 		if (this.inner instanceof PNonTerminal || this.inner instanceof PTerm || this.inner instanceof PTree
-				|| Expression.isString(this.inner)) {
+				|| Expression.isMultiBytes(this.inner)) {
 			pre = "";
 			post = "";
 		}

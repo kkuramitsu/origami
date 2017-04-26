@@ -289,20 +289,75 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 		return sb.toString();
 	}
 
+	protected boolean useMultiBytes() {
+		return false;
+	}
+
 	protected boolean useLexicalOptimization() {
 		return false;
 	}
 
-	protected boolean useCombinator() {
+	protected String matchRepetition(ByteSet byteSet) {
+		return null;
+	}
+
+	protected String matchAnd(ByteSet byteSet) {
+		return null;
+	}
+
+	protected String matchNot(ByteSet byteSet) {
+		return null;
+	}
+
+	protected String matchOption(ByteSet byteSet) {
+		return null;
+	}
+
+	protected boolean supportedLambdaFunction() {
 		return false;
 	}
 
-	protected String getCombinator(Expression e) {
-		// TODO Auto-generated method stub
+	protected String refFunc(String funcName) {
+		return null;
+	}
+
+	protected String defineLambda(String match) {
+		return null;
+	}
+
+	protected String getRepetitionCombinator() {
+		return null;
+	}
+
+	protected String getOptionCombinator() {
+		return null;
+	}
+
+	protected String getAndCombinator() {
+		return null;
+	}
+
+	protected String getNotCombinator() {
+		return null;
+	}
+
+	protected String getLinkCombinator() {
+		return null;
+	}
+
+	protected String getMemoCombinator() {
 		return null;
 	}
 
 	protected String matchCombinator(String combi, String funcName) {
+		return null;
+	}
+
+	protected String matchCombinator(String combi, Symbol label, String funcName) {
+		return null;
+	}
+
+	protected String matchCombinator(String combi, int memoPoint, String funcName) {
 		return null;
 	}
 
@@ -373,6 +428,10 @@ abstract class CodeBase {
 
 	protected String Line(String fmt, Object... args) {
 		return this.body.Line(fmt, args);
+	}
+
+	protected String Expr(String fmt, Object... args) {
+		return String.format(fmt, args);
 	}
 
 	protected void L(String fmt, Object... args) {
@@ -464,7 +523,7 @@ abstract class CodeBase {
 			if (uname.indexOf('"') > 0) {
 				String funcName = this.symbolMap.get(uname);
 				if (funcName == null) {
-					funcName = "c" + this.symbolMap.size();
+					funcName = "t" + this.symbolMap.size();
 					this.symbolMap.put(uname, funcName);
 				}
 				return funcName;
@@ -590,12 +649,20 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		if (m == null) {
 			return this.match(e, px, false);
 		}
+		boolean withTree = Typestate.compute(e) == Typestate.Tree;
+		String combi = px.getMemoCombinator();
+		if (combi != null) {
+			if (withTree) {
+				combi += "T";
+			}
+			String func = this.getInnerFunction(e, px);
+			return px.matchCombinator(combi, m.id, func);
+		}
 		int varid = px.uniqueVarId();
 		String funcName = px.getFuncName(e);
 		this.waitingList.add(e);
 		px.addFunctionDependency(px.getCurrentFuncName(), funcName);
 		String main = px.matchNonTerminal(funcName);
-		boolean withTree = Typestate.compute(e) == Typestate.Tree;
 		main = px.matchPair(main, px.memoSucc(varid, m.id, withTree));
 		main = px.matchChoice(main, px.memoFail(varid, m.id));
 		return this.letVar(varid, POS, px.memoDispatch(px.memoLookup(m.id, withTree), main), px);
@@ -613,11 +680,31 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	}
 
 	public String match(Expression e, ParserGenerator px) {
+		String inline = null;
+		if (e instanceof PRepetition) {
+			inline = this.checkInlineRepetition((PRepetition) e, px);
+		}
+		if (e instanceof PNot) {
+			inline = this.checkInlineNot((PNot) e, px);
+		}
+		if (e instanceof PLinkTree) {
+			inline = this.checkInlineLink((PLinkTree) e, px);
+		}
+		if (e instanceof POption) {
+			inline = this.checkInlineOption((POption) e, px);
+		}
+		if (e instanceof PAnd) {
+			inline = this.checkInlineAnd((PAnd) e, px);
+		}
+		if (inline != null) {
+			return inline;
+		}
 		return this.match(e, px, !this.isInline(e));
 	}
 
 	private boolean isInline(Expression e) {
-		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny || e instanceof PTree) {
+		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny || e instanceof PTree
+				|| e instanceof PPair) {
 			return true;
 		}
 		if (e instanceof PTag || e instanceof PReplace || e instanceof PEmpty || e instanceof PFail) {
@@ -661,14 +748,20 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 
 	@Override
 	public String visitPair(PPair e, ParserGenerator px) {
+		if (px.useMultiBytes()) {
+			ArrayList<Integer> l = new ArrayList<>();
+			Expression remain = Expression.extractMultiBytes(e, l);
+			if (l.size() > 2) {
+				byte[] text = Expression.toMultiBytes(l);
+				String match = px.matchBytes(text);
+				if (!(remain instanceof PEmpty)) {
+					match = px.matchPair(match, this.match(remain, px));
+				}
+				return match;
+			}
+		}
 		String pe1 = this.match(e.get(0), px);
 		String pe2 = this.match(e.get(1), px);
-		// if (pe1 == null) {
-		// System.out.println("DEBUG " + e.get(0));
-		// }
-		// if (pe2 == null) {
-		// System.out.println("DEBUG " + e.get(1));
-		// }
 		return px.matchPair(pe1, pe2);
 	}
 
@@ -755,206 +848,163 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			first = px.matchChoice(first, second);
 		}
 		return this.letVar(varid, flag, px.result(first), px);
-		// px.loadPos(varid);
-		// if (this.isCons(e)) {
-		// px.loadTree(varid);
-		// px.loadTreeLog(varid);
-		// }
-		// if (this.isStateful(e)) {
-		// px.loadSymbolTable(varid);
-		// }
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.jumpSucc();
-		// px.endIf();
-		// for (int i = 1; i < e.size(); i++) {
-		// px.storePos(varid);
-		// if (this.isCons(e)) {
-		// px.storeTree(varid);
-		// px.storeTreeLog(varid);
-		// }
-		// if (this.isStateful(e)) {
-		// px.storeSymbolTable(varid);
-		// }
-		// px.beginIfSucc(this.match2(e.get(i), px));
-		// px.jumpSucc();
-		// px.endIf();
-		// }
-		// px.jumpFail();
-		// }
 	}
 
 	@Override
 	public String visitDispatch(PDispatch e, ParserGenerator px) {
-		// int varid = px.uniqueVarId();
 		String[] exprs = new String[e.size()];
 		for (int i = 0; i < e.size(); i++) {
 			exprs[i] = this.match(e.get(i), px);
 		}
 		return px.matchCase(px.fetchJumpIndex(e.indexMap), exprs);
-		// String funcMap = px.getFuncMap(e);
-		// if (funcMap != null) {
-		// for (Expression sub : e) {
-		// this.waitingList.add(sub);
-		// }
-		// return px.matchFuncMap(funcMap, px.fetchJumpIndex(e.indexMap));
-		// } else {
-		// int varid = px.uniqueVarId();
-		// String[] exprs = new String[e.size()];
-		// for (int i = 0; i < e.size(); i++) {
-		// exprs[i] = this.match(e.get(i), px);
-		// }
-		// return px.matchCase(px.fetchJumpIndex(e.indexMap), exprs);
-		// px.beginSwitch();
-		// // px.beginCase(varid, 0);
-		// // px.jumpFail();
-		// // px.endCase();
-		// for (int i = 0; i < e.size(); i++) {
-		// px.beginCase(varid, i + 1);
-		// px.jump(this.match(e.get(i), px));
-		// px.endCase();
-		// }
-		// px.endSwitch();
-		// px.jumpFail();
-		// return null;
-		// }
 	}
 
 	@Override
 	public String visitOption(POption e, ParserGenerator px) {
-		int varid = px.uniqueVarId();
-		int flag = this.flag(e.get(0));
-		String main = px.matchChoice(this.match(e.get(0), px), this.backtrack(varid, flag, px));
-		return this.letVar(varid, flag, px.result(main), px);
-		// px.loadPos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.loadTree(varid);
-		// px.loadTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.loadSymbolTable(varid);
-		// }
-		// px.beginIfFail(this.match2(e.get(0), px));
-		// px.storePos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.storeTree(varid);
-		// px.storeTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.storeSymbolTable(varid);
-		// }
-		// px.endIf();
-		// px.jumpSucc();
-		// return null;
+		String pe = this.checkInlineOption(e, px);
+		if (pe == null) {
+			int varid = px.uniqueVarId();
+			int flag = this.flag(e.get(0));
+			String main = px.matchChoice(this.match(e.get(0), px), this.backtrack(varid, flag, px));
+			return this.letVar(varid, flag, px.result(main), px);
+		}
+		return pe;
+	}
+
+	String checkInlineOption(POption e, ParserGenerator px) {
+		if (px.useLexicalOptimization()) {
+			if (e.get(0) instanceof PByte) {
+				return px.matchOption(((PByte) e.get(0)).byteSet());
+			}
+			if (e.get(0) instanceof PByteSet) {
+				return px.matchOption(((PByteSet) e.get(0)).byteSet());
+			}
+		}
+		String combi = this.getCombinator(px.getOptionCombinator(), this.flag(e.get(0)));
+		String innerFunc = this.getInnerFunction(e.get(0), px);
+		if (combi != null && innerFunc != null) {
+			return px.matchCombinator(combi, innerFunc);
+		}
+		return null;
 	}
 
 	@Override
 	public String visitRepetition(PRepetition e, ParserGenerator px) {
-		int varid = px.uniqueVarId();
-		int flag = this.flag(e.get(0));
-		String cond = this.match(e.get(0), px);
-		if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
-			cond = px.matchPair(cond, px.checkNonEmpty(varid));
+		String inline = this.checkInlineRepetition(e, px);
+		if (inline == null) {
+			int varid = px.uniqueVarId();
+			int flag = this.flag(e.get(0));
+			String cond = this.match(e.get(0), px);
+			if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
+				cond = px.matchPair(cond, px.checkNonEmpty(varid));
+			}
+			String back = this.backtrack(varid, flag, px);
+			if (e.isOneMore()) {
+				flag |= CNT;
+				back = px.matchPair(px.checkCountVar(varid), back);
+			}
+			String main = px.matchLoop(cond, this.update(varid, flag, px), back);
+			return this.letVar(varid, flag, main, px);
 		}
-		String back = this.backtrack(varid, flag, px);
-		if (e.isOneMore()) {
-			flag |= CNT;
-			back = px.matchPair(px.checkCountVar(varid), back);
-		}
-		String main = px.matchLoop(cond, this.update(varid, flag, px), back);
-		return this.letVar(varid, flag, main, px);
+		return inline;
+	}
 
-		// px.loadPos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.loadTree(varid);
-		// px.loadTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.loadSymbolTable(varid);
-		// }
-		// if (e.isOneMore()) {
-		// px.initCounter(varid);
-		// }
-		// px.beginWhileSucc(this.match2(e.get(0), px));
-		// {
-		// // px.checkEmpty(varid, e.get(0));
-		// px.updatePos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.updateTree(varid);
-		// px.updateTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.updateSymbolTable(varid);
-		// }
-		// if (e.isOneMore()) {
-		// px.countCounter(varid);
-		// }
-		// }
-		// px.endWhile();
-		// if (e.isOneMore()) {
-		// px.checkCounter(varid);
-		// }
-		// px.storePos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.storeTree(varid);
-		// px.storeTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.storeSymbolTable(varid);
-		// }
-		// px.jumpSucc();
-		// return null;
+	String checkInlineRepetition(PRepetition e, ParserGenerator px) {
+		if (px.useLexicalOptimization()) {
+			if (e.get(0) instanceof PByte) {
+				return px.matchRepetition(((PByte) e.get(0)).byteSet());
+			}
+			if (e.get(0) instanceof PByteSet) {
+				return px.matchRepetition(((PByteSet) e.get(0)).byteSet());
+			}
+		}
+		String combi = this.getCombinator(px.getRepetitionCombinator(), this.flag(e.get(0)));
+		String innerFunc = this.getInnerFunction(e.get(0), px);
+		if (combi != null && innerFunc != null) {
+			String zeroMore = px.matchCombinator(combi, innerFunc);
+			if (e.isOneMore()) {
+				return px.matchPair(this.match(e.get(0), px), zeroMore);
+			}
+			return zeroMore;
+		}
+		return null;
 	}
 
 	@Override
 	public String visitAnd(PAnd e, ParserGenerator px) {
-		int varid = px.uniqueVarId();
-		String main = px.matchPair(this.match(e.get(0), px), this.backtrack(varid, POS, px));
-		return this.letVar(varid, POS, px.result(main), px);
+		String inline = this.checkInlineAnd(e, px);
+		if (inline == null) {
+			int varid = px.uniqueVarId();
+			String main = px.matchPair(this.match(e.get(0), px), this.backtrack(varid, POS, px));
+			return this.letVar(varid, POS, px.result(main), px);
+		}
+		return inline;
+	}
 
-		// px.loadPos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.loadTree(varid);
-		// }
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.storePos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.storeTree(varid);
-		// }
-		// px.jumpSucc();
-		// px.endIf();
-		// px.jumpFail();
-		// return null;
+	String checkInlineAnd(PAnd e, ParserGenerator px) {
+		if (px.useLexicalOptimization()) {
+			if (e.get(0) instanceof PByte) {
+				return px.matchAnd(((PByte) e.get(0)).byteSet());
+			}
+			if (e.get(0) instanceof PByteSet) {
+				return px.matchAnd(((PByteSet) e.get(0)).byteSet());
+			}
+		}
+		String combi = px.getAndCombinator();
+		String innerFunc = this.getInnerFunction(e.get(0), px);
+		if (combi != null && innerFunc != null) {
+			return px.matchCombinator(combi, innerFunc);
+		}
+		return null;
 	}
 
 	@Override
 	public String visitNot(PNot e, ParserGenerator px) {
-		int varid = px.uniqueVarId();
-		int flag = this.flag(e.get(0));
-		String main = px.matchIf(this.match(e.get(0), px), px.matchFail(), this.backtrack(varid, flag, px));
-		return this.letVar(varid, flag, px.result(main), px);
-		// int varid = px.uniqueVarId();
-		// px.loadPos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.loadTree(varid);
-		// px.loadTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.loadSymbolTable(varid);
-		// }
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.jumpFail();
-		// px.orElse();
-		// px.storePos(varid);
-		// if (this.isCons(e.get(0))) {
-		// px.storeTree(varid);
-		// px.storeTreeLog(varid);
-		// }
-		// if (this.isStateful(e.get(0))) {
-		// px.storeSymbolTable(varid);
-		// }
-		// px.jumpSucc();
-		// px.endIf();
-		// return null;
+		String inline = this.checkInlineNot(e, px);
+		if (inline == null) {
+			int varid = px.uniqueVarId();
+			int flag = this.flag(e.get(0));
+			String main = px.matchIf(this.match(e.get(0), px), px.matchFail(), this.backtrack(varid, flag, px));
+			return this.letVar(varid, flag, px.result(main), px);
+		}
+		return inline;
+	}
+
+	String checkInlineNot(PNot e, ParserGenerator px) {
+		if (px.useLexicalOptimization()) {
+			if (e.get(0) instanceof PByte) {
+				return px.matchNot(((PByte) e.get(0)).byteSet());
+			}
+			if (e.get(0) instanceof PByteSet) {
+				return px.matchNot(((PByteSet) e.get(0)).byteSet());
+			}
+		}
+		String combi = this.getCombinator(px.getNotCombinator(), this.flag(e.get(0)));
+		String innerFunc = this.getInnerFunction(e.get(0), px);
+		if (combi != null && innerFunc != null) {
+			return px.matchCombinator(combi, innerFunc);
+		}
+		return null;
+	}
+
+	private String getCombinator(String suffix, int flag) {
+		if (suffix != null) {
+			if ((flag & STATE) == STATE) {
+				return suffix + "TS";
+			}
+			if ((flag & TREE) == TREE) {
+				return suffix + "T";
+			}
+		}
+		return suffix;
+	}
+
+	private String getInnerFunction(Expression inner, ParserGenerator px) {
+		if (px.supportedLambdaFunction() && this.isInline(inner)) {
+			return px.defineLambda(this.match(inner, px, false));
+		}
+		this.match(inner, px, true);
+		return px.refFunc(px.getFuncName(inner));
 	}
 
 	@Override
@@ -972,37 +1022,26 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		int varid = px.uniqueVarId();
 		String main = px.matchPair(this.match(e.get(0), px), this.backtrack(varid, TREE, px));
 		return this.letVar(varid, TREE, px.result(main), px);
-		// px.loadTree(varid);
-		// px.loadTreeLog(varid);
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.storeTree(varid);
-		// px.storeTreeLog(varid);
-		// px.jumpSucc();
-		// px.endIf();
-		// px.jumpFail();
-		// return null;
 	}
 
 	@Override
 	public String visitLinkTree(PLinkTree e, ParserGenerator px) {
-		int varid = px.uniqueVarId();
-		String main = px.matchPair(this.match(e.get(0), px), px.backLink(varid, e.label));
-		return this.letVar(varid, TREE, px.result(main), px);
-		// if (this.isCons(e.get(0))) {
-		// int varid = px.uniqueVarId();
-		// px.initTreeVar(varid);
-		// px.initLogVar(varid);
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.storeTreeLog(varid);
-		// px.linkTree(varid, e.label);
-		// px.storeTree(varid);
-		// px.jumpSucc();
-		// px.endIf();
-		// px.jumpFail();
-		// return null;
-		// } else {
-		// return this.match2(e.get(0), px);
-		// }
+		String inline = this.checkInlineLink(e, px);
+		if (inline == null) {
+			int varid = px.uniqueVarId();
+			String main = px.matchPair(this.match(e.get(0), px), px.backLink(varid, e.label));
+			return this.letVar(varid, TREE, px.result(main), px);
+		}
+		return inline;
+	}
+
+	String checkInlineLink(PLinkTree e, ParserGenerator px) {
+		String combi = px.getLinkCombinator();
+		String innerFunc = this.getInnerFunction(e.get(0), px);
+		if (combi != null && innerFunc != null) {
+			return px.matchCombinator(combi, e.label, innerFunc);
+		}
+		return null;
 	}
 
 	@Override
@@ -1023,14 +1062,6 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			main = px.matchPair(px.callSymbolAction(new SymbolReset(), e.label), main);
 		}
 		return this.letVar(varid, STATE, px.result(main), px);
-
-		// px.loadSymbolTable(varid);
-		// px.beginIfSucc(this.match2(e.get(0), px));
-		// px.storeSymbolTable(varid);
-		// px.jumpSucc();
-		// px.endIf();
-		// px.jumpFail();
-		// return null;
 	}
 
 	@Override
@@ -1041,12 +1072,6 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			int varid = px.uniqueVarId();
 			String main = px.matchPair(this.match(e.get(0), px), px.callSymbolAction(e.action, e.label, varid));
 			return this.letVar(varid, POS, px.result(main), px);
-			// px.loadPos(varid);
-			// px.beginIfSucc(this.match2(e.get(0), px));
-			// px.jump(px.callSymbolAction(e.action, e.label, varid));
-			// px.endIf();
-			// px.jumpFail();
-			// return null;
 		}
 	}
 
@@ -1059,12 +1084,6 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			String main = px.matchPair(this.match(e.get(0), px),
 					px.callSymbolPredicate(e.pred, e.label, varid, e.option));
 			return this.letVar(varid, POS, px.result(main), px);
-			// px.loadPos(varid);
-			// px.beginIfSucc(this.match2(e.get(0), px));
-			// px.jump(px.callSymbolPredicate(e.pred, e.label, varid,
-			// e.option));
-			// px.endIf();
-			// px.jumpFail();
 		}
 	}
 
@@ -1117,57 +1136,6 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	@Override
 	public String visitTrap(PTrap e, ParserGenerator px) {
 		return px.matchSucc();
-	}
-
-}
-
-class FunctionalParserGeneratorVisitor extends ParserGeneratorVisitor {
-	String suffix(Expression e) {
-		boolean isCons = Typestate.compute(e) != Typestate.Unit;
-		return isCons ? "Tree" : "";
-	}
-
-	@Override
-	public String visitOption(POption e, ParserGenerator px) {
-		String combi = px.getCombinator(e);
-		if (combi != null) {
-			String funcName = this.match(e.get(0), px, Function);
-			return px.matchCombinator(combi, funcName);
-		}
-		return super.visitOption(e, px);
-	}
-
-	@Override
-	public String visitRepetition(PRepetition e, ParserGenerator px) {
-		String combi = px.getCombinator(e);
-		if (combi != null) {
-			String funcName = this.match(e.get(0), px, Function);
-			if (e.isOneMore()) {
-				return px.matchPair(px.matchNonTerminal(funcName), px.matchCombinator(combi, funcName));
-			}
-			return px.matchCombinator(combi, funcName);
-		}
-		return super.visitRepetition(e, px);
-	}
-
-	@Override
-	public String visitAnd(PAnd e, ParserGenerator px) {
-		String combi = px.getCombinator(e);
-		if (combi != null) {
-			String funcName = this.match(e.get(0), px, Function);
-			return px.matchCombinator(combi, funcName);
-		}
-		return super.visitAnd(e, px);
-	}
-
-	@Override
-	public String visitNot(PNot e, ParserGenerator px) {
-		String combi = px.getCombinator(e);
-		if (combi != null) {
-			String funcName = this.match(e.get(0), px, Function);
-			return px.matchCombinator(combi, funcName);
-		}
-		return super.visitNot(e, px);
 	}
 
 }

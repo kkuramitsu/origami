@@ -162,7 +162,7 @@ public class InlinePass extends CommonPass {
 		@Override
 		public Integer visitPair(PPair e, Integer step) {
 			if (e.get(0) instanceof PByte) {
-				Expression remaining = Expression.extractString(e, null);
+				Expression remaining = Expression.extractMultiBytes(e, null);
 				return remaining.visit(this, step + 1);
 			}
 			return step + step(e, 0) + step(e, 1);

@@ -8,7 +8,6 @@ import blue.nez.parser.ParserContext.SymbolAction;
 import blue.nez.parser.ParserContext.SymbolPredicate;
 import blue.nez.peg.Expression;
 import blue.nez.peg.expression.ByteSet;
-import blue.nez.peg.expression.PLinkTree;
 import blue.origami.util.OStringUtils;
 
 public class JavaParserGenerator extends ParserGenerator {
@@ -18,6 +17,13 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.out.importResourceContent("/blue/origami/nezcc/javaparser-imports.java");
 		this.out.println("class %s {", this.getFileBaseName());
 		this.out.importResourceContent("/blue/origami/nezcc/javaparser-runtime.java");
+		if (this.useLexicalOptimization()) {
+			this.out.importResourceContent("/blue/origami/nezcc/javaparser-lexer.java");
+		}
+		this.out.importResourceContent("/blue/origami/nezcc/javaparser-combinator.java");
+		if (this.isDebug()) {
+			this.out.importResourceContent("/blue/origami/nezcc/javaparser-trace.java");
+		}
 	}
 
 	@Override
@@ -67,36 +73,6 @@ public class JavaParserGenerator extends ParserGenerator {
 		return this.Line("return %s;", pe);
 	}
 
-	// @Override
-	// protected void jump(String pe) {
-	// if (this.isDebug()) {
-	// this.L("boolean r = %s;", pe);
-	// this.L("System.out.printf(\"<= %s pos=%%s, %%s\\n\", px.pos, r);",
-	// this.getCurrentFuncName());
-	// this.L("return r;");
-	// } else {
-	// this.L("return %s;", pe);
-	// }
-	// }
-	//
-	// @Override
-	// protected void jumpSucc() {
-	// if (this.isDebug()) {
-	// this.L("System.out.printf(\"<= %s pos=%%s, %s\\n\", px.pos);",
-	// this.getCurrentFuncName(), this.s("true"));
-	// }
-	// this.L("return %s;", this.s("true"));
-	// }
-	//
-	// @Override
-	// protected void jumpFail() {
-	// if (this.isDebug()) {
-	// this.L("System.out.printf(\"<= %s pos=%%s, %s\\n\", px.pos);",
-	// this.getCurrentFuncName(), this.s("false"));
-	// }
-	// this.L("return %s;", this.s("false"));
-	// }
-
 	@Override
 	protected String matchSucc() {
 		return this.s("true");
@@ -109,12 +85,13 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String matchAny() {
-		return String.format("(!px.eof()) %s (px.read() != 0)", this.s("&&"));
+		return "(px.read() != 0)";
 	}
 
 	@Override
 	protected String matchByte(int uchar) {
-		return String.format("(px.read() == %s)", uchar);
+		// return String.format("(px.read() == %s)", uchar);
+		return this.Expr("px.is(%d)", (byte) uchar);
 	}
 
 	@Override
@@ -234,64 +211,6 @@ public class JavaParserGenerator extends ParserGenerator {
 		return this.Line("%s = px.state;", this.v("state", varid));
 	}
 
-	// @Override
-	// protected void storePos(int varid) {
-	// this.L("px.pos = %s;", this.v("pos", varid));
-	// }
-	//
-	// @Override
-	// protected void storeTree(int varid) {
-	// this.L("px.tree = %s;", this.v("tree", varid));
-	// }
-	//
-	// @Override
-	// protected void storeTreeLog(int varid) {
-	// this.L("px.treeLog = %s;", this.v("treeLog", varid));
-	// }
-	//
-	// @Override
-	// protected void storeSymbolTable(int varid) {
-	// this.L("px.state = %s;", this.v("state", varid));
-	// }
-	//
-	// @Override
-	// protected void beginIfSucc(String pe) {
-	// this.L("if(%s) {", pe);
-	// this.incIndent();
-	// }
-	//
-	// @Override
-	// protected void beginIfFail(String pe) {
-	// this.L("if(!(%s)) {", pe);
-	// this.incIndent();
-	// }
-	//
-	// @Override
-	// protected void orElse() {
-	// this.decIndent();
-	// this.L("} else {");
-	// this.incIndent();
-	// }
-	//
-	// @Override
-	// protected void endIf() {
-	// this.decIndent();
-	// this.L("}");
-	// }
-	//
-	// @Override
-	// protected void beginWhileSucc(String pe) {
-	// this.L("while(%s) {", pe);
-	// this.incIndent();
-	//
-	// }
-	//
-	// @Override
-	// protected void endWhile() {
-	// this.decIndent();
-	// this.L("}");
-	// }
-
 	@Override
 	protected String initCountVar(int varid) {
 		return this.Line("int %s = 0;", this.v("cnt", varid));
@@ -362,59 +281,11 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	/* dispatch */
 
-	// @Override
-	// public String getFuncMap(PDispatch e) {
-	// String cname = this.getFileBaseName();
-	// StringBuilder sb = new StringBuilder();
-	// sb.append("{");
-	// sb.append(cname);
-	// sb.append("::fail");
-	// for (Expression sub : e) {
-	// sb.append(", ");
-	// sb.append(cname);
-	// sb.append("::");
-	// sb.append(this.getFuncName(sub));
-	// }
-	// sb.append("}");
-	// return this.getConstName("ParserFunc<T>[]", sb.toString());
-	// }
-	//
-	// @Override
-	// public String matchFuncMap(String funcMap, String jumpIndex) {
-	// return String.format("%s[%s].match(px)", funcMap, jumpIndex);
-	// }
-
 	@Override
 	protected String fetchJumpIndex(byte[] indexMap) {
 		String constName = this.getConstName("int[256]", this.toLiteral(indexMap));
 		return String.format("%s[px.getbyte()]", constName);
 	}
-
-	// @Override
-	// protected void beginSwitch(String pe) {
-	// this.L("switch(%s) {", pe);
-	// this.incIndent();
-	// }
-	//
-	// @Override
-	// protected void endSwitch() {
-	// this.decIndent();
-	// this.L("}");
-	//
-	// }
-	//
-	// @Override
-	// protected void beginCase(int varid, int i) {
-	// this.L("case %d: {", i);
-	// this.incIndent();
-	//
-	// }
-	//
-	// @Override
-	// protected void endCase() {
-	// this.decIndent();
-	// this.L("}");
-	// }
 
 	@Override
 	protected String toLiteral(String s) {
@@ -488,16 +359,65 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	public String getCombinator(Expression e) {
-		if (e instanceof PLinkTree) {
-			return "pLink";
-		}
-		return null;
+	protected boolean supportedLambdaFunction() {
+		return true;
+	}
+
+	@Override
+	protected String refFunc(String funcName) {
+		return String.format("%s::%s", this.getFileBaseName(), funcName);
+	}
+
+	@Override
+	protected String defineLambda(String match) {
+		String lambda = String.format("(px) -> %s", match);
+		String p = "p" + (int) (Math.random() * 100000);
+		return lambda.replace("px", p);
+	}
+
+	@Override
+	protected String getRepetitionCombinator() {
+		return "pMany";
+	}
+
+	@Override
+	protected String getOptionCombinator() {
+		return "pOption";
+	}
+
+	@Override
+	protected String getAndCombinator() {
+		return "pAnd";
+	}
+
+	@Override
+	protected String getNotCombinator() {
+		return "pNot";
+	}
+
+	@Override
+	protected String getLinkCombinator() {
+		return "pLink";
+	}
+
+	@Override
+	protected String getMemoCombinator() {
+		return "pMemo";
 	}
 
 	@Override
 	public String matchCombinator(String combi, String f) {
-		return String.format("%s(px, %s::%s)", combi, this.getFileBaseName(), f);
+		return String.format("%s(px, %s)", combi, f);
+	}
+
+	@Override
+	public String matchCombinator(String combi, Symbol label, String f) {
+		return String.format("%s(px, %s, %s)", combi, f, this.toLiteral(label));
+	}
+
+	@Override
+	public String matchCombinator(String combi, int memoPoint, String f) {
+		return String.format("%s(px, %s, %s)", combi, f, memoPoint);
 	}
 
 	@Override
@@ -526,6 +446,82 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	protected String memoFail(int varid, int memoId) {
 		return String.format("px.memoFail(%d, %s)", memoId, this.v("pos", varid));
+	}
+
+	/* Optimization */
+
+	@Override
+	protected String back2(int varid) {
+		return this.Expr("px.back2(%s,%s)", this.v("pos", varid), this.v("state", varid));
+	}
+
+	@Override
+	protected String back3(int varid) {
+		return this.Expr("px.back3(%s,%s,%s)", this.v("pos", varid), this.v("tree", varid), this.v("treeLog", varid));
+	}
+
+	@Override
+	protected String back4(int varid) {
+		return this.Expr("px.back4(%s,%s,%s)", this.v("pos", varid), this.v("tree", varid), this.v("treeLog", varid),
+				this.v("state", varid));
+	}
+
+	@Override
+	protected boolean useMultiBytes() {
+		return true;
+	}
+
+	@Override
+	protected String matchBytes(byte[] text) {
+		return String.format("px.matchBytes(%s)", this.toMultiBytes(text));
+	}
+
+	protected String toMultiBytes(byte[] text) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("t(\"");
+		for (int i = 0; i < text.length; i++) {
+			int ch = text[i];
+			if (ch >= 0x20 && ch < 0x7e && ch != '\\' && ch != '"') {
+				sb.append((char) ch);
+			} else {
+				sb.append(String.format("~%02x", ch & 0xff));
+			}
+		}
+		sb.append("\")");
+		return this.getConstName("byte[]", sb.toString());
+	}
+
+	@Override
+	protected boolean useLexicalOptimization() {
+		return true;
+	}
+
+	private String param(ByteSet bs) {
+		int uchar = bs.getUnsignedByte();
+		if (uchar == -1) {
+			return this.getConstName("boolean[]", this.toLiteral(bs));
+		}
+		return "" + uchar;
+	}
+
+	@Override
+	protected String matchRepetition(ByteSet bs) {
+		return String.format("pMany(px, %s)", this.param(bs));
+	}
+
+	@Override
+	protected String matchAnd(ByteSet bs) {
+		return String.format("pAnd(px, %s)", this.param(bs));
+	}
+
+	@Override
+	protected String matchNot(ByteSet bs) {
+		return String.format("pNot(px, %s)", this.param(bs));
+	}
+
+	@Override
+	protected String matchOption(ByteSet bs) {
+		return String.format("pOption(px, %s)", this.param(bs));
 	}
 
 }

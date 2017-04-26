@@ -68,7 +68,7 @@ public class PPair extends PBinary {
 	public void strOut(StringBuilder sb) {
 		if (this.left instanceof PByte) {
 			List<Integer> l = new ArrayList<>();
-			Expression lasting = extractString(this, l);
+			Expression lasting = extractMultiBytes(this, l);
 			if (l.size() > 1) {
 				sb.append("'");
 				for (int c : l) {
