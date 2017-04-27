@@ -2,17 +2,17 @@ package blue.nez.peg.expression;
 
 import blue.nez.peg.ExpressionVisitor;
 
-public class PReplace extends PTerm {
+public class PValue extends PTerm {
 	public String value;
 
-	public PReplace(String value) {
+	public PValue(String value) {
 		this.value = value;
 	}
 
 	@Override
 	public final boolean equals(Object o) {
-		if (o instanceof PReplace) {
-			return this.value.equals(((PReplace) o).value);
+		if (o instanceof PValue) {
+			return this.value.equals(((PValue) o).value);
 		}
 		return false;
 	}

@@ -41,7 +41,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -540,9 +540,9 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		}
 
 		@Override
-		public Expression visitReplace(PReplace e, A a) {
+		public Expression visitReplace(PValue e, A a) {
 			if (this.enableFullDuplication) {
-				return new PReplace(e.value);
+				return new PValue(e.value);
 			}
 			return e;
 		}
@@ -731,7 +731,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		}
 
 		@Override
-		public Expression visitReplace(PReplace e, A a) {
+		public Expression visitReplace(PValue e, A a) {
 			return e;
 		}
 

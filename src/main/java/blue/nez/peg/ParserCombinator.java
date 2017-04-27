@@ -30,7 +30,7 @@ import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PTag;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -120,7 +120,7 @@ public class ParserCombinator {
 				return new PTag(Symbol.unique(t.substring(1))).setSourcePosition(this.src());
 			}
 			if (t.startsWith("`") && t.endsWith("`")) {
-				return new PReplace(t.substring(1, t.length() - 1)).setSourcePosition(this.src());
+				return new PValue(t.substring(1, t.length() - 1)).setSourcePosition(this.src());
 			}
 			return Expression.newString(t).setSourcePosition(this.src());
 		}

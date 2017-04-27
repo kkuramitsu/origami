@@ -52,7 +52,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -780,7 +780,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitReplace(PReplace e, Object a) {
+		public Object visitReplace(PValue e, Object a) {
 			OldParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
 			return null;
 		}
@@ -1620,7 +1620,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitReplace(PReplace e, Object a) {
+		public Object visitReplace(PValue e, Object a) {
 			OldParserGenerator.this
 					.Statement(OldParserGenerator.this._Func("valueTree", OldParserGenerator.this._text(e.value)));
 			return null;

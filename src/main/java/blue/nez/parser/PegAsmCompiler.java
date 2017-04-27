@@ -99,7 +99,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -471,7 +471,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInst visitReplace(PReplace p, PegAsmInst next) {
+		public PegAsmInst visitReplace(PValue p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				return new ASMTmut(p.value, next);
 			}

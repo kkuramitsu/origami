@@ -1,0 +1,21 @@
+
+=============
+ QUICK START
+=============
+ 
+ javac $cmd$.java
+ java $cmd$ <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $cmd$.parse() like below. You will get
+a simple tree representation ($cmd$.KeyValueTree).
+
+   KeyValueTree t = $cmd$.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+
+

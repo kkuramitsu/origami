@@ -34,7 +34,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -191,7 +191,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitReplace(PReplace e, Void a) {
+		public NonEmpty visitReplace(PValue e, Void a) {
 			return NonEmpty.False;
 		}
 

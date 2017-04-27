@@ -41,7 +41,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -234,7 +234,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	}
 
 	@Override
-	public Boolean visitReplace(PReplace e, ParserContext<T> px) {
+	public Boolean visitReplace(PValue e, ParserContext<T> px) {
 		px.valueTree(e.value);
 		return true;
 	}

@@ -37,6 +37,7 @@ import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.NonEmpty;
 import blue.nez.peg.Production;
+import blue.nez.peg.Stateful;
 import blue.nez.peg.Typestate;
 import blue.nez.peg.expression.ByteSet;
 import blue.nez.peg.expression.PAnd;
@@ -57,7 +58,6 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -65,6 +65,7 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
@@ -125,6 +126,22 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 		OConsole.println(line, args);
 	}
 
+	private boolean isBinary;
+	private boolean isStateful;
+
+	public final void initGrammarProperty(boolean binary, boolean isStateful) {
+		this.isBinary = binary;
+		this.isStateful = isStateful;
+	}
+
+	protected boolean isBinary() {
+		return this.isBinary;
+	}
+
+	protected boolean isStateful() {
+		return this.isStateful;
+	}
+
 	protected abstract void writeHeader() throws IOException;
 
 	protected abstract void writeFooter() throws IOException;
@@ -139,6 +156,8 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 	protected abstract void endDefine(String funcName, String pe);
 
 	protected abstract String result(String pe);
+
+	protected abstract String move(int shift);
 
 	protected abstract String matchSucc();
 
@@ -207,6 +226,14 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 	protected abstract String beginTree(int beginShift);
 
 	protected abstract String endTree(int endShift, Symbol tag, String value);
+
+	protected abstract String memoDispatch(String lookup, String main);
+
+	protected abstract String memoLookup(int memoId, boolean withTree);
+
+	protected abstract String memoSucc(int varid, int memoId, boolean withTree);
+
+	protected abstract String memoFail(int varid, int memoId);
 
 	protected abstract String callAction(SymbolAction action, Symbol label, Object thunk);
 
@@ -285,7 +312,9 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 		int c = 0;
 		for (byte ch : bytes) {
 			if (c > 0) {
+				sb.append(this.s(" "));
 				sb.append(this.s("&&"));
+				sb.append(this.s(" "));
 			}
 			sb.append(this.matchByte(ch & 0xff));
 			c++;
@@ -360,14 +389,6 @@ public abstract class ParserGenerator extends CodeBase implements OptionalFactor
 	protected String callCombinator(String combi, int memoPoint, String funcName) {
 		return null;
 	}
-
-	protected abstract String memoDispatch(String lookup, String main);
-
-	protected abstract String memoLookup(int memoId, boolean withTree);
-
-	protected abstract String memoSucc(int varid, int memoId, boolean withTree);
-
-	protected abstract String memoFail(int varid, int memoId);
 
 }
 
@@ -622,6 +643,9 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		Production p = g.getStartProduction();
 		px.defineConst("int", "MEMOSIZE", "" + g.getMemoPointSize());
 		px.log("memosize: %d", g.getMemoPointSize());
+		boolean isStateful = Stateful.isStateful(p);
+		px.log("stateful: %s", isStateful);
+		px.initGrammarProperty(g.isBinary(), isStateful);
 		int c = 0;
 		this.waitingList.add(p.getExpression());
 		for (int i = 0; i < this.waitingList.size(); i++) {
@@ -707,7 +731,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 				|| e instanceof PPair) {
 			return true;
 		}
-		if (e instanceof PTag || e instanceof PReplace || e instanceof PEmpty || e instanceof PFail) {
+		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
 			return true;
 		}
 		return false;
@@ -774,6 +798,9 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 		int flag = POS;
 		if (Typestate.compute(e) != Typestate.Unit) {
 			flag |= TREE;
+		}
+		if (Stateful.isStateful(e)) {
+			flag |= STATE;
 		}
 		return flag;
 	}
@@ -854,9 +881,19 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	public String visitDispatch(PDispatch e, ParserGenerator px) {
 		String[] exprs = new String[e.size()];
 		for (int i = 0; i < e.size(); i++) {
-			exprs[i] = this.match(e.get(i), px);
+			exprs[i] = this.patch(e.get(i), px); // this.match(e.get(i), px);
 		}
 		return px.matchCase(px.fetchJumpIndex(e.indexMap), exprs);
+	}
+
+	private String patch(Expression e, ParserGenerator px) {
+		if (e instanceof PPair) {
+			Expression first = e.get(0);
+			if (first instanceof PAny || first instanceof PByte || first instanceof PByteSet) {
+				return px.matchPair(px.move(1), this.match(e.get(1), px));
+			}
+		}
+		return this.match(e, px);
 	}
 
 	@Override
@@ -1050,7 +1087,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 	}
 
 	@Override
-	public String visitReplace(PReplace e, ParserGenerator px) {
+	public String visitReplace(PValue e, ParserGenerator px) {
 		return px.valueTree(e.value);
 	}
 
@@ -1070,8 +1107,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			return px.callAction(e.action, e.label, e.thunk);
 		} else {
 			int varid = px.uniqueVarId();
-			String main = px.matchPair(this.match(e.get(0), px),
-					px.callAction(e.action, e.label, varid, e.thunk));
+			String main = px.matchPair(this.match(e.get(0), px), px.callAction(e.action, e.label, varid, e.thunk));
 			return this.letVar(varid, POS, px.result(main), px);
 		}
 	}
@@ -1082,8 +1118,7 @@ class ParserGeneratorVisitor extends ExpressionVisitor<String, ParserGenerator> 
 			return px.callPredicate(e.pred, e.label, e.thunk);
 		} else {
 			int varid = px.uniqueVarId();
-			String main = px.matchPair(this.match(e.get(0), px),
-					px.callPredicate(e.pred, e.label, varid, e.thunk));
+			String main = px.matchPair(this.match(e.get(0), px), px.callPredicate(e.pred, e.label, varid, e.thunk));
 			return this.letVar(varid, POS, px.result(main), px);
 		}
 	}

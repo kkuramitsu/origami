@@ -30,7 +30,7 @@ import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTree;
 import blue.nez.peg.expression.PUnary;
@@ -181,7 +181,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitReplace(PReplace p, Void a) {
+	public Expression visitReplace(PValue p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
 			this.options.reportWarning(this.src(p), "removed %s", p);
 			return Expression.defaultEmpty;

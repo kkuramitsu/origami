@@ -1,7 +1,25 @@
- Make a parser               make $cmd$ CFLAGS='-O3 -DMAIN'
- Make a parser without gc    make $cmd$ CFLAGS='-O3 -DMAIN -DCNEZ_NOGC'
- Make a parser with SSE4.2   make $cmd$ CFLAGS='-O3 -DMAIN -DCNEZ_SSE'
- Run a parser                ./$cmd$ <file> or 'input-text'
- Test performance            BENCH=1 ./$cmd$ <file> or 'input-text'
- Test memory usage           MEM=1 ./$cmd$ <file> or 'input-text'
+
+=============
+ QUICK START
+=============
  
+ make $cmd$ CFLAGS='-g -O3'
+ ./$cmd$ <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Tree *Nez_parse(const char *inputs, size_t len);
+
+Just call Nez_parse() like below. You will get
+a simple tree representation (struct Tree*).
+
+   Tree *t = Nez_parse("sometext", 8);
+   if(t != NULL) {
+      Tree_dump(t);
+   }
+
+NOTE: This parser has no GC support. 
+Add some reference counting for trees.
+

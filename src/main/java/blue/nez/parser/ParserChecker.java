@@ -50,7 +50,7 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -335,7 +335,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitReplace(PReplace e, Production a) {
+	public Boolean visitReplace(PValue e, Production a) {
 		return true;
 	}
 

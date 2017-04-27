@@ -6,8 +6,8 @@ OpNew = 3
 
 class NezParser:
     def __init__(self, inputs, pos=0, newfunc = newtree, linkfunc = linktree):
-        self.inputs = inputs + '\0'
-        self.pos = pos;
+        self.inputs = bytes(inputs) + b'\0'
+        self.pos = pos
         self.tree = None
         self.logs = None
         self.newfunc = newfunc
@@ -19,17 +19,15 @@ class NezParser:
 
     def move(self, shift):
         pos += shift
-
+        return True
+    
     def read(self):
+        b = self.inputs[pos]
         self.pos + 1
-        return self.inputs[pos]
+        return b
 
-    def prefetch(self):
-        return self.inputs[pos]
-
-    def match(self, text):
-        TODO();
-        self.pos += len(text)
+    def getbyte(self):
+        return self.inputs[self.pos]
 
     # Tree Construction
 

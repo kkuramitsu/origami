@@ -29,7 +29,7 @@ import blue.nez.peg.expression.PLinkTree;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PReplace;
+import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTree;
 
@@ -51,8 +51,8 @@ public class TreePass extends CommonPass {
 				foundTag = ((PTag) e).tag;
 				continue;
 			}
-			if (e instanceof PReplace) {
-				foundReplace = ((PReplace) e).value;
+			if (e instanceof PValue) {
+				foundReplace = ((PValue) e).value;
 				continue;
 			}
 			int len = this.consumed(e, 0);
@@ -77,8 +77,8 @@ public class TreePass extends CommonPass {
 				}
 			}
 			if (movableReplace) {
-				if (e instanceof PReplace) {
-					foundReplace = ((PReplace) e).value;
+				if (e instanceof PValue) {
+					foundReplace = ((PValue) e).value;
 					continue;
 				}
 				movableReplace = this.checkReplace(e, 0);
@@ -163,7 +163,7 @@ public class TreePass extends CommonPass {
 			}
 			return false; // unchecked
 		}
-		if (e instanceof PReplace) {
+		if (e instanceof PValue) {
 			return false;
 		}
 		for (Expression sub : e) {

@@ -21,6 +21,10 @@ public class JavaParserGenerator extends ParserGenerator {
 			this.out.importResourceContent("/blue/origami/nezcc/javaparser-lexer.java");
 		}
 		this.out.importResourceContent("/blue/origami/nezcc/javaparser-combinator.java");
+		if (this.isStateful()) {
+			this.out.importResourceContent("/blue/origami/nezcc/javaparser-state.java");
+		}
+		this.defineConst("boolean", "STATE", "" + this.isStateful());
 		if (this.isDebug()) {
 			this.out.importResourceContent("/blue/origami/nezcc/javaparser-trace.java");
 		}
@@ -30,13 +34,13 @@ public class JavaParserGenerator extends ParserGenerator {
 	protected void writeFooter() throws IOException {
 		this.out.importResourceContent("/blue/origami/nezcc/javaparser-main.java");
 		this.out.println("}");
+		this.out.showResourceContent("/blue/origami/nezcc/javaparser-man.txt", "$cmd$", this.getFileBaseName());
 	}
 
 	@Override
 	protected void defineConst(String typeName, String constName, String literal) {
 		int loc = typeName.indexOf("[");
-		if (loc > 0) { // T[10] a => T a[10]
-			// constName = constName + typeName.substring(loc);
+		if (loc > 0) {
 			typeName = typeName.substring(0, loc) + "[]";
 		}
 		this.L("static final %s %s = %s;", typeName, constName, literal);
@@ -84,6 +88,11 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
+	protected String move(int shift) {
+		return this.Expr("px.move(%s)", shift);
+	}
+
+	@Override
 	protected String matchAny() {
 		return "(px.read() != 0)";
 	}
@@ -91,13 +100,18 @@ public class JavaParserGenerator extends ParserGenerator {
 	@Override
 	protected String matchByte(int uchar) {
 		// return String.format("(px.read() == %s)", uchar);
-		return this.Expr("px.is(%d)", (byte) uchar);
+		return this.Expr("px.is(%s)", (byte) uchar);
 	}
 
 	@Override
-	protected String matchByteSet(ByteSet byteSet) {
-		String constName = this.getConstName("boolean[256]", this.toLiteral(byteSet));
-		return String.format("%s[px.read()]", constName);
+	protected String matchByteSet(ByteSet bs) {
+		int uchar = bs.getUnsignedByte();
+		if (uchar != -1) {
+			return this.matchByte(uchar);
+		} else {
+			String constName = this.getConstName("boolean[256]", this.toLiteral(bs));
+			return String.format("%s[px.read()]", constName);
+		}
 	}
 
 	@Override
@@ -178,12 +192,12 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String backTree(int varid) {
-		return String.format("px.back(%s)", this.v("tree", varid));
+		return String.format("px.backT(%s)", this.v("tree", varid));
 	}
 
 	@Override
 	protected String backTreeLog(int varid) {
-		return String.format("px.back(%s)", this.v("treeLog", varid));
+		return String.format("px.backL(%s)", this.v("treeLog", varid));
 	}
 
 	@Override
@@ -193,22 +207,22 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String updatePos(int varid) {
-		return this.Line("%s = px.pos;", this.v("pos", varid));
+		return this.Expr("%s = px.pos;", this.v("pos", varid));
 	}
 
 	@Override
 	protected String updateTree(int varid) {
-		return this.Line("%s = px.tree;", this.v("tree", varid));
+		return this.Expr("%s = px.tree;", this.v("tree", varid));
 	}
 
 	@Override
 	protected String updateTreeLog(int varid) {
-		return this.Line("%s = px.treeLog;", this.v("treeLog", varid));
+		return this.Expr("%s = px.treeLog;", this.v("treeLog", varid));
 	}
 
 	@Override
 	protected String updateState(int varid) {
-		return this.Line("%s = px.state;", this.v("state", varid));
+		return this.Expr("%s = px.state;", this.v("state", varid));
 	}
 
 	@Override
@@ -218,7 +232,7 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String updateCountVar(int varid) {
-		return this.Line("%s++;", this.v("cnt", varid));
+		return this.Expr("%s++;", this.v("cnt", varid));
 	}
 
 	@Override
@@ -464,7 +478,7 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String back4(int varid) {
-		return this.Expr("px.back4(%s,%s,%s)", this.v("pos", varid), this.v("tree", varid), this.v("treeLog", varid),
+		return this.Expr("px.back4(%s,%s,%s,%s)", this.v("pos", varid), this.v("tree", varid), this.v("treeLog", varid),
 				this.v("state", varid));
 	}
 
@@ -506,24 +520,28 @@ public class JavaParserGenerator extends ParserGenerator {
 		return "" + uchar;
 	}
 
+	private String sig(ByteSet bs) {
+		return bs.getUnsignedByte() != -1 ? "B" : "C";
+	}
+
 	@Override
 	protected String matchRepetition(ByteSet bs) {
-		return String.format("pMany(px, %s)", this.param(bs));
+		return String.format("pMany%s(px,%s)", this.sig(bs), this.param(bs));
 	}
 
 	@Override
 	protected String matchAnd(ByteSet bs) {
-		return String.format("pAnd(px, %s)", this.param(bs));
+		return String.format("pAnd%s(px,%s)", this.sig(bs), this.param(bs));
 	}
 
 	@Override
 	protected String matchNot(ByteSet bs) {
-		return String.format("pNot(px, %s)", this.param(bs));
+		return String.format("pNot%s(px,%s)", this.sig(bs), this.param(bs));
 	}
 
 	@Override
 	protected String matchOption(ByteSet bs) {
-		return String.format("pOption(px, %s)", this.param(bs));
+		return String.format("pOption%s(px,%s)", this.sig(bs), this.param(bs));
 	}
 
 }

@@ -31,8 +31,9 @@ static class NezParserContext<T> {
 		return this.inputs[this.pos] & 0xff;
 	}
 
-	final void move(int shift) {
+	final boolean move(int shift) {
 		this.pos += shift;
+		return true;
 	}
 
 	final int read() {
@@ -138,12 +139,12 @@ static class NezParserContext<T> {
 		return true;
 	}
 
-	public final boolean back(T tree) {
+	public final boolean backT(T tree) {
 		this.tree = tree;
 		return true;
 	}
 	
-	public final boolean back(TreeLog<T> treeLog) {
+	public final boolean backL(TreeLog<T> treeLog) {
 		this.treeLog = treeLog;
 		return true;
 	}
@@ -217,7 +218,7 @@ static class NezParserContext<T> {
 	public final int memoLookup(int memoPoint) {
 		long key = this.longkey(this.pos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
-		if (m.key == key) {
+		if (m.key == key && (!STATEFUL || m.state == this.state)) {
 			this.pos += m.consumed;
 			return m.result;
 		}
@@ -227,7 +228,7 @@ static class NezParserContext<T> {
 	public final int memoLookupTree(int memoPoint) {
 		long key = this.longkey(this.pos, memoPoint);
 		MemoEntry<T> m = this.getMemo(key);
-		if (m.key == key) {
+		if (m.key == key && (!STATEFUL || m.state == this.state)) {
 			this.pos += m.consumed;
 			this.tree = m.memoTree;
 			return m.result;
@@ -240,6 +241,7 @@ static class NezParserContext<T> {
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.consumed = this.pos - ppos;
+		m.state = this.state;
 		m.result = SuccFound;
 		return true;
 	}
@@ -250,6 +252,7 @@ static class NezParserContext<T> {
 		m.key = key;
 		m.memoTree = this.tree;
 		m.consumed = this.pos - ppos;
+		m.state = this.state;
 		m.result = SuccFound;
 		return true;
 	}
@@ -259,6 +262,7 @@ static class NezParserContext<T> {
 		MemoEntry<T> m = this.getMemo(key);
 		m.key = key;
 		m.consumed = 0;
+		m.state = this.state;
 		m.result = FailFound;
 		return false;
 	}
