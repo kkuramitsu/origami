@@ -1,6 +1,20 @@
 language: java
 jdk:
   - oraclejdk8
-after_success:
-  - mvn clean cobertura:cobertura coveralls:report
 
+cache:
+  directories:
+    - $HOME/.gradle
+
+before_install:
+  - ./gradlew --version
+
+install:
+  - true
+
+script:
+  - ./gradlew --no-daemon --stacktrace test build
+
+before_cache:
+  - find $HOME/.gradle/caches -name '*.lock' -delet
+  - rm -fr $HOME/.gradle/caches/[0-9]

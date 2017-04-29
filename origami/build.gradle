@@ -1,0 +1,4 @@
+dependencies {
+    compile 'org.ow2.asm:asm'
+    compile 'org.ow2.asm:asm-commons'
+}

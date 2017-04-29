@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
+    dependencies {
+        classpath 'us.kirchmeier:gradle-capsule-plugin:1.0.2'
+    }
+}
+
+apply plugin: 'application'
+apply plugin: 'us.kirchmeier.capsule'
+
+mainClassName = 'blue.origami.main.OCommand'
+
+dependencies {
+    compile project(':origami')
+    compile 'jline:jline'
+}
+
+task fatCapsule(type: FatCapsule) {
+    applicationClass mainClassName
+}
+
+task executableCapsule(type: FatCapsule) {
+    applicationClass mainClassName
+    reallyExecutable
+    archiveName = "origami-run-${version}"
+}
+assemble.dependsOn executableCapsule

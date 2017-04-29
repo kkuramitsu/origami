@@ -1,0 +1,6 @@
+rootProject.name = 'origami'
+
+// Published Java projects
+// TODO: Extract nez-parser from origami module
+include 'origami'
+include 'origami-cli'
