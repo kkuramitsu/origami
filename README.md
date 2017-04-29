@@ -37,7 +37,7 @@ Forums
 -->
 
 Maven Usage
------------
+------------
 
 Use the following definition to use Origami in your maven project:
 
@@ -54,22 +54,20 @@ Building
 
 ### Requirements
 
-* Maven 3+
 * Java 8+
 
-Check out and build:
+We use [Gradle](https://gradle.org/) to build Origami. The following command will compile Origami and generate JARs:
 
 ```
 git clone git://github.com/kkuramitsu/origami.git
 cd origami
-mvn install
+./gradlew build
 ```
 
 ### Getting started
 
 ```
-$ java -ea -jar origami-X.Y.Z-run.jar run
-java -ea -jar target/origami-0.0.1-run.jar
+$ ./origami-cli/build/libs/origami-run-0.0.1-SNAPSHOT run
 ORIGAMI-0.0.1 (Celery) on Java JVM-1.8.0_91
 Copyright 2017, Kimio Kuramitsu and ORIGAMI project
 Enter an input string to parse and run.
@@ -106,4 +104,9 @@ public abstract class $C0 implements origami.ffi.OrigamiObject {
 
 ```
 
+### Setting up your IDE
 
+You can import Origami into your IDE ([IntelliJ IDEA](https://www.jetbrains.com/idea/) or [Eclipse](http://www.eclipse.org/)) as a Gradle project.
+
+- IntelliJ IDEA - See [Importing Project from Gradle Model](https://www.jetbrains.com/help/idea/2016.3/importing-project-from-gradle-model.html)
+- Eclipse - Use [Buildship Gradle Integration](http://marketplace.eclipse.org/content/buildship-gradle-integration)

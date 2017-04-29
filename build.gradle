@@ -1,0 +1,171 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'io.spring.gradle:dependency-management-plugin:1.0.2.RELEASE'
+    }
+}
+
+ext.javaProjects = subprojects.findAll { it.name != 'doc' }
+ext.versionOf = { project.property("${it}.version") }
+
+// Configure all projects
+allprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+}
+
+// Configure all Java projects
+configure(javaProjects) {
+
+    // Apply common plugins and define repositories.
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    // Set the artifact ID.
+    project.archivesBaseName = "-$project.name"
+
+    // Common properties and functions.
+    ext {
+        pomFile = file("${project.buildDir}/generated-pom.xml")
+        isReleaseVersion = !(project.version =~ /-SNAPSHOT$/)
+        versionOf = rootProject.ext.versionOf
+    }
+
+    // Use the dependency management plugin to keep the versions and exclusions in a single place.
+    dependencyManagement {
+        dependencies {
+            // ASM
+            dependencySet(group: 'org.ow2.asm', version: ext.versionOf('asm')) {
+                entry 'asm'
+                entry 'asm-commons'
+            }
+
+            // AssertJ
+            dependency "org.assertj:assertj-core:${ext.versionOf('assertj')}"
+
+            // // Hamcrest
+            // dependency "org.hamcrest:hamcrest-library:${ext.versionOf('hamcrest')}"
+
+            // jline
+            dependency "jline:jline:${ext.versionOf('jline')}"
+
+            // jUnit
+            dependency "junit:junit:${ext.versionOf('junit')}"
+
+            // Mockito
+            dependency "org.mockito:mockito-core:${ext.versionOf('mockito')}"
+        }
+    }
+
+    dependencies {
+        // Test-time dependencies
+        testCompile 'junit:junit'
+        testCompile 'org.assertj:assertj-core'
+        testCompile 'org.mockito:mockito-core'
+    }
+
+    // Enable full exception logging for test failures.
+    test {
+        testLogging {
+            exceptionFormat = 'full'
+        }
+    }
+
+    // Enable JaCoCo test coverage when '-Pcoverage' option is specified.
+    def jacocoEnabled = project.hasProperty('coverage')
+
+    test {
+        jacoco {
+            enabled = jacocoEnabled
+            append = false
+        }
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled jacocoEnabled
+        }
+    }
+
+    if (jacocoEnabled) {
+        tasks.test.finalizedBy(jacocoTestReport)
+    }
+
+    // Require Java 8 to build the project.
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+        options.encoding = 'UTF-8'
+        options.warnings = false
+        options.debug = true
+    }
+
+    // Print only interesting test results and progress, except when running from IntelliJ IDEA which has
+    // its own output listener.
+    if (System.getProperty('idea.no.launcher') == null) {
+        test {
+            def buf = new StringBuilder()
+            def printedProgress = false
+
+            // Record the test output.
+            onOutput { TestDescriptor td, TestOutputEvent toe ->
+                buf << toe.message
+            }
+
+            // Print the test output when the test failed or the test output contains an Exception or an Error.
+            afterTest { TestDescriptor td, TestResult tr ->
+                if (tr.resultType == TestResult.ResultType.FAILURE || buf =~ /(?:Exception|Error|Throwable):/) {
+                    def simpleClassName = td.className.substring(td.className.lastIndexOf('.') + 1)
+
+                    // Add an empty line if the test progress dots were printed.
+                    if (printedProgress) {
+                        println()
+                        println()
+                        printedProgress = false
+                    }
+
+                    def subject = "${simpleClassName}.${td.name}: ${tr.resultType}"
+                    println subject
+
+                    if (buf.length() != 0) {
+                        println '-' * subject.length()
+                        println buf
+                        if (buf[buf.length() - 1] != '\n') {
+                            println()
+                        }
+                    }
+                } else {
+                    // Print the progress dots.
+                    print '.'
+                    System.out.flush()
+                    printedProgress = true
+                }
+
+                buf.length = 0
+            }
+
+            afterSuite { TestDescriptor td, TestResult tr ->
+                if (printedProgress) {
+                    print ' '
+                    System.out.flush()
+                }
+            }
+
+            doLast {
+                if (printedProgress) {
+                    println()
+                }
+            }
+        }
+    }
+}

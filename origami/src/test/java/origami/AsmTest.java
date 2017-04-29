@@ -16,7 +16,11 @@
 
 package origami;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
+
+import org.junit.Test;
 
 import blue.origami.OrigamiContext;
 import blue.origami.lang.OEnv;
@@ -31,73 +35,85 @@ import blue.origami.rule.ScriptAnalysis;
 
 public class AsmTest {
 
-	public Object eval(OEnv env, OCode... codes) throws Throwable {
+	private Object eval(OEnv env, OCode... codes) throws Throwable {
 		return ScriptAnalysis.eval(env, codes);
 	}
 
+	@Test
 	public void testNull() throws Throwable {
 		OEnv env = new OrigamiContext();
-		assert this.eval(env, new NullCode(env)) == null;
+		assertThat(eval(env, new NullCode(env))).isNull();
 	}
 
+	@Test
 	public void testBool() throws Throwable {
 		OEnv env = new OrigamiContext();
-		assert this.eval(env, env.v(true)).equals(true);
+		assertThat(eval(env, env.v(true))).isEqualTo(true);
 	}
 
+	@Test
 	public void testInt() throws Throwable {
 		OEnv env = new OrigamiContext();
-		assert this.eval(env, env.v(1)).equals(1);
+		assertThat(eval(env, env.v(1))).isEqualTo(1);
 	}
 
+	@Test
 	public void testDouble() throws Throwable {
 		OEnv env = new OrigamiContext();
-		assert this.eval(env, env.v(1.0)).equals(1.0);
+		assertThat(eval(env, env.v(1.0))).isEqualTo(1.0);
 	}
 
+	@Test
 	public void testString() throws Throwable {
 		OEnv env = new OrigamiContext();
-		assert this.eval(env, env.v("hoge")).equals("hoge");
+		assertThat(eval(env, env.v("hoge"))).isEqualTo("hoge");
 	}
 
+	@Test
 	public void testLocalVariable() throws Throwable {
 		OEnv env = new OrigamiContext();
 		AssignCode body = new AssignCode(true, "v", env.v(1));
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
+	@Test
 	public void testLocalAssign() throws Throwable {
 		OEnv env = new OrigamiContext();
 		AssignCode body = new AssignCode(true, "v", env.v(1));
-		assert this.eval(env, body, new NameCode("v", env.t(int.class))).equals(1);
+		assertThat(eval(env, body, new NameCode("v", env.t(int.class)))).isEqualTo(1);
 	}
 
+	@Test
 	public void testIf() throws Throwable {
 		OEnv env = new OrigamiContext();
 		IfCode body = new IfCode(env, env.v(true), env.v(1), env.v(2));
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
+	@Test
 	public void testIfElse() throws Throwable {
 		OEnv env = new OrigamiContext();
 		IfCode body = new IfCode(env, env.v(false), env.v(2), env.v(1));
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
+	@Test
 	public void testTry() throws Throwable {
 		OEnv env = new OrigamiContext();
 		TryCode body = new TryCode(env, env.v(1), new EmptyCode(env));
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
+	@Test
 	public void testTryFinally() throws Throwable {
 		OEnv env = new OrigamiContext();
 		OCode init = new AssignCode(true, "v", env.v(1)).asType(env, env.t(void.class));
 		OCode finl = new AssignCode(false, "v", env.v(2)).asType(env, env.t(void.class));
 		TryCode body = new TryCode(env, env.v(2), finl);
-		assert this.eval(env, init, body).equals(2);
+		assertThat(eval(env, init, body)).isEqualTo(2);
 	}
 
+	@Test
 	public void testTryCatchFinally() throws Throwable {
 		OEnv env = new OrigamiContext();
 		OCode init = new AssignCode(true, "v", env.v(1)).asType(env, env.t(void.class));
@@ -105,22 +121,24 @@ public class AsmTest {
 		TryCode.CatchCode c = new TryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
 
 		TryCode body = new TryCode(env, env.v(2), finl, c);
-		assert this.eval(env, init, body).equals(2);
+		assertThat(eval(env, init, body)).isEqualTo(2);
 	}
 
+	@Test
 	public void testTryCatch() throws Throwable {
 		OEnv env = new OrigamiContext();
 		TryCode.CatchCode c = new TryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
 		TryCode body = new TryCode(env, env.v(1), new EmptyCode(env), c);
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
+	@Test
 	public void testTryCatch2() throws Throwable {
 		OEnv env = new OrigamiContext();
 		TryCode.CatchCode c = new TryCode.CatchCode(env.t(IOException.class), "e", env.v(2));
 		TryCode.CatchCode c2 = new TryCode.CatchCode(env.t(NullPointerException.class), "e", env.v(2));
 		TryCode body = new TryCode(env, env.v(1), new EmptyCode(env), c, c2);
-		assert this.eval(env, body).equals(1);
+		assertThat(eval(env, body)).isEqualTo(1);
 	}
 
 }
