@@ -1,10 +1,10 @@
 	// simple tree representation 
 
-	public static class KeyValueTree {
+	public static class SimpleTree {
 		public String key;
 		public Object value;
 
-		KeyValueTree(String key, Object value) {
+		SimpleTree(String key, Object value) {
 			this.key = key;
 			this.value = value;
 		}
@@ -19,14 +19,14 @@
 		private void strOut(StringBuilder sb) {
 			sb.append("[#");
 			sb.append(this.key == null ? "" : this.key);
-			if (this.value instanceof KeyValueTree[]) {
-				KeyValueTree[] sub = (KeyValueTree[]) this.value;
-				for (KeyValueTree child : sub) {
+			if (this.value instanceof SimpleTree[]) {
+				SimpleTree[] sub = (SimpleTree[]) this.value;
+				for (SimpleTree child : sub) {
 					sb.append(" ");
 					if (child.key != null) {
 						sb.append("$" + child.key + "=");
 					}
-					((KeyValueTree) child.value).strOut(sb);
+					((SimpleTree) child.value).strOut(sb);
 				}
 			} else {
 				sb.append(" '");
@@ -70,25 +70,25 @@
 		System.out.println(parse(readInputs(args)));
 	}
 	
-	public static KeyValueTree parse(String s) {
-		NewFunc<KeyValueTree> f = (String tag, byte[] inputs, int pos, int len, int size, String value) -> {
+	public static Object parse(String s) throws IOException {
+		TreeFunc f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
 			if (size == 0) {
-				return new KeyValueTree(tag, value != null ? value : new String(inputs, pos, len));
+				return new SimpleTree(tag, new String(inputs, pos, epos - pos));
 			}
-			return new KeyValueTree(tag, new KeyValueTree[size]);
+			return new SimpleTree(tag, new SimpleTree[size]);
 		};
-		SetFunc<KeyValueTree> f2 = (KeyValueTree parent, int n, String label, KeyValueTree child) -> {
-			KeyValueTree[] childs = (KeyValueTree[]) parent.value;
-			childs[n] = new KeyValueTree(label, child);
+		TreeSetFunc f2 = (Object parent, int n, String label, Object child) -> {
+			SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+			childs[n] = new SimpleTree(label, child);
 			return parent;
 		};
-		NezParserContext<KeyValueTree> px = new NezParserContext<>(s, MEMOSIZE, f, f2);
-		e0(px);
-		return px.tree;
+		return parse(s, f, f2);
 	}
 
-	public static <T> T parse(String inputs, NewFunc<T> newFunc, SetFunc<T> setFunc) {
-		NezParserContext<T> px = new NezParserContext<>(inputs, MEMOSIZE, newFunc, setFunc);
+	public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
+		byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
+		NezParserContext px = new NezParserContext(inputs, inputs.length-1, newFunc, setFunc);
+		initMemo(px);
 		e0(px);
 		return px.tree;
 	}

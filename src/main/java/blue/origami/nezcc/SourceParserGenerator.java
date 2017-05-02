@@ -16,6 +16,6 @@
 
 package blue.origami.nezcc;
 
-public abstract class ParserGenerator extends AbstractParserGenerator<String> {
+public abstract class SourceParserGenerator extends AbstractParserGenerator<String> {
 
 }

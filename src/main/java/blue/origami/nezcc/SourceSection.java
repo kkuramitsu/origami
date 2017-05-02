@@ -16,6 +16,36 @@
 
 package blue.origami.nezcc;
 
-public abstract class ParserGenerator extends AbstractParserGenerator<String> {
+class SourceSection {
+	StringBuilder sb = new StringBuilder();
+	int indent = 0;
+
+	public void incIndent() {
+		this.indent++;
+	}
+
+	public void decIndent() {
+		assert (this.indent > 0);
+		this.indent--;
+	}
+
+	public String Indent(String tab, String stmt) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < this.indent; i++) {
+			sb.append(tab);
+		}
+		sb.append(stmt);
+		return sb.toString();
+	}
+
+	public void L(String code) {
+		this.sb.append(code);
+		this.sb.append("\n");
+	}
+
+	@Override
+	public String toString() {
+		return this.sb.toString();
+	}
 
 }

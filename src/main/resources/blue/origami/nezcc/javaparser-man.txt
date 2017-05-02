@@ -11,9 +11,9 @@
 =============
 
 Just call $cmd$.parse() like below. You will get
-a simple tree representation ($cmd$.KeyValueTree).
+a simple tree representation ($cmd$.SimpleTree).
 
-   KeyValueTree t = $cmd$.parse("sometext");
+   SimpleTree t = $cmd$.parse("sometext");
    if(t != null) {
       System.out.println(t);
    }

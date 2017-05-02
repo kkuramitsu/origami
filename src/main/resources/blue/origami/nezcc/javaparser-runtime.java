@@ -96,7 +96,6 @@ static class NezParserContext<T> {
 		int ppos = 0;
 		int objectSize = 0;
 		TreeLog<T> sub = null;
-		//System.out.println("treeLog: " + this.treeLog);
 		TreeLog<T> next = null;
 		for (TreeLog<T> l = this.treeLog; l != null; l = next) {
 			next = l.prev;
@@ -291,50 +290,4 @@ static class TreeLog<T> {
 
 // Utils
 
-static boolean[] boolMap(String s) {
-	boolean[] b = new boolean[256];
-	for (int i = 0; i < s.length(); i++) {
-		if (s.charAt(i) == 'T' || s.charAt(i) == '1') {
-			b[i] = true;
-		}
-	}
-	return b;
-}
-
-static int[] indexMap(String s) {
-	int[] b = new int[256];
-	for (int i = 0; i < s.length(); i++) {
-		char c = s.charAt(i);
-		if (c > '0' && c <= '9') {
-			b[i] = c - '0';
-		} else if (c >= 'A' && c <= 'Z') {
-			b[i] = (c - 'A') + 10;
-		}
-	}
-	return b;
-}
-
-static byte[] t(String s) {
-	int len = s.length();
-	for (int i = 0; i < s.length(); i++) {
-		char c = s.charAt(i);
-		if(c == '~') len -= 2;
-	}	
-	byte[] b = new byte [len];
-	int p = 0;
-	for (int i = 0; i < s.length(); i++) {
-		char c = s.charAt(i);
-		if(c != '~') {
-			b[p] = (byte)c;
-		}
-		else {
-			String hex2 = s.substring(i+1, i+3);
-			b[p] = (byte)Integer.parseInt(hex2, 16);
-			i+=2;
-		}
-		p++;
-	}
-	//System.out.println("DEBUG " + s + " => " + new String(b));
-	return b;
-}
 
