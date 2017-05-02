@@ -172,6 +172,14 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		}
 	}
 
+	protected final C emitBack(String name, C expr) {
+		String uFunc = "U" + name;
+		if (this.isDefinedSymbol(uFunc)) {
+			expr = this.emitFunc(this.s(uFunc), this.V("px"), expr);
+		}
+		return this.emitSetter(this.V("px"), name, expr);
+	}
+
 	protected void declFunc(String ret, String funcName, Block<C> block) {
 		this.declFunc(ret, funcName, new String[0], block);
 	}
@@ -491,7 +499,7 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<C> pgv = new ParserGeneratorVisitor<>();
 		this.initSymbols();
-		this.makeMemoLibs(this, g.getMemoPointSize());
+		this.makeMemoLibs(this, g.getMemoPointSize(), 64);
 		this.makeTreeLibs(this);
 		this.makeMatchLibs(this);
 		pgv.start(g, this);

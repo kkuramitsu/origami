@@ -548,7 +548,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 			pg.declFunc(pg.s("bool"), funcName, this.joins("px", args), () -> {
 				C block = pg.beginBlock();
 				for (String a : args) {
-					block = pg.emitStmt(block, pg.emitSetter(a, pg.V(a)));
+					block = pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
 				}
 				block = pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return pg.endBlock(block);

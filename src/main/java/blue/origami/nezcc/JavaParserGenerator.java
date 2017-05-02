@@ -41,12 +41,15 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.defineSymbol("Tstate", "Object");
 		this.defineSymbol("Tmemos", "MemoEntry[]");
 
+		this.defineSymbol("TuLog", this.T("treeLog"));
+		this.defineSymbol("TuState", this.T("state"));
+
 		this.defineSymbol("TnewFunc", "TreeFunc");
 		this.defineSymbol("Tepos", "int");
 		this.defineSymbol("TsetFunc", "TreeSetFunc");
-		this.defineSymbol("Tchild", "Object");
+		this.defineSymbol("Tchild", this.T("tree"));
 		this.defineSymbol("Tf", "ParserFunc");
-		this.defineSymbol("Tf2", "ParserFunc");
+		this.defineSymbol("Tf2", this.T("f"));
 
 		this.defineSymbol("px.newTree", "px.newFunc.newTree");
 		this.defineSymbol("px.setTree", "px.setFunc.setTree");
@@ -61,9 +64,11 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.defineSymbol("TbyteSet", "boolean[256]");
 
 		this.defineSymbol("Top", "int");
+		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Tlabel", "String");
 		this.defineSymbol("Ttag", "String");
 		this.defineSymbol("Tvalue", "byte[]");
+		this.defineSymbol("value.length", "value.length");
 		this.defineSymbol("Tdata", "Object");
 		this.defineSymbol("TprevLog", "TreeLog");
 
@@ -149,15 +154,7 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected void declFunc(String ret, String funcName, String[] params, Block<String> block) {
-		String alpha = "";
-		for (String p : params) {
-			String t = this.T(p);
-			if (t != null && t.indexOf("<T>") > 0) {
-				alpha = "<T> ";
-				break;
-			}
-		}
-		this.writeSection(String.format("static final %s%s %s%s {", alpha, ret, funcName, this.emitParams(params)));
+		this.writeSection(String.format("static final %s %s%s {", ret, funcName, this.emitParams(params)));
 		this.incIndent();
 		this.writeSection(this.returnResult(block.block()));
 		this.decIndent();
@@ -223,21 +220,6 @@ public class JavaParserGenerator extends ParserGenerator {
 	protected boolean useMultiBytes() {
 		return false;
 	}
-
-	// @Override
-	// protected String emitFuncTypeDecl(String ret, String typeName, String...
-	// params) {
-	// String block = this.beginDo();
-	// block = this.emitStmt(block, String.format("static interface %s {",
-	// typeName));
-	// this.incIndent();
-	// for (String f : fields) {
-	// block = this.emitStmt(block, String.format("%s %s;", this.T(f), f));
-	// }
-	// this.decIndent();
-	// block = this.emitStmt(block, "}");
-	// return this.endDo(block);
-	// }
 
 	@Override
 	protected String emitGetter(String self, String name) {
