@@ -4,144 +4,72 @@
 #include<assert.h>
 
 struct MemoEntry;
+struct NezParserContext;
 
 /* local malloc */
+
 static size_t cnez_used = 0;
 
 static void *_malloc(size_t t)
 {
-    size_t *d = (size_t*)malloc(sizeof(size_t) + t);
-    cnez_used += t;
-    d[0] = t;
-    memset((void*)(d+1), 0, t);
-    return (void*)(d+1);
+  size_t *d = (size_t*)malloc(sizeof(size_t) + t);
+  cnez_used += t;
+  d[0] = t;
+  memset((void*)(d+1), 0, t);
+  return (void*)(d+1);
 }
 
 static void *_calloc(size_t items, size_t size)
 {
-    return _malloc(items * size);
+  return _malloc(items * size);
 }
 
 static void _free(void *p)
 {
-    size_t *d = (size_t*)p;
-    cnez_used -= d[-1];
-    free(d-1);
+  size_t *d = (size_t*)p;
+  cnez_used -= d[-1];
+  free(d-1);
 }
 
-/* Nez parser context */
-
-typedef const unsigned char pchar;
-typedef void* (*NewFunc)(const char *, const char *, size_t, size_t, size_t, const char *, void *); 
-typedef void* (*SetFunc)(void *, size_t n, const char *, void *child, void *); 
-
-typedef struct Nez {
-    pchar                   *inputs;
-    size_t                   length;
-    pchar                   *pos;
-    // AST
-    void                    *tree;
-    struct TreeLog          *logs;
-    size_t                   logsize;
-    size_t                   treeLog;
-    // GC
-	NewFunc                  newfunc;
-	SetFunc                  setfunc;
-	void                    *thunk;
-    // SymbolTable
-    void                    *state;
-    // Memo
-    struct MemoEntry        *memoArray;
-    size_t                   memoSize;
-} NezParserContext;
-
-/* TreeLog */
-
-#define OpLink 0
-#define OpTag  1
-#define OpReplace 2
-#define OpNew 3
-
-typedef struct TreeLog {
-    int op;
-    void *value;
-    void *tree;
-} TreeLog;
-
-static const char* ops[5] = {"link", "tag", "value", "new"};
-
-/* memoization */
-
-#define NotFound    0
-#define SuccFound   1
-#define FailFound   2
-
-typedef long long int  ukey_t;
-
-typedef struct MemoEntry {
-    ukey_t        key;
-    long          consumed;
-    struct Tree  *memoTree;
-    int           result;
-    void         *state;
-} MemoEntry;
 
 /* NezParserContext */
 
-static void *Tree_new(const char *tag, const char *inputs, size_t pos, size_t len, size_t nsubs, const char *value, void *thunk);
-static void* Tree_set(void *parent, size_t n, const char *label, void *child, void *thunk);
-static void initMemo(NezParserContext *px, int w, int n);
+//static void *Tree_new(const char *tag, const char *inputs, const char *pos, const char *epos, size_t nsubs);
+//static void* Tree_set(void *parent, size_t n, const char *label, void *child);
+//static void initMemo(NezParserContext *px, int w, int n);
 
-static NezParserContext *NezParserContext_new(const char *text, size_t len, int memoSize)
-{
-    NezParserContext *px = (NezParserContext*) _malloc(sizeof(NezParserContext));
-    px->inputs     = (pchar*)text;
-    px->length     = len;
-    px->pos        = (pchar*)text;
-    // tree
-    px->tree       = NULL;
-    px->logsize    = 256;
-    px->logs       = (struct TreeLog*) _calloc(px->logsize, sizeof(struct TreeLog));
-    px->treeLog    = 0;
-	px->newfunc    = Tree_new;
-	px->setfunc    = Tree_set;
-	px->thunk      = NULL; 	
-    // memo
-    px->memoArray    = NULL;
-    px->memoSize     = 0;
-    initMemo(px, 64, memoSize);
-    return px;
+/*memo*/
+static int initMemo(struct NezParserContext* px) {
+  int cnt = 0;
+  px->memos = (struct MemoEntry *)_calloc(sizeof(struct MemoEntry), 257);
+  while(cnt < 257) {
+    px->memos[cnt].key = -1LL;
+    cnt = cnt + 1;
+  }
+  return 1;
+}
+
+static struct MemoEntry* getMemo(struct NezParserContext* px, unsigned long long int key) {
+  return px->memos + (size_t)(key % 257);
 }
 
 /* API */
 
-static inline int _eof(NezParserContext *px)
-{
-    return !(px->pos < (px->inputs + px->length));
+static inline char getbyte(struct NezParserContext* px) {
+  return *(px->pos);
+}
+static inline char nextbyte(struct NezParserContext* px) {
+  return return *(px->pos++);
+}
+static inline int eof(struct NezParserContext* px) {
+  return !(px->pos < (px->inputs + px->length));
 }
 
-static inline pchar _read(NezParserContext *px)
+static inline int bitis(int *bits, size_t n)
 {
-    return *(px->pos++);
+  return (bits[n / 32] & (1 << (n % 32))) != 0;
 }
-
-static int _is(NezParserContext *px, pchar ch)
-{
-    return *(px->pos++) == ch;
-}
-
-static inline pchar _getbyte(NezParserContext *px)
-{
-    return *(px->pos);
-}
-
-static inline int _move(NezParserContext *px, int shift)
-{
-    px->pos += shift;
-    return 1;
-}
-
-static int _matchBytes(NezParserContext *px, const char *text, size_t len) {
+static int matchBytes(NezParserContext *px, const char *text, size_t len) {
     if (px->pos + len > px->inputs + px->length) {
         return 0;
     }
@@ -155,400 +83,7 @@ static int _matchBytes(NezParserContext *px, const char *text, size_t len) {
     return 1;
 }
 
-static inline int _back(NezParserContext *px, pchar *ppos)
-{
-    px->pos = ppos;
-    return 1;
-}
-
-static inline int _backS(NezParserContext *px, void *state)
-{
-    px->state = state;
-    return 1;
-}
-
-// Tree Construction
-
-static inline int _backT(NezParserContext *px, void *tree)
-{
-    px->tree = tree;
-    return 1;
-}
-
-static void _log(NezParserContext *px, int op, void *value, void *tree)
-{
-    if(!(px->treeLog < px->logsize)) {
-        TreeLog *newlogs = (TreeLog *)_calloc(px->logsize * 2, sizeof(TreeLog));
-        memcpy(newlogs, px->logs, px->logsize * sizeof(TreeLog));
-        _free(px->logs);
-        px->logs = newlogs;
-        px->logsize *= 2;
-    }
-    TreeLog *l = px->logs + px->treeLog;
-    l->op = op;
-    l->value = value;
-    l->tree  = tree;
-    px->treeLog++;
-}
-
-void cnez_dump(void *v, FILE *fp);
-
-static void DEBUG_dumplog(NezParserContext *px)
-{
-    long i;
-    for(i = px->treeLog-1; i >= 0; i--) {
-        TreeLog *l = px->logs + i;
-        printf("[%d] %s %p ", (int)i, ops[l->op], l->value);
-        if(l->tree != NULL) {
-            cnez_dump(l->tree, stdout);
-        }
-        printf("\n");
-    }
-}
-
-static int _BoT(NezParserContext *px, int shift)
-{
-    _log(px, OpNew, (void *)(px->pos + shift), NULL);
-    return 1;
-}
-
-static int _link(NezParserContext *px, const char *label)
-{
-    _log(px, OpLink, (void*)label, px->tree);
-    return 1;
-}
-
-static int _tag(NezParserContext *px, const char *tag)
-{
-    _log(px, OpTag, (void*)tag, NULL);
-    return 1;
-}
-
-static int _value(NezParserContext *px, const char *text, size_t len)
-{
-    _log(px, OpReplace, (void*)text, (void*)len);
-    return 1;
-}
-
-static int _fold(NezParserContext *px, int shift, const char* label)
-{
-    _log(px, OpNew, (void*)(px->pos + shift), NULL);
-    _log(px, OpLink, (void*)label, px->tree);
-    return 1;
-}
-
-static int _backL(NezParserContext *px, size_t treeLog)
-{
-    if (treeLog < px->treeLog) {
-        size_t i;
-        for(i = treeLog; i < px->treeLog; i++) {
-            TreeLog *l = px->logs + i;
-            l->op = 0;
-            l->value = NULL;
-            l->tree = NULL;
-        }
-        px->treeLog = treeLog;
-    }
-    return 1;
-}
-
-static int _EoT(NezParserContext *px, int shift, const char* tag, const char *text, size_t len)
-{
-    int objectSize = 0;
-    size_t pos = 0;
-    long i;
-    for(i = px->treeLog - 1; i >= 0; i--) {
-        TreeLog * l = px->logs + i;
-        if(l->op == OpLink) {
-            objectSize++;
-            continue;
-        }
-        if(l->op == OpNew) {
-			pos = (pchar *)l->value - px->inputs;
-            break;
-        }
-        if(l->op == OpTag && tag == 0) {
-            tag = (const char*)l->value;
-        }
-        if(l->op == OpReplace) {
-            if(text == NULL) {
-                text = (const char*)l->value;
-                len = (size_t)l->tree;
-            }
-            l->tree = NULL;
-        }
-    }
-    //TreeLog * start = px->logs + i;
-    if(text == NULL) {
-    	len = ((px->pos + shift) - px->inputs) - pos;
-    }
-    px->tree = px->newfunc(tag, (const char*)px->inputs, pos, len, objectSize, text, px->thunk);
-    if (objectSize > 0) {
-        int n = 0;
-        size_t j;
-        for(j = i; j < px->treeLog; j++) {
-            TreeLog * cur = px->logs + j;
-            if (cur->op == OpLink) {
-                px->tree = px->setfunc(px->tree, n++, (const char*)cur->value, cur->tree, px->thunk);
-            }
-        }
-    }
-    _backL(px, i);
-    return 1;
-}
-
-// Memotable ------------------------------------------------------------
-
-static void initMemo(NezParserContext *px, int w, int n)
-{
-    int i;
-    if(n > 0) {
-	    px->memoSize = w * n + 1;
-    	px->memoArray = (MemoEntry *)_calloc(sizeof(MemoEntry), px->memoSize);
-    	for (i = 0; i < px->memoSize; i++) {
-        	px->memoArray[i].key = -1LL;
-    	}
-    }
-}
-
-static inline ukey_t longkey(ukey_t pos, int memoPoint) {
-    return ((pos << 16) | memoPoint);
-}
-
-static int memoLookup(NezParserContext *px, int memoPoint)
-{
-    ukey_t key = longkey((px->pos - px->inputs), memoPoint);
-    size_t hash = (size_t) (key % px->memoSize);
-    MemoEntry* m = px->memoArray + hash;
-    if (m->key == key && m->state == px->state) {
-        px->pos += m->consumed;
-        return m->result;
-    }
-    return NotFound;
-}
-
-static int memoLookupTree(NezParserContext *px, int memoPoint)
-{
-    ukey_t key = longkey((px->pos - px->inputs), memoPoint);
-    size_t hash = (size_t) (key % px->memoSize);
-    MemoEntry* m = px->memoArray + hash;
-    if (m->key == key && m->state == px->state) {
-        px->pos += m->consumed;
-        px->tree = m->memoTree;
-        return m->result;
-    }
-    return NotFound;
-}
-
-static int memoSucc(NezParserContext *px, int memoPoint, pchar* ppos)
-{
-    ukey_t key = longkey((ppos - px->inputs), memoPoint);
-    size_t hash = (size_t) (key % px->memoSize);
-    MemoEntry* m = px->memoArray + hash;
-    m->key = key;
-    m->memoTree = px->tree;
-    m->consumed = px->pos - ppos;
-    m->state = px->state;
-    m->result = SuccFound;
-    return 1;
-}
-
-static int memoSuccTree(NezParserContext *px, int memoPoint, pchar* ppos)
-{
-    ukey_t key = longkey((ppos - px->inputs), memoPoint);
-    size_t hash = (size_t) (key % px->memoSize);
-    MemoEntry* m = px->memoArray + hash;
-    m->key = key;
-    m->memoTree = px->tree;
-    m->consumed = px->pos - ppos;
-    m->result = SuccFound;
-    m->state = px->state;
-    return 1;
-}
-
-static int memoFail(NezParserContext *px, int memoPoint, pchar* ppos)
-{
-    ukey_t key = longkey((ppos - px->inputs), memoPoint);
-    size_t hash = (size_t) (key % px->memoSize);
-    MemoEntry* m = px->memoArray + hash;
-    m->key = key;
-    m->memoTree = px->tree;
-    m->consumed = 0;
-    m->result = FailFound;
-    m->state = px->state;
-    return 0;
-}
-
 //----------------------------------------------------------------------------
-
-static inline int _bitis(int *bits, size_t n)
-{
-    return (bits[n / 32] & (1 << (n % 32))) != 0;
-}
-
-//----------------------------------------------------------------------------
-
-typedef int (*ParserFunc)(NezParserContext *); 
-
-/* Combinator */
-
-static int pOption(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	if (!fmatch(px)) {
-		px->pos = pos;
-	}
-	return 1;
-}
-
-static int pOptionT(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	if (!fmatch(px)) {
-		px->pos = pos;
-		px->tree = tree;
-		px->treeLog = treeLog;
-	}
-	return 1;
-}
-
-static int pOptionTS(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	void * state = px->state;
-	if (!fmatch(px)) {
-		px->pos = pos;
-		px->tree = tree;
-		px->treeLog = treeLog;
-		px->state = state;
-	}
-	return 1;
-}
-
-static int pMany(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	while (fmatch(px) && pos < px->pos) {
-		pos = px->pos;
-	}
-	px->pos = pos;
-	return 1;
-}
-
-static int pManyT(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	while (fmatch(px) && pos < px->pos) {
-		pos = px->pos;
-		tree = px->tree;
-		treeLog = px->treeLog;
-	}
-	px->pos = pos;
-	px->tree = tree;
-	px->treeLog = treeLog;
-	return 1;
-}
-
-static int pManyTS(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	void * state = px->state;
-	while (fmatch(px) && pos < px->pos) {
-		pos = px->pos;
-		tree = px->tree;
-		treeLog = px->treeLog;
-		state = px->state;
-	}
-	px->pos = pos;
-	px->tree = tree;
-	px->treeLog = treeLog;
-	px->state = state;
-	return 1;
-}
-
-static int pAnd(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	if (fmatch(px)) {
-		px->pos = pos;
-		return 1;
-	}
-	return 0;
-}
-
-static int pNot(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	if (fmatch(px)) {
-		return 0;
-	}
-	px->pos = pos;
-	return 1;
-}
-
-static int pNotT(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	if (fmatch(px)) {
-		return 0;
-	}
-	px->pos = pos;
-	px->tree = tree;
-	px->treeLog = treeLog;
-	return 1;
-}
-
-static int pNotTS(NezParserContext *px, ParserFunc fmatch) {
-	pchar *pos = px->pos;
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	void * state = px->state;
-	if (fmatch(px)) {
-		return 0;
-	}
-	px->pos = pos;
-	px->tree = tree;
-	px->treeLog = treeLog;
-	px->state = state;
-	return 1;
-}
-
-static int pLink(NezParserContext *px, ParserFunc fmatch, const char *label) {
-	void *tree = px->tree;
-	size_t treeLog = px->treeLog;
-	if (!fmatch(px)) {
-		return 0;
-	}
-	px->treeLog = treeLog;
-	_link(px, label);
-	px->tree = tree;
-	return 1;
-}
-
-static int pMemo(NezParserContext *px, ParserFunc fmatch, int mp) {
-	pchar *pos = px->pos;
-	switch (memoLookup(px, mp)) {
-	case 0:
-		return (fmatch(px) && memoSucc(px, mp, pos)) || (memoFail(px, mp, pos));
-	case 1:
-		return 1;
-	default:
-		return 0;
-	}
-}
-
-static int pMemoT(NezParserContext *px, ParserFunc fmatch, int mp) {
-	pchar *pos = px->pos;
-	switch (memoLookupTree(px, mp)) {
-	case 0:
-		return (fmatch(px) && memoSuccTree(px, mp, pos)) || (memoFail(px, mp, pos));
-	case 1:
-		return 1;
-	default:
-		return 0;
-	}
-}
 
 /* Tree */
 
@@ -698,8 +233,6 @@ static Tree* Nez_getTree(NezParserContext *px)
     return px->tree;
 }
 
-****************************/
-
 static void NezParserContext_free(NezParserContext *px)
 {
     if(px->memoArray != NULL) {
@@ -713,8 +246,6 @@ static void NezParserContext_free(NezParserContext *px)
     //px->gcbuf = NULL;
     _free(px);
 }
-
-/* lexer */
 
 static int pOptionB(NezParserContext *px, pchar uchar) {
 	if (_getbyte(px) == uchar) {
@@ -784,6 +315,7 @@ static int pNotM(NezParserContext *px, const char *text, size_t len) {
 	return !_matchBytes(px, text, len);
 }
 
+****************************/
 
 
 

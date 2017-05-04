@@ -42,6 +42,7 @@ abstract class CodeSection<C> {
 
 	protected void writeResource(String path, String... stringReplacements) throws IOException {
 		this.out.importResourceContent(path, stringReplacements);
+		this.writeSection(null);
 	}
 
 	protected void showResource(String path, String... stringReplacements) throws IOException {
@@ -55,7 +56,11 @@ abstract class CodeSection<C> {
 	private SourceSection body = this.head;
 
 	protected void writeSection(C code) {
-		this.body.L(code.toString());
+		if (code == null) {
+			this.body.L("");
+		} else {
+			this.body.L(code.toString());
+		}
 	}
 
 	protected String Indent(String stmt) {
@@ -160,8 +165,12 @@ abstract class CodeSection<C> {
 		return this.symbolMap.getOrDefault(key, key);
 	}
 
-	protected String T(String p) {
-		return this.s("T" + p);
+	protected String T(String varname) {
+		String key = "T" + varname;
+		if (!this.isDefinedSymbol(key)) {
+			return null;
+		}
+		return this.s(key);
 	}
 
 	protected void defineFunction(String funcName) {

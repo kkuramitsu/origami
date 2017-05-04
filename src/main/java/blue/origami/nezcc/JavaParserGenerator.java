@@ -17,20 +17,21 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
-import java.util.List;
 
-import blue.nez.ast.Symbol;
 import blue.nez.peg.expression.ByteSet;
-import blue.origami.util.OStringUtils;
 
-public class JavaParserGenerator extends ParserGenerator {
+public class JavaParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
 		this.defineSymbol("\t", "  ");
+		this.defineSymbol("lambda", "->");
+		this.defineSymbol("{[", "{");
+		this.defineSymbol("]}", "}");
+		this.defineSymbol("const", "private static final");
+		this.defineSymbol("function", "private static final");
 
 		this.defineSymbol("Tmatched", "boolean");
-		this.defineSymbol("bool", "boolean");
 		this.defineSymbol("Tpx", "NezParserContext");
 		this.defineSymbol("Tinputs", "byte[]");
 		this.defineSymbol("Tlength", "int");
@@ -41,15 +42,10 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.defineSymbol("Tstate", "Object");
 		this.defineSymbol("Tmemos", "MemoEntry[]");
 
-		this.defineSymbol("TuLog", this.T("treeLog"));
-		this.defineSymbol("TuState", this.T("state"));
-
 		this.defineSymbol("TnewFunc", "TreeFunc");
 		this.defineSymbol("Tepos", "int");
 		this.defineSymbol("TsetFunc", "TreeSetFunc");
-		this.defineSymbol("Tchild", this.T("tree"));
 		this.defineSymbol("Tf", "ParserFunc");
-		this.defineSymbol("Tf2", this.T("f"));
 
 		this.defineSymbol("px.newTree", "px.newFunc.newTree");
 		this.defineSymbol("px.setTree", "px.setFunc.setTree");
@@ -77,6 +73,8 @@ public class JavaParserGenerator extends ParserGenerator {
 		this.defineSymbol("TmemoPoint", "int");
 		this.defineSymbol("Tresult", "int");
 		this.defineSymbol("Iresult", "0");
+
+		this.defineSymbol("UtreeLog", "unuseTreeLog");
 	}
 
 	@Override
@@ -96,15 +94,6 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected void declConst(String typeName, String constName, String literal) {
-		int loc = typeName.indexOf("[");
-		if (loc > 0) {
-			typeName = typeName.substring(0, loc) + "[]";
-		}
-		this.writeSection(String.format("static final %s %s = %s;", typeName, constName, literal));
-	}
-
-	@Override
 	protected void declStruct(String typeName, String... fields) {
 		String block = this.beginBlock();
 		block = this.emitStmt(block, String.format("static class %s {", typeName));
@@ -114,7 +103,7 @@ public class JavaParserGenerator extends ParserGenerator {
 			block = this.emitStmt(block, String.format("%s %s;", this.T(f), f));
 		}
 		/* Constructor */
-		block = this.emitStmt(block, String.format("%s%s {", typeName.replace("<T>", ""), this.emitParams(fields)));
+		block = this.emitStmt(block, String.format("%s(%s) {", typeName.replace("<T>", ""), this.emitParams(fields)));
 		this.incIndent();
 		for (String f : fields) {
 			String n = f.replace("?", "");
@@ -142,135 +131,15 @@ public class JavaParserGenerator extends ParserGenerator {
 		String block = this.beginBlock();
 		block = this.emitStmt(block, String.format("public interface %s {", typeName));
 		this.incIndent();
-		block = this.emitStmt(block, String.format("%s %s%s;", ret, this.s("M" + typeName), this.emitParams(params)));
+		block = this.emitStmt(block, String.format("%s %s(%s);", ret, this.s("M" + typeName), this.emitParams(params)));
 		this.decIndent();
 		block = this.emitStmt(block, "}");
 		this.writeSection(this.endBlock(block));
 	}
 
 	@Override
-	protected void declProtoType(String funcName) {
-	}
-
-	@Override
-	protected void declFunc(String ret, String funcName, String[] params, Block<String> block) {
-		this.writeSection(String.format("static final %s %s%s {", ret, funcName, this.emitParams(params)));
-		this.incIndent();
-		this.writeSection(this.returnResult(block.block()));
-		this.decIndent();
-		this.writeSection("}");
-	}
-
-	protected String returnResult(String pe) {
-		if (pe.startsWith(" ") || pe.startsWith("\t")) {
-			return pe;
-		}
-		if (this.isDebug()) {
-			// return this.Indent("return B(\"%s\", px) && E(\"%s\", px, %s);",
-			// this.getCurrentFuncName(),
-			// this.getCurrentFuncName(), pe);
-		}
-		return this.Indent(this.emitReturn(pe));
-	}
-
-	@Override
-	protected String emitParams(String... params) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("(");
-		int c = 0;
-		for (String p : params) {
-			if (p.endsWith("?")) {
-				continue;
-			}
-			if (c > 0) {
-				sb.append(", ");
-			}
-			c++;
-			String t = this.T(p);
-			if (t == null) {
-				sb.append(p);
-			} else {
-				sb.append(String.format("%s %s", t, p));
-			}
-		}
-		sb.append(")");
-		return sb.toString();
-	}
-
-	@Override
-	protected String emitSucc() {
-		return this.s("true");
-	}
-
-	@Override
-	protected String emitFail() {
-		return this.s("false");
-	}
-
-	@Override
 	protected String emitChar(int uchar) {
 		return "(byte)" + (byte) uchar;
-	}
-
-	/* dispatch */
-
-	/* Optimization */
-
-	@Override
-	protected boolean useMultiBytes() {
-		return false;
-	}
-
-	@Override
-	protected String emitGetter(String self, String name) {
-		return String.format("%s.%s", this.s(self), this.s(name));
-	}
-
-	@Override
-	protected String emitSetter(String self, String name, String expr) {
-		return String.format("%s.%s = %s;", this.s(self), this.s(name), expr);
-	}
-
-	@Override
-	protected String emitReturn(String expr) {
-		return String.format("return %s;", expr);
-	}
-
-	@Override
-	protected String emitVarDecl(String name, String expr) {
-		return String.format("%s %s = %s;", this.T(name), this.s(name), expr);
-	}
-
-	@Override
-	protected String emitAssign(String name, String expr) {
-		return String.format("%s = %s;", this.s(name), expr);
-	}
-
-	@Override
-	protected String emitAssign2(String left, String expr) {
-		return String.format("%s = %s;", left, expr);
-	}
-
-	@Override
-	protected String beginBlock() {
-		return "";
-	}
-
-	@Override
-	protected String emitStmt(String block, String expr) {
-		String stmt = this.Indent(expr.trim());
-		if (stmt.endsWith(")")) {
-			stmt = stmt + ";";
-		}
-		if (!block.equals("")) {
-			stmt = block + "\n" + stmt;
-		}
-		return stmt;
-	}
-
-	@Override
-	protected String endBlock(String block) {
-		return block;
 	}
 
 	@Override
@@ -279,106 +148,8 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String emitArrayIndex(String a, String index) {
-		return String.format("%s[%s]", a, index);
-	}
-
-	@Override
-	protected String emitFunc(String func, List<String> params) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.s(func));
-		sb.append("(");
-		int c = 0;
-		for (String p : params) {
-			if (c > 0) {
-				sb.append(",");
-			}
-			c++;
-			sb.append(p);
-		}
-		sb.append(")");
-		return sb.toString();
-	}
-
-	@Override
 	protected String emitApply(String func) {
 		return String.format("%s.%s(%s)", func, this.s("M" + this.T(func)), this.s("px"));
-	}
-
-	@Override
-	protected String emitNot(String expr) {
-		return String.format("!(%s)", expr);
-	}
-
-	@Override
-	protected String emitAnd(String expr, String expr2) {
-		return String.format("%s && %s", expr, expr2);
-	}
-
-	@Override
-	protected String emitOr(String expr, String expr2) {
-		return String.format("(%s) || (%s)", expr, expr2);
-	}
-
-	@Override
-	protected String emitIf(String expr, String expr2, String expr3) {
-		return String.format("(%s) ? (%s) : (%s)", expr, expr2, expr3);
-	}
-
-	@Override
-	protected String emitIfStmt(String expr, Block<String> stmt) {
-		String block = this.beginBlock();
-		block = this.emitStmt(block, String.format("if(%s) {", expr));
-		this.incIndent();
-		block = this.emitStmt(block, stmt.block());
-		this.decIndent();
-		block = this.emitStmt(block, "}");
-		return this.endBlock(block);
-	}
-
-	@Override
-	protected String emitWhileStmt(String expr, Block<String> stmt) {
-		String block = this.beginBlock();
-		block = this.emitStmt(block, String.format("while(%s) {", expr));
-		this.incIndent();
-		block = this.emitStmt(block, stmt.block());
-		this.decIndent();
-		block = this.emitStmt(block, "}");
-		return this.endBlock(block);
-	}
-
-	@Override
-	protected String emitDispatch(String index, List<String> cases) {
-		String block = this.beginBlock();
-		block = this.emitStmt(block, String.format("switch(%s) {", index));
-		this.incIndent();
-		for (int i = 1; i < cases.size(); i++) {
-			block = this.emitStmt(block, String.format("case %s: return %s;", i, cases.get(i)));
-		}
-		block = this.emitStmt(block, String.format("default: return %s;", cases.get(0)));
-		this.decIndent();
-		block = this.emitStmt(block, "}");
-		return this.endBlock(block);
-	}
-
-	@Override
-	protected String emitOp(String expr, String op, String expr2) {
-		return String.format("%s %s %s", expr, this.s(op), expr2);
-	}
-
-	@Override
-	protected String emitCast(String var, String expr) {
-		return String.format("(%s)(%s)", this.T(var), expr);
-	}
-
-	@Override
-	protected String emitNull() {
-		return this.s("null");
-	}
-
-	@Override
-	protected boolean supportedLambdaFunction() {
-		return true;
 	}
 
 	@Override
@@ -388,33 +159,9 @@ public class JavaParserGenerator extends ParserGenerator {
 
 	@Override
 	protected String emitParserLambda(String match) {
-		String lambda = String.format("(px) -> %s", match);
+		String lambda = String.format("(px) %s %s", this.s("lambda"), match);
 		String p = "p" + this.varSuffix();
 		return lambda.replace("px", p);
-	}
-
-	@Override
-	protected String emitAsm(String expr) {
-		return this.s(expr);
-	}
-
-	/* Variable */
-
-	@Override
-	public String V(String name) {
-		return this.s(name);
-	}
-
-	/* Value */
-
-	@Override
-	protected String vString(String s) {
-		if (s != null) {
-			StringBuilder sb = new StringBuilder();
-			OStringUtils.formatStringLiteral(sb, '"', s, '"');
-			return sb.toString();
-		}
-		return this.s("null");
 	}
 
 	@Override
@@ -452,31 +199,6 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String vInt(int value) {
-		return "" + value;
-	}
-
-	@Override
-	protected String vValue(String s) {
-		if (s != null) {
-			StringBuilder sb = new StringBuilder();
-			OStringUtils.formatStringLiteral(sb, '"', s, '"');
-			return sb.toString();
-		}
-		return this.s("null");
-	}
-
-	@Override
-	protected String vLabel(Symbol s) {
-		if (s != null) {
-			StringBuilder sb = new StringBuilder();
-			OStringUtils.formatStringLiteral(sb, '"', s.toString(), '"');
-			return sb.toString();
-		}
-		return this.s("null");
-	}
-
-	@Override
 	protected String vByteSet(ByteSet bs) {
 		int last = 0;
 		for (int i = 0; i < 256; i++) {
@@ -494,14 +216,8 @@ public class JavaParserGenerator extends ParserGenerator {
 	}
 
 	@Override
-	protected String vTag(Symbol s) {
-		return this.vLabel(s);
-	}
-
-	@Override
-	protected String vThunk(Object s) {
+	protected void declProtoType(String ret, String funcName, String[] params) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 
 	// @Override
