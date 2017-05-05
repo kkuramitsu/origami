@@ -221,6 +221,9 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitChar(int uchar) {
+		if (this.isUnsigned) {
+			return "" + (uchar & 0xff);
+		}
 		return "" + (byte) uchar;
 	}
 

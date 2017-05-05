@@ -105,16 +105,8 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void declConst(String typeName, String constName, String literal) {
+		this.writeSection(String.format("%s :: %s", constName, typeName));
 		this.writeSection(String.format("%s = %s", constName, literal));
-	}
-
-	@Override
-	protected String formatSignature(String ret, String funcName, String[] params) {
-		if (ret == null || this.isDynamicTyping()) {
-			return String.format("%s %s(%s)", this.s("function"), funcName, this.emitParams(params));
-		} else {
-			return String.format("%s %s %s(%s)", this.s("function"), ret, funcName, this.emitParams(params));
-		}
 	}
 
 	@Override
@@ -194,18 +186,18 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected String emitVarDecl(boolean mutable, String name, String expr) {
-		String t = this.T(name);
+		// String t = this.T(name);
 		return String.format("let %s = %s in", this.s(name), expr);
 	}
 
 	@Override
 	protected String emitAssign(String name, String expr) {
-		return String.format("%s = %s", this.s(name), expr);
+		return String.format("%s <- %s", this.s(name), expr);
 	}
 
 	@Override
 	protected String emitAssign2(String left, String expr) {
-		return String.format("%s = %s", left, expr);
+		return String.format("%s <- %s", left, expr);
 	}
 
 	@Override
@@ -257,11 +249,6 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected String emitNewArray(String type, String index) {
 		return String.format("new %s[%s]", type, index);
-	}
-
-	@Override
-	protected String emitChar(int uchar) {
-		return "" + (byte) uchar;
 	}
 
 	@Override
@@ -326,10 +313,12 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected String emitDispatch(String index, List<String> cases) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("case %s of", index));
+		sb.append(String.format("case %s of {", index));
 		for (int i = 0; i < cases.size(); i++) {
 			sb.append(String.format("%s -> %s", i, cases.get(i)));
+			sb.append(String.format("; ", i, cases.get(i)));
 		}
+		sb.append("}");
 		return sb.toString();
 	}
 
@@ -426,19 +415,10 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitFuncRef(String funcName) {
-		return funcName;
-	}
-
-	@Override
 	protected String emitParserLambda(String match) {
-		String lambda = String.format("(%s px -> %s)", this.s("lambda"), match);
+		String lambda = String.format("(%spx -> %s)", this.s("lambda"), match);
 		String p = "p" + this.varSuffix();
 		return lambda.replace("px", p);
 	}
 
-	@Override
-	public String V(String name) {
-		return this.s(name);
-	}
 }

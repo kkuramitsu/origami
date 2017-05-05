@@ -50,4 +50,11 @@ public class PDispatch extends PArray {
 		}
 		sb.append(">");
 	}
+
+	public final static boolean isConsumed(Expression e) {
+		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny) {
+			return true;
+		}
+		return false;
+	}
 }

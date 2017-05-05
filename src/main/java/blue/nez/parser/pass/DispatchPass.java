@@ -22,38 +22,34 @@ import java.util.List;
 
 import blue.nez.peg.ByteAcceptance;
 import blue.nez.peg.Expression;
-import blue.nez.peg.expression.PAny;
-import blue.nez.peg.expression.PByte;
-import blue.nez.peg.expression.PByteSet;
 import blue.nez.peg.expression.PChoice;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PPair;
 
 public class DispatchPass extends CommonPass {
 
-	/* Choice Prediction */
-
 	@Override
 	public Expression visitChoice(PChoice choice, Void a) {
-		ArrayList<Expression> bufferList = new ArrayList<>(256);
-		HashMap<String, Byte> bufferIndex = new HashMap<>();
+		ArrayList<Expression> selected = new ArrayList<>(256);
+		ArrayList<String> keyList = new ArrayList<>(256);
+		HashMap<String, Byte> indexMap = new HashMap<>();
 		ArrayList<Expression[]> uniqueList = new ArrayList<>();
 		byte[] charMap = new byte[256];
 
 		for (int ch = 0; ch < 256; ch++) {
-			bufferList.clear();
-			assert (bufferList.size() == 0);
-			this.selectPredictedChoice(choice, ch, bufferList);
-			if (bufferList.size() == 0) {
+			selected.clear();
+			this.selectPredictedChoice(choice, ch, keyList, selected);
+			if (selected.size() == 0) {
 				charMap[ch] = 0;
 				continue;
 			}
-			String key = this.key(bufferList);
-			Byte index = bufferIndex.get(key);
+			String key = this.joinKeys(keyList);
+			Byte index = indexMap.get(key);
 			if (index == null) {
-				uniqueList.add(bufferList.toArray(new Expression[bufferList.size()]));
+				// System.out.println("key=" + key);
+				uniqueList.add(selected.toArray(new Expression[selected.size()]));
 				charMap[ch] = (byte) uniqueList.size();
-				bufferIndex.put(key, charMap[ch]);
+				indexMap.put(key, charMap[ch]);
 			} else {
 				charMap[ch] = index;
 			}
@@ -67,27 +63,66 @@ public class DispatchPass extends CommonPass {
 		return this.optimized(choice, new PDispatch(inners, charMap));
 	}
 
-	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<Expression> bufferList) {
+	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<String> keyList,
+			ArrayList<Expression> selected) {
 		for (Expression e : choice) {
 			Expression deref = Expression.deref(e);
 			if (deref instanceof PChoice) {
-				this.selectPredictedChoice((PChoice) deref, ch, bufferList);
+				this.selectPredictedChoice((PChoice) deref, ch, keyList, selected);
 			} else {
 				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
 				if (acc != ByteAcceptance.Reject) {
-					bufferList.add(e);
+					this.append(keyList, selected, e);
 				}
 			}
 		}
 	}
 
-	private String key(ArrayList<Expression> bufferList) {
-		StringBuilder sb = new StringBuilder();
-		for (Expression e : bufferList) {
-			sb.append(";");
-			sb.append(e.toString());
+	private void append(ArrayList<String> keyList, ArrayList<Expression> selected, Expression e) {
+		String key = this.key(e);
+		// for (String key2 : keyList) {
+		// if (key2.equals(key)) {
+		// System.out.println("e2 == e:" + key2 + ", " + e);
+		// return;
+		// }
+		// }
+		keyList.add(key);
+		selected.add(e);
+	}
+
+	private String joinKeys(ArrayList<String> keyList) {
+		if (keyList.size() == 0) {
+			return keyList.get(0);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (String key2 : keyList) {
+				sb.append(";");
+				sb.append(key2);
+			}
+			return sb.toString();
 		}
+	}
+
+	private String key(Expression e) {
+		StringBuilder sb = new StringBuilder();
+		this.appendKey(e, sb);
 		return sb.toString();
+	}
+
+	private void appendKey(Expression e, StringBuilder sb) {
+		// I don't know why it is not working
+		// if (PDispatch.isConsumed(e)) {
+		// sb.append(".");
+		// return;
+		// }
+		if (e instanceof PPair) {
+			if (PDispatch.isConsumed(e.get(0))) {
+				sb.append(". ");
+				e.get(1).strOut(sb);
+				return;
+			}
+		}
+		e.strOut(sb);
 	}
 
 	private Expression mergeExpression(Expression[] seq) {
@@ -126,10 +161,7 @@ public class DispatchPass extends CommonPass {
 		if (e instanceof PPair) {
 			e = Expression.deref(e.get(0));
 		}
-		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny) {
-			return true;
-		}
-		return false;
+		return PDispatch.isConsumed(e);
 	}
 
 	private Expression nextExpression(Expression e) {

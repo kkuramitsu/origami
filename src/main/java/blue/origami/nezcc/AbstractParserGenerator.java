@@ -298,7 +298,16 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		}
 	}
 
+	protected boolean isUnsigned = false;
+
+	protected void setUnsigned(boolean b) {
+		this.isUnsigned = b;
+	}
+
 	protected C emitUnsigned(C expr) {
+		if (this.isUnsigned) {
+			return expr;
+		}
 		return this.emitOp(expr, "&", this.vInt(0xff));
 	}
 

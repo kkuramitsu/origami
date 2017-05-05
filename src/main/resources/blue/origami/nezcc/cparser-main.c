@@ -10,7 +10,7 @@ static int initMemo(struct NezParserContext* px) {
   return 1;
 }
 
-static unsigned long long int longkey(const char *pos, int memoPoint) {
+static unsigned long long int longkey(const unsigned char *pos, int memoPoint) {
   unsigned long long int key = (unsigned long long int)pos;
   return key * MEMOSIZE + memoPoint;
 }
@@ -21,10 +21,10 @@ static struct MemoEntry* getMemo(struct NezParserContext* px, unsigned long long
 
 /* API */
 
-static inline char getbyte(struct NezParserContext* px) {
+static inline unsigned char getbyte(struct NezParserContext* px) {
   return *(px->pos);
 }
-static inline char nextbyte(struct NezParserContext* px) {
+static inline unsigned char nextbyte(struct NezParserContext* px) {
   return *(px->pos++);
 }
 static inline int eof(struct NezParserContext* px) {
@@ -35,7 +35,7 @@ static inline int bitis(const int *bits, size_t n)
 {
   return (bits[n / 32] & (1 << (n % 32))) != 0;
 }
-static int matchBytes(struct NezParserContext *px, const char *text, size_t len) {
+static int matchBytes(struct NezParserContext *px, unsigned const char *text, size_t len) {
     if (px->pos + len > px->inputs + px->length) {
         return 0;
     }
@@ -59,12 +59,12 @@ typedef struct Tree {
 	void                   *value;
 } Tree;
 
-static void *Tree_new(const char *tag, const char *inputs, const char *pos, const char *epos, int nsubs)
+static void *Tree_new(const char *tag, unsigned const char *inputs, unsigned const char *pos, unsigned const char *epos, int nsubs)
 {
     Tree *t = (Tree*)_malloc(sizeof(struct Tree));
     t->key  = tag;
     if(nsubs == 0) {
-		const char *p = pos == NULL ? (void *)inputs : (void *)pos;
+		const unsigned char *p = pos == NULL ? inputs : pos;
 	    t->size = (int)(-(epos-p));
 		t->value = (void*)p;
     }
@@ -152,8 +152,8 @@ static void NezParserContext_free(struct NezParserContext *px)
 
 void *Nez_parse(const char *inputs, TreeFunc fnew, TreeSetFunc fset)
 {
-  struct NezParserContext *px = newNezParserContext(inputs, strlen(inputs), fnew, fset);
-  px->pos = inputs;
+  struct NezParserContext *px = newNezParserContext((const unsigned char*)inputs, strlen(inputs), fnew, fset);
+  px->pos = (const unsigned char*)inputs;
   initMemo(px);
   void *result = NULL;
   if(e0(px)) {

@@ -152,7 +152,7 @@ public class OOption {
 	}
 
 	public void setClass(String path) throws Throwable {
-		Class<?> c = loadClass(OptionalFactory.class, path, "blue.origami.main.tool", "blue.origami.xlocal");
+		Class<?> c = loadClass(OptionalFactory.class, path, "blue.origami.main.tool", "blue.origami.nezcc");
 		OptionalFactory<?> f = (OptionalFactory<?>) c.newInstance();
 		this.classMap.put(f.keyClass(), f);
 	}

@@ -87,16 +87,6 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected void declConst(String typeName, String constName, String literal) {
-		this.writeSection(String.format("%s = %s", constName, literal));
-	}
-
-	@Override
-	protected String emitApply(String func) {
-		return String.format("%s(%s)", func, this.s("px"));
-	}
-
-	@Override
 	protected String emitIf(String expr, String expr2, String expr3) {
 		return String.format("(%s) if (%s) else (%s)", expr2, expr, expr3);
 	}

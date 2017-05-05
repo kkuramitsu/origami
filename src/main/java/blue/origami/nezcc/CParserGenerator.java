@@ -32,12 +32,13 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("const", "static const");
 		this.defineSymbol("function", "static");
 
+		this.setUnsigned(true);
 		//
 		this.defineSymbol("Tmatched", "int");
 		this.defineSymbol("Tpx", "struct NezParserContext*");
-		this.defineSymbol("Tinputs", "const char*");
+		this.defineSymbol("Tinputs", "const unsigned char*");
 		this.defineSymbol("Tlength", "size_t");
-		this.defineSymbol("Tpos", "const char*");
+		this.defineSymbol("Tpos", "const unsigned char*");
 		this.defineSymbol("Ipos", "0");
 		this.defineSymbol("TtreeLog", "struct TreeLog*");
 		this.defineSymbol("Ttree", "void*");
@@ -51,7 +52,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("px.newTree", "px->newFunc");
 		this.defineSymbol("px.setTree", "px->setFunc");
 
-		this.defineSymbol("Tch", "char");
+		this.defineSymbol("Tch", "unsigned char");
 		this.defineSymbol("Tcnt", "int");
 		this.defineSymbol("Tshift", "int");
 		this.defineSymbol("TindexMap", "unsigned char[256]");
@@ -62,7 +63,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("Tlabel", "const char*");
 		this.defineSymbol("Ttag", "const char*");
 		this.defineSymbol("Tvalue", "const char*");
-		this.defineSymbol("value.length", "(value+strlen(value))");
+		this.defineSymbol("value.length", "((const unsigned char*)value+strlen(value))");
 		this.defineSymbol("Tdata", "void*");
 
 		this.defineSymbol("Tm", "struct MemoEntry*");
