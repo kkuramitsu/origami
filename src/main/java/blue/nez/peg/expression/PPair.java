@@ -19,14 +19,11 @@ import blue.nez.peg.ExpressionVisitor;
 public class PPair extends PBinary {
 	public PPair(Expression first, Expression next) {
 		super(first, next);
+		assert (!(first instanceof PPair));
 	}
 
-	public void expand(java.util.List<Expression> l) {
-		if (this.left instanceof PPair) {
-			((PPair) this.left).expand(l);
-		} else {
-			Expression.addSequence(l, this.left);
-		}
+	public void expand(List<Expression> l) {
+		Expression.addSequence(l, this.left);
 		if (this.right instanceof PPair) {
 			((PPair) this.right).expand(l);
 		} else {
@@ -49,12 +46,6 @@ public class PPair extends PBinary {
 		}
 		if (this.right instanceof PEmpty) {
 			return this.left;
-		}
-		if (this.left instanceof PPair) {
-			List<Expression> l = Expression.newList(64);
-			Expression.addSequence(l, this.left);
-			Expression.addSequence(l, this.right);
-			return Expression.newSequence(l);
 		}
 		return this;
 	}

@@ -91,7 +91,7 @@ public class ByteSet implements StringCombinator {
 		int unsignedByte = this.getUnsignedByte();
 		if (unsignedByte != -1) {
 			sb.append("'");
-			ByteSet.formatByte(unsignedByte, "'", "0x%02x", sb);
+			ByteSet.formatByte(unsignedByte, "'", "\\x%02x", sb);
 			sb.append("'");
 		} else {
 			sb.append("[");

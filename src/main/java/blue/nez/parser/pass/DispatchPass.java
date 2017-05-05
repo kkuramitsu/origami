@@ -35,9 +35,9 @@ public class DispatchPass extends CommonPass {
 		HashMap<String, Byte> indexMap = new HashMap<>();
 		ArrayList<Expression[]> uniqueList = new ArrayList<>();
 		byte[] charMap = new byte[256];
-
 		for (int ch = 0; ch < 256; ch++) {
 			selected.clear();
+			keyList.clear();
 			this.selectPredictedChoice(choice, ch, keyList, selected);
 			if (selected.size() == 0) {
 				charMap[ch] = 0;
@@ -79,13 +79,11 @@ public class DispatchPass extends CommonPass {
 	}
 
 	private void append(ArrayList<String> keyList, ArrayList<Expression> selected, Expression e) {
+		Expression first = this.firstExpression2(e);
+		if (PDispatch.isConsumed(e)) {
+			e = Expression.newSequence(first, this.nextExpression2(e));
+		}
 		String key = this.key(e);
-		// for (String key2 : keyList) {
-		// if (key2.equals(key)) {
-		// System.out.println("e2 == e:" + key2 + ", " + e);
-		// return;
-		// }
-		// }
 		keyList.add(key);
 		selected.add(e);
 	}
@@ -111,8 +109,9 @@ public class DispatchPass extends CommonPass {
 
 	private void appendKey(Expression e, StringBuilder sb) {
 		// I don't know why it is not working
-		// if (PDispatch.isConsumed(e)) {
-		// sb.append(".");
+		// if (this.isCharacterConsumed(e)) {
+		// sb.append(". ");
+		// this.nextExpression(e).strOut(sb);
 		// return;
 		// }
 		if (e instanceof PPair) {
@@ -130,24 +129,44 @@ public class DispatchPass extends CommonPass {
 			return seq[0];
 		}
 		List<Expression> l = Expression.newList(seq.length);
-		if (this.isCommonPrefix(seq)) {
+		if (this.isAllComsumedPrefix(seq)) {
 			for (Expression e : seq) {
-				Expression.addChoice(l, this.nextExpression(e));
+				Expression.addChoice(l, this.nextExpression2(e));
 			}
-			Expression choice = Expression.newChoice(l);
-			if (choice instanceof PChoice) {
-				choice = this.visitChoice((PChoice) choice, null);
-			}
-			return Expression.newSequence(Expression.defaultAny, choice);
+			return this.subChoice(l);
 		} else {
+			List<Expression> sub = Expression.newList(seq.length);
 			for (Expression e : seq) {
-				Expression.addChoice(l, e);
+				if (this.isCharacterConsumed(e)) {
+					Expression.addChoice(sub, this.nextExpression2(e));
+				} else {
+					if (sub.size() > 0) {
+						Expression.addChoice(l, this.subChoice(sub));
+						sub.clear();
+					}
+					Expression.addChoice(l, e);
+				}
 			}
-			return Expression.newChoice(l);
+			if (sub.size() > 0) {
+				Expression.addChoice(l, this.subChoice(sub));
+				sub.clear();
+			}
+			Expression e = Expression.newChoice(l);
+			// System.out.println(e);
+			return e;
 		}
 	}
 
-	private boolean isCommonPrefix(Expression[] seq) {
+	private Expression subChoice(List<Expression> l) {
+		Expression choice = Expression.newChoice(l);
+		// System.out.println(choice);
+		if (choice instanceof PChoice) {
+			choice = this.visitChoice((PChoice) choice, null);
+		}
+		return Expression.newSequence(Expression.defaultAny, choice);
+	}
+
+	private boolean isAllComsumedPrefix(Expression[] seq) {
 		for (Expression e : seq) {
 			if (!this.isCharacterConsumed(e)) {
 				return false;
@@ -162,6 +181,27 @@ public class DispatchPass extends CommonPass {
 			e = Expression.deref(e.get(0));
 		}
 		return PDispatch.isConsumed(e);
+	}
+
+	private Expression firstExpression2(Expression e) {
+		e = Expression.deref(e);
+		if (e instanceof PPair) {
+			return this.firstExpression2(Expression.deref(e.get(0)));
+		}
+		return e;
+	}
+
+	private Expression nextExpression2(Expression e) {
+		return this.nextExpression2(e, Expression.defaultEmpty);
+	}
+
+	private Expression nextExpression2(Expression e, Expression next) {
+		e = Expression.deref(e);
+		if (e instanceof PPair) {
+			Expression first = Expression.deref(e.get(0));
+			return this.nextExpression2(first, Expression.newSequence(e.get(1), next));
+		}
+		return next;
 	}
 
 	private Expression nextExpression(Expression e) {

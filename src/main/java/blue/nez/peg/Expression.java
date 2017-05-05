@@ -41,7 +41,6 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -49,6 +48,7 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.StringCombinator;
 
@@ -249,6 +249,12 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	public final static Expression newChoice(List<Expression> l) {
 		int size = l.size();
+		if (size == 1) {
+			return l.get(0);
+		}
+		if (size == 2 && l.get(1) instanceof PEmpty) {
+			return new POption(l.get(0));
+		}
 		boolean allCharacters = true;
 		for (int i = 0; i < size; i++) {
 			Expression e = l.get(i);
@@ -287,7 +293,8 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		return new PChoice(inners);
 	}
 
-	public final static Expression newSequence(Expression first, Expression second) {
+	/* Older version */
+	public final static Expression newSequence0(Expression first, Expression second) {
 		if (first instanceof PFail) {
 			return first;
 		}
@@ -301,6 +308,25 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			return second;
 		}
 		return new PPair(first, second).desugar();
+	}
+
+	public final static Expression newSequence(Expression first, Expression second) {
+		if (first instanceof PPair) {
+			return newSequence(first.get(0), newSequence(first.get(1), second));
+		}
+		if (second instanceof PEmpty) {
+			return first;
+		}
+		if (second instanceof PFail) {
+			return second;
+		}
+		if (first instanceof PFail) {
+			return first;
+		}
+		if (first instanceof PEmpty) {
+			return second;
+		}
+		return new PPair(first, second);
 	}
 
 	public final static Expression append(Expression e1, Expression e2) {

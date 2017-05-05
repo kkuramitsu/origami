@@ -44,7 +44,7 @@ public class PByte extends PTerm {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("'");
-		ByteSet.formatByte(this.byteChar(), "'", "0x%02x", sb);
+		ByteSet.formatByte(this.byteChar(), "'", "\\x%02x", sb);
 		sb.append("'");
 	}
 }
