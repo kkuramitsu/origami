@@ -22,55 +22,52 @@ public class CParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
+		this.useUnsignedByte(true);
 		this.defineSymbol("\t", "  ");
 		this.defineSymbol("null", "NULL");
 		this.defineSymbol("true", "1");
 		this.defineSymbol("false", "0");
 		this.defineSymbol(".", "->");
-		this.defineSymbol("{[", "{");
-		this.defineSymbol("]}", "}");
 		this.defineSymbol("const", "static const");
 		this.defineSymbol("function", "static");
+		this.defineSymbol("switch", "switch");
+		this.defineSymbol("while", "while");
 
-		this.setUnsigned(true);
 		//
-		this.defineSymbol("Tmatched", "int");
-		this.defineSymbol("Tpx", "struct NezParserContext*");
-		this.defineSymbol("Tinputs", "const unsigned char*");
-		this.defineSymbol("Tlength", "size_t");
-		this.defineSymbol("Tpos", "const unsigned char*");
-		this.defineSymbol("Ipos", "0");
-		this.defineSymbol("TtreeLog", "struct TreeLog*");
-		this.defineSymbol("Ttree", "void*");
-		this.defineSymbol("Tstate", "void*");
-		this.defineSymbol("Tmemos", "struct MemoEntry*");
+		this.defineVariable("matched", "int");
+		this.defineVariable("px", "struct NezParserContext*");
+		this.defineVariable("inputs", "const unsigned char*");
+		this.defineVariable("length", "size_t");
+		this.defineVariable("pos", "const unsigned char*");
+		this.defineVariable("treeLog", "struct TreeLog*");
+		this.defineVariable("tree", "void*");
+		this.defineVariable("state", "void*");
+		this.defineVariable("memos", "struct MemoEntry*");
 
-		this.defineSymbol("TnewFunc", "TreeFunc");
-		this.defineSymbol("TsetFunc", "TreeSetFunc");
-		this.defineSymbol("Tf", "ParserFunc");
+		this.defineVariable("newFunc", "TreeFunc");
+		this.defineVariable("setFunc", "TreeSetFunc");
+		this.defineVariable("f", "ParserFunc");
 
 		this.defineSymbol("px.newTree", "px->newFunc");
 		this.defineSymbol("px.setTree", "px->setFunc");
 
-		this.defineSymbol("Tch", "unsigned char");
-		this.defineSymbol("Tcnt", "int");
-		this.defineSymbol("Tshift", "int");
-		this.defineSymbol("TindexMap", "unsigned char[256]");
-		this.defineSymbol("TbyteSet", "int[8]");
+		this.defineVariable("ch", "unsigned char");
+		this.defineVariable("cnt", "int");
+		this.defineVariable("shift", "int");
+		this.defineVariable("indexMap", "unsigned char[256]");
+		this.defineVariable("byteSet", "int[8]");
 
-		this.defineSymbol("Top", "int");
-		this.defineSymbol("Iop", "0");
-		this.defineSymbol("Tlabel", "const char*");
-		this.defineSymbol("Ttag", "const char*");
-		this.defineSymbol("Tvalue", "const char*");
+		this.defineVariable("op", "int");
+		this.defineVariable("label", "const char*");
+		this.defineVariable("tag", "const char*");
+		this.defineVariable("value", "const char*");
 		this.defineSymbol("value.length", "((const unsigned char*)value+strlen(value))");
-		this.defineSymbol("Tdata", "void*");
+		this.defineVariable("data", "void*");
 
-		this.defineSymbol("Tm", "struct MemoEntry*");
-		this.defineSymbol("Tkey", "unsigned long long int");
-		this.defineSymbol("TmemoPoint", "int");
-		this.defineSymbol("Tresult", "int");
-		this.defineSymbol("Iresult", "0");
+		this.defineVariable("m", "struct MemoEntry*");
+		this.defineVariable("key", "unsigned long long int");
+		this.defineVariable("memoPoint", "int");
+		this.defineVariable("result", "int");
 
 		// defined
 		this.defineSymbol("bitis", "bitis");

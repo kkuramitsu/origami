@@ -106,13 +106,13 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	void makeMetaMemoFunc(AbstractParserGenerator<C> pg, String funcName, String suffix) {
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
 			pg.defineFunction(funcName);
 			pg.declFunc(pg.s("Tmatched"), funcName, "px", "memoPoint", "f", () -> {
 				C lookup = pg.emitFunc("lookupMemo" + suffix, pg.V("px"), pg.V("memoPoint"));
 				C block = pg.beginBlock();
-				block = pg.emitStmt(block, pg.emitVarDecl(false, "pos", pg.emitGetter("px.pos")));
+				block = pg.emitVarDecl(block, false, "pos", pg.emitGetter("px.pos"));
 				ArrayList<C> cases = new ArrayList<>();
 				cases.add(pg.emitFail());
 				cases.add(pg.emitSucc());
@@ -153,6 +153,10 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 			int stacks = pg.varStacks(POS, e.get(0));
 			inline = this.emitInlineOption(stacks, e, pg);
 		}
+		if (e instanceof PChoice) {
+			int stacks = pg.varStacks(POS, e);
+			inline = this.emitInlineChoice(stacks, e, pg);
+		}
 		if (e instanceof PAnd) {
 			inline = this.emitInlineAnd(POS, e, pg);
 		}
@@ -165,9 +169,6 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	private boolean isInline(Expression e, AbstractParserGenerator<C> pg) {
 		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny || e instanceof PTree
 				|| e instanceof PPair) {
-			return true;
-		}
-		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
 			return true;
 		}
 		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
@@ -234,12 +235,34 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	@Override
 	public C visitChoice(PChoice e, AbstractParserGenerator<C> pg) {
 		int stacks = pg.varStacks(POS, e);
+		C inline = this.emitInlineChoice(stacks, e, pg);
+		if (inline != null) {
+			return inline;
+		}
 		C first = this.match(e.get(0), pg);
 		for (int i = 1; i < e.size(); i++) {
 			C second = pg.emitAnd(this.emitBacktrack(pg, stacks), this.match(e.get(i), pg));
 			first = pg.emitOr(first, second);
 		}
 		return this.emitVarDecl(pg, stacks, pg.emitReturn(first));
+	}
+
+	private static boolean UseInlineChoice = false;
+
+	C emitInlineChoice(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+		if (UseInlineChoice && pg.useLambda()) {
+			C innerFunc = this.getInnerFunction(e.get(e.size() - 1), pg);
+			if (innerFunc != null) {
+				C second = innerFunc;
+				for (int i = e.size() - 2; i >= 0; i--) {
+					C first = this.getInnerFunction(e.get(i), pg);
+					innerFunc = this.emitChoiceFunc2(pg, stacks, first, second);
+					second = pg.emitParserLambda(innerFunc);
+				}
+				return innerFunc;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -430,7 +453,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 
 	void makeMetaDetreeFunc(AbstractParserGenerator<C> pg, String funcName) {
 		this.makeBacktrackFunc(pg, TREE);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
 			pg.defineFunction(funcName);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
@@ -462,7 +485,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	void makeMetaLinkFunc(AbstractParserGenerator<C> pg, String funcName, Symbol label) {
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
 			pg.defineFunction(funcName);
 			pg.declFunc(pg.T("matched"), funcName, "px", "label", "f", () -> {
@@ -543,7 +566,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	C emitVarDecl(AbstractParserGenerator<C> pg, int stacks, C returnExpr) {
 		C block = pg.beginBlock();
 		for (String n : pg.getStackNames(stacks)) {
-			block = pg.emitStmt(block, pg.emitVarDecl(false, n, pg.emitGetter(n)));
+			block = pg.emitVarDecl(block, false, n, pg.emitGetter(n));
 		}
 		block = pg.emitStmt(block, returnExpr);
 		return pg.endBlock(block);
@@ -555,16 +578,6 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 			block = pg.emitStmt(block, pg.emitAssign(n, pg.emitGetter(n)));
 		}
 		return pg.endBlock(block);
-	}
-
-	String[] joins(String s, String[] a) {
-		if (a.length == 0) {
-			return new String[] { s };
-		}
-		String[] b = new String[a.length + 1];
-		b[0] = s;
-		System.arraycopy(a, 0, b, 1, a.length);
-		return b;
 	}
 
 	C emitBacktrack(AbstractParserGenerator<C> pg, int stacks) {
@@ -580,11 +593,11 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 
 	void makeBacktrackFunc(AbstractParserGenerator<C> pg, int stacks) {
 		String funcName = pg.s("back") + (stacks & ~CNT);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			String[] args = pg.getStackNames(stacks);
-			pg.declFunc(pg.T("matched"), funcName, this.joins("px", args), () -> {
+			pg.declFunc(pg.T("matched"), funcName, pg.joins("px", args), () -> {
 				C block = pg.beginBlock();
 				for (String a : args) {
 					block = pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
@@ -596,10 +609,10 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		}
 	}
 
-	C emitChoice2(AbstractParserGenerator<C> pg, int stacks, C pe, C pe2) {
+	C emitChoiceFunc2(AbstractParserGenerator<C> pg, int stacks, C pe, C pe2) {
 		this.makeBacktrackFunc(pg, stacks);
 		String funcName = pg.s("choice") + (stacks & ~CNT);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", "f2", () -> {
@@ -616,7 +629,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	C emitOptionFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
 		String funcName = pg.s("option") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
@@ -635,7 +648,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	C emitManyFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
 		String funcName = pg.s("many") + stacks;
 		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
@@ -659,7 +672,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 			return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
 		} else {
 			C block = pg.beginBlock();
-			block = pg.emitStmt(block, pg.emitWhileStmt(cond, () -> this.emitUpdate(pg, stacks)));
+			block = pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, stacks));
 			block = pg.emitStmt(block, pg.emitReturn(back));
 			return this.emitVarDecl(pg, stacks, block);
 		}
@@ -668,7 +681,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	protected C emitAndFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
 		String funcName = pg.s("and") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, POS);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
@@ -688,7 +701,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	protected C emitNotFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
 		String funcName = pg.s("not") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefinedSymbol(funcName)) {
+		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {

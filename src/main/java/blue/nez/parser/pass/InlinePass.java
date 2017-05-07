@@ -97,7 +97,7 @@ public class InlinePass extends CommonPass {
 				l.add(p);
 			}
 		}
-		System.out.printf("inlining %d => %d\n", g.size(), l.size());
+		// System.out.printf("inlining %d => %d\n", g.size(), l.size());
 		this.log("inlining %d => %d", g.size(), l.size());
 		g.replaceAll(l);
 		return g;

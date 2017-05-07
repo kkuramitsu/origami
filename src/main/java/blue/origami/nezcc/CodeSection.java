@@ -153,24 +153,37 @@ abstract class CodeSection<C> {
 
 	HashMap<String, String> symbolMap = new HashMap<>();
 
-	protected boolean isDefinedSymbol(String key) {
+	protected boolean isDefined(String key) {
 		return this.symbolMap.containsKey(key);
 	}
 
 	protected void defineSymbol(String key, String symbol) {
-		this.symbolMap.put(key, symbol);
+		if (!this.isDefined(key)) {
+			this.symbolMap.put(key, symbol);
+		}
 	}
 
-	protected String s(String key) {
-		return this.symbolMap.getOrDefault(key, key);
+	protected void defineVariable(String name, String type) {
+		String key = "T" + name;
+		if (!this.isDefined(key)) {
+			this.symbolMap.put(key, type);
+		}
 	}
 
 	protected String T(String varname) {
 		String key = "T" + varname;
-		if (!this.isDefinedSymbol(key)) {
+		if (!this.isDefined(key)) {
 			return null;
 		}
 		return this.s(key);
+	}
+
+	protected String getSymbol(String key) {
+		return this.symbolMap.get(key);
+	}
+
+	protected String s(String key) {
+		return this.symbolMap.getOrDefault(key, key);
 	}
 
 	protected void defineFunction(String funcName) {

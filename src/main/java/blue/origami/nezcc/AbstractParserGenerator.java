@@ -62,19 +62,19 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 
 	protected abstract C emitStmt(C block, C expr);
 
+	protected abstract C emitVarDecl(C block, boolean mutable, String name, C expr);
+
+	protected abstract C emitIfStmt(C block, C expr, boolean elseIf, Block<C> stmt);
+
+	protected abstract C emitWhileStmt(C block, C expr, Block<C> stmt);
+
 	protected abstract C endBlock(C block);
-
-	protected abstract C emitReturn(C expr);
-
-	protected abstract C emitVarDecl(boolean mutable, String name, C expr);
 
 	protected abstract C emitAssign(String name, C expr);
 
 	protected abstract C emitAssign2(C left, C expr);
 
-	protected abstract C emitIfStmt(C expr, boolean elseIf, Block<C> stmt);
-
-	protected abstract C emitWhileStmt(C expr, Block<C> stmt);
+	protected abstract C emitReturn(C expr);
 
 	protected abstract C emitOp(C expr, String op, C expr2);
 
@@ -133,15 +133,15 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 	}
 
 	protected final boolean useLambda() {
-		return this.isDefinedSymbol("lambda");
+		return this.isDefined("lambda");
 	}
 
 	protected final boolean useFuncMap() {
-		return this.isDefinedSymbol("TfuncMap");
+		return this.isDefined("TfuncMap");
 	}
 
 	protected final boolean useMultiBytes() {
-		return this.isDefinedSymbol("matchBytes");
+		return this.isDefined("matchBytes");
 	}
 
 	protected abstract C emitFuncRef(String funcName);
@@ -174,7 +174,7 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 
 	protected final C emitBack(String name, C expr) {
 		String uFunc = "U" + name;
-		if (this.isDefinedSymbol(uFunc)) {
+		if (this.isDefined(uFunc)) {
 			expr = this.emitFunc(this.s(uFunc), this.V("px"), expr);
 		}
 		return this.emitSetter(this.V("px"), name, expr);
@@ -264,6 +264,10 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return this.emitOp(expr, "!=", this.emitNull());
 	}
 
+	protected C IfNull(C v, C v2) {
+		return this.emitIf(this.emitIsNull(v), v2, v);
+	}
+
 	protected C emitNonTerminal(String func) {
 		return this.emitFunc(func, this.V("px"));
 	}
@@ -290,7 +294,7 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 			return this.emitMatchByte(uchar);
 		} else {
 			C nextbyte = this.emitUnsigned(this.emitFunc("nextbyte", this.V("px")));
-			if (this.isDefinedSymbol("bitis")) {
+			if (this.isDefined("bitis")) {
 				return this.emitFunc("bitis", this.vByteSet(bs), nextbyte);
 			} else {
 				return this.emitArrayIndex(this.vByteSet(bs), nextbyte);
@@ -300,7 +304,7 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 
 	protected boolean isUnsigned = false;
 
-	protected void setUnsigned(boolean b) {
+	protected void useUnsignedByte(boolean b) {
 		this.isUnsigned = b;
 	}
 
@@ -325,8 +329,8 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return this.emitOp(this.V("cnt"), ">", this.vInt(0));
 	}
 
-	protected C initCountVar() {
-		return this.emitVarDecl(true, "cnt", this.vInt(0));
+	protected C initCountVar(C block) {
+		return this.emitVarDecl(block, true, "cnt", this.vInt(0));
 	}
 
 	protected C updateCountVar() {
@@ -415,6 +419,35 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return null;
 	}
 
+	protected void declTree() {
+	}
+
+	protected C emitNewToken(C tag, C inputs, C pos, C epos) {
+		return this.emitNull();
+	}
+
+	protected C emitNewTree(C tag, C nsubs) {
+		return this.emitNull();
+	}
+
+	protected C emitSetTree(C parent, C n, C label, C child) {
+		return this.emitNull();
+	}
+
+	/* Utils */
+
+	protected final String[] joins(String s, String[] a) {
+		if (a.length == 0) {
+			return new String[] { s };
+		}
+		String[] b = new String[a.length + 1];
+		b[0] = s;
+		System.arraycopy(a, 0, b, 1, a.length);
+		return b;
+	}
+
+	/* OptionalFactory */
+
 	@Override
 	public final Class<?> keyClass() {
 		return JavaParserGenerator.class;
@@ -449,12 +482,22 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<C> pgv = new ParserGeneratorVisitor<>();
 		this.initSymbols();
-		this.defineSymbol("TprevLog", this.T("treeLog"));
-		this.defineSymbol("TuLog", this.T("treeLog"));
-		this.defineSymbol("TuState", this.T("state"));
-		this.defineSymbol("Tepos", this.T("pos"));
-		this.defineSymbol("Tchild", this.T("tree"));
-		this.defineSymbol("Tf2", this.T("f"));
+		this.defineVariable("prevLog", this.T("treeLog"));
+		this.defineVariable("uLog", this.T("treeLog"));
+		this.defineVariable("uState", this.T("state"));
+		this.defineVariable("epos", this.T("pos"));
+		this.defineVariable("child", this.T("tree"));
+		this.defineVariable("f2", this.T("f"));
+		this.defineSymbol("Iop", "0");
+		this.defineSymbol("Ipos", "0");
+		this.defineSymbol("Iresult", "0");
+
+		this.defineVariable("indexMap", "array");
+		this.defineVariable("byteSet", "array");
+		// this.defineVariable("funcMap", "array");
+
+		this.defineSymbol("{[", "{");
+		this.defineSymbol("]}", "}");
 
 		this.makeTypeDefinition(this, g.getMemoPointSize());
 		this.makeMatchLibs(this);
@@ -474,7 +517,13 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 				this.write(s);
 			}
 		}
+
 		this.writeFooter();
+		if (this.isDefined("Cinputs0")) {
+			this.lib = new SourceSection();
+			this.makeMain(this, g.getMemoPointSize());
+			this.writeLine(this.lib.toString());
+		}
 	}
 
 	protected void log(String line, Object... args) {

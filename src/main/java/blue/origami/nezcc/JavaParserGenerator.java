@@ -25,27 +25,23 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected void initSymbols() {
 		this.defineSymbol("\t", "  ");
-		this.defineSymbol("lambda", "->");
-		this.defineSymbol("{[", "{");
-		this.defineSymbol("]}", "}");
+		this.defineSymbol("lambda", "(px) -> %s");
 		this.defineSymbol("const", "private static final");
 		this.defineSymbol("function", "private static final");
 
-		this.defineSymbol("Tmatched", "boolean");
-		this.defineSymbol("Tpx", "NezParserContext");
-		this.defineSymbol("Tinputs", "byte[]");
-		this.defineSymbol("Tlength", "int");
-		this.defineSymbol("Tpos", "int");
-		this.defineSymbol("Ipos", "0");
-		this.defineSymbol("TtreeLog", "TreeLog");
-		this.defineSymbol("Ttree", "Object");
-		this.defineSymbol("Tstate", "Object");
-		this.defineSymbol("Tmemos", "MemoEntry[]");
+		this.defineVariable("matched", "boolean");
+		this.defineVariable("px", "NezParserContext");
+		this.defineVariable("inputs", "byte[]");
+		this.defineVariable("length", "int");
+		this.defineVariable("pos", "int");
+		this.defineVariable("treeLog", "TreeLog");
+		this.defineVariable("tree", "Object");
+		this.defineVariable("state", "Object");
+		this.defineVariable("memos", "MemoEntry[]");
 
-		this.defineSymbol("TnewFunc", "TreeFunc");
-		this.defineSymbol("Tepos", "int");
-		this.defineSymbol("TsetFunc", "TreeSetFunc");
-		this.defineSymbol("Tf", "ParserFunc");
+		this.defineVariable("newFunc", "TreeFunc");
+		this.defineVariable("setFunc", "TreeSetFunc");
+		this.defineVariable("f", "ParserFunc");
 
 		this.defineSymbol("px.newTree", "px.newFunc.newTree");
 		this.defineSymbol("px.setTree", "px.setFunc.setTree");
@@ -53,26 +49,23 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("MTreeFunc", "newTree");
 		this.defineSymbol("MTreeSetFunc", "setTree");
 
-		this.defineSymbol("Tch", "byte");
-		this.defineSymbol("Tcnt", "int");
-		this.defineSymbol("Tshift", "int");
-		this.defineSymbol("TindexMap", "int[256]");
-		this.defineSymbol("TbyteSet", "boolean[256]");
+		this.defineVariable("ch", "byte");
+		this.defineVariable("cnt", "int");
+		this.defineVariable("shift", "int");
+		this.defineVariable("indexMap", "int[256]");
+		this.defineVariable("byteSet", "boolean[256]");
 
-		this.defineSymbol("Top", "int");
-		this.defineSymbol("Iop", "0");
-		this.defineSymbol("Tlabel", "String");
-		this.defineSymbol("Ttag", "String");
-		this.defineSymbol("Tvalue", "byte[]");
+		this.defineVariable("op", "int");
+		this.defineVariable("label", "String");
+		this.defineVariable("tag", "String");
+		this.defineVariable("value", "byte[]");
 		this.defineSymbol("value.length", "value.length");
-		this.defineSymbol("Tdata", "Object");
-		this.defineSymbol("TprevLog", "TreeLog");
+		this.defineVariable("data", "Object");
 
-		this.defineSymbol("Tm", "MemoEntry");
-		this.defineSymbol("Tkey", "long");
-		this.defineSymbol("TmemoPoint", "int");
-		this.defineSymbol("Tresult", "int");
-		this.defineSymbol("Iresult", "0");
+		this.defineVariable("m", "MemoEntry");
+		this.defineVariable("key", "long");
+		this.defineVariable("memoPoint", "int");
+		this.defineVariable("result", "int");
 
 		this.defineSymbol("UtreeLog", "unuseTreeLog");
 	}
@@ -105,22 +98,10 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		/* Constructor */
 		block = this.emitStmt(block, String.format("%s(%s) {", typeName.replace("<T>", ""), this.emitParams(fields)));
 		this.incIndent();
-		for (String f : fields) {
-			String n = f.replace("?", "");
-			String v = n;
-			if (f.endsWith("?")) {
-				if (this.isDefinedSymbol("I" + n)) {
-					v = this.s("I" + n);
-				} else {
-					v = this.emitNull();
-				}
-			}
-			block = this.emitStmt(block, String.format("%s.%s = %s;", this.s("this"), n, v));
-		}
+		this.emitInits(block, fields);
 		this.decIndent();
 		this.defineSymbol(typeName, "new " + typeName.replace("<T>", "<>"));
 		block = this.emitStmt(block, "}");
-
 		this.decIndent();
 		block = this.emitStmt(block, "}");
 		this.writeSection(this.endBlock(block));
@@ -155,13 +136,6 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected String emitFuncRef(String funcName) {
 		return String.format("%s::%s", this.getFileBaseName(), funcName);
-	}
-
-	@Override
-	protected String emitParserLambda(String match) {
-		String lambda = String.format("(px) %s %s", this.s("lambda"), match);
-		String p = "p" + this.varSuffix();
-		return lambda.replace("px", p);
 	}
 
 	@Override
@@ -213,11 +187,6 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		}
 		sb.append("\")");
 		return this.getConstName(this.T("byteSet"), sb.toString());
-	}
-
-	@Override
-	protected void declProtoType(String ret, String funcName, String[] params) {
-		// TODO Auto-generated method stub
 	}
 
 	// @Override

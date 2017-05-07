@@ -22,9 +22,14 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	}
 
 	@Override
+	protected void declFuncType(String ret, String typeName, String... params) {
+
+	}
+
+	@Override
 	protected void declConst(String typeName, String constName, String literal) {
 		String decl = "";
-		if (this.isDefinedSymbol("const")) {
+		if (this.isDefined("const")) {
 			decl = this.s("const") + " ";
 		}
 		if (typeName == null || this.isDynamicTyping()) {
@@ -90,6 +95,10 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 			} else {
 				sb.append(this.formatParam(t, p));
 			}
+			String v = this.getSymbol("P" + p);
+			if (v != null) {
+				sb.append(v);
+			}
 		}
 		return sb.toString();
 	}
@@ -98,10 +107,19 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 		return String.format("%s %s", type, name);
 	}
 
+	protected String emitInits(String block, String... fields) {
+		for (String f : fields) {
+			String n = f.replace("?", "");
+			String v = this.emitInit(f);
+			block = this.emitLine(block, "%s.%s = %s", this.s("this"), n, v);
+		}
+		return block;
+	}
+
 	protected String emitInit(String f) {
 		if (f.endsWith("?")) {
 			String n = f.replace("?", "");
-			if (this.isDefinedSymbol("I" + n)) {
+			if (this.isDefined("I" + n)) {
 				return this.s("I" + n);
 			} else {
 				return this.emitNull();
@@ -115,9 +133,9 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 			return expr;
 		}
 		if (this.isDebug()) {
-			// return this.Indent("return B(\"%s\", px) && E(\"%s\", px, %s);",
-			// this.getCurrentFuncName(),
-			// this.getCurrentFuncName(), pe);
+			String funcName = this.vString(this.getCurrentFuncName());
+			expr = this.emitAnd(this.emitFunc("B", funcName, this.V("px")),
+					this.emitFunc("E", funcName, this.V("px"), expr));
 		}
 		return this.Indent(this.emitReturn(expr));
 	}
@@ -150,12 +168,14 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	}
 
 	@Override
-	protected String emitVarDecl(boolean mutable, String name, String expr) {
+	protected String emitVarDecl(String block, boolean mutable, String name, String expr) {
 		String t = this.T(name);
 		if (t == null) {
-			return String.format("%s = %s%s", this.s(name), expr, this.s(";"));
+			block = this.emitLine(block, "%s = %s%s", this.s(name), expr, this.s(";"));
+		} else {
+			block = this.emitLine(block, "%s %s = %s%s", t, this.s(name), expr, this.s(";"));
 		}
-		return String.format("%s %s = %s%s", t, this.s(name), expr, this.s(";"));
+		return block;
 	}
 
 	@Override
@@ -169,25 +189,23 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	}
 
 	@Override
-	protected String emitIfStmt(String expr, boolean elseIf, Block<String> stmt) {
-		String block = this.beginBlock();
+	protected String emitIfStmt(String block, String expr, boolean elseIf, Block<String> stmt) {
 		block = this.emitLine(block, "%s(%s) %s", elseIf ? this.s("else if") : this.s("if"), expr, this.s("{"));
 		this.incIndent();
 		block = this.emitStmt(block, stmt.block());
 		this.decIndent();
 		block = this.emitStmt(block, this.s("}"));
-		return this.endBlock(block);
+		return block;
 	}
 
 	@Override
-	protected String emitWhileStmt(String expr, Block<String> stmt) {
-		String block = this.beginBlock();
+	protected String emitWhileStmt(String block, String expr, Block<String> stmt) {
 		block = this.emitLine(block, "%s(%s) %s", this.s("while"), expr, this.s("{"));
 		this.incIndent();
 		block = this.emitStmt(block, stmt.block());
 		this.decIndent();
 		block = this.emitStmt(block, this.s("}"));
-		return this.endBlock(block);
+		return block;
 	}
 
 	@Override
@@ -197,6 +215,10 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitCast(String var, String expr) {
+		String conv = this.getSymbol("C" + var);
+		if (conv != null) {
+			return String.format(conv, expr);
+		}
 		String t = this.T(var);
 		if (t == null) {
 			return expr;
@@ -239,6 +261,10 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitFunc(String func, List<String> params) {
+		String fmt = this.getSymbol(func);
+		if (fmt != null && fmt.indexOf("%s") >= 0) {
+			return String.format(fmt, params.toArray(new Object[params.size()]));
+		}
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.s(func));
 		sb.append("(");
@@ -286,7 +312,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitIf(String expr, String expr2, String expr3) {
-		return String.format("(%s) ? (%s) : (%s)", expr, expr2, expr3);
+		return String.format("%s ? %s : %s", expr, expr2, expr3);
 	}
 
 	@Override
@@ -294,7 +320,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 		if (this.useFuncMap()) {
 			String funcMap = this.vFuncMap(cases);
 			return this.emitArrayIndex(funcMap, index) + "(px)";
-		} else {
+		} else if (this.isDefined("switch")) {
 			String block = this.beginBlock();
 			block = this.emitLine(block, "%s(%s) %s", this.s("switch"), index, this.s("{"));
 			this.incIndent();
@@ -304,6 +330,19 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 			block = this.emitLine(block, "default: return %s;", cases.get(0));
 			this.decIndent();
 			block = this.emitStmt(block, this.s("}"));
+			return this.endBlock(block);
+		} else {
+			String block = this.beginBlock();
+			block = this.emitVarDecl(block, false, "result", index);
+			boolean elseIf = false;
+			for (int i = 0; i < cases.size() - 1; i++) {
+				final int n = i;
+				block = this.emitIfStmt(block, this.emitOp(this.V("result"), "==", this.vInt(i)), elseIf, () -> {
+					return this.emitReturn(cases.get(n));
+				});
+				elseIf = true;
+			}
+			block = this.emitStmt(block, this.emitReturn(cases.get(cases.size() - 1)));
 			return this.endBlock(block);
 		}
 	}
@@ -321,12 +360,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 			} else if (code.equals(this.s("true"))) {
 				sb.append(this.funcSucc(this));
 			} else {
-				// if(code.endsWith("(px)") && code.indexOf(" ") == -1) {
-				//
-				// }
-				// else {
 				sb.append(this.emitParserLambda(code));
-				// }
 			}
 			c++;
 		}
@@ -407,7 +441,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	protected String vByteSet(ByteSet bs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.s("{["));
-		if (this.isDefinedSymbol("bitis")) {
+		if (this.isDefined("bitis")) {
 			for (int i = 0; i < 8; i++) {
 				if (i > 0) {
 					sb.append(this.s(","));
@@ -434,7 +468,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitParserLambda(String match) {
-		String lambda = String.format("(px) %s %s", this.s("lambda"), match);
+		String lambda = String.format(this.s("lambda"), match);
 		String p = "p" + this.varSuffix();
 		return lambda.replace("px", p);
 	}

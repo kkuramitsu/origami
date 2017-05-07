@@ -151,7 +151,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	protected String emitInit(String f) {
 		if (f.endsWith("?")) {
 			String n = f.replace("?", "");
-			if (this.isDefinedSymbol("I" + n)) {
+			if (this.isDefined("I" + n)) {
 				return this.s("I" + n);
 			} else {
 				return this.emitNull();
@@ -185,9 +185,10 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitVarDecl(boolean mutable, String name, String expr) {
+	protected String emitVarDecl(String block, boolean mutable, String name, String expr) {
 		// String t = this.T(name);
-		return String.format("let %s = %s in", this.s(name), expr);
+		this.emitLine(block, "let %s = %s in", this.s(name), expr);
+		return block;
 	}
 
 	@Override
@@ -201,25 +202,23 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitIfStmt(String expr, boolean elseIf, Block<String> stmt) {
-		String block = this.beginBlock();
+	protected String emitIfStmt(String block, String expr, boolean elseIf, Block<String> stmt) {
 		block = this.emitStmt(block, String.format("%s(%s) %s", this.s("if"), expr, this.s("{")));
 		this.incIndent();
 		block = this.emitStmt(block, stmt.block());
 		this.decIndent();
 		block = this.emitStmt(block, this.s("}"));
-		return this.endBlock(block);
+		return block;
 	}
 
 	@Override
-	protected String emitWhileStmt(String expr, Block<String> stmt) {
-		String block = this.beginBlock();
+	protected String emitWhileStmt(String block, String expr, Block<String> stmt) {
 		block = this.emitStmt(block, String.format("%s(%s) %s", this.s("while"), expr, this.s("{")));
 		this.incIndent();
 		block = this.emitStmt(block, stmt.block());
 		this.decIndent();
 		block = this.emitStmt(block, this.s("}"));
-		return this.endBlock(block);
+		return block;
 	}
 
 	@Override
@@ -395,7 +394,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	protected String vByteSet(ByteSet bs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.s("{["));
-		if (this.isDefinedSymbol("bitis")) {
+		if (this.isDefined("bitis")) {
 			for (int i = 0; i < 8; i++) {
 				if (i > 0) {
 					sb.append(this.s(","));
