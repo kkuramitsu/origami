@@ -28,6 +28,8 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("lambda", "(px) -> %s");
 		this.defineSymbol("const", "private static final");
 		this.defineSymbol("function", "private static final");
+		this.defineSymbol("while", "while");
+		this.defineSymbol("switch", "switch");
 
 		this.defineVariable("matched", "boolean");
 		this.defineVariable("px", "NezParserContext");

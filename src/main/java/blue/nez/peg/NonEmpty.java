@@ -191,7 +191,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitReplace(PValue e, Void a) {
+		public NonEmpty visitValue(PValue e, Void a) {
 			return NonEmpty.False;
 		}
 

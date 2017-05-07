@@ -178,7 +178,7 @@ public enum Stateful {
 		}
 
 		@Override
-		public Stateful visitReplace(PValue e, Void a) {
+		public Stateful visitValue(PValue e, Void a) {
 			return Stateful.False;
 		}
 

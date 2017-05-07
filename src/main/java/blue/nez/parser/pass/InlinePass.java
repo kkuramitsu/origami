@@ -247,7 +247,7 @@ public class InlinePass extends CommonPass {
 		}
 
 		@Override
-		public Integer visitReplace(PValue e, Integer calls) {
+		public Integer visitValue(PValue e, Integer calls) {
 			return calls + 1;
 		}
 

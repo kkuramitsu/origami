@@ -471,7 +471,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PegAsmInst visitReplace(PValue p, PegAsmInst next) {
+		public PegAsmInst visitValue(PValue p, PegAsmInst next) {
 			if (this.TreeConstruction) {
 				return new ASMTmut(p.value, next);
 			}

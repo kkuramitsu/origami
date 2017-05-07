@@ -195,7 +195,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitReplace(PValue e, Void memo) {
+		public Typestate visitValue(PValue e, Void memo) {
 			return Typestate.TreeMutation;
 		}
 

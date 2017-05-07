@@ -566,7 +566,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		}
 
 		@Override
-		public Expression visitReplace(PValue e, A a) {
+		public Expression visitValue(PValue e, A a) {
 			if (this.enableFullDuplication) {
 				return new PValue(e.value);
 			}
@@ -757,7 +757,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		}
 
 		@Override
-		public Expression visitReplace(PValue e, A a) {
+		public Expression visitValue(PValue e, A a) {
 			return e;
 		}
 

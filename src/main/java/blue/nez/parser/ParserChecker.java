@@ -335,7 +335,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitReplace(PValue e, Production a) {
+	public Boolean visitValue(PValue e, Production a) {
 		return true;
 	}
 

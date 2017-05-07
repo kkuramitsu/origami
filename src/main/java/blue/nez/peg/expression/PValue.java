@@ -19,7 +19,7 @@ public class PValue extends PTerm {
 
 	@Override
 	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
-		return v.visitReplace(this, a);
+		return v.visitValue(this, a);
 	}
 
 	@Override

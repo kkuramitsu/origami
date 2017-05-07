@@ -81,7 +81,7 @@ public abstract class ExpressionVisitor<V, A> {
 
 	public abstract V visitTag(PTag e, A a);
 
-	public abstract V visitReplace(PValue e, A a);
+	public abstract V visitValue(PValue e, A a);
 
 	public abstract V visitSymbolScope(PSymbolScope e, A a);
 

@@ -181,7 +181,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitReplace(PValue p, Void a) {
+	public Expression visitValue(PValue p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
 			this.options.reportWarning(this.src(p), "removed %s", p);
 			return Expression.defaultEmpty;

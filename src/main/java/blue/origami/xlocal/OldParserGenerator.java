@@ -780,7 +780,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitReplace(PValue e, Object a) {
+		public Object visitValue(PValue e, Object a) {
 			OldParserGenerator.this.DeclText(OStringUtils.utf8(e.value));
 			return null;
 		}
@@ -1620,7 +1620,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitReplace(PValue e, Object a) {
+		public Object visitValue(PValue e, Object a) {
 			OldParserGenerator.this
 					.Statement(OldParserGenerator.this._Func("valueTree", OldParserGenerator.this._text(e.value)));
 			return null;

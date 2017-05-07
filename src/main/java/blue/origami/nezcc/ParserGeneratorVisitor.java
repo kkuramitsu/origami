@@ -502,7 +502,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitReplace(PValue e, AbstractParserGenerator<C> pg) {
+	public C visitValue(PValue e, AbstractParserGenerator<C> pg) {
 		return pg.valueTree(e.value);
 	}
 

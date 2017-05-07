@@ -216,7 +216,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitReplace(PValue e, Integer ch) {
+		public ByteAcceptance visitValue(PValue e, Integer ch) {
 			return Unconsumed;
 		}
 

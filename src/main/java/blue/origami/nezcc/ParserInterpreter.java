@@ -234,7 +234,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 	}
 
 	@Override
-	public Boolean visitReplace(PValue e, ParserContext<T> px) {
+	public Boolean visitValue(PValue e, ParserContext<T> px) {
 		px.valueTree(e.value);
 		return true;
 	}
