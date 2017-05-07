@@ -317,7 +317,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 
 	@Override
 	protected String emitDispatch(String index, List<String> cases) {
-		if (this.useFuncMap()) {
+		if (this.useFuncMap() && this.isNotIncludeMemo(cases)) {
 			String funcMap = this.vFuncMap(cases);
 			return this.emitArrayIndex(funcMap, index) + "(px)";
 		} else if (this.isDefined("switch")) {
@@ -335,16 +335,24 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 			String block = this.beginBlock();
 			block = this.emitVarDecl(block, false, "result", index);
 			boolean elseIf = false;
-			for (int i = 0; i < cases.size() - 1; i++) {
+			for (int i = cases.size() - 1; i > 0; i--) {
 				final int n = i;
 				block = this.emitIfStmt(block, this.emitOp(this.V("result"), "==", this.vInt(i)), elseIf, () -> {
 					return this.emitReturn(cases.get(n));
 				});
 				elseIf = true;
 			}
-			block = this.emitStmt(block, this.emitReturn(cases.get(cases.size() - 1)));
+			block = this.emitStmt(block, this.emitReturn(cases.get(0)));
 			return this.endBlock(block);
 		}
+	}
+
+	private boolean isNotIncludeMemo(List<String> cases) {
+		if (cases.size() == 3) {
+			String expr = cases.get(2);
+			return expr.indexOf("memoPoint") == -1;
+		}
+		return true;
 	}
 
 	protected String vFuncMap(List<String> cases) {

@@ -44,7 +44,7 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("px.newTree", "px.newFunc");
 		this.defineSymbol("px.setTree", "px.setFunc");
 
-		// this.defineVariable("funcMap", "array");
+		this.defineVariable("funcMap", "array");
 		this.defineSymbol("PnewFunc", "=None");
 		this.defineSymbol("PsetFunc", "=None");
 		this.defineSymbol("Cinputs0", "(%s + '\\0').encode('utf-8')");

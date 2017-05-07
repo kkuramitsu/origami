@@ -174,9 +174,9 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
 			return true;
 		}
-		if (pg.useFuncMap() && e instanceof PDispatch) {
-			return true;
-		}
+		// if (pg.useFuncMap() && e instanceof PDispatch) {
+		// return true;
+		// }
 		return false;
 	}
 
