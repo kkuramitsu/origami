@@ -507,6 +507,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 
 	@Override
 	public C visitSymbolScope(PSymbolScope e, AbstractParserGenerator<C> pg) {
+		this.makeBacktrackFunc(pg, STATE);
 		C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, STATE));
 		if (e.label != null) {
 			main = pg.emitAnd(pg.callAction("reset", e.label, null), main);
@@ -527,9 +528,9 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	@Override
 	public C visitSymbolPredicate(PSymbolPredicate e, AbstractParserGenerator<C> pg) {
 		if (e.isEmpty()) {
-			return pg.callAction(e.pred.toString(), e.label, e.thunk);
+			return pg.callAction(e.getFunctionName(), e.label, e.thunk);
 		} else {
-			C main = pg.emitAnd(this.match(e.get(0), pg), pg.callActionPOS(e.pred.toString(), e.label, e.thunk));
+			C main = pg.emitAnd(this.match(e.get(0), pg), pg.callActionPOS(e.getFunctionName(), e.label, e.thunk));
 			return this.emitVarDecl(pg, POS, pg.emitReturn(main));
 		}
 	}

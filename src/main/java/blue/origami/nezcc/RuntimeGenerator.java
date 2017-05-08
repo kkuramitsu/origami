@@ -514,10 +514,10 @@ public abstract class RuntimeGenerator<C> extends CodeSection<C> {
 			this.makeUseStateFunc(pg);
 			this.makeUnuseStateFunc(pg);
 		}
-		this.defFunc(pg, this.T("matched"), "memcmp", "inputs", "value", "length", () -> {
-			return (pg.emitSucc());
-		});
-
+		// this.defFunc(pg, this.T("matched"), "memcmp", "inputs", "value",
+		// "length", () -> {
+		// return (pg.emitSucc());
+		// });
 		this.defFunc(pg, this.T("state"), "createState", "tag", "cnt", "value", "prevState", () -> {
 			C block = pg.beginBlock();
 			C newFunc = pg.isDefined("Ustate") ? pg.emitFunc("useState", pg.V("px"))
@@ -538,11 +538,11 @@ public abstract class RuntimeGenerator<C> extends CodeSection<C> {
 			this.defFunc(pg, this.T("matched"), "symbol1", "px", "state", "tag", "pos", () -> {
 				C block = pg.beginBlock();
 				block = pg.emitVarDecl(block, false, "value", pg.emitFunc("extract", pg.V("px"), pg.V("pos")));
-				block = pg.emitVarDecl(block, false, "length", pg.emitOp(pg.V("pos"), "-", pg.emitGetter("px.pos")));
+				block = pg.emitVarDecl(block, false, "length", pg.emitOp(pg.emitGetter("px.pos"), "-", pg.V("pos")));
 				block = pg.emitStmt(block,
 						pg.emitSetter("px.state", //
 								pg.emitFunc("createState", pg.V("tag"), pg.V("length"), pg.V("value"),
-										pg.emitGetter("state.prevState"))));
+										pg.emitGetter("px.state"))));
 				block = pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return pg.endBlock(block);
 			});
@@ -570,7 +570,7 @@ public abstract class RuntimeGenerator<C> extends CodeSection<C> {
 				this.defFunc(pg, this.T("matched"), "exist1", "px", "state", "tag", "pos", () -> {
 					C cond0 = pg.emitEqTag(pg.emitGetter("state.tag"), pg.V("tag"));
 					C then0 = pg.emitSucc();
-					C else0 = pg.emitFunc("exists", pg.V("px"), pg.emitGetter("state.prevState"), pg.V("tag"),
+					C else0 = pg.emitFunc("exist1", pg.V("px"), pg.emitGetter("state.prevState"), pg.V("tag"),
 							pg.V("pos"));
 					return pg.emitIf(pg.emitIsNull(pg.V("state")), pg.emitFail(), pg.emitIf(cond0, then0, else0));
 				});
@@ -595,8 +595,7 @@ public abstract class RuntimeGenerator<C> extends CodeSection<C> {
 				C cond0 = pg.emitEqTag(pg.emitGetter("state.tag"), pg.V("tag"));
 				C then0 = pg.emitFunc("matchBytes", pg.V("px"), pg.emitGetter("state.value"),
 						pg.emitGetter("state.cnt"));
-				then0 = pg.emitAnd(then0, pg.emitMove(pg.emitGetter("state.cnt")));
-				C else0 = pg.emitFunc("exists", pg.V("px"), pg.emitGetter("state.prevState"), pg.V("tag"), pg.V("pos"));
+				C else0 = pg.emitFunc("match1", pg.V("px"), pg.emitGetter("state.prevState"), pg.V("tag"), pg.V("pos"));
 				return pg.emitIf(pg.emitIsNull(pg.V("state")), pg.emitFail(), pg.emitIf(cond0, then0, else0));
 			});
 			return "match1";

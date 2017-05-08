@@ -565,6 +565,9 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		this.makeMatchLibs(this);
 		this.makeTreeLibs(this);
 		this.makeMemoLibs(this, g.getMemoPointSize(), 64);
+		// if (this.isStateful()) {
+		this.makeStateLibs(this);
+		// }
 		pgv.start(g, this);
 		ArrayList<String> funcList = this.sortFuncList("start");
 		for (String funcName : this.crossRefNames) {

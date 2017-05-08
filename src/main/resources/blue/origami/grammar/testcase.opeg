@@ -1,0 +1,62 @@
+/**
+ * Testing OPEG Parsing Expression 
+ * Author: Kimio Kuramitsu
+ */
+
+Start = { 
+	$(TestCase)* 
+} !.
+
+TestCase = 
+	'.'         Any       /* .a */
+	/ 'a'       Char      /* aa */
+	/ '['       Class ']' /* [1] */
+	/           Seq       /* あ */
+	/ '+'       Many      /* +123 */
+	/ '?'       Option    /* ?-12 */
+	/ '&'       And       /* &A */
+	/ '!'       Not       /* !a */
+    / '{'       Empty '}' /* {} */
+	/ 'on '     On        /* on A */
+	/ 'off '    Off       /* off a */
+	/ 'exists ' Exist     /* exists 1 */
+	/ 'match '  Match     /* match 1x1 */
+	
+Any =    { . #Any }
+Char =   { 'a' #Char }
+Class =  { DIGIT #Class }
+Seq =    { 'あ' #Seq }
+Many =   { NUM #Many }
+Option = { SIGNED #Option }
+And =    { &UPPER . #And }
+Not =    { !UPPER . #Not }
+Empty =  { `0` #Empty }
+On  =    { <on upper ALPHA> #On }
+Off  =   { <on !upper ALPHA> #Off }
+Exist =  { <block <symbol DIGIT> <exists DIGIT> > !<exists DIGIT> #Exists }
+Match  = { <block <symbol DIGIT> . <match DIGIT> > #Match }
+
+CASE  = !''
+DIGIT = [0-9]
+NUM = DIGIT+
+SIGNED = '-'? NUM
+
+UPPER = [A-Z]
+LOWER = [a-z]
+ALPHA = <if upper> UPPER / <if !upper> LOWER
+
+example TestCase .a
+example TestCase aa
+example TestCase [1]
+example TestCase あ
+example TestCase +123
+example TestCase ?-12
+example TestCase '''
+&A
+'''
+example TestCase !a
+example TestCase {}
+example TestCase on A
+example TestCase off a
+example TestCase exists 1
+example TestCase match 1x1

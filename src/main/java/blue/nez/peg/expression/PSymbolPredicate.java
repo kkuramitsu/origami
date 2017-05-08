@@ -26,21 +26,29 @@ public class PSymbolPredicate extends PUnary {
 		return v.visitSymbolPredicate(this, a);
 	}
 
+	public String getFunctionName() {
+		return this.pred.toString().replace("&", "");
+	}
+
 	@Override
 	public boolean isEmpty() {
-		return this.get(0) instanceof PEmpty;
+		String s = this.pred.toString();
+		if (s.startsWith("&")) {
+			return false;
+		}
+		return true;
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("<");
-		sb.append(this.pred);
+		sb.append(this.getFunctionName());
 		sb.append(" ");
 		sb.append(this.label);
-		if (!this.isEmpty()) {
-			sb.append(" ");
-			this.get(0).strOut(sb);
-		}
+		// if (!this.isEmpty()) {
+		// sb.append(" ");
+		// this.get(0).strOut(sb);
+		// }
 		if (this.thunk != null) {
 			sb.append(" ");
 			sb.append(this.thunk);

@@ -16,6 +16,7 @@
 
 package blue.nez.parser.pass;
 
+import blue.nez.parser.ParserGrammar;
 import blue.nez.peg.Expression;
 import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
@@ -31,8 +32,12 @@ public class NotCharPass extends CommonPass {
 
 	@Override
 	protected void prepare(Grammar g) {
-		for (Production p : g.getAllProductions()) {
-			this.checkBinaryExpression(p.getExpression());
+		if (g instanceof ParserGrammar) {
+			this.BinaryGrammar = ((ParserGrammar) g).isBinary();
+		} else {
+			for (Production p : g.getAllProductions()) {
+				this.checkBinaryExpression(p.getExpression());
+			}
 		}
 	}
 
@@ -60,7 +65,7 @@ public class NotCharPass extends CommonPass {
 	public Expression visitPair(PPair e, Void a) {
 		Expression p = super.visitPair(e, a);
 		if (p instanceof PPair) {
-			Expression nc = this.NotChar(p.get(0));
+			Expression nc = this.getNotChar(p.get(0));
 			Expression c = this.Char(p.get(1));
 			if (nc != null && c != null) {
 				Expression e1 = this.merge(nc, c);
@@ -70,7 +75,7 @@ public class NotCharPass extends CommonPass {
 		return p;
 	}
 
-	private Expression NotChar(Expression e) {
+	private Expression getNotChar(Expression e) {
 		if (e instanceof PNot) {
 			Expression nc = Expression.deref(e.get(0));
 			if (nc instanceof PByte || nc instanceof PByteSet) {
@@ -93,7 +98,7 @@ public class NotCharPass extends CommonPass {
 
 	private Expression Remain(Expression e) {
 		if (e instanceof PPair) {
-			e = e.get(1);
+			return e.get(1);
 		}
 		return Expression.defaultEmpty;
 	}
@@ -124,4 +129,10 @@ public class NotCharPass extends CommonPass {
 		}
 		return bs;
 	}
+
+	// @Override
+	// protected Expression optimized(Expression oldOne, Expression newOne) {
+	// return this.debug(oldOne, newOne);
+	// }
+
 }

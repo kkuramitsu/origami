@@ -51,7 +51,7 @@ static int matchBytes(struct NezParserContext *px, const void *text, size_t len)
 typedef struct Tree {
     const char             *key;
     int                     size;
-	void                   *value;
+  void                   *value;
 } Tree;
 
 static void *Tree_new(const char *tag, unsigned const char *inputs, unsigned const char *pos, unsigned const char *epos, int nsubs)
@@ -59,13 +59,13 @@ static void *Tree_new(const char *tag, unsigned const char *inputs, unsigned con
     Tree *t = (Tree*)_malloc(sizeof(struct Tree));
     t->key  = tag;
     if(nsubs == 0) {
-		const unsigned char *p = pos == NULL ? inputs : pos;
-	    t->size = (int)(-(epos-p));
-		t->value = (void*)p;
+    const unsigned char *p = pos == NULL ? inputs : pos;
+      t->size = (int)(-(epos-p));
+    t->value = (void*)p;
     }
     else {
-    	t->size = nsubs;
-    	t->value = _calloc(nsubs, sizeof(Tree));
+      t->size = nsubs;
+      t->value = _calloc(nsubs, sizeof(Tree));
     }
     return t;
 }
@@ -75,9 +75,9 @@ static void* Tree_set(void *parent, int n, const char *label, void *child)
     Tree *t = (Tree*)parent;
     assert(t->size > 0);
     Tree *sub = (Tree *)t->value;
-	sub[n].key = label;
-	sub[n].value = child;
-	return parent;
+  sub[n].key = label;
+  sub[n].value = child;
+  return parent;
 }
 
 static void Tree_dump(Tree *t, FILE *fp)
@@ -90,7 +90,7 @@ static void Tree_dump(Tree *t, FILE *fp)
     fputs("[#", fp);
     fputs(t->key != NULL ? t->key : "", fp);
     if(t->size <= 0) {
-    	const char *text = t->value;
+      const char *text = t->value;
         fputs(" '", fp);
         for(i = 0; i < -(t->size); i++) {
             fputc(text[i], fp);
@@ -98,7 +98,7 @@ static void Tree_dump(Tree *t, FILE *fp)
         fputs("'", fp);
     }
     else {
-    	Tree *sub = t->value;
+      Tree *sub = t->value;
         for(i = 0; i < t->size; i++) {
             fputs(" ", fp);
             fputs("$", fp);
@@ -115,7 +115,7 @@ static void Tree_free(Tree *t)
     if(t != NULL) {
         if(t->size > 0) {
             size_t i = 0;
-    		Tree *sub = t->value;
+        Tree *sub = t->value;
             for(i = 0; i < t->size; i++) {
                 Tree_free((Tree*)sub[i].value);
             }
@@ -186,23 +186,23 @@ const char *Nez_readInput(const char *path)
 
 int main(int ac, const char **av)
 {
-	int j;
-	size_t len;
-	if(ac == 1) {
-		fprintf(stdout, "Usage: %s file [or input-text]\n", av[0]);
-		return 1;
-	}
-	for(j = 1; j < ac; j++) {
-		const char *inputs = Nez_readInput(av[j]);
-        Tree *data = Nez_parseTree(inputs);
-        fprintf(stdout, "%s: ", av[j]);
-        Tree_dump(data, stdout);
-        fprintf(stdout, "\n");
-        Tree_free(data);
-        if(av[j] != inputs) {
-          _free((void*)inputs);
-        }
-	}
-	return 0;
+  int j;
+  size_t len;
+  if(ac == 1) {
+    fprintf(stdout, "Usage: %s file [or input-text]\n", av[0]);
+    return 1;
+  }
+  for(j = 1; j < ac; j++) {
+    const char *inputs = Nez_readInput(av[j]);
+    Tree *data = Nez_parseTree(inputs);
+    fprintf(stdout, "%s: ", av[j]);
+    Tree_dump(data, stdout);
+    fprintf(stdout, "\n");
+    Tree_free(data);
+    if(av[j] != inputs) {
+      _free((void*)inputs);
+    }
+  }
+  return 0;
 }
 

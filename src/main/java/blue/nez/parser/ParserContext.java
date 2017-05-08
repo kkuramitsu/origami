@@ -410,7 +410,7 @@ public abstract class ParserContext<T> {
 
 		@Override
 		public String toString() {
-			return "is";
+			return "&equals";
 		}
 	}
 
@@ -431,7 +431,7 @@ public abstract class ParserContext<T> {
 
 		@Override
 		public String toString() {
-			return "contains";
+			return "&contains";
 		}
 	}
 
