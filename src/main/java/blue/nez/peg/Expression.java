@@ -367,8 +367,8 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	public final static Expression deref(Expression e) {
 		while (e instanceof PNonTerminal) {
-			PNonTerminal nterm = (PNonTerminal) e;
-			e = nterm.getProduction().getExpression();
+			PNonTerminal next = (PNonTerminal) e;
+			e = next.getProduction().getExpression();
 		}
 		return e;
 	}

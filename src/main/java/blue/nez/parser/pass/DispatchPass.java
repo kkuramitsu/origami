@@ -24,6 +24,7 @@ import blue.nez.peg.ByteAcceptance;
 import blue.nez.peg.Expression;
 import blue.nez.peg.expression.PChoice;
 import blue.nez.peg.expression.PDispatch;
+import blue.nez.peg.expression.PFail;
 import blue.nez.peg.expression.PPair;
 
 public class DispatchPass extends CommonPass {
@@ -54,13 +55,44 @@ public class DispatchPass extends CommonPass {
 				charMap[ch] = index;
 			}
 		}
-		int c = 0;
-		Expression[] inners = new Expression[uniqueList.size()];
+		int oc = 1;
+		selected.clear();
+		indexMap.clear();
 		for (Expression[] seq : uniqueList) {
-			inners[c] = this.mergeExpression(seq);
+			Expression joined = this.mergeExpression(seq);
+			String key = joined.toString();
+			if (!indexMap.containsKey(key)) {
+				indexMap.put(key, (byte) selected.size());
+				selected.add(joined);
+				this.remap(charMap, oc, selected.size());
+			} else {
+				this.remap(charMap, oc, indexMap.get(key));
+			}
+			oc++;
+		}
+		int c = 0;
+		Expression[] inners = new Expression[selected.size()];
+		for (Expression e : selected) {
+			inners[c] = e;
 			c++;
 		}
+		// int c = 0;
+		// Expression[] inners = new Expression[uniqueList.size()];
+		// for (Expression[] seq : uniqueList) {
+		// inners[c] = this.mergeExpression(seq);
+		// c++;
+		// }
 		return this.optimized(choice, new PDispatch(inners, charMap));
+	}
+
+	private void remap(byte[] charMap, int oc, int nc) {
+		if (oc != nc) {
+			for (int i = 0; i < charMap.length; i++) {
+				if (charMap[i] == oc) {
+					charMap[i] = (byte) nc;
+				}
+			}
+		}
 	}
 
 	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<String> keyList,
@@ -72,13 +104,16 @@ public class DispatchPass extends CommonPass {
 			} else {
 				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
 				if (acc != ByteAcceptance.Reject) {
-					this.append(keyList, selected, e);
+					this.append(keyList, selected, deref);
 				}
 			}
 		}
 	}
 
 	private void append(ArrayList<String> keyList, ArrayList<Expression> selected, Expression e) {
+		if (e instanceof PFail) {
+			return;
+		}
 		Expression first = this.firstExpression2(e);
 		if (PDispatch.isConsumed(e)) {
 			e = Expression.newSequence(first, this.nextExpression2(e));
@@ -109,11 +144,11 @@ public class DispatchPass extends CommonPass {
 
 	private void appendKey(Expression e, StringBuilder sb) {
 		// I don't know why it is not working
-		// if (this.isCharacterConsumed(e)) {
-		// sb.append(". ");
-		// this.nextExpression(e).strOut(sb);
-		// return;
-		// }
+		if (PDispatch.isConsumed(e)) {
+			sb.append(". ''");
+			// this.nextExpression(e).strOut(sb);
+			return;
+		}
 		if (e instanceof PPair) {
 			if (PDispatch.isConsumed(e.get(0))) {
 				sb.append(". ");

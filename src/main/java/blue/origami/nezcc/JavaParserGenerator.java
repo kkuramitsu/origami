@@ -158,7 +158,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		} else {
 			sb.append("I(\"");
 			for (int i = 0; i <= last; i++) {
-				if (indexMap[i] > 10) {
+				if (indexMap[i] >= 10) {
 					sb.append((char) ('A' + (indexMap[i] - 10)));
 				} else {
 					sb.append((char) ('0' + indexMap[i]));

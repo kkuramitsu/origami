@@ -84,6 +84,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 				final MemoPoint memo = memoPoint;
 				SourceSection prev = pg.openSection(funcName);
 				pg.setCurrentFuncName(funcName);
+				pg.writeSection(pg.emitAsm("// " + target));
 				pg.declFunc(pg.s("Tmatched"), funcName, "px", () -> {
 					return this.match(target, pg, memo);
 				});
