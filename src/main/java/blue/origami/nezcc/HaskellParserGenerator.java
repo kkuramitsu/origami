@@ -275,11 +275,6 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitApply(String func) {
-		return String.format("(%s %s)", func, this.s("px"));
-	}
-
-	@Override
 	protected String emitNot(String expr) {
 		return String.format("(not %s)", expr);
 	}

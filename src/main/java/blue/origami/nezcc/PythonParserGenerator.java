@@ -58,7 +58,7 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void writeFooter() throws IOException {
-
+		this.showResource("/blue/origami/nezcc/pyparser-man.txt", "$cmd$", this.getFileBaseName());
 	}
 
 	@Override

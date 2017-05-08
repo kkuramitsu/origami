@@ -111,7 +111,7 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 		for (String f : fields) {
 			String n = f.replace("?", "");
 			String v = this.emitInit(f);
-			block = this.emitLine(block, "%s.%s = %s", this.s("this"), n, v);
+			block = this.emitLine(block, "%s.%s = %s%s", this.s("this"), n, v, this.s(";"));
 		}
 		return block;
 	}
@@ -232,6 +232,11 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	}
 
 	@Override
+	protected String emitArrayLength(String a) {
+		return this.emitFunc("len", a);
+	}
+
+	@Override
 	protected String emitArrayIndex(String a, String index) {
 		return String.format("%s[%s]", a, index);
 	}
@@ -281,8 +286,8 @@ public abstract class ParserSourceGenerator extends AbstractParserGenerator<Stri
 	}
 
 	@Override
-	protected String emitApply(String func) {
-		return String.format("%s(%s)", func, this.s("px"));
+	protected String emitApply(String func, List<String> params) {
+		return this.emitFunc(func, params);
 	}
 
 	@Override

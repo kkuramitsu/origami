@@ -23,8 +23,6 @@ import java.util.List;
 import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Symbol;
 import blue.nez.parser.Parser;
-import blue.nez.parser.ParserContext.SymbolAction;
-import blue.nez.parser.ParserContext.SymbolPredicate;
 import blue.nez.parser.ParserGrammar;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
@@ -86,6 +84,8 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 
 	protected abstract C emitNewArray(String type, C index);
 
+	protected abstract C emitArrayLength(C a);
+
 	protected abstract C emitChar(int uchar);
 
 	protected abstract C emitGetter(C self, String name);
@@ -94,7 +94,7 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 
 	protected abstract C emitFunc(String func, List<C> params);
 
-	protected abstract C emitApply(C func);
+	protected abstract C emitApply(C func, List<C> params);
 
 	protected abstract C emitNot(C pe);
 
@@ -149,6 +149,8 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 	protected abstract C emitParserLambda(C match);
 
 	/* utils */
+
+	public abstract C V(String name);
 
 	protected final C emitGetter(String name) {
 		int loc = name.indexOf('.');
@@ -256,6 +258,61 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return this.emitFunc(func, l);
 	}
 
+	protected final C emitApply(C func, C a0) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		return this.emitApply(func, l);
+	}
+
+	protected final C emitApply(C func, C a0, C a1) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		return this.emitApply(func, l);
+	}
+
+	protected final C emitApply(C func, C a0, C a1, C a2) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		return this.emitApply(func, l);
+	}
+
+	protected final C emitApply(C func, C a0, C a1, C a2, C a3) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		return this.emitApply(func, l);
+	}
+
+	protected final C emitApply(C func, C a0, C a1, C a2, C a3, C a4) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		l.add(a4);
+		return this.emitApply(func, l);
+	}
+
+	protected C emitApply(C func, C a0, C a1, C a2, C a3, C a4, C a5) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		l.add(a4);
+		l.add(a5);
+		return this.emitApply(func, l);
+	}
+
+	protected C emitEqTag(C expr, C expr2) {
+		return this.emitOp(expr, "==", expr2);
+	}
+
 	protected C emitIsNull(C expr) {
 		return this.emitOp(expr, "==", this.emitNull());
 	}
@@ -272,34 +329,12 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return this.emitFunc(func, this.V("px"));
 	}
 
-	protected C emitMove(int shift) {
-		return this.emitFunc("move", this.V("px"), this.vInt(shift));
+	protected C emitMove(C shift) {
+		return this.emitFunc("move", this.V("px"), shift);
 	}
 
 	protected C emitMatchAny() {
-		return this.emitNot(this.emitMatchByte(0));
-	}
-
-	protected C emitMatchEOF() {
-		return this.emitFunc("eof", this.V("px"));
-	}
-
-	protected C emitMatchByte(int uchar) {
-		return this.emitFunc("match", this.V("px"), this.emitChar(uchar));
-	}
-
-	protected C emitMatchByteSet(ByteSet bs) {
-		int uchar = bs.getUnsignedByte();
-		if (uchar != -1) {
-			return this.emitMatchByte(uchar);
-		} else {
-			C nextbyte = this.emitUnsigned(this.emitFunc("nextbyte", this.V("px")));
-			if (this.isDefined("bitis")) {
-				return this.emitFunc("bitis", this.vByteSet(bs), nextbyte);
-			} else {
-				return this.emitArrayIndex(this.vByteSet(bs), nextbyte);
-			}
-		}
+		return this.emitAnd(this.emitFunc("neof", this.V("px")), this.emitMove(this.vInt(1)));
 	}
 
 	protected boolean isUnsigned = false;
@@ -313,6 +348,32 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 			return expr;
 		}
 		return this.emitOp(expr, "&", this.vInt(0xff));
+	}
+
+	protected C emitMatchByte(int uchar) {
+		C expr = this.emitFunc("match", this.V("px"), this.emitChar(uchar));
+		if (uchar == 0) {
+			expr = this.emitAnd(expr, this.emitFunc("neof", this.V("px")));
+		}
+		return expr;
+	}
+
+	protected C emitMatchByteSet(ByteSet bs) {
+		int uchar = bs.getUnsignedByte();
+		if (uchar != -1) {
+			return this.emitMatchByte(uchar);
+		} else {
+			C expr = this.emitUnsigned(this.emitFunc("nextbyte", this.V("px")));
+			if (this.isDefined("bitis")) {
+				expr = this.emitFunc("bitis", this.vByteSet(bs), expr);
+			} else {
+				expr = this.emitArrayIndex(this.vByteSet(bs), expr);
+			}
+			if (bs.is(0)) {
+				expr = this.emitAnd(expr, this.emitNot(this.emitFunc("eof", this.V("px"))));
+			}
+			return expr;
+		}
 	}
 
 	protected C emitJumpIndex(byte[] indexMap, boolean isAllConsumed) {
@@ -361,24 +422,15 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 		return this.emitFunc("endTree", this.V("px"), this.vInt(endShift), this.vTag(tag), this.vValue(value));
 	}
 
-	protected C callAction(SymbolAction action, Symbol label, Object thunk) {
-		return this.emitFunc("callAction", this.V("px"), this.emitFuncRef(action.toString()), this.vLabel(label),
-				this.vInt(-1), this.vThunk(thunk));
+	protected C callAction(String action, Symbol label, Object thunk) {
+		String f = this.makeStateFunc(this, action, thunk);
+		return this.emitFunc(f, this.V("px"), this.emitGetter("px.state"), this.vLabel(label),
+				this.emitGetter("px.pos"));
 	}
 
-	protected C callAction(SymbolAction action, Symbol label, int suffix, Object thunk) {
-		return this.emitFunc("callAction", this.V("px"), this.emitFuncRef(action.toString()), this.vLabel(label),
-				this.V("pos"), this.vThunk(thunk));
-	}
-
-	protected C callPredicate(SymbolPredicate pred, Symbol label, Object thunk) {
-		return this.emitFunc("callPredicate", this.V("px"), this.emitFuncRef(pred.toString()), this.vLabel(label),
-				this.vInt(-1), this.vThunk(thunk));
-	}
-
-	protected C callPredicate(SymbolPredicate pred, Symbol label, int suffix, Object thunk) {
-		return this.emitFunc("callPredicate", this.V("px"), this.emitFuncRef(pred.toString()), this.vLabel(label),
-				this.V("pos"), this.vThunk(thunk));
+	protected C callActionPOS(String action, Symbol label, Object thunk) {
+		String f = this.makeStateFunc(this, action, thunk);
+		return this.emitFunc(f, this.V("px"), this.emitGetter("px.state"), this.vLabel(label), this.V("pos"));
 	}
 
 	/* Optimiztion */
@@ -482,12 +534,22 @@ public abstract class AbstractParserGenerator<C> extends RuntimeGenerator<C>
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<C> pgv = new ParserGeneratorVisitor<>();
 		this.initSymbols();
+		this.defineVariable("label", this.T("tag"));
+		this.defineVariable("tag", this.T("label"));
+		this.defineVariable("value", this.T("inputs"));
+		this.defineVariable("pos", this.T("cnt"));
+		this.defineVariable("shift", this.T("cnt"));
+		this.defineVariable("length", this.T("cnt"));
+		this.defineVariable("memoPoint", this.T("cnt"));
+		this.defineVariable("result", this.T("cnt"));
 		this.defineVariable("prevLog", this.T("treeLog"));
+		this.defineVariable("prevState", this.T("state"));
 		this.defineVariable("uLog", this.T("treeLog"));
 		this.defineVariable("uState", this.T("state"));
 		this.defineVariable("epos", this.T("pos"));
 		this.defineVariable("child", this.T("tree"));
 		this.defineVariable("f2", this.T("f"));
+		this.defineSymbol("Icnt", "0");
 		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Ipos", "0");
 		this.defineSymbol("Iresult", "0");

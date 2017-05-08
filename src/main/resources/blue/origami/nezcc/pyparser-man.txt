@@ -1,0 +1,16 @@
+===================
+ QUICK INTEGRATION
+===================
+
+Just call $cmd$.parse() with an input text. You will get
+a key-value tree representation.
+
+   $ python3
+   >>> import $cmd$
+   >>> $cmd$.parse('input-text');
+   ...
+
+Customize TreeFunc and TreeSetFunc in the parse() functions.
+See $site$. 
+
+

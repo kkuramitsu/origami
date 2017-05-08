@@ -27,26 +27,21 @@ static inline unsigned char getbyte(struct NezParserContext* px) {
 static inline unsigned char nextbyte(struct NezParserContext* px) {
   return *(px->pos++);
 }
-static inline int eof(struct NezParserContext* px) {
-  return !(px->pos < (px->inputs + px->length));
+static inline int neof(struct NezParserContext* px) {
+  return px->pos < (px->inputs + px->length);
 }
 
 static inline int bitis(const int *bits, size_t n)
 {
   return (bits[n / 32] & (1 << (n % 32))) != 0;
 }
-static int matchBytes(struct NezParserContext *px, unsigned const char *text, size_t len) {
-    if (px->pos + len > px->inputs + px->length) {
-        return 0;
-    }
-    size_t i;
-    for (i = 0; i < len; i++) {
-        if (text[i] != px->pos[i]) {
-            return 0;
-        }
-    }
+
+static int matchBytes(struct NezParserContext *px, const void *text, size_t len) {
+  if (px->pos + len < px->inputs + px->length && memcmp(px->pos, text, len) == 0) {
     px->pos += len;
     return 1;
+  }
+  return 0;
 }
 
 //----------------------------------------------------------------------------

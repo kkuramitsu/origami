@@ -149,8 +149,6 @@ abstract class CodeSection<C> {
 		return this.u++;
 	}
 
-	public abstract C V(String name);
-
 	HashMap<String, String> symbolMap = new HashMap<>();
 
 	protected boolean isDefined(String key) {

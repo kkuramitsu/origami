@@ -48,9 +48,6 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("setFunc", "TreeSetFunc");
 		this.defineVariable("f", "ParserFunc");
 
-		this.defineSymbol("px.newTree", "px->newFunc");
-		this.defineSymbol("px.setTree", "px->setFunc");
-
 		this.defineVariable("ch", "unsigned char");
 		this.defineVariable("cnt", "int");
 		this.defineVariable("shift", "int");
@@ -62,7 +59,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("tag", "const char*");
 		this.defineVariable("value", "const char*");
 		this.defineSymbol("value.length", "((const unsigned char*)value+strlen(value))");
-		this.defineVariable("data", "void*");
+		this.defineVariable("data", "const void*");
 
 		this.defineVariable("m", "struct MemoEntry*");
 		this.defineVariable("key", "unsigned long long int");
@@ -71,12 +68,14 @@ public class CParserGenerator extends ParserSourceGenerator {
 
 		// defined
 		this.defineSymbol("bitis", "bitis");
-		this.defineSymbol("eof", "eof");
+		this.defineSymbol("neof", "neof");
 		this.defineSymbol("getbyte", "getbyte");
 		this.defineSymbol("nextbyte", "nextbyte");
 		this.defineSymbol("initMemo", "initMemo");
 		this.defineSymbol("longkey", "longkey");
 		this.defineSymbol("getMemo", "getMemo");
+		this.defineSymbol("memcmp", "(memcmp(%s,%s,%s)==0)");
+		this.defineSymbol("matchBytes", "matchBytes");
 
 		// link freelist
 		this.defineSymbol("UtreeLog", "unuseTreeLog");

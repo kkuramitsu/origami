@@ -21,7 +21,7 @@ import java.util.List;
 
 import blue.nez.peg.expression.ByteSet;
 
-public class JavaParserGenerator extends ParserSourceGenerator {
+public class ScalaParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
@@ -32,37 +32,37 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("while", "while");
 		this.defineSymbol("switch", "switch");
 
-		this.defineVariable("matched", "boolean");
+		this.defineVariable("matched", "Bool");
 		this.defineVariable("px", "NezParserContext");
-		this.defineVariable("inputs", "byte[]");
-		this.defineVariable("length", "int");
-		this.defineVariable("pos", "int");
+		this.defineVariable("inputs", "Array[Byte]");
+		this.defineVariable("length", "Int");
+		this.defineVariable("pos", "Int");
 		this.defineVariable("treeLog", "TreeLog");
 		this.defineVariable("tree", "Object");
-		this.defineVariable("state", "State");
-		this.defineVariable("memos", "MemoEntry[]");
+		this.defineVariable("state", "Object");
+		this.defineVariable("memos", "Array[MemoEntry]");
 
 		this.defineVariable("newFunc", "TreeFunc");
 		this.defineVariable("setFunc", "TreeSetFunc");
-		this.defineVariable("f", "ParserFunc");
+		this.defineVariable("f", "NezParserContext -> Bool");
 
-		this.defineVariable("ch", "byte");
-		this.defineVariable("cnt", "int");
-		this.defineVariable("shift", "int");
-		this.defineVariable("indexMap", "int[256]");
-		this.defineVariable("byteSet", "boolean[256]");
+		this.defineVariable("ch", "Byte");
+		this.defineVariable("cnt", "Int");
+		this.defineVariable("shift", "Int");
+		this.defineVariable("indexMap", "Array[Short]");
+		this.defineVariable("byteSet", "Array[Bool]");
 
-		this.defineVariable("op", "int");
-		this.defineVariable("label", "String");
-		this.defineVariable("tag", "String");
-		this.defineVariable("value", "byte[]");
+		this.defineVariable("op", "Int");
+		this.defineVariable("label", "Symbol");
+		this.defineVariable("tag", "Symbol");
+		this.defineVariable("value", "Array[Byte]");
 		this.defineSymbol("len", "%s.length");
 		this.defineVariable("data", "Object");
 
 		this.defineVariable("m", "MemoEntry");
-		this.defineVariable("key", "long");
-		this.defineVariable("memoPoint", "int");
-		this.defineVariable("result", "int");
+		this.defineVariable("key", "Long");
+		this.defineVariable("memoPoint", "Int");
+		this.defineVariable("result", "Int");
 
 		this.defineSymbol("UtreeLog", "unuseTreeLog");
 	}
@@ -95,7 +95,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		/* Constructor */
 		block = this.emitStmt(block, String.format("%s(%s) {", typeName.replace("<T>", ""), this.emitParams(fields)));
 		this.incIndent();
-		block = this.emitInits(block, fields);
+		this.emitInits(block, fields);
 		this.decIndent();
 		this.defineSymbol(typeName, "new " + typeName.replace("<T>", "<>"));
 		block = this.emitStmt(block, "}");
