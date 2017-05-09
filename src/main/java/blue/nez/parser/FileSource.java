@@ -43,15 +43,15 @@ public class FileSource extends ParserSource {
 			this.fileLength = this.file.length();
 
 			this.buffer_offset = 0;
-			lines = new long[((int) this.fileLength / PageSize) + 1];
-			lines[0] = 1;
+			this.lines = new long[((int) this.fileLength / PageSize) + 1];
+			this.lines[0] = 1;
 			if (this.FifoSize > 0) {
-				this.fifoMap = new LinkedHashMap<Long, byte[]>(FifoSize) { // FIFO
+				this.fifoMap = new LinkedHashMap<Long, byte[]>(this.FifoSize) { // FIFO
 					private static final long serialVersionUID = 6725894996600788028L;
 
 					@Override
 					protected boolean removeEldestEntry(Map.Entry<Long, byte[]> eldest) {
-						if (this.size() > FifoSize) {
+						if (this.size() > FileSource.this.FifoSize) {
 							return true;
 						}
 						return false;
@@ -81,7 +81,7 @@ public class FileSource extends ParserSource {
 	public final int byteAt(long pos) {
 		int buffer_pos = (int) (pos - this.buffer_offset);
 		if (!(buffer_pos >= 0 && buffer_pos < PageSize)) {
-			this.buffer_offset = buffer_alignment(pos);
+			this.buffer_offset = this.buffer_alignment(pos);
 			this.readMainBuffer(this.buffer_offset);
 			buffer_pos = (int) (pos - this.buffer_offset);
 		}
@@ -143,8 +143,8 @@ public class FileSource extends ParserSource {
 	public final String subString(long startIndex, long endIndex) {
 		if (endIndex > startIndex) {
 			try {
-				long off_s = buffer_alignment(startIndex);
-				long off_e = buffer_alignment(endIndex);
+				long off_s = this.buffer_alignment(startIndex);
+				long off_e = this.buffer_alignment(endIndex);
 				if (off_s == off_e) {
 					if (this.buffer_offset != off_s) {
 						this.buffer_offset = off_s;
@@ -164,12 +164,14 @@ public class FileSource extends ParserSource {
 		return "";
 	}
 
+	private static final byte[] emptyBytes = new byte[0];
+
 	@Override
 	public final byte[] subBytes(long startIndex, long endIndex) {
-		byte[] b = null;
+		byte[] b = emptyBytes;
 		if (endIndex > startIndex) {
-			long off_s = buffer_alignment(startIndex);
-			long off_e = buffer_alignment(endIndex);
+			long off_s = this.buffer_alignment(startIndex);
+			long off_e = this.buffer_alignment(endIndex);
 			b = new byte[(int) (endIndex - startIndex)];
 			if (off_s == off_e) {
 				if (this.buffer_offset != off_s) {
@@ -189,14 +191,14 @@ public class FileSource extends ParserSource {
 	}
 
 	private long startLineNum(long pos) {
-		int index = lineIndex(pos);
+		int index = this.lineIndex(pos);
 		return this.lines[index];
 	}
 
 	@Override
 	public final long linenum(long pos) {
-		long count = startLineNum(pos);
-		byteAt(pos); // restore buffer at pos
+		long count = this.startLineNum(pos);
+		this.byteAt(pos); // restore buffer at pos
 		int offset = (int) (pos - this.buffer_offset);
 		for (int i = 0; i < offset; i++) {
 			if (this.buffer[i] == '\n') {
@@ -207,7 +209,7 @@ public class FileSource extends ParserSource {
 	}
 
 	private void readMainBuffer(long pos) {
-		int index = lineIndex(pos);
+		int index = this.lineIndex(pos);
 		if (this.lines[index] == 0) {
 			long count = this.lines[index - 1];
 			for (int i = 0; i < this.buffer.length; i++) {

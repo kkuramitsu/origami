@@ -1,0 +1,264 @@
+File                      = _ { ( $(TopLevel) / _ )* #Source } EOT
+_                         = ( S / BLOCKCOMMENT / LINECOMMENT )*
+S                         = [ \n\r\t\u000B\u000C]
+BLOCKCOMMENT              = '/*' ( !'*/' . )* '*/'
+LINECOMMENT               = '//' ( !'\n' . )*
+EOT                       = !.
+Identifier                      = { NAME #Name } _
+NAME                      = !DIGIT !( KEYWORD !W ) W+
+DIGIT                     = [0-9]
+W                         = [a-zA-Z0-9_$]
+TopLevel                  = Declaration
+                          / { #Empty } ";"
+KEYWORD                   = "else"
+                          / "if"
+                          / "return"
+                          / "function"
+                          / "var"
+
+example File '''
+int fib(int n) {
+  if(n < 3) return 1;
+  return fib(n-1)+fib(n-2);
+}
+'''
+
+// Declaration
+Declaration               = FunctionDeclaration
+                          / VariableDeclaration
+
+FunctionDeclaration         = { "function" _ $name(Identifier) _ "(" $list(FunctionParamList) ")" $body(Block) #FunctionDecl }
+FunctionParamList           = { ( $(FunctionParam) ( "," $(FunctionParam) )* )?  #List }
+FunctionParam               = { $name(Identifier) #Param } _
+VariableDeclaration       = { "var" _ $list(VariableList) ";" #Declaration }
+VariableList              = { $(InitDecl) ( "," $(InitDecl) )*  #VarList}
+InitDecl                  = { $name(Identifier) ( "=" $expr(Initializer) )? #VarDecl } _
+Initializer               = AssignmentExpression
+
+
+example Declaration int a = 0;
+example VariableDeclaration ~0cf1e0 int a;
+example VariableDeclaration ~83437a int a,b,c;
+example VariableDeclaration ~ef2263 int a=0;
+example VariableDeclaration ~4bd8c5 int a=0,b=1,c=2;
+
+// Block, Statement
+Block                     = { "{" ( $(Statement) _ / $(Declaration) _ )* "}" #Block }
+Statement                 = Block
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else1' _ $else(Block) ) #If1 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else2' _ $else(Block) ) #If2 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else3' _ $else(Block) ) #If3 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else4' _ $else(Block) ) #If4 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else5' _ $else(Block) ) #If5 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else6' _ $else(Block) ) #If6 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else7' _ $else(Block) ) #If7 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else8' _ $else(Block) ) #If8 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'else9' _ $else(Block) ) #If9 }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'elseA' _ $else(Block) ) #IfA }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'elseB' _ $else(Block) ) #IfB }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( 'elseC' _ $else(Block) ) #IfC }
+                          / { "if" _ "(" $cond(Expression) ")" $then(Block) ( "else" _ $else(Block) )? #If }
+                          / { "return" _ $expr(Expression)? ";" #Return }
+                          / { $expr(Expression) ";" #ExpressionStatement }
+
+example Block ~8909e9 '''
+{
+}
+'''
+example Block ~0038ad '''
+{
+a;
+}
+'''
+example Block ~6bba1c '''
+{
+a=0;
+}
+'''
+example Statement ~1591a2 '''
+if(c){
+}
+'''
+
+// Expression
+Expression                = AssignmentExpression {$ "," $(AssignmentExpression) #Expression }*
+AssignmentExpression      = { $left(UnaryExpression) _AssignmentOperator $right(AssignmentExpression) }
+                          / ConditionalExpression
+_AssignmentOperator       = "=" #Assign
+                          / "*=" #AssignMul
+                          / "/=" #AssignDiv
+                          / "%=" #AssignMod
+                          / "+=" #AssignAdd
+                          / "-=" #AssignSub
+                          / "<<=" #AssignLeftShift
+                          / ">>=" #AssignRightShift
+                          / ">>>=" #AssignLogicalRightShift
+                          / "&=" #AssignBitwiseAnd
+                          / "^=" #AssignBitwiseXOr
+                          / "|=" #AssignBitwiseOr
+ConstantExpression        = ConditionalExpression
+ConditionalExpression     = LogicalOrExpression {$cond "?" $then(Expression) ":" $else(LogicalOrExpression) #Conditional }*
+LogicalOrExpression       = LogicalAndExpression {$left "||" $right(LogicalAndExpression) #Or }*
+LogicalAndExpression      = EqualityExpression {$left "&&" $right(EqualityExpression) #And }*
+EqualityExpression        = RelationalExpression {$left ("==" #Equals / "!=" #NotEquals) $right(RelationalExpression) }*
+RelationalExpression      = UnaryExpression {$left ("<" #LessThan / "<=" #LessThanEquals / ">" #GreaterThan / ">=" #GreaterThanEquals)  $right(UnaryExpression) }*
+UnaryExpression           = PostfixExpression
+                          / { "!" $expr(UnaryExpression) #Not }
+PostfixExpression         = FunctionCall
+                          / PrimaryExpression
+FunctionCall              = PrimaryExpression {$recv _FunctionCall }+
+_FunctionCall             = $({ "(" _ArgumentExpressionList? ")" #List }) #Apply
+_ArgumentExpressionList   = $(AssignmentExpression) ( "," $(AssignmentExpression) )*
+PrimaryExpression         = Constant
+                          / "(" Expression ")"
+                          / FunctionExpression
+                          / Identifier
+
+FunctionExpression        = { "function" _ ($name(Identifier) _ )? "(" $list(FunctionParamList) ")" $body(Block) "::" #FunctionExpr }
+
+//Literal
+Constant                  = IntegerLiteral
+                          / BooleanLiteral
+                          / StringLiteral
+                          / NullLiteral
+
+IntegerLiteral            = { DECIMAL #Integer } _
+DECIMAL                   = [1-9] DIGIT* / '0'
+BooleanLiteral            = "true" { #True } _
+                          / "false" { #False } _
+StringLiteral             = '"' { STRING_CONTENT* #String } '"' _
+STRING_CONTENT            = ![\"\n\\] .
+NullLiteral               = "null" { #Null} _
+
+example Constant 1
+
+"="                       = '=' !'=' _
+"*="                      = '*=' _
+"/="                      = '/=' _
+"%="                      = '%=' _
+"+="                      = '+=' _
+"-="                      = '-=' _
+"<<="                     = '<<=' _
+">>="                     = '>>=' _
+">>>="                    = '>>>=' _
+"&="                      = '&=' _
+"^="                      = '^=' _
+"|="                      = '|=' _
+"."                       = '.' _
+"'"                       = '\'' _
+"("                       = '(' _
+")"                       = ')' _
+"{"                       = '{' _
+"["                       = '[' _
+"]"                       = ']' _
+","                       = ',' _
+"..."                     = '...' _
+"::"                      = '::' _
+":"                       = ':' ![>] _
+"/"                       = '/' !'=' _
+"<"                       = '<' ![=] _
+">"                       = '>' ![=] _
+"<="                      = '<=' ![=] _
+">="                      = '>=' ![=] _
+"=="                      = '==' _
+"!="                      = '!=' _
+"&&"                      = '&&' _
+"||"                      = '||' _
+";"                       = ';' _
+"?"                       = '?' _
+"}"                       = '}' _
+"++"                      = '++' _
+"--"                      = '--' _
+"+"                       = '+' ![+=] _
+"-"                       = '-' !( '-' / [=>] ) _
+"*"                       = '*' _
+"!"                       = '!' !'=' _
+"if"                      = 'if' !W
+"for"                     = 'for' !W
+"else"                    = 'else' !W
+"return"                  = 'return' !W
+"false"                   = 'false' !W
+"true"                    = 'true' !W
+"null"                    = 'null' !W
+"import"                  = 'import' !W
+"function"                = 'function' !W
+"var"                     = 'var' !W
+"if0"                      = 'if0' !W
+"if1"                      = 'if1' !W
+"if2"                      = 'if2' !W
+"if3"                      = 'if3' !W
+"if4"                      = 'if4' !W
+"if5"                      = 'if5' !W
+"if6"                      = 'if6' !W
+"if7"                      = 'if7' !W
+"if8"                      = 'if8' !W
+"if9"                      = 'if9' !W
+"ifA"                      = 'ifA' !W
+"ifB"                      = 'ifB' !W
+"ifC"                      = 'ifC' !W
+"ifD"                      = 'ifD' !W
+"ifE"                      = 'ifE' !W
+
+
+
+
+example Statement '''
+return 1;
+'''
+example Expression ~46f038 '''
+x=y
+'''
+example Expression ~8e03b0 '''
+x+=y
+'''
+example Expression ~4e09fb '''
+c?x:y
+'''
+example Expression ~7ac13c '''
+x<<y
+'''
+example Expression ~9b2696 '''
+x>>y
+'''
+example Expression ~dea67f '''
+x|y
+'''
+example Expression ~7f3ecc '''
+x&y
+'''
+example Expression ~78b953 '''
+x^y
+'''
+example Expression ~f21916 '''
+~x
+'''
+example Expression ~006e0a '''
+x&&y
+'''
+example Expression ~b60455 '''
+x||y
+'''
+example Expression ~51b2b2 '''
+!x
+'''
+example Expression ~b0be29 '''
+x==y
+'''
+example Expression ~f89dae '''
+x!=y
+'''
+example Expression ~ad9f44 '''
+x<y
+'''
+example Expression ~37ebeb '''
+x<=y
+'''
+example Expression ~ae662a '''
+x+y
+'''
+example Expression ~fa8a6a '''
+x*y
+'''
+
+// formatted by $ nez format
+

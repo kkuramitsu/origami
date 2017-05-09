@@ -19,248 +19,259 @@ package blue.nez.peg;
 public class OPegGrammar extends ParserCombinator {
 
 	public Expression pStart() {
-		return Expr("@_", Choice("@Expression", "@Source"), "@EOT");
+		return this.Expr("@_", this.Choice("@Expression", "@Source"), "@EOT");
 	}
 
 	public Expression pSource() {
-		return Expr("@_", Tree(ZeroMore(Link(null, "@Stmt")), "#Source"));
+		return this.Expr("@_", this.Tree(this.ZeroMore(this.Link(null, "@Stmt")), "#Source"));
 	}
 
 	public Expression p_() {
-		return ZeroMore(Choice("@S", "@COMMENT"));
+		return this.ZeroMore(this.Choice("@S", "@COMMENT"));
 	}
 
 	public Expression pS() {
-		return Choice(//
-				Range(' ', ' ', '\t', '\t', '\r', '\r', '\n', '\n'), //
-				S("\u3000")//
+		return this.Choice(//
+				this.Range(' ', ' ', '\t', '\t', '\r', '\r', '\n', '\n'), //
+				this.S("\u3000")//
 		);
 	}
 
 	public Expression pCOMMENT() {
-		return Choice(//
-				Expr(S("/*"), ZeroMore(Not(S("*/")), AnyChar()), S("*/")), //
-				Expr(S("//"), ZeroMore(Not(("@EOL")), AnyChar()), ("@EOL")), //
-				Expr(S("format"), "@S", S("#"), ZeroMore(NotAny('\n')))//
+		return this.Choice(//
+				this.Expr(this.S("/*"), this.ZeroMore(this.Not(this.S("*/")), this.AnyChar()), this.S("*/")), //
+				this.Expr(this.S("//"), this.ZeroMore(this.Not(("@EOL")), this.AnyChar()), ("@EOL")), //
+				this.Expr(this.S("format"), "@S", this.S("#"), this.ZeroMore(this.NotAny('\n')))//
 		);
 	}
 
 	public Expression pEOL() {
-		return Choice("'\n'", Expr("'\r'", "'\n'"), "@EOT");
+		return this.Choice("'\n'", this.Expr("'\r'", "'\n'"), "@EOT");
 	}
 
 	public Expression pEOT() {
-		return Not(AnyChar());
+		return this.Not(this.AnyChar());
 	}
 
 	public Expression pStmt() {
-		return Expr(Choice("@Grammar", "@Import", "@Example", "@Production"), "@_", Option(S(";"), "@_"));
+		return this.Expr(this.Choice("@Grammar", "@Import", "@Example", "@Production"), "@_",
+				this.Option(this.S(";"), "@_"));
 	}
 
 	public Expression pGrammar() {
-		return Tree(S("grammar"), ("@_"), //
-				Link("$name", "@Name"), ("@_"), //
-				S("{"), ("@_"), //
-				Link("$body", "@Source"), //
-				S("}"), //
+		return this.Tree(this.S("grammar"), ("@_"), //
+				this.Link("$name", "@Name"), ("@_"), //
+				this.S("{"), ("@_"), //
+				this.Link("$body", "@Source"), //
+				this.S("}"), //
 				"#Grammar"//
 		);
 	}
 
 	public Expression pKEYWORD() {
-		return Expr(Choice(//
-				S("public"), //
-				S("import"), S("grammar"), S("example"), //
-				S("type") //
-		), Not("@W"));
+		return this.Expr(this.Choice(//
+				this.S("public"), //
+				this.S("import"), this.S("grammar"), this.S("example"), //
+				this.S("type") //
+		), this.Not("@W"));
 	}
 
 	public Expression pID() {
-		return Expr(Not("@KEYWORD"), "@LETTER", ZeroMore("@W"));
+		return this.Expr(this.Not("@KEYWORD"), "@LETTER", this.ZeroMore("@W"));
 	}
 
 	public Expression pId() {
-		return Tree("@ID", "#Name");
+		return this.Tree("@ID", "#Name");
 	}
 
 	public Expression pName() {
-		return Tree("@LETTER", ZeroMore("@W"), "#Name");
+		return this.Tree("@LETTER", this.ZeroMore("@W"), "#Name");
 	}
 
 	public Expression pLETTER() {
-		return Range('A', 'Z', 'a', 'z', '_', '_');
+		return this.Range('A', 'Z', 'a', 'z', '_', '_');
 	}
 
 	public Expression pW() {
-		return Range('0', '9', 'A', 'Z', 'a', 'z', '_', '_');
+		return this.Range('0', '9', 'A', 'Z', 'a', 'z', '_', '_');
 	}
 
 	public Expression pImport() {
-		return Tree(S("import"), ("@_"), Link("$name", "@String"), "#Import");
+		return this.Tree(this.S("import"), ("@_"), this.Link("$name", "@String"), "#Import");
 	}
 
 	public Expression pExample() {
-		return Tree("'example'", "@S", //
-				Link("$name", "@NonTerminal"), //
-				Option("@_", S("&"), Link("$name2", "@NonTerminal")), //
-				Option("@_", S("~"), Link("$hash", "@Hash")), //
-				ZeroMore(Range(' ', ' ', '\t', '\t')), //
-				Choice("@ExampleText1", "@ExampleText2", "@ExampleText3", "@ExampleText4"), "#Example");
+		return this.Tree("'example'", "@S", //
+				this.Link("$name", "@NonTerminal"), //
+				this.Option("@_", this.S("&"), this.Link("$name2", "@NonTerminal")), //
+				this.Option("@_", this.S("~"), this.Link("$hash", "@Hash")), //
+				this.ZeroMore(this.Range(' ', ' ', '\t', '\t')), //
+				this.Choice("@ExampleText1", "@ExampleText2", "@ExampleText3", "@ExampleText4"), "#Example");
 	}
 
 	Expression pHash() {
-		return Tree(OneMore(("@HEX")), ("#String"));
+		return this.Tree(this.OneMore(("@HEX")), ("#String"));
 	}
 
 	public Expression pHEX() {
-		return Range('0', '9', 'A', 'F', 'a', 'f');
+		return this.Range('0', '9', 'A', 'F', 'a', 'f');
 	}
 
 	Expression pExampleText1() {
-		return Expr(S("'''"), ("@EOL"), Link("$text", Tree(ZeroMore(NotAny("\n'''")))), ("@EOL"), S("'''"));
+		return this.Expr(this.S("'''"), ("@EOL"), this.Link("$text", this.Tree(this.ZeroMore(this.NotAny("\n'''")))),
+				("@EOL"), this.S("'''"));
 	}
 
 	Expression pExampleText2() {
-		return Expr(S("```"), ("@EOL"), Link("$text", Tree(ZeroMore(NotAny("\n```")))), ("@EOL"), S("```"));
+		return this.Expr(this.S("```"), ("@EOL"), this.Link("$text", this.Tree(this.ZeroMore(this.NotAny("\n```")))),
+				("@EOL"), this.S("```"));
 	}
 
 	Expression pExampleText3() {
-		return Expr(S("\"\"\""), ("@EOL"), Link("$text", Tree(ZeroMore(NotAny("\n\"\"\"")))), ("@EOL"), S("\"\"\""));
+		return this.Expr(this.S("\"\"\""), ("@EOL"),
+				this.Link("$text", this.Tree(this.ZeroMore(this.NotAny("\n\"\"\"")))), ("@EOL"), this.S("\"\"\""));
 	}
 
 	Expression pExampleText4() {
-		return Expr(Link("$text", Tree(ZeroMore(NotAny(("@EOL"))))), ("@EOL"));
+		return this.Expr(this.Link("$text", this.Tree(this.ZeroMore(this.NotAny(("@EOL"))))), ("@EOL"));
 	}
 
 	/* Production */
 
 	public Expression pProduction() {
-		return Tree(//
-				Option("'public'", Not("@W"), Link("$public", Tree()), "@_"), //
-				Link("$name", Choice(("@Id"), ("@String"))),
+		return this.Tree(//
+				this.Option("'public'", this.Not("@W"), this.Link("$public", this.Tree()), "@_"), //
+				this.Link("$name", this.Choice(("@Id"), ("@String"))),
 				"@_", /* ("@SKIP"), */ //
-				S("="), "@_", //
-				Link("$expr", "@Expression"), //
+				this.S("="), "@_", //
+				this.Option(this.S("/"), "@_"), //
+				this.Link("$expr", "@Expression"), //
 				("#Production") //
 		);
 	}
 
 	public Expression pExpression() {
-		return Expr("@UChoice");
+		return this.Expr("@UChoice");
 	}
 
 	public Expression pUChoice() {
-		return Expr("@Choice", ZeroMoreFold(null, "@_", S("|"), "@_", Link(null, "@Choice"), "#UChoice"));
+		return this.Expr("@Choice",
+				this.ZeroMoreFold(null, "@_", this.S("|"), "@_", this.Link(null, "@Choice"), "#UChoice"));
 	}
 
 	public Expression pChoice() {
-		return Expr("@Sequence", ZeroMoreFold(null, "@_", S("/"), "@_", Link(null, "@Sequence"), "#Choice"));
+		return this.Expr("@Sequence",
+				this.ZeroMoreFold(null, "@_", this.S("/"), "@_", this.Link(null, "@Sequence"), "#Choice"));
 	}
 
 	public Expression pSequence() {
-		return Expr(("@Predicate"), ZeroMoreFold(null, "@_",
-				/* Not("@NonTerminal", "@_", Choice('=', ':')), */ Link(null, "@Predicate"), "#Sequence"));
+		return this.Expr(("@Predicate"), this.ZeroMoreFold(null, "@_",
+				/* Not("@NonTerminal", "@_", Choice('=', ':')), */ this.Link(null, "@Predicate"), "#Sequence"));
 	}
 
 	public Expression pPredicate() {
-		Expression And = Expr(S("&"), ("#And"));
-		Expression Not = Expr(S("!"), ("#Not"));
-		Expression Match = Expr(S("~"), ("#Detree"));
-		return Choice(//
-				Tree(Choice(And, Not, Match), Link("$expr", "@Suffix")), //
+		Expression And = this.Expr(this.S("&"), ("#And"));
+		Expression Not = this.Expr(this.S("!"), ("#Not"));
+		Expression Match = this.Expr(this.S("~"), ("#Detree"));
+		return this.Choice(//
+				this.Tree(this.Choice(And, Not, Match), this.Link("$expr", "@Suffix")), //
 				"@Suffix"//
 		);
 	}
 
 	public Expression pSuffix() {
-		Expression _Zero = Expr(S("*"), Option(Link("$max", "@Integer")), ("#Repetition"));
-		Expression _One = Expr(S("+"), Option(Link("$max", "@Integer")), Link("$min", Tree("`1`")), "#Repetition");
-		Expression _Option = Expr(S("?"), ("#Option"));
-		return Expr("@Term", OptionalFold("expr", Choice(_Zero, _One, _Option)));
+		Expression _Zero = this.Expr(this.S("*"), this.Option(this.Link("$max", "@Integer")), ("#Repetition"));
+		Expression _One = this.Expr(this.S("+"), this.Option(this.Link("$max", "@Integer")),
+				this.Link("$min", this.Tree("`1`")), "#Repetition");
+		Expression _Option = this.Expr(this.S("?"), ("#Option"));
+		return this.Expr("@Term", this.OptionalFold("expr", this.Choice(_Zero, _One, _Option)));
 	}
 
 	public Expression pInteger() {
-		return Tree("@INT", "#Integer");
+		return this.Tree("@INT", "#Integer");
 	}
 
 	public Expression pDIGIT() {
-		return Range('0', '9');
+		return this.Range('0', '9');
 	}
 
 	public Expression pINT() {
-		return Expr("@DIGIT", ZeroMore("@DIGIT"));
+		return this.Expr("@DIGIT", this.ZeroMore("@DIGIT"));
 	}
 
 	public Expression pTerm() {
-		Expression x01 = Range('0', '1', 'x', 'x', 'X', 'X');
-		return Choice(//
+		Expression x01 = this.Range('0', '1', 'x', 'x', 'X', 'X');
+		return this.Choice(//
 				"@Character", // '....'
 				"@Charset", // [....]
-				Expr("@String", Not("@RULE")), // "....."
-				Tree(S("."), ("#AnyChar")), //
-				Tree(x01, x01, x01, x01, x01, OneMore(x01), "#ByteClass"), //
-				Tree(S("0x"), ("@HEX"), ("@HEX"), "#ByteChar"), //
-				Tree(S("U+"), ("@HEX"), ("@HEX"), ("@HEX"), ("@HEX"), "#ByteChar"), //
+				this.Expr("@String", this.Not("@RULE")), // "....."
+				this.Tree(this.S("."), ("#AnyChar")), //
+				this.Tree(x01, x01, x01, x01, x01, this.OneMore(x01), "#ByteClass"), //
+				this.Tree(this.S("0x"), ("@HEX"), ("@HEX"), "#ByteChar"), //
+				this.Tree(this.S("U+"), ("@HEX"), ("@HEX"), ("@HEX"), ("@HEX"), "#ByteChar"), //
 				("@Constructor"), //
 				("@Link"), //
 				("@Replace"), //
 				("@Tagging"), //
-				Expr(S("("), "@_", "@Expression", "@_", S(")")), //
+				this.Expr(this.S("("), "@_", "@Expression", "@_", this.S(")")), //
 				("@Func"), //
-				Expr(("@NonTerminal"), Not("@RULE"))//
+				this.Expr(("@NonTerminal"), this.Not("@RULE"))//
 		);
 	}
 
 	Expression pRULE() {
-		return Expr("@_", Choice('=', ':'));
+		return this.Expr("@_", this.Choice('=', ':'));
 	}
 
 	public Expression pCharacter() {
-		Expression StringContent = ZeroMore(Choice(S("\\'"), S("\\\\"), Expr(Not(S("'")), AnyChar())));
-		return Expr(S("'"), Tree(StringContent, ("#Character")), S("'"));
+		Expression StringContent = this
+				.ZeroMore(this.Choice(this.S("\\'"), this.S("\\\\"), this.Expr(this.Not(this.S("'")), this.AnyChar())));
+		return this.Expr(this.S("'"), this.Tree(StringContent, ("#Character")), this.S("'"));
 	}
 
 	public Expression pString() {
-		Expression StringContent = ZeroMore(Choice(S("\\\""), S("\\\\"), Expr(Not(S("\"")), AnyChar())));
-		return Expr(S("\""), Tree(StringContent, ("#String")), S("\""));
+		Expression StringContent = this.ZeroMore(
+				this.Choice(this.S("\\\""), this.S("\\\\"), this.Expr(this.Not(this.S("\"")), this.AnyChar())));
+		return this.Expr(this.S("\""), this.Tree(StringContent, ("#String")), this.S("\""));
 	}
 
 	public Expression pCharset() {
-		Expression _CharChunk = Expr(//
-				Tree(("@CHAR"), ("#Character")), //
-				OptionalFold("right", S("-"), Link("$left", Tree(("@CHAR"), ("#Character"))), ("#Pair"))//
+		Expression _CharChunk = this.Expr(//
+				this.Tree(("@CHAR"), ("#Character")), //
+				this.OptionalFold("right", this.S("-"), this.Link("$left", this.Tree(("@CHAR"), ("#Character"))),
+						("#Pair"))//
 		);
-		return Expr(//
-				S("["), //
-				Tree(ZeroMore(Link(null, _CharChunk)), ("#Class")), //
-				S("]")//
+		return this.Expr(//
+				this.S("["), //
+				this.Tree(this.ZeroMore(this.Link(null, _CharChunk)), ("#Class")), //
+				this.S("]")//
 		);
 	}
 
 	public Expression pCHAR() {
-		return Choice(//
-				Expr(S("\\u"), ("@HEX"), ("@HEX"), ("@HEX"), ("@HEX")), //
-				Expr(S("\\x"), ("@HEX"), ("@HEX")), S("\\n"), S("\\t"), S("\\\\"), S("\\r"), S("\\v"), S("\\f"),
-				S("\\-"), S("\\]"), //
-				Expr(Not(S("]")), AnyChar())//
+		return this.Choice(//
+				this.Expr(this.S("\\u"), ("@HEX"), ("@HEX"), ("@HEX"), ("@HEX")), //
+				this.Expr(this.S("\\x"), ("@HEX"), ("@HEX")), this.S("\\n"), this.S("\\t"), this.S("\\\\"),
+				this.S("\\r"), this.S("\\v"), this.S("\\f"), this.S("\\-"), this.S("\\]"), //
+				this.Expr(this.Not(this.S("]")), this.AnyChar())//
 		);
 	}
 
 	public Expression pConstructor() {
-		return Tree(//
-				S("{"), //
-				Choice(//
-						Expr(S("$"), Option(Link("$name", "@Name")), ("@S"), ("#FoldTree")), //
-						Expr(S("@"), ("@S"), ("#FoldTree")), //
+		return this.Tree(//
+				this.S("{"), //
+				this.Choice(//
+						this.Expr(this.S("$"), this.Option(this.Link("$name", "@Name")), ("@S"), ("#FoldTree")), //
+						this.Expr(this.S("@"), ("@S"), ("#FoldTree")), //
 						("#Tree")), //
 				"@_", //
-				Option(Link("$expr", "@Expression"), "@_"), //
-				S("}")//
+				this.Option(this.Link("$expr", "@Expression"), "@_"), //
+				this.S("}")//
 		);
 	}
 
 	public Expression pNonTerminal() {
-		return Tree(("@ID"), Option(t('.'), ("@ID")), ("#NonTerminal"));
+		return this.Tree(("@ID"), this.Option(this.t('.'), ("@ID")), ("#NonTerminal"));
 	}
 
 	/**
@@ -268,56 +279,57 @@ public class OPegGrammar extends ParserCombinator {
 	 */
 
 	public Expression pTagName() {
-		Expression W = Range('A', 'Z', 'a', 'z', '0', '9', '_', '_', '$', '$');
-		return Tree(W, ZeroMore(W), ("#Tagging"));
+		Expression W = this.Range('A', 'Z', 'a', 'z', '0', '9', '_', '_', '$', '$');
+		return this.Tree(W, this.ZeroMore(W), ("#Tagging"));
 	}
 
 	public Expression pTagging() {
-		return Expr(Choice(t('#'), t(':')), ("@TagName"));
+		return this.Expr(this.Choice(this.t('#'), this.t(':')), ("@TagName"));
 	}
 
 	public Expression pReplace() {
-		Expression ValueContent = ZeroMore(Choice(S("\\`"), S("\\\\"), Expr(Not(S("`")), AnyChar())));
-		return Expr(S("`"), Tree(ValueContent, ("#Replace")), S("`"));
+		Expression ValueContent = this
+				.ZeroMore(this.Choice(this.S("\\`"), this.S("\\\\"), this.Expr(this.Not(this.S("`")), this.AnyChar())));
+		return this.Expr(this.S("`"), this.Tree(ValueContent, ("#Replace")), this.S("`"));
 	}
 
 	public Expression pLink() {
-		return Expr(t('$'), Tree(Option(Link("$name", "@Name")), "@LinkChoice"));
+		return this.Expr(this.t('$'), this.Tree(this.Option(this.Link("$name", "@Name")), "@LinkChoice"));
 	}
 
 	Expression pLinkChoice() {
-		return Choice("@LinkInner", "@LinkTree");
+		return this.Choice("@LinkInner", "@LinkTree");
 	}
 
 	Expression pLinkInner() {
-		return Expr(S("("), "@_", Link("$expr", "@Expression"), "@_", S(")"), ("#Link"));
+		return this.Expr(this.S("("), "@_", this.Link("$expr", "@Expression"), "@_", this.S(")"), ("#Link"));
 	}
 
 	Expression pLinkTree() {
-		return Expr(S("{"), "@_", Link("$expr", "@Expression"), "@_", S("}"), ("#LinkTree"));
+		return this.Expr(this.S("{"), "@_", this.Link("$expr", "@Expression"), "@_", this.S("}"), ("#LinkTree"));
 	}
 
 	public Expression pFunc() {
-		return Expr(S("<"), //
-				Tree(Choice("@IfFunc", "@OnFunc", //
+		return this.Expr(this.S("<"), //
+				this.Tree(this.Choice("@IfFunc", "@OnFunc", //
 						"@SymbolFunc", "@ExistsFunc", "@MatchFunc", "@IsaFunc", "@IsFunc", //
 						"@BlockFunc", "@LocalFunc", //
 						"@ScanFunc", "@RepeatFunc", //
 						"@UndefinedFunc"//
-				)), "@_", S(">"));
+				)), "@_", this.S(">"));
 	}
 
 	Expression pIfFunc() {
-		return Expr(S("if"), "@_", Link("$name", "@FlagName"), ("#If"));
+		return this.Expr(this.S("if"), "@_", this.Link("$name", "@FlagName"), ("#If"));
 	}
 
 	Expression pOnFunc() {
-		return Expr(Choice(S("on"), S("with")), "@_", Link("$name", "@FlagName"), "@_", Link("$expr", "@Expression"),
-				("#On"));
+		return this.Expr(this.Choice(this.S("on"), this.S("with")), "@_", this.Link("$name", "@FlagName"), "@_",
+				this.Link("$expr", "@Expression"), ("#On"));
 	}
 
 	Expression pFlagName() {
-		return Tree(Option("!"), ("@LETTER"), ZeroMore(("@W")), ("#Name"));
+		return this.Tree(this.Option("!"), ("@LETTER"), this.ZeroMore(("@W")), ("#Name"));
 	}
 
 	// Expression pDefFunc() { // Deprecated
@@ -326,47 +338,50 @@ public class OPegGrammar extends ParserCombinator {
 	// }
 
 	Expression pSymbolFunc() {
-		return Expr(S("symbol"), "@_", Link("$name", "@Id"), ("#Symbol"));
+		return this.Expr(this.S("symbol"), "@_", this.Link("$name", "@Id"), ("#Symbol"));
 	}
 
 	Expression pExistsFunc() {
-		return Expr(S("exists"), "@_", Link("$name", "@Id"), Option("@_", Link("$symbol", "@Character")), ("#Exists"));
+		return this.Expr(this.S("exists"), "@_", this.Link("$name", "@Id"),
+				this.Option("@_", this.Link("$symbol", "@Character")), ("#Exists"));
 	}
 
 	Expression pMatchFunc() {
-		return Expr(S("match"), "@_", Link("$name", "@Id"), ("#Match"));
+		return this.Expr(this.S("match"), "@_", this.Link("$name", "@Id"), ("#Match"));
 	}
 
 	Expression pIsFunc() {
-		return Expr(S("is"), "@_", Link("$name", "@Id"), ("#Is"));
+		return this.Expr(this.S("is"), "@_", this.Link("$name", "@Id"), ("#Is"));
 	}
 
 	Expression pIsaFunc() {
-		return Expr(S("isa"), "@_", Link("$name", "@Id"), ("#Isa"));
+		return this.Expr(this.S("isa"), "@_", this.Link("$name", "@Id"), ("#Isa"));
 	}
 
 	Expression pBlockFunc() {
-		return Expr(S("block"), "@_", Link("$expr", "@Expression"), ("#Block"));
+		return this.Expr(this.S("block"), "@_", this.Link("$expr", "@Expression"), ("#Block"));
 	}
 
 	Expression pLocalFunc() {
-		return Expr(S("local"), "@_", Link("$name", "@Id"), "@_", Link("$expr", "@Expression"), ("#Local"));
+		return this.Expr(this.S("local"), "@_", this.Link("$name", "@Id"), "@_", this.Link("$expr", "@Expression"),
+				("#Local"));
 	}
 
 	Expression pScanFunc() {
-		return Expr(S("scan"), "@_", Option(Link("$mask", "@Mask"), "@_"), Link("$expr", "@Expression"), ("#Scan"));
+		return this.Expr(this.S("scan"), "@_", this.Option(this.Link("$mask", "@Mask"), "@_"),
+				this.Link("$expr", "@Expression"), ("#Scan"));
 	}
 
 	Expression pMask() {
-		return Tree(OneMore(Range('0', '1')), ("#Name"));
+		return this.Tree(this.OneMore(this.Range('0', '1')), ("#Name"));
 	}
 
 	Expression pRepeatFunc() {
-		return Expr(S("repeat"), "@_", Link("$expr", "@Expression"), ("#Repeat"));
+		return this.Expr(this.S("repeat"), "@_", this.Link("$expr", "@Expression"), ("#Repeat"));
 	}
 
 	Expression pUndefinedFunc() {
-		return Expr(OneMore(Not(">"), AnyChar()), ("#Undefined"));
+		return this.Expr(this.OneMore(this.Not(">"), this.AnyChar()), ("#Undefined"));
 	}
 
 	// public Expression pCase() {
