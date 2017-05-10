@@ -5,16 +5,26 @@ import java.util.List;
 
 import blue.nez.ast.Symbol;
 import blue.nez.peg.expression.ByteSet;
+import blue.origami.OrigamiContext;
+import blue.origami.lang.OClassDecl;
+import blue.origami.lang.OEnv;
 import blue.origami.nezcc.AbstractParserGenerator;
 import blue.origami.nezcc.Block;
+import blue.origami.ocode.CodeBuilder;
 import blue.origami.ocode.OCode;
 
-public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> {
+public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> implements CodeBuilder {
+
+	private OrigamiContext env;
+
+	@Override
+	public OEnv env() {
+		return this.env;
+	}
 
 	@Override
 	protected void initSymbols() {
-		// TODO Auto-generated method stub
-
+		this.env = new OrigamiContext();
 	}
 
 	@Override
@@ -55,8 +65,10 @@ public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> {
 
 	@Override
 	protected void declFunc(String ret, String funcName, String[] params, Block<OCode> block) {
-		// TODO Auto-generated method stub
-
+		OClassDecl cdecl = this.env.getClassLoader().currentClassDecl(this.env);
+		OCode body = block.block();
+		// cdecl.addMethod(anno, ret, name, paramNames, paramTypes, exceptions,
+		// body);
 	}
 
 	@Override
@@ -133,7 +145,7 @@ public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> {
 
 	@Override
 	protected OCode emitNull() {
-		// TODO Auto-generated method stub
+		// return new();
 		return null;
 	}
 
@@ -157,20 +169,17 @@ public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> {
 
 	@Override
 	protected OCode emitChar(int uchar) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	protected OCode emitGetter(OCode self, String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return self.newGetterCode(this.env, name);
 	}
 
 	@Override
 	protected OCode emitSetter(OCode self, String name, OCode expr) {
-		// TODO Auto-generated method stub
-		return null;
+		return self.newGetterCode(this.env, name);
 	}
 
 	@Override
@@ -193,26 +202,22 @@ public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> {
 
 	@Override
 	protected OCode emitSucc() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.value(true);
 	}
 
 	@Override
 	protected OCode emitFail() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.value(false);
 	}
 
 	@Override
-	protected OCode emitAnd(OCode pe, OCode pe2) {
-		// TODO Auto-generated method stub
-		return null;
+	protected OCode emitAnd(OCode expr, OCode expr2) {
+		return this.and(expr, expr2);
 	}
 
 	@Override
-	protected OCode emitOr(OCode pe, OCode pe2) {
-		// TODO Auto-generated method stub
-		return null;
+	protected OCode emitOr(OCode expr, OCode expr2) {
+		return this.or(expr, expr2);
 	}
 
 	@Override
