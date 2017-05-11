@@ -85,33 +85,33 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
-		String block = this.beginBlock();
-		block = this.emitStmt(block, String.format("static class %s {", typeName));
+		StringBuilder block = this.beginBlock();
+		this.emitStmt(block, String.format("static class %s {", typeName));
 		this.incIndent();
 		for (String f : fields) {
 			f = f.replace("?", "");
-			block = this.emitStmt(block, String.format("%s %s;", this.T(f), f));
+			this.emitStmt(block, String.format("%s %s;", this.T(f), f));
 		}
 		/* Constructor */
-		block = this.emitStmt(block, String.format("%s(%s) {", typeName.replace("<T>", ""), this.emitParams(fields)));
+		this.emitStmt(block, String.format("%s(%s) {", typeName.replace("<T>", ""), this.emitParams(fields)));
 		this.incIndent();
-		block = this.emitInits(block, fields);
+		this.emitInits(block, fields);
 		this.decIndent();
 		this.defineSymbol(typeName, "new " + typeName.replace("<T>", "<>"));
-		block = this.emitStmt(block, "}");
+		this.emitStmt(block, "}");
 		this.decIndent();
-		block = this.emitStmt(block, "}");
+		this.emitStmt(block, "}");
 		this.writeSection(this.endBlock(block));
 	}
 
 	@Override
 	protected void declFuncType(String ret, String typeName, String... params) {
-		String block = this.beginBlock();
-		block = this.emitStmt(block, String.format("public interface %s {", typeName));
+		StringBuilder block = this.beginBlock();
+		this.emitStmt(block, String.format("public interface %s {", typeName));
 		this.incIndent();
-		block = this.emitStmt(block, String.format("%s apply(%s);", ret, this.emitParams(params)));
+		this.emitStmt(block, String.format("%s apply(%s);", ret, this.emitParams(params)));
 		this.decIndent();
-		block = this.emitStmt(block, "}");
+		this.emitStmt(block, "}");
 		this.writeSection(this.endBlock(block));
 	}
 

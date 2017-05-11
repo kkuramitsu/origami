@@ -55,13 +55,13 @@ import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
 import blue.nez.peg.expression.PValue;
 
-class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGenerator<C>> {
+class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<B, C>> {
 	final static boolean Function = true;
 	final static boolean Inline = false;
 
 	private ArrayList<Expression> waitingList = new ArrayList<>();
 
-	public void start(ParserGrammar g, AbstractParserGenerator<C> pg) {
+	public void start(ParserGrammar g, ParserGenerator<B, C> pg) {
 		Production p = g.getStartProduction();
 		pg.declConst("int", "MEMOSIZE", "" + g.getMemoPointSize());
 		pg.declConst("int", "MEMOS", "" + (g.getMemoPointSize() * 64 + 1));
@@ -95,7 +95,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		pg.log("funcsize: %d", c);
 	}
 
-	public C match(Expression e, AbstractParserGenerator<C> pg, MemoPoint m) {
+	public C match(Expression e, ParserGenerator<B, C> pg, MemoPoint m) {
 		if (m == null) {
 			return this.match(e, pg, false);
 		}
@@ -105,27 +105,27 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id), this.getInnerFunction(e, pg));
 	}
 
-	void makeMetaMemoFunc(AbstractParserGenerator<C> pg, String funcName, String suffix) {
+	void makeMetaMemoFunc(ParserGenerator<B, C> pg, String funcName, String suffix) {
 		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
 			pg.defineFunction(funcName);
 			pg.declFunc(pg.s("Tmatched"), funcName, "px", "memoPoint", "f", () -> {
 				C lookup = pg.emitFunc("lookupMemo" + suffix, pg.V("px"), pg.V("memoPoint"));
-				C block = pg.beginBlock();
-				block = pg.emitVarDecl(block, false, "pos", pg.emitGetter("px.pos"));
+				B block = pg.beginBlock();
+				pg.emitVarDecl(block, false, "pos", pg.emitGetter("px.pos"));
 				ArrayList<C> cases = new ArrayList<>();
 				cases.add(pg.emitFail());
 				cases.add(pg.emitSucc());
 				cases.add(pg.emitFunc("storeMemo", pg.V("px"), pg.V("memoPoint"), pg.V("pos"),
 						pg.emitApply(pg.V("f"), pg.V("px"))));
-				block = pg.emitStmt(block, pg.emitDispatch(lookup, cases));
+				pg.emitStmt(block, pg.emitDispatch(lookup, cases));
 				return pg.endBlock(block);
 			});
 			pg.closeSection(sec);
 		}
 	}
 
-	public C match(Expression e, AbstractParserGenerator<C> px, boolean asFunction) {
+	public C match(Expression e, ParserGenerator<B, C> px, boolean asFunction) {
 		if (asFunction) {
 			String funcName = px.getFuncName(e);
 			this.waitingList.add(e);
@@ -136,7 +136,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		}
 	}
 
-	public C match(Expression e, AbstractParserGenerator<C> pg) {
+	public C match(Expression e, ParserGenerator<B, C> pg) {
 		C inline = null;
 		if (e instanceof PRepetition) {
 			int stacks = pg.varStacks(POS, e.get(0));
@@ -166,7 +166,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return this.match(e, pg, !this.isInline(e, pg));
 	}
 
-	private boolean isInline(Expression e, AbstractParserGenerator<C> pg) {
+	private boolean isInline(Expression e, ParserGenerator<B, C> pg) {
 		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny || e instanceof PTree
 				|| e instanceof PPair) {
 			return true;
@@ -181,7 +181,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitNonTerminal(PNonTerminal e, AbstractParserGenerator<C> pg) {
+	public C visitNonTerminal(PNonTerminal e, ParserGenerator<B, C> pg) {
 		String funcName = pg.getFuncName(e);
 		this.waitingList.add(e);
 		pg.addFunctionDependency(pg.getCurrentFuncName(), funcName);
@@ -189,32 +189,32 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitEmpty(PEmpty e, AbstractParserGenerator<C> pg) {
+	public C visitEmpty(PEmpty e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitFail(PFail e, AbstractParserGenerator<C> pg) {
+	public C visitFail(PFail e, ParserGenerator<B, C> pg) {
 		return pg.emitFail();
 	}
 
 	@Override
-	public C visitByte(PByte e, AbstractParserGenerator<C> pg) {
+	public C visitByte(PByte e, ParserGenerator<B, C> pg) {
 		return pg.emitMatchByte(e.byteChar());
 	}
 
 	@Override
-	public C visitByteSet(PByteSet e, AbstractParserGenerator<C> pg) {
+	public C visitByteSet(PByteSet e, ParserGenerator<B, C> pg) {
 		return pg.emitMatchByteSet(e.byteSet());
 	}
 
 	@Override
-	public C visitAny(PAny e, AbstractParserGenerator<C> pg) {
+	public C visitAny(PAny e, ParserGenerator<B, C> pg) {
 		return pg.emitMatchAny();
 	}
 
 	@Override
-	public C visitPair(PPair e, AbstractParserGenerator<C> pg) {
+	public C visitPair(PPair e, ParserGenerator<B, C> pg) {
 		if (pg.useMultiBytes()) {
 			ArrayList<Integer> l = new ArrayList<>();
 			Expression remain = Expression.extractMultiBytes(e, l);
@@ -233,7 +233,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitChoice(PChoice e, AbstractParserGenerator<C> pg) {
+	public C visitChoice(PChoice e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e);
 		C inline = this.emitInlineChoice(stacks, e, pg);
 		if (inline != null) {
@@ -249,7 +249,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 
 	private static boolean UseInlineChoice = false;
 
-	C emitInlineChoice(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+	C emitInlineChoice(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		if (UseInlineChoice && pg.useLambda()) {
 			C innerFunc = this.getInnerFunction(e.get(e.size() - 1), pg);
 			if (innerFunc != null) {
@@ -266,7 +266,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitDispatch(PDispatch e, AbstractParserGenerator<C> pg) {
+	public C visitDispatch(PDispatch e, ParserGenerator<B, C> pg) {
 		List<C> exprs = new ArrayList<>(e.size() + 1);
 		exprs.add(pg.emitFail());
 		if (this.isAllConsumed(e)) {
@@ -307,7 +307,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return false;
 	}
 
-	private C patch(Expression e, AbstractParserGenerator<C> pg) {
+	private C patch(Expression e, ParserGenerator<B, C> pg) {
 		if (e instanceof PPair) {
 			Expression first = e.get(0);
 			if (first instanceof PAny || first instanceof PByte || first instanceof PByteSet) {
@@ -324,7 +324,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	final static int EMPTY = 1 << 4;
 
 	@Override
-	public C visitOption(POption e, AbstractParserGenerator<C> pg) {
+	public C visitOption(POption e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
 		C inline = this.emitInlineOption(stacks, e, pg);
 		if (inline == null) {
@@ -333,7 +333,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return inline;
 	}
 
-	C emitInlineOption(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+	C emitInlineOption(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchOption(e);
 		if (inline != null) {
 			return inline;
@@ -346,7 +346,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitRepetition(PRepetition e, AbstractParserGenerator<C> pg) {
+	public C visitRepetition(PRepetition e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
 		if (e.isOneMore()) {
 			stacks |= CNT;
@@ -362,7 +362,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return inline;
 	}
 
-	C emitInlineMany(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+	C emitInlineMany(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchMany(e);
 		if (inline != null) {
 			return inline;
@@ -375,7 +375,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitAnd(PAnd e, AbstractParserGenerator<C> pg) {
+	public C visitAnd(PAnd e, ParserGenerator<B, C> pg) {
 		C inline = this.emitInlineAnd(POS, e, pg);
 		if (inline == null) {
 			return this.emitAnd(pg, POS, this.match(e.get(0), pg));
@@ -383,7 +383,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return inline;
 	}
 
-	private C emitInlineAnd(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+	private C emitInlineAnd(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchAnd(e);
 		if (inline != null) {
 			return inline;
@@ -396,7 +396,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitNot(PNot e, AbstractParserGenerator<C> pg) {
+	public C visitNot(PNot e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
 		C inline = this.emitInlineNot(stacks, e, pg);
 		if (inline == null) {
@@ -405,7 +405,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return inline;
 	}
 
-	C emitInlineNot(int stacks, Expression e, AbstractParserGenerator<C> pg) {
+	C emitInlineNot(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchNot(e);
 		if (inline != null) {
 			return inline;
@@ -417,7 +417,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return null;
 	}
 
-	private C getInnerFunction(Expression inner, AbstractParserGenerator<C> pg) {
+	private C getInnerFunction(Expression inner, ParserGenerator<B, C> pg) {
 		if (pg.useLambda() && this.isInline(inner, pg)) {
 			return pg.emitParserLambda(this.match(inner, pg, false));
 		}
@@ -426,7 +426,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitTree(PTree e, AbstractParserGenerator<C> pg) {
+	public C visitTree(PTree e, ParserGenerator<B, C> pg) {
 		C pe = pg.emitAnd(this.match(e.get(0), pg), pg.endTree(e.endShift, e.tag, e.value));
 		if (e.folding) {
 			return pg.emitAnd(pg.foldTree(e.beginShift, e.label), pe);
@@ -436,12 +436,12 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitDetree(PDetree e, AbstractParserGenerator<C> pg) {
+	public C visitDetree(PDetree e, ParserGenerator<B, C> pg) {
 		C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, TREE));
 		return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
 	}
 
-	C emitInlineDetree(PDetree e, AbstractParserGenerator<C> pg) {
+	C emitInlineDetree(PDetree e, ParserGenerator<B, C> pg) {
 		C innerFunc = this.getInnerFunction(e.get(0), pg);
 		if (innerFunc != null) {
 			String funcName = /* pg.useFunc */("detree" + TREE);
@@ -451,7 +451,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return null;
 	}
 
-	void makeMetaDetreeFunc(AbstractParserGenerator<C> pg, String funcName) {
+	void makeMetaDetreeFunc(ParserGenerator<B, C> pg, String funcName) {
 		this.makeBacktrackFunc(pg, TREE);
 		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
@@ -465,7 +465,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitLinkTree(PLinkTree e, AbstractParserGenerator<C> pg) {
+	public C visitLinkTree(PLinkTree e, ParserGenerator<B, C> pg) {
 		C inline = this.emitInlineLink(e, pg);
 		if (inline == null) {
 			C main = pg.emitAnd(this.match(e.get(0), pg), pg.backLink(e.label));
@@ -474,7 +474,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return inline;
 	}
 
-	C emitInlineLink(PLinkTree e, AbstractParserGenerator<C> pg) {
+	C emitInlineLink(PLinkTree e, ParserGenerator<B, C> pg) {
 		C innerFunc = this.getInnerFunction(e.get(0), pg);
 		if (innerFunc != null) {
 			String funcName = /* pg.useFunc */("link" + TREE);
@@ -484,7 +484,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return null;
 	}
 
-	void makeMetaLinkFunc(AbstractParserGenerator<C> pg, String funcName, Symbol label) {
+	void makeMetaLinkFunc(ParserGenerator<B, C> pg, String funcName, Symbol label) {
 		if (!pg.isDefined(funcName)) {
 			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
 			pg.defineFunction(funcName);
@@ -497,17 +497,17 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitTag(PTag e, AbstractParserGenerator<C> pg) {
+	public C visitTag(PTag e, ParserGenerator<B, C> pg) {
 		return pg.tagTree(e.tag);
 	}
 
 	@Override
-	public C visitValue(PValue e, AbstractParserGenerator<C> pg) {
+	public C visitValue(PValue e, ParserGenerator<B, C> pg) {
 		return pg.valueTree(e.value);
 	}
 
 	@Override
-	public C visitSymbolScope(PSymbolScope e, AbstractParserGenerator<C> pg) {
+	public C visitSymbolScope(PSymbolScope e, ParserGenerator<B, C> pg) {
 		this.makeBacktrackFunc(pg, STATE);
 		C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, STATE));
 		if (e.label != null) {
@@ -517,7 +517,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitSymbolAction(PSymbolAction e, AbstractParserGenerator<C> pg) {
+	public C visitSymbolAction(PSymbolAction e, ParserGenerator<B, C> pg) {
 		if (e.isEmpty()) {
 			return pg.callAction(e.action.toString(), e.label, e.thunk);
 		} else {
@@ -527,7 +527,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitSymbolPredicate(PSymbolPredicate e, AbstractParserGenerator<C> pg) {
+	public C visitSymbolPredicate(PSymbolPredicate e, ParserGenerator<B, C> pg) {
 		if (e.isEmpty()) {
 			return pg.callAction(e.getFunctionName(), e.label, e.thunk);
 		} else {
@@ -537,51 +537,51 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 	}
 
 	@Override
-	public C visitIf(PIfCondition e, AbstractParserGenerator<C> pg) {
+	public C visitIf(PIfCondition e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitOn(POnCondition e, AbstractParserGenerator<C> pg) {
+	public C visitOn(POnCondition e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitScan(PScan e, AbstractParserGenerator<C> pg) {
+	public C visitScan(PScan e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitRepeat(PRepeat e, AbstractParserGenerator<C> pg) {
+	public C visitRepeat(PRepeat e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitTrap(PTrap e, AbstractParserGenerator<C> pg) {
+	public C visitTrap(PTrap e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	// ---
 	private final static String RuntimeLibrary = null;
 
-	C emitVarDecl(AbstractParserGenerator<C> pg, int stacks, C returnExpr) {
-		C block = pg.beginBlock();
+	C emitVarDecl(ParserGenerator<B, C> pg, int stacks, C returnExpr) {
+		B block = pg.beginBlock();
 		for (String n : pg.getStackNames(stacks)) {
-			block = pg.emitVarDecl(block, false, n, pg.emitGetter(n));
+			pg.emitVarDecl(block, false, n, pg.emitGetter(n));
 		}
-		block = pg.emitStmt(block, returnExpr);
+		pg.emitStmt(block, returnExpr);
 		return pg.endBlock(block);
 	}
 
-	C emitUpdate(AbstractParserGenerator<C> pg, int stacks) {
-		C block = pg.beginBlock();
+	C emitUpdate(ParserGenerator<B, C> pg, int stacks) {
+		B block = pg.beginBlock();
 		for (String n : pg.getStackNames(stacks)) {
-			block = pg.emitStmt(block, pg.emitAssign(n, pg.emitGetter(n)));
+			pg.emitStmt(block, pg.emitAssign(n, pg.emitGetter(n)));
 		}
 		return pg.endBlock(block);
 	}
 
-	C emitBacktrack(AbstractParserGenerator<C> pg, int stacks) {
+	C emitBacktrack(ParserGenerator<B, C> pg, int stacks) {
 		String funcName = pg.s("back") + (stacks & ~CNT);
 		String[] args = pg.getStackNames(stacks);
 		ArrayList<C> params = new ArrayList<>();
@@ -592,25 +592,25 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, params);
 	}
 
-	void makeBacktrackFunc(AbstractParserGenerator<C> pg, int stacks) {
+	void makeBacktrackFunc(ParserGenerator<B, C> pg, int stacks) {
 		String funcName = pg.s("back") + (stacks & ~CNT);
 		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);
 			String[] args = pg.getStackNames(stacks);
 			pg.declFunc(pg.T("matched"), funcName, pg.joins("px", args), () -> {
-				C block = pg.beginBlock();
+				B block = pg.beginBlock();
 				for (String a : args) {
-					block = pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
+					pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
 				}
-				block = pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
+				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return pg.endBlock(block);
 			});
 			pg.closeSection(prev);
 		}
 	}
 
-	C emitChoiceFunc2(AbstractParserGenerator<C> pg, int stacks, C pe, C pe2) {
+	C emitChoiceFunc2(ParserGenerator<B, C> pg, int stacks, C pe, C pe2) {
 		this.makeBacktrackFunc(pg, stacks);
 		String funcName = pg.s("choice") + (stacks & ~CNT);
 		if (!pg.isDefined(funcName)) {
@@ -627,7 +627,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pe, pe2);
 	}
 
-	C emitOptionFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
+	C emitOptionFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
 		String funcName = pg.s("option") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, stacks);
 		if (!pg.isDefined(funcName)) {
@@ -641,12 +641,12 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pe);
 	}
 
-	C emitOption(AbstractParserGenerator<C> pg, int stacks, C first) {
+	C emitOption(ParserGenerator<B, C> pg, int stacks, C first) {
 		C second = this.emitBacktrack(pg, stacks);
 		return this.emitVarDecl(pg, stacks, pg.emitReturn(pg.emitOr(first, second)));
 	}
 
-	C emitManyFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
+	C emitManyFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
 		String funcName = pg.s("many") + stacks;
 		this.makeBacktrackFunc(pg, stacks);
 		if (!pg.isDefined(funcName)) {
@@ -660,7 +660,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pe);
 	}
 
-	C emitMany(AbstractParserGenerator<C> pg, String funcName, int stacks, C cond) {
+	C emitMany(ParserGenerator<B, C> pg, String funcName, int stacks, C cond) {
 		C back = this.emitBacktrack(pg, stacks);
 		if ((stacks & CNT) == CNT) {
 			back = pg.emitAnd(pg.checkCountVar(), back);
@@ -672,14 +672,14 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 			C main = pg.emitIf(cond, pg.emitNonTerminal(funcName), back);
 			return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
 		} else {
-			C block = pg.beginBlock();
-			block = pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, stacks));
-			block = pg.emitStmt(block, pg.emitReturn(back));
-			return this.emitVarDecl(pg, stacks, block);
+			B block = pg.beginBlock();
+			pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, stacks));
+			pg.emitStmt(block, pg.emitReturn(back));
+			return this.emitVarDecl(pg, stacks, pg.endBlock(block));
 		}
 	}
 
-	protected C emitAndFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
+	protected C emitAndFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
 		String funcName = pg.s("and") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, POS);
 		if (!pg.isDefined(funcName)) {
@@ -693,13 +693,13 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pe);
 	}
 
-	protected C emitAnd(AbstractParserGenerator<C> pg, int stacks, C inner) {
+	protected C emitAnd(ParserGenerator<B, C> pg, int stacks, C inner) {
 		stacks = POS;
 		C main = pg.emitAnd(inner, this.emitBacktrack(pg, stacks));
 		return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
 	}
 
-	protected C emitNotFunc(AbstractParserGenerator<C> pg, int stacks, C pe) {
+	protected C emitNotFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
 		String funcName = pg.s("not") + (stacks & ~CNT);
 		this.makeBacktrackFunc(pg, stacks);
 		if (!pg.isDefined(funcName)) {
@@ -713,7 +713,7 @@ class ParserGeneratorVisitor<C> extends ExpressionVisitor<C, AbstractParserGener
 		return pg.emitFunc(funcName, pg.V("px"), pe);
 	}
 
-	protected C emitNot(AbstractParserGenerator<C> pg, int stacks, C inner) {
+	protected C emitNot(ParserGenerator<B, C> pg, int stacks, C inner) {
 		C main = pg.emitIf(inner, pg.emitFail(), this.emitBacktrack(pg, stacks));
 		return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
 	}

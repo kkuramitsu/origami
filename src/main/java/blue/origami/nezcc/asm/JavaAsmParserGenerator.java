@@ -1,6 +1,7 @@
 package blue.origami.nezcc.asm;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import blue.nez.ast.Symbol;
@@ -8,12 +9,13 @@ import blue.nez.peg.expression.ByteSet;
 import blue.origami.OrigamiContext;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
-import blue.origami.nezcc.AbstractParserGenerator;
+import blue.origami.nezcc.ParserGenerator;
 import blue.origami.nezcc.Block;
 import blue.origami.ocode.CodeBuilder;
+import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.OCode;
 
-public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> implements CodeBuilder {
+public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> implements CodeBuilder {
 
 	private OrigamiContext env;
 
@@ -78,37 +80,35 @@ public class JavaAsmParserGenerator extends AbstractParserGenerator<OCode> imple
 	}
 
 	@Override
-	protected OCode beginBlock() {
+	protected List<OCode> beginBlock() {
+		// TODO Auto-generated method stub
+		return new ArrayList<>();
+	}
+
+	@Override
+	protected void emitStmt(List<OCode> block, OCode expr) {
+		block.add(expr);
+	}
+
+	@Override
+	protected OCode endBlock(List<OCode> block) {
+		return new MultiCode(block);
+	}
+
+	@Override
+	protected OCode emitVarDecl(boolean mutable, String name, OCode expr) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected OCode emitStmt(OCode block, OCode expr) {
+	protected OCode emitIfStmt(OCode expr, boolean elseIf, Block<OCode> stmt) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected OCode emitVarDecl(OCode block, boolean mutable, String name, OCode expr) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected OCode emitIfStmt(OCode block, OCode expr, boolean elseIf, Block<OCode> stmt) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected OCode emitWhileStmt(OCode block, OCode expr, Block<OCode> stmt) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected OCode endBlock(OCode block) {
+	protected OCode emitWhileStmt(OCode expr, Block<OCode> stmt) {
 		// TODO Auto-generated method stub
 		return null;
 	}

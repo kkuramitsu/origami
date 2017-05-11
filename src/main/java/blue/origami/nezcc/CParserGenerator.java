@@ -95,28 +95,28 @@ public class CParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void declStruct(String typeNameA, String... fields) {
-		String block = this.beginBlock();
+		StringBuilder block = this.beginBlock();
 		String typeName = typeNameA.replace("*", "").replace("struct ", "");
-		block = this.emitLine(block, "%s %s %s", this.s("struct"), typeName, this.s("{"));
+		this.emitLine(block, "%s %s %s", this.s("struct"), typeName, this.s("{"));
 		this.incIndent();
 		for (String f : fields) {
 			String n = f.replace("?", "");
-			block = this.emitLine(block, "%s %s%s", this.T(n), n, this.s(";"));
+			this.emitLine(block, "%s %s%s", this.T(n), n, this.s(";"));
 		}
 		this.decIndent();
-		block = this.emitLine(block, "};");
+		this.emitLine(block, "};");
 		this.defineSymbol(typeNameA, "new" + typeName);
-		block = this.emitLine(block, this.formatSignature(typeNameA, "new" + typeName, fields) + "{");
+		this.emitLine(block, this.formatSignature(typeNameA, "new" + typeName, fields) + "{");
 		this.incIndent();
-		block = this.emitLine(block, "%s this = (%s)_malloc(sizeof(struct %s));", typeNameA, typeNameA, typeName);
+		this.emitLine(block, "%s this = (%s)_malloc(sizeof(struct %s));", typeNameA, typeNameA, typeName);
 		for (String f : fields) {
 			String n = f.replace("?", "");
 			String v = this.emitInit(f);
-			block = this.emitLine(block, "this->%s = %s;", n, v);
+			this.emitLine(block, "this->%s = %s;", n, v);
 		}
-		block = this.emitLine(block, "return this;", typeNameA);
+		this.emitLine(block, "return this;", typeNameA);
 		this.decIndent();
-		block = this.emitLine(block, this.s("}"));
+		this.emitLine(block, this.s("}"));
 		this.writeSection(this.endBlock(block));
 	}
 

@@ -161,22 +161,12 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String beginBlock() {
-		return "";
-	}
-
-	@Override
-	protected String emitStmt(String block, String expr) {
+	protected void emitStmt(StringBuilder block, String expr) {
 		String stmt = this.Indent(expr.trim());
-		if (!block.equals("")) {
-			stmt = block + this.s(" ") + stmt;
+		if (block.length() > 0) {
+			block.append(this.s(" "));
 		}
-		return stmt;
-	}
-
-	@Override
-	protected String endBlock(String block) {
-		return block;
+		block.append(stmt);
 	}
 
 	@Override
@@ -185,10 +175,9 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitVarDecl(String block, boolean mutable, String name, String expr) {
+	protected String emitVarDecl(boolean mutable, String name, String expr) {
 		// String t = this.T(name);
-		this.emitLine(block, "let %s = %s in", this.s(name), expr);
-		return block;
+		return String.format("let %s = %s in", this.s(name), expr);
 	}
 
 	@Override
@@ -201,25 +190,29 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 		return String.format("%s <- %s", left, expr);
 	}
 
-	@Override
-	protected String emitIfStmt(String block, String expr, boolean elseIf, Block<String> stmt) {
-		block = this.emitStmt(block, String.format("%s(%s) %s", this.s("if"), expr, this.s("{")));
-		this.incIndent();
-		block = this.emitStmt(block, stmt.block());
-		this.decIndent();
-		block = this.emitStmt(block, this.s("}"));
-		return block;
-	}
-
-	@Override
-	protected String emitWhileStmt(String block, String expr, Block<String> stmt) {
-		block = this.emitStmt(block, String.format("%s(%s) %s", this.s("while"), expr, this.s("{")));
-		this.incIndent();
-		block = this.emitStmt(block, stmt.block());
-		this.decIndent();
-		block = this.emitStmt(block, this.s("}"));
-		return block;
-	}
+	// @Override
+	// protected String emitIfStmt(String block, String expr, boolean elseIf,
+	// Block<String> stmt) {
+	// block = this.emitStmt(block, String.format("%s(%s) %s", this.s("if"),
+	// expr, this.s("{")));
+	// this.incIndent();
+	// block = this.emitStmt(block, stmt.block());
+	// this.decIndent();
+	// block = this.emitStmt(block, this.s("}"));
+	// return block;
+	// }
+	//
+	// @Override
+	// protected String emitWhileStmt(String block, String expr, Block<String>
+	// stmt) {
+	// block = this.emitStmt(block, String.format("%s(%s) %s", this.s("while"),
+	// expr, this.s("{")));
+	// this.incIndent();
+	// block = this.emitStmt(block, stmt.block());
+	// this.decIndent();
+	// block = this.emitStmt(block, this.s("}"));
+	// return block;
+	// }
 
 	@Override
 	protected String emitOp(String expr, String op, String expr2) {

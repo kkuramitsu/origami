@@ -64,17 +64,17 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
-		String block = this.beginBlock();
-		block = this.emitLine(block, "class %s %s", typeName, this.s("{"));
+		StringBuilder block = this.beginBlock();
+		this.emitLine(block, "class %s %s", typeName, this.s("{"));
 		this.incIndent();
 		String[] a = this.joins("self", fields);
-		block = this.emitLine(block, "def __init__(%s) %s", this.emitParams(a), this.s("{"));
+		this.emitLine(block, "def __init__(%s) %s", this.emitParams(a), this.s("{"));
 		this.incIndent();
-		block = this.emitInits(block, fields);
+		this.emitInits(block, fields);
 		this.decIndent();
-		block = this.emitLine(block, this.s("}"));
+		this.emitLine(block, this.s("}"));
 		this.decIndent();
-		block = this.emitLine(block, this.s("}"));
+		this.emitLine(block, this.s("}"));
 		this.writeSection(this.endBlock(block));
 	}
 
@@ -106,9 +106,9 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected String emitSetTree(String parent, String n, String label, String child) {
-		String block = this.beginBlock();
-		block = this.emitLine(block, "%s[1][%s] = (%s, %s)", parent, n, label, child);
-		block = this.emitStmt(block, this.emitReturn(parent));
+		StringBuilder block = this.beginBlock();
+		this.emitLine(block, "%s[1][%s] = (%s, %s)", parent, n, label, child);
+		this.emitStmt(block, this.emitReturn(parent));
 		return (this.endBlock(block));
 	}
 
