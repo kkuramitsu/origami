@@ -11,17 +11,20 @@ import blue.nez.peg.ExpressionVisitor;
  */
 
 public class PChoice extends PArray {
+	private boolean isUnordered;
 
-	public PChoice(Expression[] inners) {
+	public PChoice(boolean isUnordered, Expression[] inners) {
 		super(inners);
+		this.isUnordered = isUnordered;
+	}
+
+	public final boolean isUnordered() {
+		return this.isUnordered;
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PChoice) {
-			return this.equalsList((PArray) o);
-		}
-		return false;
+	public Object[] extract() {
+		return (this.isUnordered) ? new Object[] { true } : super.extract();
 	}
 
 	@Override
@@ -31,14 +34,14 @@ public class PChoice extends PArray {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.formatList(" / ", sb);
+		this.formatList(this.isUnordered ? " | " : " / ", sb);
 	}
 }
 
 abstract class PArray extends Expression {
 	public Expression[] inners;
 
-	protected PArray(Expression[] inners) {
+	PArray(Expression[] inners) {
 		this.inners = inners;
 	}
 
@@ -59,19 +62,7 @@ abstract class PArray extends Expression {
 		return oldExpresion;
 	}
 
-	protected final boolean equalsList(PArray l) {
-		if (this.size() == l.size()) {
-			for (int i = 0; i < this.size(); i++) {
-				if (!this.get(i).equals(l.get(i))) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	protected final void formatList(String delim, StringBuilder sb) {
+	final void formatList(String delim, StringBuilder sb) {
 		for (int i = 0; i < this.size(); i++) {
 			if (i > 0) {
 				sb.append(delim);

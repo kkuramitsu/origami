@@ -28,16 +28,11 @@ public class PTree extends PUnary {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PTree) {
-			PTree t = (PTree) o;
-			if (t.beginShift != this.beginShift || t.endShift != this.endShift || t.tag != this.tag
-					|| t.value != this.value) {
-				return false;
-			}
-			return t.get(0).equals(this.get(0));
+	protected Object[] extract() {
+		if (this.folding) {
+			return new Object[] { this.label, this.beginShift, this.tag, this.value, this.endShift };
 		}
-		return false;
+		return new Object[] { this.beginShift, this.tag, this.value, this.endShift };
 	}
 
 	@Override
@@ -58,7 +53,7 @@ public class PTree extends PUnary {
 		this.get(0).strOut(sb);
 		if (this.value != null) {
 			sb.append(" ");
-			formatReplace(this.value, sb);
+			sb.append(new PValue(this.value));
 		}
 		if (this.tag != null) {
 			sb.append(" #");

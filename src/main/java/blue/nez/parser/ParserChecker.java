@@ -25,6 +25,7 @@ import blue.nez.parser.pass.InlinePass;
 import blue.nez.parser.pass.NotCharPass;
 import blue.nez.parser.pass.TreeCheckerPass;
 import blue.nez.parser.pass.TreePass;
+import blue.nez.peg.Duplicator;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Grammar;
@@ -423,7 +424,7 @@ class FlagContext extends TreeMap<String, Boolean> {
 	}
 }
 
-class EliminateFlags extends Expression.Duplicator<Void> {
+class EliminateFlags extends Duplicator<Void> {
 	final OOption options;
 	final FlagContext flagContext;
 

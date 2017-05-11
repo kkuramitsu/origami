@@ -29,11 +29,8 @@ public class PByte extends PTerm {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PByte) {
-			return this.byteChar() == ((PByte) o).byteChar();
-		}
-		return false;
+	public Object[] extract() {
+		return new Object[] { this.byteSet };
 	}
 
 	@Override

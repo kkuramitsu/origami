@@ -25,6 +25,11 @@ public class PByteSet extends PTerm {
 		return this.byteSet;
 	}
 
+	@Override
+	public Object[] extract() {
+		return new Object[] { this.byteSet };
+	}
+
 	public final boolean is(int n) {
 		return this.byteSet.is(n);
 	}
@@ -52,15 +57,6 @@ public class PByteSet extends PTerm {
 	// public final int n(int n) {
 	// return this.bits[n];
 	// }
-
-	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PByteSet) {
-			PByteSet e = (PByteSet) o;
-			return this.byteSet.equals(e.byteSet);
-		}
-		return false;
-	}
 
 	@Override
 	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {

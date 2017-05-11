@@ -122,8 +122,8 @@ public class GrammarTest {
 		this.parseExample("not-is");
 	}
 
-	public void test_scan() throws Throwable {
-		this.parseExample("scan");
-	}
+	// public void test_scan() throws Throwable {
+	// this.parseExample("scan");
+	// }
 
 }

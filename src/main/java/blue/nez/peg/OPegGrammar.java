@@ -144,6 +144,7 @@ public class OPegGrammar extends ParserCombinator {
 				this.Link("$name", this.Choice(("@Id"), ("@String"))),
 				"@_", /* ("@SKIP"), */ //
 				this.S("="), "@_", //
+				this.Option(this.S("|"), "@_"), //
 				this.Option(this.S("/"), "@_"), //
 				this.Link("$expr", "@Expression"), //
 				("#Production") //

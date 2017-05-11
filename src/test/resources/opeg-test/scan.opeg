@@ -2,8 +2,8 @@
  * scan.nez
  */
 
-START = <scan NUM> <repeat A>
+START = <scan NUM> <dec NUM>
 NUM   = [0-9]+
-A     = S [A-Za-z]+
+A     = (S [A-Za-z]) +
 S     = [ \t]+
 

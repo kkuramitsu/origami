@@ -12,12 +12,8 @@ public class PTrap extends PTerm {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PTrap) {
-			PTrap l = (PTrap) o;
-			return this.trapid == l.trapid && this.uid == l.uid;
-		}
-		return false;
+	protected Object[] extract() {
+		return new Object[] { this.trapid, this.uid };
 	}
 
 	@Override

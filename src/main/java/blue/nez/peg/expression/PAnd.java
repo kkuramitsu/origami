@@ -17,14 +17,6 @@ public class PAnd extends PUnary {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PAnd) {
-			return this.get(0).equals(((Expression) o).get(0));
-		}
-		return false;
-	}
-
-	@Override
 	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
 		return v.visitAnd(this, a);
 	}

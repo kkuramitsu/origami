@@ -10,11 +10,8 @@ public class PValue extends PTerm {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PValue) {
-			return this.value.equals(((PValue) o).value);
-		}
-		return false;
+	protected Object[] extract() {
+		return new Object[] { this.value };
 	}
 
 	@Override
@@ -24,6 +21,11 @@ public class PValue extends PTerm {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		formatReplace(this.value, sb);
+		sb.append('`');
+		for (int i = 0; i < this.value.length(); i++) {
+			int c = this.value.charAt(i) & 0xff;
+			ByteSet.formatByte(c, "`", "\\x02x", sb);
+		}
+		sb.append('`');
 	}
 }

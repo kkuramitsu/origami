@@ -45,12 +45,12 @@ import blue.nez.peg.expression.POnCondition;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
@@ -140,7 +140,8 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 	public class SyntaxRule implements ExpressionTransducer {
 		@Override
 		public Expression accept(Gamma e, Tree<?> node) throws IOException {
-			return null;
+			throw new IOException("undefined parsing expression: " + node.getString());
+			// return Expression.defaultFailure;
 		}
 	}
 
@@ -338,6 +339,17 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		@Override
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			return new PAny();
+		}
+	}
+
+	public class _UChoice extends SyntaxRule {
+		@Override
+		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
+			List<Expression> l = Expression.newList(node.size());
+			for (int i = 0; i < node.size(); i++) {
+				Expression.addChoice(l, gamma.newExpression(node.get(i)));
+			}
+			return Expression.newChoice(l);
 		}
 	}
 

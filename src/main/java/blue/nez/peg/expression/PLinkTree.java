@@ -13,11 +13,8 @@ public class PLinkTree extends PUnary {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PLinkTree && this.label == ((PLinkTree) o).label) {
-			return this.get(0).equals(((Expression) o).get(0));
-		}
-		return false;
+	protected Object[] extract() {
+		return new Object[] { this.label };
 	}
 
 	@Override

@@ -23,11 +23,8 @@ public final class PNonTerminal extends Expression {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PNonTerminal) {
-			return this.name.equals(((PNonTerminal) o).name) && this.grammar == ((PNonTerminal) o).getGrammar();
-		}
-		return false;
+	public Object[] extract() {
+		return new Object[] { this.getUniqueName() };
 	}
 
 	public final Grammar getGrammar() {

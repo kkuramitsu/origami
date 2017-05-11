@@ -23,21 +23,24 @@ import blue.nez.ast.Symbol;
 import blue.origami.util.OStringUtils;
 
 public abstract class ParserContext<T> {
+	protected Source source;
+	// private byte[] inputs;
+	// private int length;
 	public int pos = 0;
+
 	public T left;
 	protected final TreeConstructor<T> newTree;
 	protected final TreeConnector<T> linkTree;
 
-	public ParserContext(String s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-		this(new StringSource(s), pos, newTree, linkTree);
-		this.inputs = ((StringSource) this.source).inputs;
-		this.length = this.inputs.length - 1;
-	}
+	// public ParserContext(String s, long pos, TreeConstructor<T> newTree,
+	// TreeConnector<T> linkTree) {
+	// this(new StringSource(s), pos, newTree, linkTree);
+	// this.inputs = ((StringSource) this.source).inputs;
+	// this.length = this.inputs.length - 1;
+	// }
 
 	protected ParserContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
 		this.source = s;
-		this.inputs = null;
-		this.length = 0;
 		this.pos = (int) pos;
 		this.left = null;
 		this.newTree = newTree;
@@ -55,20 +58,32 @@ public abstract class ParserContext<T> {
 
 	public abstract void end();
 
-	protected Source source;
-	private byte[] inputs;
-	private int length;
-
-	public boolean eof() {
-		return !(this.pos < this.length);
+	public final boolean eof() {
+		return this.source.eof(this.pos);
 	}
 
-	public int read() {
-		return this.inputs[this.pos++] & 0xff;
+	public final int nextbyte() {
+		return this.source.byteAt(this.pos++);
 	}
 
-	public int prefetch() {
-		return this.inputs[this.pos] & 0xff;
+	public final int getbyte() {
+		return this.source.byteAt(this.pos);
+	}
+
+	public final boolean match(byte[] utf8) {
+		if (this.source.match(this.pos, utf8)) {
+			this.move(utf8.length);
+			return true;
+		}
+		return false;
+	}
+
+	public final byte[] subByte(int start, int end) {
+		return this.source.subBytes(start, end);
+	}
+
+	public final byte byteAt(int pos) {
+		return (byte) this.source.byteAt(pos);
 	}
 
 	public final void move(int shift) {
@@ -77,30 +92,6 @@ public abstract class ParserContext<T> {
 
 	public void backtrack(int pos) {
 		this.pos = pos;
-	}
-
-	public boolean match(byte[] text) {
-		int len = text.length;
-		if (this.pos + len > this.length) {
-			return false;
-		}
-		for (int i = 0; i < len; i++) {
-			if (text[i] != this.inputs[this.pos + i]) {
-				return false;
-			}
-		}
-		this.pos += len;
-		return true;
-	}
-
-	public byte[] subByte(int startIndex, int endIndex) {
-		byte[] b = new byte[endIndex - startIndex];
-		System.arraycopy(this.inputs, (startIndex), b, 0, b.length);
-		return b;
-	}
-
-	protected byte byteAt(int n) {
-		return this.inputs[n];
 	}
 
 	// Tree Construction

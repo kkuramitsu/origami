@@ -73,12 +73,12 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitByte(PByte e, ParserContext<T> px) {
-		return e.byteSet().is(px.read());
+		return e.byteSet().is(px.nextbyte());
 	}
 
 	@Override
 	public Boolean visitByteSet(PByteSet e, ParserContext<T> px) {
-		return e.byteSet().is(px.read());
+		return e.byteSet().is(px.nextbyte());
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public class ParserInterpreter<T> extends ExpressionVisitor<Boolean, ParserConte
 
 	@Override
 	public Boolean visitDispatch(PDispatch e, ParserContext<T> px) {
-		int u = px.prefetch();
+		int u = px.getbyte();
 		return this.parse(e.get(e.indexMap[u] & 0xff), px);
 	}
 

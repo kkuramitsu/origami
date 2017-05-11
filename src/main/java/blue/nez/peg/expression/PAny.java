@@ -15,11 +15,6 @@ public class PAny extends PTerm {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		return (o instanceof PAny);
-	}
-
-	@Override
 	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
 		return v.visitAny(this, a);
 	}

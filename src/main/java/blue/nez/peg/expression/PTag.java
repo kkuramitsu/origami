@@ -15,11 +15,8 @@ public class PTag extends PTerm {
 	}
 
 	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PTag) {
-			return this.tag == ((PTag) o).tag;
-		}
-		return false;
+	protected Object[] extract() {
+		return new Object[] { this.tag, };
 	}
 
 	@Override

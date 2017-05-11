@@ -19,16 +19,16 @@ package blue.nez.parser;
 import java.util.List;
 
 import blue.nez.ast.Source;
-import blue.nez.parser.pegasm.ASMnop;
+import blue.nez.parser.pasm.ASMnop;
 import blue.origami.util.OOption;
 
-public class PegAsmCode extends ParserCode<PegAsmInst> {
+public class PegAsmCode extends ParserCode<PAsmInst> {
 
 	public PegAsmCode(ParserGrammar grammar, OOption options) {
-		super(grammar, options, new PegAsmInst[1024]);
+		super(grammar, options, new PAsmInst[1024]);
 	}
 
-	List<PegAsmInst> codeList() {
+	List<PAsmInst> codeList() {
 		return this.codeList;
 	}
 
@@ -38,7 +38,7 @@ public class PegAsmCode extends ParserCode<PegAsmInst> {
 
 	@Override
 	public <T> ParserContext<T> newContext(Source s, long pos, TreeConstructor<T> newTree, TreeConnector<T> linkTree) {
-		PegAsmContext<T> ctx = new PegAsmContext<>(s, pos, newTree, linkTree);
+		PAsmContext<T> ctx = new PAsmContext<>(s, pos, newTree, linkTree);
 		ctx.setTrap((TrapAction[]) this.options.get(ParserOption.TrapActions));
 		int w = this.options.intValue(ParserOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
@@ -50,20 +50,20 @@ public class PegAsmCode extends ParserCode<PegAsmInst> {
 	@Override
 	public final <E> E exec(ParserContext<E> ctx) {
 		int ppos = (int) ctx.getPosition();
-		PegAsmInst code = this.getStartInstruction();
-		boolean result = this.exec((PegAsmContext<E>) ctx, code);
+		PAsmInst code = this.getStartInstruction();
+		boolean result = this.exec((PAsmContext<E>) ctx, code);
 		if (ctx.left == null && result) {
 			ctx.left = ctx.newTree(null, ppos, (int) ctx.getPosition(), 0, null);
 		}
 		return result ? ctx.left : null;
 	}
 
-	private <E> boolean exec(PegAsmContext<E> ctx, PegAsmInst inst) {
-		PegAsmInst cur = inst;
+	private <E> boolean exec(PAsmContext<E> ctx, PAsmInst inst) {
+		PAsmInst cur = inst;
 		try {
 			while (true) {
 				// PegAsmInst next = cur.exec(ctx);
-				PegAsmInst next = cur.apply.exec(ctx);
+				PAsmInst next = cur.apply.exec(ctx);
 				// if (next == null) {
 				// System.out.println("null " + cur);
 				// }
@@ -78,8 +78,8 @@ public class PegAsmCode extends ParserCode<PegAsmInst> {
 
 	@Override
 	public void dump() {
-		for (PegAsmInst inst : this.codeList) {
-			PegAsmInst in = inst;
+		for (PAsmInst inst : this.codeList) {
+			PAsmInst in = inst;
 			if (in instanceof ASMnop) {
 				System.out.println(((ASMnop) in).name);
 				continue;

@@ -16,11 +16,11 @@
 
 package blue.nez.parser;
 
-import blue.nez.peg.Expression;
 import blue.nez.peg.Grammar;
+import blue.nez.peg.Rewriter;
 import blue.origami.util.OOption;
 
-public abstract class ParserPass extends Expression.Rewriter<Void> {
+public abstract class ParserPass extends Rewriter<Void> {
 	public abstract Grammar perform(Grammar g, OOption options);
 
 }

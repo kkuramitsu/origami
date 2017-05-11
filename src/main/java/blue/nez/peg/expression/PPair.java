@@ -22,23 +22,6 @@ public class PPair extends PBinary {
 		assert (!(first instanceof PPair));
 	}
 
-	public void expand(List<Expression> l) {
-		Expression.addSequence(l, this.left);
-		if (this.right instanceof PPair) {
-			((PPair) this.right).expand(l);
-		} else {
-			Expression.addSequence(l, this.right);
-		}
-	}
-
-	@Override
-	public final boolean equals(Object o) {
-		if (o instanceof PPair) {
-			return this.get(0).equals(((Expression) o).get(0)) && this.get(1).equals(((Expression) o).get(1));
-		}
-		return false;
-	}
-
 	@Override
 	public Expression desugar() {
 		if (this.left instanceof PEmpty) {
@@ -48,6 +31,15 @@ public class PPair extends PBinary {
 			return this.left;
 		}
 		return this;
+	}
+
+	public void expand(List<Expression> l) {
+		Expression.addSequence(l, this.left);
+		if (this.right instanceof PPair) {
+			((PPair) this.right).expand(l);
+		} else {
+			Expression.addSequence(l, this.right);
+		}
 	}
 
 	@Override

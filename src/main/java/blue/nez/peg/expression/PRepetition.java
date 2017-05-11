@@ -15,10 +15,6 @@ public class PRepetition extends PUnary {
 	public final int min;
 	public final int max;
 
-	public final boolean isOneMore() {
-		return this.min > 0;
-	}
-
 	public PRepetition(Expression e, int min, int max) {
 		super(e);
 		this.min = min;
@@ -29,13 +25,13 @@ public class PRepetition extends PUnary {
 		this(e, min, -1);
 	}
 
+	public final boolean isOneMore() {
+		return this.min > 0;
+	}
+
 	@Override
-	public boolean equals(Object o) {
-		if (o instanceof PRepetition) {
-			PRepetition r = (PRepetition) o;
-			return (this.min == r.min && this.max == r.max && this.get(0).equals(r.get(0)));
-		}
-		return false;
+	protected Object[] extract() {
+		return new Object[] { this.min, };
 	}
 
 	@Override
