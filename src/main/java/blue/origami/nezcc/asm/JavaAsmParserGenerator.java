@@ -11,11 +11,11 @@ import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
 import blue.origami.nezcc.ParserGenerator;
 import blue.origami.nezcc.Block;
-import blue.origami.ocode.CodeBuilder;
+import blue.origami.ocode.OCodeFactory;
 import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.OCode;
 
-public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> implements CodeBuilder {
+public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> implements OCodeFactory {
 
 	private OrigamiContext env;
 
@@ -202,22 +202,22 @@ public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> 
 
 	@Override
 	protected OCode emitSucc() {
-		return this.value(true);
+		return this.newValueCode(true);
 	}
 
 	@Override
 	protected OCode emitFail() {
-		return this.value(false);
+		return this.newValueCode(false);
 	}
 
 	@Override
 	protected OCode emitAnd(OCode expr, OCode expr2) {
-		return this.and(expr, expr2);
+		return this.newAndCode(expr, expr2);
 	}
 
 	@Override
 	protected OCode emitOr(OCode expr, OCode expr2) {
-		return this.or(expr, expr2);
+		return this.newOrCode(expr, expr2);
 	}
 
 	@Override
