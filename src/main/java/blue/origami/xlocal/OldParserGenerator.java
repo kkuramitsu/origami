@@ -26,7 +26,6 @@ import java.util.Map;
 import blue.nez.ast.Symbol;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserCode;
-import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.ParserOption;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
@@ -52,7 +51,6 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -60,6 +58,7 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -87,14 +86,14 @@ public abstract class OldParserGenerator
 	protected boolean SupportedMatch8 = false;
 
 	//
-	protected ParserCode<?> code;
+	protected ParserCode code;
 
 	public void writeGrammar(OOption options, Grammar g) {
 		try {
 			// FIXME Just a hack
 			this.fileBase = this.extractGrammarName((String) options.get(ParserOption.GrammarFile));
 			Parser parser = g.newParser(options);
-			this.code = (ParserCode<?>) parser.compile();
+			this.code = parser.compile();
 			this.initLanguageSpec();
 			this.generateHeader(g);
 			SymbolAnalysis constDecl = new SymbolAnalysis();
@@ -599,17 +598,18 @@ public abstract class OldParserGenerator
 				this.cur = f;
 				OldParserGenerator.this.funcMap.put(f, p.getExpression());
 				OldParserGenerator.this.funcList.add(f);
-				MemoPoint memoPoint = OldParserGenerator.this.code.getMemoPoint(p.getUniqueName());
-				if (memoPoint != null) {
-					OldParserGenerator.this.memoPointMap.put(f, memoPoint.id);
-					String stacked = this.cur;
-					this.cur = f;
-					this.checkInner(p.getExpression());
-					this.cur = stacked;
-					OldParserGenerator.this.addEdge(this.cur, f);
-				} else {
-					p.getExpression().visit(this, null);
-				}
+				// MemoPoint memoPoint = null;//
+				// OldParserGenerator.this.code.getMemoPoint(p.getUniqueName());
+				// if (memoPoint != null) {
+				// OldParserGenerator.this.memoPointMap.put(f, memoPoint.id);
+				// String stacked = this.cur;
+				// this.cur = f;
+				// this.checkInner(p.getExpression());
+				// this.cur = stacked;
+				// OldParserGenerator.this.addEdge(this.cur, f);
+				// } else {
+				p.getExpression().visit(this, null);
+				// }
 				this.cur = stacked2;
 				OldParserGenerator.this.addEdge(this.cur, f);
 				return true;
@@ -893,15 +893,16 @@ public abstract class OldParserGenerator
 					// memoSucc = memoSucc.replace("State", "");
 					// memoFail = memoFail.replace("State", "");
 					// }
-					this.InitVal("memo", OldParserGenerator.this._Func(memoLookup, OldParserGenerator.this._int(memoPoint)));
+					this.InitVal("memo",
+							OldParserGenerator.this._Func(memoLookup, OldParserGenerator.this._int(memoPoint)));
 					OldParserGenerator.this.If("memo", OldParserGenerator.this._Eq(), "0");
 					{
 						String f = this._eval(e);
 						String[] n = this.SaveState(e);
 						OldParserGenerator.this.If(f);
 						{
-							OldParserGenerator.this.Statement(
-									OldParserGenerator.this._Func(memoSucc, OldParserGenerator.this._int(memoPoint), n[0]));
+							OldParserGenerator.this.Statement(OldParserGenerator.this._Func(memoSucc,
+									OldParserGenerator.this._int(memoPoint), n[0]));
 							OldParserGenerator.this.Succ();
 						}
 						OldParserGenerator.this.Else();
@@ -914,7 +915,8 @@ public abstract class OldParserGenerator
 						OldParserGenerator.this.EndIf();
 					}
 					OldParserGenerator.this.EndIf();
-					OldParserGenerator.this.Return(OldParserGenerator.this._Binary("memo", OldParserGenerator.this._Eq(), "1"));
+					OldParserGenerator.this
+							.Return(OldParserGenerator.this._Binary("memo", OldParserGenerator.this._Eq(), "1"));
 				} else {
 					this.visit(e, null);
 					OldParserGenerator.this.Succ();
@@ -976,7 +978,8 @@ public abstract class OldParserGenerator
 		}
 
 		private void BackPos(String lname) {
-			OldParserGenerator.this.VarAssign(OldParserGenerator.this._Field(OldParserGenerator.this._state(), "pos"), lname);
+			OldParserGenerator.this.VarAssign(OldParserGenerator.this._Field(OldParserGenerator.this._state(), "pos"),
+					lname);
 		}
 
 		private String SaveTree() {
@@ -1091,13 +1094,11 @@ public abstract class OldParserGenerator
 			if (OldParserGenerator.this.SupportedRange) {
 				int[] range = OldParserGenerator.this.range(byteMap);
 				if (range != null) {
-					String s = "("
-							+ OldParserGenerator.this._Binary(
-									OldParserGenerator.this._Binary(OldParserGenerator.this._byte(range[0]), "<=",
-											OldParserGenerator.this._Func("prefetch")),
-									OldParserGenerator.this._And(),
-									OldParserGenerator.this._Binary(c, "<", OldParserGenerator.this._byte(range[1])))
-							+ ")";
+					String s = "(" + OldParserGenerator.this._Binary(
+							OldParserGenerator.this._Binary(OldParserGenerator.this._byte(range[0]), "<=",
+									OldParserGenerator.this._Func("prefetch")),
+							OldParserGenerator.this._And(),
+							OldParserGenerator.this._Binary(c, "<", OldParserGenerator.this._byte(range[1]))) + ")";
 					// System.out.println(s);
 					return s;
 				}
@@ -1355,7 +1356,8 @@ public abstract class OldParserGenerator
 							OldParserGenerator.this._byte(e.byteChar()));
 					{
 						if (OldParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
-							OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
+							OldParserGenerator.this
+									.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 							{
 								OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 							}
@@ -1373,7 +1375,8 @@ public abstract class OldParserGenerator
 					OldParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
 						if (OldParserGenerator.this.BinaryGrammar && byteset[0]) {
-							OldParserGenerator.this.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
+							OldParserGenerator.this
+									.If(OldParserGenerator.this._Not(OldParserGenerator.this._Func("eof")));
 							{
 								OldParserGenerator.this.Statement(OldParserGenerator.this._Func("move", "1"));
 							}
@@ -1410,8 +1413,9 @@ public abstract class OldParserGenerator
 					if (isOneMore) {
 						this.visit(inner, null);
 					}
-					OldParserGenerator.this.While(OldParserGenerator.this._Binary(OldParserGenerator.this._Func("prefetch"),
-							OldParserGenerator.this._Eq(), OldParserGenerator.this._byte(e.byteChar())));
+					OldParserGenerator.this
+							.While(OldParserGenerator.this._Binary(OldParserGenerator.this._Func("prefetch"),
+									OldParserGenerator.this._Eq(), OldParserGenerator.this._byte(e.byteChar())));
 					{
 						if (OldParserGenerator.this.BinaryGrammar && e.byteChar() == 0) {
 							OldParserGenerator.this.If(OldParserGenerator.this._Func("eof"));
@@ -1496,8 +1500,8 @@ public abstract class OldParserGenerator
 			if (OldParserGenerator.this.Optimization) {
 				if (inner instanceof PByte) {
 					PByte e = (PByte) inner;
-					OldParserGenerator.this.If(OldParserGenerator.this._Func("prefetch"), OldParserGenerator.this._NotEq(),
-							OldParserGenerator.this._byte(e.byteChar()));
+					OldParserGenerator.this.If(OldParserGenerator.this._Func("prefetch"),
+							OldParserGenerator.this._NotEq(), OldParserGenerator.this._byte(e.byteChar()));
 					{
 						OldParserGenerator.this.Fail();
 					}
@@ -1592,12 +1596,13 @@ public abstract class OldParserGenerator
 				OldParserGenerator.this.Statement(OldParserGenerator.this._Func("foldTree",
 						OldParserGenerator.this._int(e.beginShift), OldParserGenerator.this._label(e.label)));
 			} else {
-				OldParserGenerator.this
-						.Statement(OldParserGenerator.this._Func("beginTree", OldParserGenerator.this._int(e.beginShift)));
+				OldParserGenerator.this.Statement(
+						OldParserGenerator.this._Func("beginTree", OldParserGenerator.this._int(e.beginShift)));
 			}
 			this.visit(e.get(0), a);
-			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("endTree", OldParserGenerator.this._int(e.endShift),
-					OldParserGenerator.this._tag(e.tag), OldParserGenerator.this._text(e.value)));
+			OldParserGenerator.this
+					.Statement(OldParserGenerator.this._Func("endTree", OldParserGenerator.this._int(e.endShift),
+							OldParserGenerator.this._tag(e.tag), OldParserGenerator.this._text(e.value)));
 			return null;
 		}
 
@@ -1615,7 +1620,8 @@ public abstract class OldParserGenerator
 
 		@Override
 		public Object visitTag(PTag e, Object a) {
-			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("tagTree", OldParserGenerator.this._tag(e.tag)));
+			OldParserGenerator.this
+					.Statement(OldParserGenerator.this._Func("tagTree", OldParserGenerator.this._tag(e.tag)));
 			return null;
 		}
 
@@ -1643,8 +1649,8 @@ public abstract class OldParserGenerator
 			this.BeginScope();
 			String n = this.SaveSymbolTable();
 			if (e.label != null) {
-				OldParserGenerator.this
-						.Statement(OldParserGenerator.this._Func("addSymbolMask", OldParserGenerator.this._table(e.label)));
+				OldParserGenerator.this.Statement(
+						OldParserGenerator.this._Func("addSymbolMask", OldParserGenerator.this._table(e.label)));
 			}
 			this.visit(e.get(0), a);
 			this.BackSymbolTable(n);
@@ -2138,11 +2144,11 @@ public abstract class OldParserGenerator
 	// }
 
 	protected void InitMemoPoint() {
-		if (this.code.getMemoPointSize() > 0) {
-			this.Statement(this._Func("initMemo",
-					"64/*FIXME*/"/*
-									 * _int(strategy.SlidingWindow )
-									 */, this._int(this.code.getMemoPointSize())));
-		}
+		// if (this.code.getMemoPointSize() > 0) {
+		// this.Statement(this._Func("initMemo",
+		// "64/*FIXME*/"/*
+		// * _int(strategy.SlidingWindow )
+		// */, this._int(this.code.getMemoPointSize())));
+		// }
 	}
 }

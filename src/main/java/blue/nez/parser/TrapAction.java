@@ -17,5 +17,5 @@
 package blue.nez.parser;
 
 public interface TrapAction {
-	void performed(PAsmContext<?> context, int uid);
+	void performed(ParserContext context, int uid);
 }

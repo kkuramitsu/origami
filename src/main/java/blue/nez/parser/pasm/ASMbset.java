@@ -1,9 +1,5 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.PAsmInst;
-
 public class ASMbset extends PAsmInst {
 	public final boolean[] bools;
 
@@ -13,17 +9,8 @@ public class ASMbset extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitSet(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> px) throws ParserTerminationException {
-		int byteChar = px.nextbyte();
-		if (this.bools[byteChar]) {
-			return this.next;
-		}
-		return px.raiseFail();
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		return (this.bools[nextbyte(px)]) ? this.next : raiseFail(px);
 	}
 
 }

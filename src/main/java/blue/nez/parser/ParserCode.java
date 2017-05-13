@@ -13,61 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***********************************************************************/
-
 package blue.nez.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 
-import blue.nez.parser.ParserGrammar.MemoPoint;
+import blue.nez.ast.LocaleFormat;
+import blue.nez.ast.Source;
+import blue.nez.ast.SourcePosition;
+import blue.nez.parser.pasm.PAsmAPI.TreeFunc;
+import blue.nez.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.util.OOption;
 
-public abstract class ParserCode<I> implements ParserExecutable {
+public interface ParserCode {
+	public ParserGrammar getParserGrammar();
 
-	protected final OOption options;
-	protected final ParserGrammar grammar;
-	protected ArrayList<I> codeList;
-	protected HashMap<String, I> codeMap;
+	public int match(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree);
 
-	protected ParserCode(ParserGrammar grammar, OOption options, I[] initArray) {
-		this.options = options;
-		this.grammar = grammar;
-		this.codeList = initArray != null ? new ArrayList<>() : null;
-		this.codeMap = new HashMap<>();
+	public Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException;
+
+	public default void checkSyntaxError(OOption options, Object result) {
+
 	}
 
-	@Override
-	public final ParserGrammar getGrammar() {
-		return this.grammar;
+	default void perror(OOption options, SourcePosition s, LocaleFormat message) throws IOException {
+		if (options.is(ParserOption.ThrowingParserError, true)) {
+			throw new ParserErrorException(s, message);
+		} else {
+			options.reportError(s, message);
+		}
 	}
 
-	public final I getStartInstruction() {
-		return this.codeList.get(0);
+	default void pwarn(OOption options, SourcePosition s, LocaleFormat message) throws IOException {
+		if (options.is(ParserOption.ThrowingParserError, true)) {
+			throw new ParserErrorException(s, message);
+		} else {
+			options.reportWarning(s, message);
+		}
 	}
 
-	public final void setInstruction(String uname, I inst) {
-		this.codeMap.put(uname, inst);
+	@SuppressWarnings("serial")
+	public static class ParserErrorException extends IOException {
+		final SourcePosition s;
+		final LocaleFormat message;
+
+		public ParserErrorException(SourcePosition s, LocaleFormat message) {
+			this.s = s;
+			this.message = message;
+		}
+
+		@Override
+		public final String toString() {
+			return SourcePosition.formatErrorMessage(this.s, this.message);
+		}
 	}
 
-	public final I getInstruction(String uname) {
-		return this.codeMap.get(uname);
-	}
-
-	public final int getInstructionSize() {
-		return this.codeList.size();
-	}
-
-	public final void initMemoPoint() {
-		this.grammar.initMemoPoint();
-	}
-
-	public final MemoPoint getMemoPoint(String uname) {
-		return this.grammar.getMemoPoint(uname);
-	}
-
-	public final int getMemoPointSize() {
-		return this.grammar.getMemoPointSize();
-	}
-
-	abstract public void dump();
 }

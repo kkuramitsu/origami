@@ -14,12 +14,11 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.nez.parser.pasm;
 
-import blue.nez.parser.pasm.PegAsm;
-import blue.nez.parser.pasm.PegAsmVisitor;
+import java.lang.reflect.Field;
 
-public abstract class PAsmInst {
+public abstract class PAsmInst extends PAsmAPI {
 	public int id;
 	public boolean joinPoint = false;
 	public final PAsmFunc apply;
@@ -38,20 +37,34 @@ public abstract class PAsmInst {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		PegAsm.stringfy(this, sb);
+		sb.append(this.getClass().getSimpleName().replace("ASM", ""));
+		for (Field f : this.getClass().getDeclaredFields()) {
+			sb.append(" ");
+			sb.append(f.getName());
+			sb.append("=");
+			this.value(sb, f);
+		}
 		return sb.toString();
 	}
 
-	public abstract void visit(PegAsmVisitor v);
-
-	public abstract PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException;
-
-	public final boolean isIncrementedNext() {
-		if (this.next != null) {
-			return this.next.id == this.id + 1;
+	private void value(StringBuilder sb, Field f) {
+		try {
+			Object v = f.get(this);
+			sb.append(v);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			sb.append("?");
 		}
-		return true; // RET or instructions that are unnecessary to go next
 	}
+	// public abstract void visit(PegAsmVisitor v);
+
+	public abstract PAsmInst exec(PAsmContext sc) throws PAsmTerminationException;
+
+	// public final boolean isIncrementedNext() {
+	// if (this.next != null) {
+	// return this.next.id == this.id + 1;
+	// }
+	// return true; // RET or instructions that are unnecessary to go next
+	// }
 
 	public PAsmInst branch() {
 		return null;

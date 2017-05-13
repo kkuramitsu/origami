@@ -1,35 +1,26 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.ast.Symbol;
-import blue.nez.parser.ParserContext;
 import blue.nez.parser.ParserGrammar.MemoPoint;
-import blue.nez.parser.pasm.PegAsm.AbstMemo;
-import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.PAsmInst;
 
-public final class ASMMlookupTree extends AbstMemo {
-	public final Symbol label;
+public final class ASMMlookupTree extends PAsmInst {
+	public final int memoPoint;
+	public final PAsmInst jump;
 
-	public ASMMlookupTree(MemoPoint m, PAsmInst next, PAsmInst skip) {
-		super(m, m.isStateful(), next, skip);
-		this.label = null;
+	public ASMMlookupTree(MemoPoint m, PAsmInst found, PAsmInst unfound) {
+		super(found);
+		this.memoPoint = m.id;
+		this.jump = unfound;
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitTLookup(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		switch (sc.lookupTreeMemo(this.uid)) {
-		case ParserContext.NotFound:
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		switch (lookupMemo3(px, this.memoPoint)) {
+		case PAsmAPI.NotFound:
 			return this.next;
-		case ParserContext.SuccFound:
+		case PAsmAPI.SuccFound:
 			return this.jump;
 		default:
-			return sc.raiseFail();
+			return raiseFail(px);
 		}
 	}
 

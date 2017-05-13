@@ -3,13 +3,13 @@ package blue.nez.ast;
 import java.util.AbstractList;
 
 import blue.nez.parser.ParserSource;
-import blue.nez.parser.TreeConnector;
-import blue.nez.parser.TreeConstructor;
+import blue.nez.parser.pasm.PAsmAPI.TreeFunc;
+import blue.nez.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.StringCombinator;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
-		implements SourcePosition, StringCombinator, TreeConstructor<E>, TreeConnector<E> {
+		implements SourcePosition, StringCombinator, TreeFunc, TreeSetFunc {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -38,11 +38,6 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		this.subTree = subTree;
 		this.value = value == null ? source : value;
 		this.subTreeLabels = (this.subTree != null) ? new Symbol[this.subTree.length] : EmptyLabels;
-	}
-
-	@Override
-	public final void link(E parent, int n, Symbol label, E child) {
-		parent.set(n, label, child);
 	}
 
 	protected abstract E dupImpl();

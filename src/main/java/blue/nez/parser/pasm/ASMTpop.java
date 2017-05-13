@@ -1,9 +1,5 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.PAsmInst;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.ParserTerminationException;
-
 public final class ASMTpop extends PAsmInst {
 
 	public ASMTpop(PAsmInst next) {
@@ -11,13 +7,8 @@ public final class ASMTpop extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitTPop(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> px) throws ParserTerminationException {
-		px.popTree();
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		popTree(px);
 		return this.next;
 	}
 

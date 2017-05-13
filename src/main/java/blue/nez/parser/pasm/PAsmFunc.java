@@ -14,8 +14,10 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.nez.parser.pasm;
+
+import blue.nez.parser.pasm.PAsmAPI.PAsmContext;
 
 public interface PAsmFunc {
-	public PAsmInst exec(PAsmContext<?> px) throws ParserTerminationException;
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException;
 }

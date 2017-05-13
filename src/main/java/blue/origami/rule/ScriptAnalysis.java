@@ -28,8 +28,6 @@ import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Tree;
 import blue.nez.parser.Parser;
 import blue.nez.parser.ParserSource;
-import blue.nez.parser.TreeConnector;
-import blue.nez.parser.TreeConstructor;
 import blue.origami.asm.OAnno;
 import blue.origami.ffi.OAlias;
 import blue.origami.ffi.OCast;
@@ -45,9 +43,9 @@ import blue.origami.lang.OTypeName;
 import blue.origami.lang.type.OLocalClassType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
-import blue.origami.ocode.OCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.MultiCode;
+import blue.origami.ocode.OCode;
 import blue.origami.ocode.ReturnCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.OTree;
@@ -222,7 +220,7 @@ public interface ScriptAnalysis {
 		}
 		Source sc = ParserSource.newFileSource(path, null);
 		Parser p = env.get(Parser.class);
-		return p.parse(sc, 0, (TreeConstructor<Tree<?>>) t, (TreeConnector<Tree<?>>) t);
+		return (Tree<?>) p.parse(sc, 0, t, t);
 	}
 
 	public default Tree<?> loadScriptFile(OEnv env, String file) throws IOException {

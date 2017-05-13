@@ -1,9 +1,5 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.PAsmInst;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.ParserTerminationException;
-
 public final class ASMmove extends PAsmInst {
 	public final int shift;
 
@@ -13,13 +9,8 @@ public final class ASMmove extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitMove(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		sc.move(this.shift);
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		move(px, this.shift);
 		return this.next;
 	}
 

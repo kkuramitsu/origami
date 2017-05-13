@@ -1,9 +1,5 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.PAsmInst;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.ParserTerminationException;
-
 public final class ASMtrap extends PAsmInst {
 	public final int type;
 	public final int uid;
@@ -15,13 +11,8 @@ public final class ASMtrap extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitTrap(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		sc.trap(this.type, this.uid);
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		px.trap(this.type, this.uid);
 		return this.next;
 	}
 }

@@ -238,7 +238,7 @@ public class Duplicator<A> extends AbstractExpressionVisitor<A> {
 	public Expression visitSymbolPredicate(PSymbolPredicate e, A a) {
 		Expression e0 = this.dup(e, 0, a);
 		if (e0 != e.get(0) || this.enableFullDuplication) {
-			return new PSymbolPredicate(e.pred, e.label, (PNonTerminal) e0, e.thunk);
+			return new PSymbolPredicate(e.pred, e.label, (PNonTerminal) e0);
 		}
 		return e;
 	}

@@ -1,22 +1,22 @@
 package blue.nez.peg.expression;
 
 import blue.nez.ast.Symbol;
-import blue.nez.parser.ParserContext.SymbolAction;
+import blue.nez.parser.pasm.PAsmAPI.SymbolFunc;
 import blue.nez.peg.ExpressionVisitor;
 
 public class PSymbolAction extends PUnary {
-	public final SymbolAction action;
+	public final SymbolFunc action;
 	public final Symbol label;
 	public final Object thunk;
 
-	public PSymbolAction(SymbolAction func, Symbol label, PNonTerminal e) {
+	public PSymbolAction(SymbolFunc func, Symbol label, PNonTerminal e) {
 		super(e);
 		this.action = func;
 		this.label = label;
 		this.thunk = null;
 	}
 
-	public PSymbolAction(SymbolAction func, String label, PNonTerminal e) {
+	public PSymbolAction(SymbolFunc func, String label, PNonTerminal e) {
 		this(func, Symbol.nullUnique(label), e);
 	}
 

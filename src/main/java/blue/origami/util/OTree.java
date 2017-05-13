@@ -33,14 +33,9 @@ public class OTree extends Tree<OTree> {
 	}
 
 	@Override
-	public OTree newTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
-		return new OTree(tag, source, pos, len, size, value);
-	}
-
-	@Override
 	protected OTree dupImpl() {
 		OTree t = new OTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
-				getValue());
+				this.getValue());
 		// t.rule = this.rule;
 		return t;
 	}
@@ -48,6 +43,17 @@ public class OTree extends Tree<OTree> {
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
 		throw new ErrorCode(null, this, OFmt.YY0_does_not_exist, "$" + label);
+	}
+
+	@Override
+	public Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
+		return new OTree(tag, s, spos, epos - spos, nsubs, value);
+	}
+
+	@Override
+	public Object apply(Object parent, int index, Symbol label, Object child) {
+		((OTree) parent).set(index, label, (OTree) child);
+		return parent;
 	}
 
 }

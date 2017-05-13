@@ -1,25 +1,18 @@
 package blue.nez.parser.pasm;
 
 import blue.nez.parser.ParserGrammar.MemoPoint;
-import blue.nez.parser.pasm.PegAsm.AbstMemo;
-import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.PAsmInst;
 
-public final class ASMMmemoSucc extends AbstMemo {
+public final class ASMMmemoSucc extends PAsmInst {
+	public final int memoPoint;
+
 	public ASMMmemoSucc(MemoPoint m, PAsmInst next) {
-		super(m, m.isStateful(), next);
+		super(next);
+		this.memoPoint = m.id;
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitMemo(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		int ppos = sc.xSuccPos();
-		sc.setSuccMemo(this.uid, ppos);
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		storeMemo(px, this.memoPoint, popFail(px), true);
 		return this.next;
 	}
 }

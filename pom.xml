@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>blue.origami</groupId>
   <artifactId>origami</artifactId>
-  <version>0.0.1</version>
+  <version>0.1.1</version>
   <name>Origami</name>
   <description>ORIGAMI: A Language Engineering Framework</description>
   <dependencies>

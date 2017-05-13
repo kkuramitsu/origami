@@ -1,25 +1,15 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.PAsmInst;
-import blue.nez.parser.pasm.PegAsm.AbstByte;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.ParserTerminationException;
+public class ASMbyte extends PAsmInst {
+	public final int byteChar;
 
-public class ASMbyte extends AbstByte {
 	public ASMbyte(int byteChar, PAsmInst next) {
-		super(byteChar, next);
+		super(next);
+		this.byteChar = byteChar;
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitByte(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> px) throws ParserTerminationException {
-		if (px.nextbyte() == this.byteChar) {
-			return this.next;
-		}
-		return px.raiseFail();
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		return (nextbyte(px) == this.byteChar) ? this.next : raiseFail(px);
 	}
 }

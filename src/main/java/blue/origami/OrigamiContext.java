@@ -34,8 +34,8 @@ import blue.origami.lang.type.OTypeSystem;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.OCodeWriter;
-import blue.origami.rule.ScriptAnalysis;
 import blue.origami.rule.OrigamiTypeSystem;
+import blue.origami.rule.ScriptAnalysis;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -161,14 +161,14 @@ public class OrigamiContext extends OEnv.OBaseEnv {
 
 		public void load(OEnv env, Source sc) throws Throwable {
 			Parser p = env.get(Parser.class);
-			Tree<?> t = p.parse(sc, 0, this.defaultTree, this.defaultTree);
+			Tree<?> t = (OTree) p.parse(sc, 0, this.defaultTree, this.defaultTree);
 			OCode code = this.typeExpr(env, t);
 			code.eval(env);
 		}
 
 		private Tree<?> parseTree(OEnv env, Source sc) throws IOException {
 			Parser p = env.get(Parser.class);
-			return p.parse(sc, 0, this.defaultTree, this.defaultTree);
+			return (OTree) p.parse(sc, 0, this.defaultTree, this.defaultTree);
 		}
 
 		public Object eval(OEnv env, Source sc) throws Throwable {

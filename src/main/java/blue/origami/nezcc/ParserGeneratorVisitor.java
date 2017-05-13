@@ -529,9 +529,10 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	@Override
 	public C visitSymbolPredicate(PSymbolPredicate e, ParserGenerator<B, C> pg) {
 		if (e.isEmpty()) {
-			return pg.callAction(e.getFunctionName(), e.label, e.thunk);
+			return pg.callAction(e.getFunctionName(), e.label, null/* e.thunk */);
 		} else {
-			C main = pg.emitAnd(this.match(e.get(0), pg), pg.callActionPOS(e.getFunctionName(), e.label, e.thunk));
+			C main = pg.emitAnd(
+					this.match(e.get(0), pg), pg.callActionPOS(e.getFunctionName(), e.label, null/* e.thunk */));
 			return this.emitVarDecl(pg, POS, pg.emitReturn(main));
 		}
 	}

@@ -14,13 +14,13 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.nez.parser.pasm;
 
 @SuppressWarnings("serial")
-public class ParserTerminationException extends Exception {
+public class PAsmTerminationException extends Exception {
 	public boolean status;
 
-	public ParserTerminationException(boolean status) {
+	public PAsmTerminationException(boolean status) {
 		super();
 		this.status = status;
 	}

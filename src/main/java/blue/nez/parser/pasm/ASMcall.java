@@ -1,10 +1,5 @@
 package blue.nez.parser.pasm;
 
-import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.PAsmContext.StackData;
-import blue.nez.parser.PAsmInst;
-
 public class ASMcall extends PAsmInst {
 	public PAsmInst jump = null;
 	public String uname;
@@ -25,14 +20,8 @@ public class ASMcall extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitCall(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> px) throws ParserTerminationException {
-		StackData s = px.newUnusedStack();
-		s.ref = this.jump;
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		pushRet(px, this.jump);
 		return this.next;
 	}
 

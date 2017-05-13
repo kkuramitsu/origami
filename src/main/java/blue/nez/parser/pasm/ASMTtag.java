@@ -1,9 +1,6 @@
 package blue.nez.parser.pasm;
 
 import blue.nez.ast.Symbol;
-import blue.nez.parser.PAsmInst;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.ParserTerminationException;
 
 public final class ASMTtag extends PAsmInst {
 	public final Symbol tag;
@@ -14,13 +11,8 @@ public final class ASMTtag extends PAsmInst {
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		v.visitTTag(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		sc.tagTree(this.tag);
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		tagTree(px, this.tag);
 		return this.next;
 	}
 

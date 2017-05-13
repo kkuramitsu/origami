@@ -19,9 +19,6 @@ package blue.nez.parser.pasm;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-import blue.nez.ast.Symbol;
-import blue.nez.parser.ParserGrammar.MemoPoint;
-import blue.nez.parser.PAsmInst;
 import blue.origami.util.OStringUtils;
 
 public class PegAsm {
@@ -183,23 +180,23 @@ public class PegAsm {
 		}
 		return inst;
 	}
+	//
+	// static abstract class AbstByte extends PAsmInst {
+	// public final int byteChar;
+	//
+	// AbstByte(int byteChar, PAsmInst next) {
+	// super(next);
+	// this.byteChar = byteChar;
+	// }
+	//
+	// }
 
-	static abstract class AbstByte extends PAsmInst {
-		public final int byteChar;
-
-		AbstByte(int byteChar, PAsmInst next) {
-			super(next);
-			this.byteChar = byteChar;
-		}
-
-	}
-
-	static abstract class AbstAny extends PAsmInst {
-		AbstAny(PAsmInst next) {
-			super(next);
-		}
-
-	}
+	// static abstract class AbstAny extends PAsmInst {
+	// AbstAny(PAsmInst next) {
+	// super(next);
+	// }
+	//
+	// }
 
 	// static abstract class AbstSet extends PegAsmInstruction {
 	// public final boolean[] bools;
@@ -210,56 +207,56 @@ public class PegAsm {
 	// }
 	//
 	// }
-
-	static abstract class AbstStr extends PAsmInst {
-		public final byte[] utf8;
-
-		public AbstStr(byte[] utf8, PAsmInst next) {
-			super(next);
-			this.utf8 = utf8;
-		}
-	}
+	//
+	// static abstract class AbstStr extends PAsmInst {
+	// public final byte[] utf8;
+	//
+	// public AbstStr(byte[] utf8, PAsmInst next) {
+	// super(next);
+	// this.utf8 = utf8;
+	// }
+	// }
 
 	// Tree Construction
 
 	/* Symbol */
-
-	static abstract class AbstractTableInstruction extends PAsmInst {
-		public final Symbol label;
-
-		AbstractTableInstruction(Symbol label, PAsmInst next) {
-			super(next);
-			this.label = label;
-		}
-
-	}
+	//
+	// static abstract class AbstractTableInstruction extends PAsmInst {
+	// public final Symbol label;
+	//
+	// AbstractTableInstruction(Symbol label, PAsmInst next) {
+	// super(next);
+	// this.label = label;
+	// }
+	//
+	// }
 
 	/* Number */
 
 	/* Memoization */
 
-	static abstract class AbstMemo extends PAsmInst {
-		final MemoPoint memoPoint;
-		public final int uid;
-		public final boolean state;
-		public final PAsmInst jump;
-
-		AbstMemo(MemoPoint m, boolean state, PAsmInst next, PAsmInst skip) {
-			super(next);
-			this.memoPoint = m;
-			this.uid = m.id;
-			this.jump = joinPoint(skip);
-			this.state = state;
-		}
-
-		AbstMemo(MemoPoint m, boolean state, PAsmInst next) {
-			super(next);
-			this.memoPoint = m;
-			this.uid = m.id;
-			this.state = state;
-			this.jump = null;
-		}
-
-	}
+	// static abstract class AbstMemo extends PAsmInst {
+	// final MemoPoint memoSpec;
+	// public final int memoPoint;
+	// public final boolean state;
+	// public final PAsmInst jump;
+	//
+	// AbstMemo(MemoPoint m, boolean state, PAsmInst next, PAsmInst skip) {
+	// super(next);
+	// this.memoSpec = m;
+	// this.memoPoint = m.id;
+	// this.jump = joinPoint(skip);
+	// this.state = state;
+	// }
+	//
+	// AbstMemo(MemoPoint m, boolean state, PAsmInst next) {
+	// super(next);
+	// this.memoSpec = m;
+	// this.memoPoint = m.id;
+	// this.state = state;
+	// this.jump = null;
+	// }
+	//
+	// }
 
 }

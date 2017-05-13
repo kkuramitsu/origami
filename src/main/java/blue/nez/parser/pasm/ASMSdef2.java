@@ -1,30 +1,20 @@
 package blue.nez.parser.pasm;
 
 import blue.nez.ast.Symbol;
-import blue.nez.parser.ParserContext.SymbolAction;
-import blue.nez.parser.pasm.PegAsm.AbstractTableInstruction;
-import blue.nez.parser.ParserTerminationException;
-import blue.nez.parser.PAsmContext;
-import blue.nez.parser.PAsmInst;
 
-public final class ASMSdef2 extends AbstractTableInstruction {
-	public final SymbolAction action;
-	public final Object thunk;
+public final class ASMSdef2 extends PAsmInst {
+	public final Symbol tag;
+	public final SymbolFunc action;
 
-	public ASMSdef2(SymbolAction action, Symbol label, Object thunk, PAsmInst next) {
-		super(label, next);
+	public ASMSdef2(SymbolFunc action, Symbol tag, PAsmInst next) {
+		super(next);
+		this.tag = tag;
 		this.action = action;
-		this.thunk = thunk;
 	}
 
 	@Override
-	public void visit(PegAsmVisitor v) {
-		// v.visitSDef(this);
-	}
-
-	@Override
-	public PAsmInst exec(PAsmContext<?> sc) throws ParserTerminationException {
-		this.action.mutate(sc, this.label, sc.pos, this.thunk);
+	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
+		this.action.apply(px, px.state, this.tag, px.pos);
 		return this.next;
 	}
 

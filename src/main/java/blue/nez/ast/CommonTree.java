@@ -26,11 +26,6 @@ public class CommonTree extends Tree<CommonTree> {
 		super(tag, source, pos, len, size > 0 ? new CommonTree[size] : null, value);
 	}
 
-	@Override
-	public CommonTree newTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
-		return new CommonTree(tag, source, pos, len, size, value);
-	}
-
 	public CommonTree newInstance(Symbol tag, int size, Object value) {
 		return new CommonTree(tag, this.getSource(), this.getSourcePosition(), 0, size, value);
 	}
@@ -38,7 +33,25 @@ public class CommonTree extends Tree<CommonTree> {
 	@Override
 	protected CommonTree dupImpl() {
 		return new CommonTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
-				getValue());
+				this.getValue());
+	}
+
+	@Override
+	public Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
+		Object t = new CommonTree(tag, s, spos, epos - spos, nsubs, value);
+		// if (nsubs == 0) {
+		// System.out.println(t);
+		// }
+		return t;
+	}
+
+	@Override
+	public Object apply(Object tree, int index, Symbol label, Object child) {
+		((CommonTree) tree).set(index, label, (CommonTree) child);
+		// if (index == 0) {
+		// System.out.println(tree);
+		// }
+		return tree;
 	}
 
 }

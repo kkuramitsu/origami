@@ -14,69 +14,17 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.nez.parser;
+package blue.nez.parser.pasm;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.nez.parser.ParserContext.SymbolDefinition;
-import blue.nez.parser.ParserContext.SymbolReset;
+import blue.nez.parser.ParserCompiler;
+import blue.nez.parser.ParserGrammar;
 import blue.nez.parser.ParserGrammar.MemoPoint;
-import blue.nez.parser.pasm.ASMMlookup;
-import blue.nez.parser.pasm.ASMMlookupTree;
-import blue.nez.parser.pasm.ASMMmemoFail;
-import blue.nez.parser.pasm.ASMMmemoSucc;
-import blue.nez.parser.pasm.ASMMmemoTree;
-import blue.nez.parser.pasm.ASMNany;
-import blue.nez.parser.pasm.ASMNbin;
-import blue.nez.parser.pasm.ASMNbinset;
-import blue.nez.parser.pasm.ASMNbset;
-import blue.nez.parser.pasm.ASMNbyte;
-import blue.nez.parser.pasm.ASMNstr;
-import blue.nez.parser.pasm.ASMObin;
-import blue.nez.parser.pasm.ASMObinset;
-import blue.nez.parser.pasm.ASMObset;
-import blue.nez.parser.pasm.ASMObyte;
-import blue.nez.parser.pasm.ASMOstr;
-import blue.nez.parser.pasm.ASMRbin;
-import blue.nez.parser.pasm.ASMRbinset;
-import blue.nez.parser.pasm.ASMRbset;
-import blue.nez.parser.pasm.ASMRbyte;
-import blue.nez.parser.pasm.ASMRstr;
-import blue.nez.parser.pasm.ASMSDec;
-import blue.nez.parser.pasm.ASMSScan;
-import blue.nez.parser.pasm.ASMSbegin;
-import blue.nez.parser.pasm.ASMSdef;
-import blue.nez.parser.pasm.ASMSdef2;
-import blue.nez.parser.pasm.ASMSend;
-import blue.nez.parser.pasm.ASMSpred;
-import blue.nez.parser.pasm.ASMSpred2;
-import blue.nez.parser.pasm.ASMTbegin;
-import blue.nez.parser.pasm.ASMTend;
-import blue.nez.parser.pasm.ASMTfold;
-import blue.nez.parser.pasm.ASMTlink;
-import blue.nez.parser.pasm.ASMTmut;
-import blue.nez.parser.pasm.ASMTpop;
-import blue.nez.parser.pasm.ASMTpush;
-import blue.nez.parser.pasm.ASMTtag;
-import blue.nez.parser.pasm.ASMalt;
-import blue.nez.parser.pasm.ASMany;
-import blue.nez.parser.pasm.ASMback;
-import blue.nez.parser.pasm.ASMbin;
-import blue.nez.parser.pasm.ASMbinset;
-import blue.nez.parser.pasm.ASMbset;
-import blue.nez.parser.pasm.ASMbyte;
-import blue.nez.parser.pasm.ASMcall;
-import blue.nez.parser.pasm.ASMdfa;
-import blue.nez.parser.pasm.ASMdispatch;
-import blue.nez.parser.pasm.ASMfail;
-import blue.nez.parser.pasm.ASMnop;
-import blue.nez.parser.pasm.ASMpos;
-import blue.nez.parser.pasm.ASMret;
-import blue.nez.parser.pasm.ASMstep;
-import blue.nez.parser.pasm.ASMsucc;
-import blue.nez.parser.pasm.ASMtrap;
-import blue.nez.parser.pasm.PegAsm;
+import blue.nez.parser.ParserOption;
+import blue.nez.parser.pasm.PAsmAPI.SymbolDefFunc;
+import blue.nez.parser.pasm.PAsmAPI.SymbolResetFunc;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Production;
@@ -99,7 +47,6 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -107,18 +54,18 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.OOption;
-import blue.origami.util.OStringUtils;
 
-public class PegAsmCompiler implements ParserCompiler {
+public class PAsmCompiler implements ParserCompiler {
 
-	public PegAsmCompiler() {
+	public PAsmCompiler() {
 
 	}
 
 	@Override
 	public ParserCompiler clone() {
-		return new PegAsmCompiler();
+		return new PAsmCompiler();
 	}
 
 	// Local Option
@@ -132,8 +79,8 @@ public class PegAsmCompiler implements ParserCompiler {
 	}
 
 	@Override
-	public PegAsmCode compile(ParserGrammar grammar) {
-		PegAsmCode code = new PegAsmCode(grammar, this.options);
+	public PAsmCode compile(ParserGrammar grammar) {
+		PAsmCode code = new PAsmCode(grammar, this.options);
 		if (this.enableMemo) {
 			code.initMemoPoint();
 		}
@@ -143,7 +90,7 @@ public class PegAsmCompiler implements ParserCompiler {
 
 	class CompilerVisitor extends ExpressionVisitor<PAsmInst, PAsmInst> {
 
-		final PegAsmCode code;
+		final PAsmCode code;
 		final ParserGrammar grammar;
 
 		boolean TreeConstruction = true;
@@ -151,16 +98,19 @@ public class PegAsmCompiler implements ParserCompiler {
 		boolean BinaryGrammar = false;
 		boolean Optimization = true;
 
-		CompilerVisitor(PegAsmCode code, ParserGrammar grammar, OOption options) {
+		CompilerVisitor(PAsmCode code, ParserGrammar grammar, OOption options) {
 			this.code = code;
 			this.grammar = grammar;
 			this.BinaryGrammar = grammar.isBinary();
 			this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
+			// this.enableMemo = (grammar.getMemoPointSize() > 0);
+			// if (grammar.getMemoPointSize() > 0) {
 			this.enableMemo = options.is(ParserOption.PackratParsing, true);
-
+			// }
+			// System.out.println("******** Memo=" + this.enableMemo);
 		}
 
-		private PegAsmCode compileAll() {
+		private PAsmCode compileAll() {
 			for (Production p : this.grammar) {
 				this.compileProduction(this.code.codeList(), p, new ASMret());
 			}
@@ -187,17 +137,15 @@ public class PegAsmCompiler implements ParserCompiler {
 		private PAsmInst compileProductionExpression(MemoPoint memoPoint, Expression p, PAsmInst next) {
 			if (memoPoint != null) {
 				if (memoPoint.typeState == Typestate.Unit) {
-					PAsmInst memo = new ASMMmemoSucc(memoPoint, next);
-					PAsmInst inside = this.compile(p, memo);
-					PAsmInst failmemo = new ASMMmemoFail(memoPoint);
-					inside = new ASMalt(failmemo, inside);
-					return new ASMMlookup(memoPoint, inside, next);
+					PAsmInst succMemo = this.compile(p, new ASMMmemoSucc(memoPoint, next));
+					PAsmInst failMemo = new ASMMmemoFail(memoPoint);
+					PAsmInst memo = new ASMalt(succMemo, failMemo);
+					return new ASMMlookup(memoPoint, memo, next);
 				} else {
-					PAsmInst memo = new ASMMmemoTree(memoPoint, next);
-					PAsmInst inside = this.compile(p, memo);
-					PAsmInst failmemo = new ASMMmemoFail(memoPoint);
-					inside = new ASMalt(failmemo, inside);
-					return new ASMMlookupTree(memoPoint, inside, next);
+					PAsmInst succMemo = this.compile(p, new ASMMmemoTree(memoPoint, next));
+					PAsmInst failMemo = new ASMMmemoFail(memoPoint);
+					PAsmInst memo = new ASMalt(succMemo, failMemo);
+					return new ASMMlookupTree(memoPoint, memo, next);
 				}
 			}
 			return this.compile(p, next);
@@ -249,7 +197,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		@Override
 		public PAsmInst visitByte(PByte p, PAsmInst next) {
 			if (/* this.BinaryGrammar && */ p.byteChar() == 0) {
-				return new ASMbin(next);
+				next = new ASMNeof(next);
 			}
 			return new ASMbyte(p.byteChar(), next);
 		}
@@ -258,9 +206,9 @@ public class PegAsmCompiler implements ParserCompiler {
 		public PAsmInst visitByteSet(PByteSet p, PAsmInst next) {
 			boolean[] b = p.bools();
 			if (this.BinaryGrammar && b[0]) {
-				return new ASMbinset(b, next);
+				next = new ASMNeof(next);
 			}
-			b[0] = false;
+			// b[0] = false;
 			return new ASMbset(b, next);
 		}
 
@@ -290,17 +238,16 @@ public class PegAsmCompiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() == 0) {
-						return new ASMObin(next);
+					if (((PByte) inner).byteChar() == 0) {
+						next = new ASMNeof(next);
 					}
 					return new ASMObyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).bools();
-					if (this.BinaryGrammar && b[0]) {
-						return new ASMObinset(b, next);
+					if (b[0]) {
+						next = new ASMNeof(next);
 					}
-					b[0] = false;
 					return new ASMObset(b, next);
 				}
 				if (Expression.isMultiBytes(inner)) {
@@ -309,7 +256,7 @@ public class PegAsmCompiler implements ParserCompiler {
 				}
 			}
 			PAsmInst pop = new ASMsucc(next);
-			return new ASMalt(next, this.compile(p.get(0), pop));
+			return new ASMalt(this.compile(p.get(0), pop), next);
 		}
 
 		@Override
@@ -325,18 +272,15 @@ public class PegAsmCompiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() == 0) {
-						return new ASMRbin(next);
+					if (((PByte) inner).byteChar() != 0) {
+						return new ASMRbyte(((PByte) inner).byteChar(), next);
 					}
-					return new ASMRbyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).bools();
-					if (this.BinaryGrammar && b[0]) {
-						return new ASMRbinset(b, next);
+					if (!b[0]) {
+						return new ASMRbset(b, next);
 					}
-					b[0] = false;
-					return new ASMRbset(b, next);
 				}
 				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
@@ -346,7 +290,7 @@ public class PegAsmCompiler implements ParserCompiler {
 			PAsmInst skip = new ASMstep();
 			PAsmInst start = this.compile(p.get(0), skip);
 			skip.next = PegAsm.joinPoint(start);
-			return new ASMalt(next, start);
+			return new ASMalt(start, next);
 		}
 
 		@Override
@@ -361,17 +305,18 @@ public class PegAsmCompiler implements ParserCompiler {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
 					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() != 0) {
-						return new ASMNbin(((PByte) inner).byteChar(), next);
+						next = new ASMNeof(next);
 					}
 					return new ASMNbyte(((PByte) inner).byteChar(), next);
 				}
-				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).bools();
-					if (this.BinaryGrammar && b[0] == false) {
-						return new ASMNbinset(b, next);
-					}
-					return new ASMNbset(b, next);
-				}
+				// if (inner instanceof PByteSet) {
+				// boolean[] b = ((PByteSet) inner).bools();
+				// if (this.BinaryGrammar && b[0] == false) {
+				// next = new ASMNeof(next);
+				// return new ASMNbinset(b, next);
+				// }
+				// return new ASMNbset(b, next);
+				// }
 				if (inner instanceof PAny) {
 					return new ASMNany(next);
 				}
@@ -381,7 +326,7 @@ public class PegAsmCompiler implements ParserCompiler {
 				}
 			}
 			PAsmInst fail = new ASMsucc(new ASMfail());
-			return new ASMalt(next, this.compile(p.get(0), fail));
+			return new ASMalt(this.compile(p.get(0), fail), next);
 		}
 
 		@Override
@@ -399,7 +344,7 @@ public class PegAsmCompiler implements ParserCompiler {
 			PAsmInst nextChoice = this.compile(p.get(p.size() - 1), next);
 			for (int i = p.size() - 2; i >= 0; i--) {
 				Expression e = p.get(i);
-				nextChoice = new ASMalt(nextChoice, this.compile(e, new ASMsucc(next)));
+				nextChoice = new ASMalt(this.compile(e, new ASMsucc(next)), nextChoice);
 			}
 			return nextChoice;
 		}
@@ -453,7 +398,6 @@ public class PegAsmCompiler implements ParserCompiler {
 				next = new ASMTend(p.tag, p.value, p.endShift, next);
 				next = this.compile(p.get(0), next);
 				if (p.folding) {
-					// System.out.println("@@@ folding" + p);
 					return new ASMTfold(p.label, p.beginShift, next);
 				} else {
 					return new ASMTbegin(p.beginShift, next);
@@ -473,7 +417,7 @@ public class PegAsmCompiler implements ParserCompiler {
 		@Override
 		public PAsmInst visitValue(PValue p, PAsmInst next) {
 			if (this.TreeConstruction) {
-				return new ASMTmut(p.value, next);
+				return new ASMTvalue(p.value, next);
 			}
 			return next;
 		}
@@ -511,24 +455,20 @@ public class PegAsmCompiler implements ParserCompiler {
 			} else {
 				next = new ASMSend(next);
 				next = this.compile(p.get(0), next);
-				next = new ASMSdef2(new SymbolReset(), p.label, null, next);
+				next = new ASMSdef2(new SymbolResetFunc(), p.label, next);
 				return new ASMSbegin(next);
 			}
 		}
 
 		@Override
 		public PAsmInst visitSymbolAction(PSymbolAction p, PAsmInst next) {
-			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefinition(), p.label, null, next)));
+			return new ASMpos(this.compile(p.get(0), new ASMSdef(new SymbolDefFunc(), p.label, next)));
 		}
 
 		@Override
 		public PAsmInst visitSymbolPredicate(PSymbolPredicate p, PAsmInst next) {
 			if (p.isEmpty()) {
-				if (p.thunk == null) {
-					return new ASMSpred2(p.pred, p.label, null, next);
-				} else {
-					return new ASMSpred2(p.pred, p.label, OStringUtils.utf8(p.thunk.toString()), next);
-				}
+				return new ASMSpred2(p.pred, p.label, next);
 			} else {
 				return new ASMpos(this.compile(p.get(0), new ASMSpred(p.pred, p.label, next)));
 			}
@@ -536,15 +476,18 @@ public class PegAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitScan(PScan p, PAsmInst next) {
-			return new ASMpos(this.compile(p.get(0), new ASMSScan(p.mask, p.shift, next)));
+			return next;
+			// return new ASMpos(this.compile(p.get(0), new ASMSScan(p.mask,
+			// p.shift, next)));
 		}
 
 		@Override
 		public PAsmInst visitRepeat(PRepeat p, PAsmInst next) {
-			PAsmInst check = new ASMSDec(next, null);
-			PAsmInst repeated = this.compile(p.get(0), check);
-			check.next = repeated;
-			return check;
+			return next;
+			// PAsmInst check = new ASMSDec(next, null);
+			// PAsmInst repeated = this.compile(p.get(0), check);
+			// check.next = repeated;
+			// return check;
 		}
 
 		@Override
@@ -565,13 +508,13 @@ public class PegAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitIf(PIfCondition e, PAsmInst next) {
-			PegAsmCompiler.this.options.verbose("unremoved if condition", e);
+			PAsmCompiler.this.options.verbose("unremoved if condition", e);
 			return next;
 		}
 
 		@Override
 		public PAsmInst visitOn(POnCondition e, PAsmInst next) {
-			PegAsmCompiler.this.options.verbose("unremoved on condition", e);
+			PAsmCompiler.this.options.verbose("unremoved on condition", e);
 			return this.compile(e.get(0), next);
 		}
 	}
