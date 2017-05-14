@@ -70,20 +70,15 @@ public class PAsmCompiler implements ParserCompiler {
 
 	// Local Option
 	OOption options = null;
-	boolean enableMemo = false;
 
 	@Override
 	public void init(OOption options) {
 		this.options = options;
-		this.enableMemo = options.is(ParserOption.PackratParsing, true);
 	}
 
 	@Override
 	public PAsmCode compile(ParserGrammar grammar) {
 		PAsmCode code = new PAsmCode(grammar, this.options);
-		if (this.enableMemo) {
-			code.initMemoPoint();
-		}
 		new CompilerVisitor(code, grammar, this.options).compileAll();
 		return code;
 	}
@@ -94,20 +89,14 @@ public class PAsmCompiler implements ParserCompiler {
 		final ParserGrammar grammar;
 
 		boolean TreeConstruction = true;
-		boolean enableMemo = false;
-		boolean BinaryGrammar = false;
-		boolean Optimization = true;
+		// boolean BinaryGrammar = false;
+		boolean Optimization = false;
 
 		CompilerVisitor(PAsmCode code, ParserGrammar grammar, OOption options) {
 			this.code = code;
 			this.grammar = grammar;
-			this.BinaryGrammar = grammar.isBinary();
+			// this.BinaryGrammar = grammar.isBinary();
 			this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
-			// this.enableMemo = (grammar.getMemoPointSize() > 0);
-			// if (grammar.getMemoPointSize() > 0) {
-			this.enableMemo = options.is(ParserOption.PackratParsing, true);
-			// }
-			// System.out.println("******** Memo=" + this.enableMemo);
 		}
 
 		private PAsmCode compileAll() {
@@ -205,7 +194,7 @@ public class PAsmCompiler implements ParserCompiler {
 		@Override
 		public PAsmInst visitByteSet(PByteSet p, PAsmInst next) {
 			boolean[] b = p.bools();
-			if (this.BinaryGrammar && b[0]) {
+			if (b[0]) {
 				next = new ASMNeof(next);
 			}
 			// b[0] = false;

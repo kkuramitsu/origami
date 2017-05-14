@@ -7,7 +7,7 @@ public final class ASMpos extends PAsmInst {
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
-		popPos(px);
+		pushPos(px);
 		return this.next;
 	}
 

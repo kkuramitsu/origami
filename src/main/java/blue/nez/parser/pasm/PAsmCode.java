@@ -29,7 +29,6 @@ import blue.nez.parser.ParserGrammar.MemoPoint;
 import blue.nez.parser.ParserOption;
 import blue.nez.parser.TrapAction;
 import blue.nez.parser.pasm.PAsmAPI.PAsmContext;
-import blue.nez.parser.pasm.PAsmAPI.PAsmStack;
 import blue.nez.parser.pasm.PAsmAPI.TreeFunc;
 import blue.nez.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.nez.peg.NezFmt;
@@ -110,10 +109,6 @@ public class PAsmCode implements ParserCode {
 		return this.codeList.size();
 	}
 
-	void initMemoPoint() {
-		this.grammar.initMemoPoint();
-	}
-
 	MemoPoint getMemoPoint(String uname) {
 		return this.grammar.getMemoPoint(uname);
 	}
@@ -130,20 +125,20 @@ public class PAsmCode implements ParserCode {
 		return -1;
 	}
 
-	private String indent(PAsmContext px) {
-		PAsmStack s = px.unused;
-		int indent = 0;
-		while (s.prev != null) {
-			indent++;
-			s = s.prev;
-		}
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < indent; i++) {
-			sb.append(" ");
-		}
-		return sb.toString();
-
-	}
+	// private String indent(PAsmContext px) {
+	// PAsmStack s = px.unused;
+	// int indent = 0;
+	// while (s.prev != null) {
+	// indent++;
+	// s = s.prev;
+	// }
+	// StringBuilder sb = new StringBuilder();
+	// for (int i = 0; i < indent; i++) {
+	// sb.append(" ");
+	// }
+	// return sb.toString();
+	//
+	// }
 
 	private boolean exec(PAsmContext px, PAsmInst inst) {
 		PAsmInst cur = inst;

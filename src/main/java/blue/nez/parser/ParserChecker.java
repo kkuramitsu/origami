@@ -51,7 +51,6 @@ import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
 import blue.nez.peg.expression.PRepeat;
 import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
@@ -59,6 +58,7 @@ import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
@@ -94,7 +94,11 @@ public class ParserChecker {
 		// if (flags.length > 0) {
 		// g.dump();
 		// }
-		return (ParserGrammar) this.applyPass(g);
+		g = (ParserGrammar) this.applyPass(g);
+		if (this.options.is(ParserOption.PackratParsing, true)) {
+			g.initMemoPoint();
+		}
+		return g;
 	}
 
 	private Grammar applyPass(Grammar g) {

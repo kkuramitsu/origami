@@ -469,7 +469,12 @@ public class PAsmAPI {
 
 	}
 
+	public static enum StackType {
+		Fail, Pos, Tree, State, Ret,
+	}
+
 	public static class PAsmStack {
+		StackType type;
 		int pos;
 		Object tree;
 		TreeLog treeLog;
@@ -500,6 +505,7 @@ public class PAsmAPI {
 
 	public static final void pushFail(PAsmContext px, PAsmInst jump) {
 		PAsmStack s = px.unused;
+		s.type = StackType.Fail;
 		s.pos = px.pos;
 		s.tree = px.tree;
 		s.treeLog = px.treeLog;
@@ -512,6 +518,7 @@ public class PAsmAPI {
 
 	public static final int popFail(PAsmContext px) { // used in succ
 		PAsmStack s = px.longjmp;
+		assert (s.type == StackType.Fail);
 		px.longjmp = s.longjmp;
 		px.unused = s;
 		return s.pos;
@@ -519,13 +526,11 @@ public class PAsmAPI {
 
 	public static final PAsmInst raiseFail(PAsmContext px)/* popFail() */ {
 		PAsmStack s = px.longjmp;
-		// System.out.printf("fail ppos=%d, pos=%d jump=%s\n", s.pos, px.pos,
-		// s.jump);
+		assert (s.type == StackType.Fail);
 		px.backtrack(s.pos);
 		px.tree = s.tree;
 		px.treeLog = s.treeLog;
 		px.state = s.state;
-		// PAsmInst jump = s.jump;
 		px.longjmp = s.longjmp;
 		px.unused = s;
 		return s.jump;
@@ -533,7 +538,7 @@ public class PAsmAPI {
 
 	public static final PAsmInst updateFail(PAsmContext px, PAsmInst next) {
 		PAsmStack s = px.longjmp;
-		assert (s.longjmp != null); // FIXME
+		assert (s.type == StackType.Fail);
 		// System.out.printf("ppos=%d, pos=%d\n", s.pos, px.pos);
 		if (s.pos == px.pos) {
 			return raiseFail(px);
@@ -547,39 +552,39 @@ public class PAsmAPI {
 
 	public static void pushRet(PAsmContext px, PAsmInst jump) {
 		PAsmStack s = px.unused;
-		s.pos = -1; // FIXME
-		s.longjmp = null; // FIXME
+		s.type = StackType.Ret;
 		s.jump = jump;
 		push(px, s);
 	}
 
 	public static final PAsmInst popRet(PAsmContext px) {
 		PAsmStack s = pop(px);
-		if (s.pos != -1) {
-			System.out.println("s.pos = " + s.pos);
+		if (s.type != StackType.Ret) {
+			System.out.println("s.type = " + s.type);
 		}
-		assert (s.pos == -1); // FIXME
+		assert (s.type == StackType.Ret);
 		return s.jump;
 	}
 
 	public static final void pushPos(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.tree = px; // FIXME
-		s.longjmp = null; // FIXME
+		s.type = StackType.Pos;
 		s.pos = px.pos;
 		push(px, s);
 	}
 
 	public static final int popPos(PAsmContext px) {
 		PAsmStack s = pop(px);
-		assert (s.tree == px); // FIXME
+		if (s.type != StackType.Pos) {
+			System.out.println("s.type = " + s.type);
+		}
+		assert (s.type == StackType.Pos);
 		return s.pos;
 	}
 
 	public static final void pushTree(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.pos = -2; // FIXME
-		s.longjmp = null; // FIXME
+		s.type = StackType.Tree;
 		s.tree = px.tree;
 		s.treeLog = px.treeLog;
 		push(px, s);
@@ -587,14 +592,20 @@ public class PAsmAPI {
 
 	public static final void popTree(PAsmContext px) {
 		PAsmStack s = pop(px);
-		assert (s.pos == -2); // FIXME
+		if (s.type != StackType.Tree) {
+			System.out.println("s.type = " + s.type);
+		}
+		assert (s.type == StackType.Tree);
 		px.tree = s.tree;
 		px.treeLog = s.treeLog;
 	}
 
 	public static final void popTree(PAsmContext px, Symbol label) {
 		PAsmStack s = pop(px);
-		assert (s.pos == -2); // FIXME
+		if (s.type != StackType.Tree) {
+			System.out.println("s.type = " + s.type);
+		}
+		assert (s.type == StackType.Tree);
 		px.treeLog = s.treeLog;
 		linkTree(px, label);
 		px.tree = s.tree;
@@ -602,15 +613,14 @@ public class PAsmAPI {
 
 	public static void pushState(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.pos = -3; // FIXME
-		s.longjmp = null; // FIXME
+		s.type = StackType.State;
 		s.state = px.state;
 		push(px, s);
 	}
 
 	public static void popState(PAsmContext px) {
 		PAsmStack s = pop(px);
-		assert (s.pos == -2); // FIXME
+		assert (s.type == StackType.State);
 		px.state = s.state;
 	}
 
