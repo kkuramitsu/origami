@@ -17,7 +17,7 @@
 package blue.nez.parser.pasm;
 
 @SuppressWarnings("serial")
-public class PAsmTerminationException extends Exception {
+class PAsmTerminationException extends Exception {
 	public boolean status;
 
 	public PAsmTerminationException(boolean status) {

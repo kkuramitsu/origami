@@ -696,8 +696,8 @@ public class PAsmAPI {
 
 	public static final void initVM(PAsmContext px) {
 		px.unused = new PAsmStack(null);
-		pushFail(px, new ASMexit(false));
-		pushRet(px, new ASMexit(true));
+		pushFail(px, new Iexit(false));
+		pushRet(px, new Iexit(true));
 	}
 
 }

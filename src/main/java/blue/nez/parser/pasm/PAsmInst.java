@@ -18,26 +18,33 @@ package blue.nez.parser.pasm;
 
 import java.lang.reflect.Field;
 
+import blue.origami.util.OStringUtils;
+
 public abstract class PAsmInst extends PAsmAPI {
-	public int id;
-	public boolean joinPoint = false;
-	public final PAsmFunc apply;
+	// public int id;
+	// public boolean joinPoint = false;
+	// public final PAsmFunc apply;
 	public PAsmInst next;
 
 	public PAsmInst(PAsmInst next) {
-		this.id = -1;
+		// this.id = -1;
 		this.next = next;
-		this.apply = this::exec;
+		// this.apply = this::exec;
 	}
 
 	public final String getName() {
-		return this.getClass().getSimpleName().substring(3);
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return this == o;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(this.getClass().getSimpleName().replace("ASM", ""));
+		sb.append(this.getName());
 		for (Field f : this.getClass().getDeclaredFields()) {
 			sb.append(" ");
 			sb.append(f.getName());
@@ -50,24 +57,24 @@ public abstract class PAsmInst extends PAsmAPI {
 	private void value(StringBuilder sb, Field f) {
 		try {
 			Object v = f.get(this);
-			sb.append(v);
+			if (v instanceof boolean[]) {
+				OStringUtils.formatHexicalByteSet(sb, (boolean[]) v);
+			} else if (v instanceof byte[]) {
+				OStringUtils.formatUTF8(sb, (byte[]) v);
+			} else {
+				sb.append(v);
+			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			sb.append("?");
 		}
 	}
-	// public abstract void visit(PegAsmVisitor v);
 
 	public abstract PAsmInst exec(PAsmContext sc) throws PAsmTerminationException;
 
-	// public final boolean isIncrementedNext() {
-	// if (this.next != null) {
-	// return this.next.id == this.id + 1;
-	// }
-	// return true; // RET or instructions that are unnecessary to go next
-	// }
+	private static PAsmInst[] emptyInst = new PAsmInst[0];
 
-	public PAsmInst branch() {
-		return null;
+	public PAsmInst[] branch() {
+		return emptyInst;
 	}
 
 }

@@ -146,7 +146,7 @@ public class PAsmCode implements ParserCode {
 			while (true) {
 				// System.out.println(this.indent(px) + "[" + px.pos + "] " +
 				// cur);
-				PAsmInst next = cur.apply.exec(px);
+				PAsmInst next = cur.exec(px);
 				cur = next;
 			}
 		} catch (PAsmTerminationException e) {
@@ -159,13 +159,13 @@ public class PAsmCode implements ParserCode {
 	public void dump() {
 		for (PAsmInst inst : this.codeList) {
 			PAsmInst in = inst;
-			if (in instanceof ASMnop) {
-				System.out.println(((ASMnop) in).name);
+			if (in instanceof Inop) {
+				System.out.println(((Inop) in).name);
 				continue;
 			}
-			if (in.joinPoint) {
-				System.out.println("L" + in.id);
-			}
+			// if (in.joinPoint) {
+			// System.out.println("L" + in.id);
+			// }
 			System.out.println("\t" + inst);
 			// if (!in.isIncrementedNext()) {
 			// System.out.println("\tjump L" + in.next.id);
