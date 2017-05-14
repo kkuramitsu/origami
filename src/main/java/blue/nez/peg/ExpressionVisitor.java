@@ -25,23 +25,21 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 
 public abstract class ExpressionVisitor<V, A> {
 
@@ -67,7 +65,7 @@ public abstract class ExpressionVisitor<V, A> {
 
 	public abstract V visitOption(POption e, A a);
 
-	public abstract V visitRepetition(PRepetition e, A a);
+	public abstract V visitMany(PMany e, A a);
 
 	public abstract V visitAnd(PAnd e, A a);
 
@@ -89,13 +87,13 @@ public abstract class ExpressionVisitor<V, A> {
 
 	public abstract V visitSymbolPredicate(PSymbolPredicate e, A a);
 
-	public abstract V visitIf(PIfCondition e, A a);
+	public abstract V visitIf(PIf e, A a);
 
-	public abstract V visitOn(POnCondition e, A a);
+	public abstract V visitOn(POn e, A a);
 
-	public abstract V visitScan(PScan scanf, A a);
-
-	public abstract V visitRepeat(PRepeat e, A a);
+	// public abstract V visitScan(PScan scanf, A a);
+	//
+	// public abstract V visitRepeat(PRepeat e, A a);
 
 	public V visitLocal(Expression e, A a) {
 		return e.desugar().visit(this, a);

@@ -29,7 +29,7 @@ import blue.nez.peg.expression.PLinkTree;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
 import blue.nez.peg.expression.POption;
-import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PTag;
 import blue.origami.util.ODebug;
@@ -186,11 +186,11 @@ public class ParserCombinator {
 	}
 
 	protected final Expression ZeroMore(Object... exprs) {
-		return new PRepetition(this.Expr(exprs), 0).setSourcePosition(this.src());
+		return new PMany(this.Expr(exprs), 0).setSourcePosition(this.src());
 	}
 
 	protected final Expression OneMore(Object... exprs) {
-		return new PRepetition(this.Expr(exprs), 1).setSourcePosition(this.src());
+		return new PMany(this.Expr(exprs), 1).setSourcePosition(this.src());
 	}
 
 	protected final Expression And(Object... exprs) {
@@ -234,12 +234,12 @@ public class ParserCombinator {
 
 	protected final Expression ZeroMoreFold(String label, Object... exprs) {
 		Expression fold = Expression.newFoldTree(this.toSymbol(label), this.Expr(exprs)).setSourcePosition(this.src());
-		return new PRepetition(fold, 0).setSourcePosition(this.src());
+		return new PMany(fold, 0).setSourcePosition(this.src());
 	}
 
 	protected final Expression OneMoreFold(String label, Object... exprs) {
 		Expression fold = Expression.newFoldTree(this.toSymbol(label), this.Expr(exprs)).setSourcePosition(this.src());
-		return new PRepetition(fold, 1).setSourcePosition(this.src());
+		return new PMany(fold, 1).setSourcePosition(this.src());
 	}
 
 	protected Expression Link(String label, Expression e) {

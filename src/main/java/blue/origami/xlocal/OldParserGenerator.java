@@ -42,16 +42,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -725,7 +723,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitRepetition(PRepetition e, Object a) {
+		public Object visitMany(PMany e, Object a) {
 			if (OldParserGenerator.this.Optimization && e.get(0) instanceof PByteSet) {
 				OldParserGenerator.this.DeclSet(((PByteSet) e.get(0)).bools(), true);
 				return null;
@@ -824,22 +822,12 @@ public abstract class OldParserGenerator
 		// }
 
 		@Override
-		public Object visitScan(PScan e, Object a) {
-			return this.visitInnerAll(e);
-		}
-
-		@Override
-		public Object visitRepeat(PRepeat e, Object a) {
-			return this.visitInnerAll(e);
-		}
-
-		@Override
-		public Object visitIf(PIfCondition e, Object a) {
+		public Object visitIf(PIf e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitOn(POnCondition e, Object a) {
+		public Object visitOn(POn e, Object a) {
 			return this.visitInnerAll(e);
 		}
 
@@ -1258,7 +1246,7 @@ public abstract class OldParserGenerator
 		}
 
 		@Override
-		public Object visitRepetition(PRepetition e, Object a) {
+		public Object visitMany(PMany e, Object a) {
 			if (e.isOneMore()) {
 				if (!this.tryRepetitionOptimization(e.get(0), true)) {
 					String f = this._eval(e.get(0));
@@ -1721,33 +1709,12 @@ public abstract class OldParserGenerator
 		// }
 
 		@Override
-		public Object visitScan(PScan e, Object a) {
-			this.BeginScope();
-			String ppos = this.SavePos();
-			this.visit(e.get(0), a);
-			OldParserGenerator.this.Statement(OldParserGenerator.this._Func("scanCount", ppos,
-					OldParserGenerator.this._long(e.mask), OldParserGenerator.this._int(e.shift)));
-			this.EndScope();
+		public Object visitIf(PIf e, Object a) {
 			return null;
 		}
 
 		@Override
-		public Object visitRepeat(PRepeat e, Object a) {
-			OldParserGenerator.this.While(OldParserGenerator.this._Func("decCount"));
-			{
-				this.visit(e.get(0), a);
-			}
-			OldParserGenerator.this.EndWhile();
-			return null;
-		}
-
-		@Override
-		public Object visitIf(PIfCondition e, Object a) {
-			return null;
-		}
-
-		@Override
-		public Object visitOn(POnCondition e, Object a) {
+		public Object visitOn(POn e, Object a) {
 			// TODO Auto-generated method stub
 			return null;
 		}

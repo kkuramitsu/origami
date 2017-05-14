@@ -11,17 +11,17 @@ import blue.nez.peg.ExpressionVisitor;
  *
  */
 
-public class PRepetition extends PUnary {
+public class PMany extends PUnary {
 	public final int min;
 	public final int max;
 
-	public PRepetition(Expression e, int min, int max) {
+	public PMany(Expression e, int min, int max) {
 		super(e);
 		this.min = min;
 		this.max = max;
 	}
 
-	public PRepetition(Expression e, int min) {
+	public PMany(Expression e, int min) {
 		this(e, min, -1);
 	}
 
@@ -36,7 +36,7 @@ public class PRepetition extends PUnary {
 
 	@Override
 	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
-		return v.visitRepetition(this, a);
+		return v.visitMany(this, a);
 	}
 
 	@Override

@@ -19,7 +19,7 @@ package blue.nez.peg;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PNonTerminal;
 
 public enum GrammarFlag {
@@ -60,8 +60,8 @@ public enum GrammarFlag {
 	}
 
 	static GrammarFlag checkFlag(Grammar g, String name, Expression e, String flag) {
-		if (e instanceof PIfCondition) {
-			PIfCondition p = (PIfCondition) e;
+		if (e instanceof PIf) {
+			PIf p = (PIf) e;
 			if (p.flagName().equals(flag)) {
 				setFlag(g, name, flag, Yes);
 				return Yes;

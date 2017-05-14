@@ -32,16 +32,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -200,7 +198,7 @@ public class InlinePass extends CommonPass {
 		}
 
 		@Override
-		public Integer visitRepetition(PRepetition e, Integer calls) {
+		public Integer visitMany(PMany e, Integer calls) {
 			Expression deref = Expression.deref(e.get(0));
 			if (deref instanceof PByte || deref instanceof PByteSet) {
 				return calls + 1;
@@ -267,23 +265,13 @@ public class InlinePass extends CommonPass {
 		}
 
 		@Override
-		public Integer visitIf(PIfCondition e, Integer calls) {
+		public Integer visitIf(PIf e, Integer calls) {
 			return calls;
 		}
 
 		@Override
-		public Integer visitOn(POnCondition e, Integer calls) {
+		public Integer visitOn(POn e, Integer calls) {
 			return calls;
-		}
-
-		@Override
-		public Integer visitScan(PScan e, Integer calls) {
-			return this.cost(e.get(0), calls + 2);
-		}
-
-		@Override
-		public Integer visitRepeat(PRepeat e, Integer calls) {
-			return this.cost(e.get(0), calls + 2);
 		}
 
 		@Override

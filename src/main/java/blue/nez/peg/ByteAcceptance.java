@@ -25,23 +25,21 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 
 public enum ByteAcceptance {
 	Accept, Unconsumed, Reject;
@@ -175,7 +173,7 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitRepetition(PRepetition e, Integer ch) {
+		public ByteAcceptance visitMany(PMany e, Integer ch) {
 			if (e.isOneMore()) {
 				return this.accept(e.get(0), ch);
 			}
@@ -241,22 +239,12 @@ public enum ByteAcceptance {
 		}
 
 		@Override
-		public ByteAcceptance visitScan(PScan e, Integer ch) {
-			return this.accept(e.get(0), ch);
-		}
-
-		@Override
-		public ByteAcceptance visitRepeat(PRepeat e, Integer ch) {
-			return this.accept(e.get(0), ch);
-		}
-
-		@Override
-		public ByteAcceptance visitIf(PIfCondition e, Integer ch) {
+		public ByteAcceptance visitIf(PIf e, Integer ch) {
 			return Unconsumed;
 		}
 
 		@Override
-		public ByteAcceptance visitOn(POnCondition e, Integer ch) {
+		public ByteAcceptance visitOn(POn e, Integer ch) {
 			return this.accept(e.get(0), ch);
 		}
 

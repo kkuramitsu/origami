@@ -38,16 +38,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -185,7 +183,7 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitByte(PByte p, PAsmInst next) {
-			if (/* this.BinaryGrammar && */ p.byteChar() == 0) {
+			if (p.byteChar() == 0) {
 				next = new ASMNeof(next);
 			}
 			return new ASMbyte(p.byteChar(), next);
@@ -197,7 +195,6 @@ public class PAsmCompiler implements ParserCompiler {
 			if (b[0]) {
 				next = new ASMNeof(next);
 			}
-			// b[0] = false;
 			return new ASMbset(b, next);
 		}
 
@@ -227,17 +224,15 @@ public class PAsmCompiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (((PByte) inner).byteChar() == 0) {
-						next = new ASMNeof(next);
+					if (((PByte) inner).byteChar() != 0) {
+						return new ASMObyte(((PByte) inner).byteChar(), next);
 					}
-					return new ASMObyte(((PByte) inner).byteChar(), next);
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).bools();
-					if (b[0]) {
-						next = new ASMNeof(next);
+					if (b[0] != true) {
+						return new ASMObset(b, next);
 					}
-					return new ASMObset(b, next);
 				}
 				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
@@ -249,15 +244,15 @@ public class PAsmCompiler implements ParserCompiler {
 		}
 
 		@Override
-		public PAsmInst visitRepetition(PRepetition p, PAsmInst next) {
-			PAsmInst next2 = this.compileRepetition(p, next);
+		public PAsmInst visitMany(PMany p, PAsmInst next) {
+			PAsmInst next2 = this.compileMany(p, next);
 			if (p.isOneMore()) {
 				next2 = this.compile(p.get(0), next2);
 			}
 			return next2;
 		}
 
-		private PAsmInst compileRepetition(PRepetition p, PAsmInst next) {
+		private PAsmInst compileMany(PMany p, PAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
@@ -267,7 +262,7 @@ public class PAsmCompiler implements ParserCompiler {
 				}
 				if (inner instanceof PByteSet) {
 					boolean[] b = ((PByteSet) inner).bools();
-					if (!b[0]) {
+					if (b[0] != true) {
 						return new ASMRbset(b, next);
 					}
 				}
@@ -293,7 +288,7 @@ public class PAsmCompiler implements ParserCompiler {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
 				if (inner instanceof PByte) {
-					if (/* this.BinaryGrammar && */ ((PByte) inner).byteChar() != 0) {
+					if (((PByte) inner).byteChar() != 0) {
 						next = new ASMNeof(next);
 					}
 					return new ASMNbyte(((PByte) inner).byteChar(), next);
@@ -456,27 +451,11 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitSymbolPredicate(PSymbolPredicate p, PAsmInst next) {
-			if (p.isEmpty()) {
-				return new ASMSpred2(p.pred, p.label, next);
-			} else {
+			if (p.isAndPredicate()) {
 				return new ASMpos(this.compile(p.get(0), new ASMSpred(p.pred, p.label, next)));
+			} else {
+				return new ASMSpred2(p.pred, p.label, next);
 			}
-		}
-
-		@Override
-		public PAsmInst visitScan(PScan p, PAsmInst next) {
-			return next;
-			// return new ASMpos(this.compile(p.get(0), new ASMSScan(p.mask,
-			// p.shift, next)));
-		}
-
-		@Override
-		public PAsmInst visitRepeat(PRepeat p, PAsmInst next) {
-			return next;
-			// PAsmInst check = new ASMSDec(next, null);
-			// PAsmInst repeated = this.compile(p.get(0), check);
-			// check.next = repeated;
-			// return check;
 		}
 
 		@Override
@@ -496,13 +475,13 @@ public class PAsmCompiler implements ParserCompiler {
 		// Unused
 
 		@Override
-		public PAsmInst visitIf(PIfCondition e, PAsmInst next) {
+		public PAsmInst visitIf(PIf e, PAsmInst next) {
 			PAsmCompiler.this.options.verbose("unremoved if condition", e);
 			return next;
 		}
 
 		@Override
-		public PAsmInst visitOn(POnCondition e, PAsmInst next) {
+		public PAsmInst visitOn(POn e, PAsmInst next) {
 			PAsmCompiler.this.options.verbose("unremoved on condition", e);
 			return this.compile(e.get(0), next);
 		}

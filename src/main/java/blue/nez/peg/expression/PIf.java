@@ -1,14 +1,11 @@
 package blue.nez.peg.expression;
 
-import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
-public class POnCondition extends PUnary {
-
+public class PIf extends PTerm {
 	public final String nflag;
 
-	public POnCondition(String flag, Expression e) {
-		super(e);
+	public PIf(String flag) {
 		this.nflag = flag;
 	}
 
@@ -21,16 +18,15 @@ public class POnCondition extends PUnary {
 	}
 
 	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append("<if ");
-		sb.append(this.nflag);
-		sb.append(" ");
-		this.get(0).strOut(sb);
-		sb.append(">");
+	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
+		return v.visitIf(this, a);
 	}
 
 	@Override
-	public final <V, A> V visit(ExpressionVisitor<V, A> v, A a) {
-		return v.visitOn(this, a);
+	public void strOut(StringBuilder sb) {
+		sb.append("<if ");
+		sb.append(this.nflag);
+		sb.append(">");
 	}
+
 }

@@ -112,6 +112,19 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 		return false;
 	}
 
+	/* properties */
+
+	// @Override
+	// public boolean isEmpty() {
+	// return this instanceof PEmpty;
+	// }
+
+	/* cat */
+
+	public Expression cat(Expression e) {
+		return Expression.newSequence(this, e);
+	}
+
 	/* Unary */
 
 	public final static boolean isMultiBytes(Expression e) {

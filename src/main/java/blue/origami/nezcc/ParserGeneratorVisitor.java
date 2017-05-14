@@ -37,16 +37,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -138,7 +136,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	public C match(Expression e, ParserGenerator<B, C> pg) {
 		C inline = null;
-		if (e instanceof PRepetition) {
+		if (e instanceof PMany) {
 			int stacks = pg.varStacks(POS, e.get(0));
 			inline = this.emitInlineMany(stacks, e, pg);
 		}
@@ -346,7 +344,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	}
 
 	@Override
-	public C visitRepetition(PRepetition e, ParserGenerator<B, C> pg) {
+	public C visitMany(PMany e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
 		if (e.isOneMore()) {
 			stacks |= CNT;
@@ -528,32 +526,22 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	@Override
 	public C visitSymbolPredicate(PSymbolPredicate e, ParserGenerator<B, C> pg) {
-		if (e.isEmpty()) {
-			return pg.callAction(e.getFunctionName(), e.label, null/* e.thunk */);
-		} else {
+		if (e.isAndPredicate()) {
 			C main = pg.emitAnd(
 					this.match(e.get(0), pg), pg.callActionPOS(e.getFunctionName(), e.label, null/* e.thunk */));
 			return this.emitVarDecl(pg, POS, pg.emitReturn(main));
+		} else {
+			return pg.callAction(e.getFunctionName(), e.label, null/* e.thunk */);
 		}
 	}
 
 	@Override
-	public C visitIf(PIfCondition e, ParserGenerator<B, C> pg) {
+	public C visitIf(PIf e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 
 	@Override
-	public C visitOn(POnCondition e, ParserGenerator<B, C> pg) {
-		return pg.emitSucc();
-	}
-
-	@Override
-	public C visitScan(PScan e, ParserGenerator<B, C> pg) {
-		return pg.emitSucc();
-	}
-
-	@Override
-	public C visitRepeat(PRepeat e, ParserGenerator<B, C> pg) {
+	public C visitOn(POn e, ParserGenerator<B, C> pg) {
 		return pg.emitSucc();
 	}
 

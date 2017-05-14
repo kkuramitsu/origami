@@ -25,16 +25,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -148,7 +146,7 @@ public enum Stateful {
 		}
 
 		@Override
-		public Stateful visitRepetition(PRepetition e, Void a) {
+		public Stateful visitMany(PMany e, Void a) {
 			return this.check(e.get(0), a);
 		}
 
@@ -203,22 +201,12 @@ public enum Stateful {
 		}
 
 		@Override
-		public Stateful visitScan(PScan e, Void a) {
-			return this.check(e.get(0), a);
-		}
-
-		@Override
-		public Stateful visitRepeat(PRepeat e, Void a) {
+		public Stateful visitIf(PIf e, Void a) {
 			return Stateful.True;
 		}
 
 		@Override
-		public Stateful visitIf(PIfCondition e, Void a) {
-			return Stateful.True;
-		}
-
-		@Override
-		public Stateful visitOn(POnCondition e, Void a) {
+		public Stateful visitOn(POn e, Void a) {
 			return this.check(e.get(0), a);
 		}
 

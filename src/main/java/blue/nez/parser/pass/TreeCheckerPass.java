@@ -29,7 +29,7 @@ import blue.nez.peg.expression.PLinkTree;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
 import blue.nez.peg.expression.POption;
-import blue.nez.peg.expression.PRepetition;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PValue;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTree;
@@ -233,7 +233,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Expression visitRepetition(PRepetition p, Void a) {
+	public Expression visitMany(PMany p, Void a) {
 		return this.visitUnary(p, a);
 	}
 

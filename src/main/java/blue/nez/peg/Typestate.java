@@ -25,23 +25,21 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 
 public enum Typestate {
 	Unit, Tree, Fold, TreeMutation, Immutation, Undecided;
@@ -157,7 +155,7 @@ public enum Typestate {
 		}
 
 		@Override
-		public Typestate visitRepetition(PRepetition e, Void memo) {
+		public Typestate visitMany(PMany e, Void memo) {
 			Typestate ts = this.compute(e.get(0), memo);
 			if (ts == Typestate.Tree) {
 				return Typestate.TreeMutation;
@@ -220,26 +218,12 @@ public enum Typestate {
 		}
 
 		@Override
-		public final Typestate visitScan(PScan e, Void memo) {
-			return this.compute(e.get(0), memo);
-		}
-
-		@Override
-		public final Typestate visitRepeat(PRepeat e, Void memo) {
-			Typestate ts = this.compute(e.get(0), memo);
-			if (ts == Typestate.Tree) {
-				return Typestate.TreeMutation;
-			}
-			return ts;
-		}
-
-		@Override
-		public final Typestate visitIf(PIfCondition e, Void memo) {
+		public final Typestate visitIf(PIf e, Void memo) {
 			return Typestate.Unit;
 		}
 
 		@Override
-		public final Typestate visitOn(POnCondition e, Void memo) {
+		public final Typestate visitOn(POn e, Void memo) {
 			return this.compute(e.get(0), memo);
 		}
 

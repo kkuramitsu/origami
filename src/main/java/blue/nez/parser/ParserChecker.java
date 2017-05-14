@@ -42,16 +42,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -176,8 +174,8 @@ public class ParserChecker {
 				return;
 			}
 		}
-		if (e instanceof PIfCondition) {
-			this.countFlag(((PIfCondition) e).flagName());
+		if (e instanceof PIf) {
+			this.countFlag(((PIf) e).flagName());
 		}
 		for (Expression ei : e) {
 			this.visitProduction(ei);
@@ -307,7 +305,7 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitRepetition(PRepetition e, Production a) {
+	public Boolean visitMany(PMany e, Production a) {
 		if (e.isOneMore()) {
 			return this.check(e.get(0), a);
 		}
@@ -365,22 +363,12 @@ class LeftRecursionChecker extends ExpressionVisitor<Boolean, Production> {
 	}
 
 	@Override
-	public Boolean visitScan(PScan e, Production a) {
-		return this.check(e.get(0), a);
-	}
-
-	@Override
-	public Boolean visitRepeat(PRepeat e, Production a) {
+	public Boolean visitIf(PIf e, Production a) {
 		return true;
 	}
 
 	@Override
-	public Boolean visitIf(PIfCondition e, Production a) {
-		return true;
-	}
-
-	@Override
-	public Boolean visitOn(POnCondition e, Production a) {
+	public Boolean visitOn(POn e, Production a) {
 		return this.check(e.get(0), a);
 	}
 
@@ -483,7 +471,7 @@ class EliminateFlags extends Duplicator<Void> {
 	}
 
 	@Override
-	public Expression visitOn(POnCondition p, Void a) {
+	public Expression visitOn(POn p, Void a) {
 		// if (fac.is("strict-check", false)) {
 		// if (!GrammarFlag.hasFlag(p.get(0), p.flagName())) {
 		// fac.reportWarning(p.getSourceLocation(), "unused condition: " +
@@ -499,7 +487,7 @@ class EliminateFlags extends Duplicator<Void> {
 	}
 
 	@Override
-	public Expression visitIf(PIfCondition p, Void a) {
+	public Expression visitIf(PIf p, Void a) {
 		if (this.isFlag(p.flagName())) { /* true */
 			return p.isPositive() ? Expression.defaultEmpty : Expression.defaultFailure;
 		}

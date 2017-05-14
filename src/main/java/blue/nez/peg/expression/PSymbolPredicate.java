@@ -6,17 +6,19 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 
 public class PSymbolPredicate extends PUnary {
+	public final boolean andPred;
 	public final SymbolFunc pred;
 	public final Symbol label;
 
-	public PSymbolPredicate(SymbolFunc pred, Symbol label, PNonTerminal pat) {
+	public PSymbolPredicate(SymbolFunc pred, boolean andPred, Symbol label, PNonTerminal pat) {
 		super(pat == null ? Expression.defaultEmpty : pat);
+		this.andPred = andPred;
 		this.pred = pred;
 		this.label = label;
 	}
 
-	public PSymbolPredicate(SymbolFunc pred, String label, PNonTerminal pat) {
-		this(pred, Symbol.unique(label), pat);
+	public PSymbolPredicate(SymbolFunc pred, boolean andPred, String label, PNonTerminal pat) {
+		this(pred, andPred, Symbol.unique(label), pat);
 	}
 
 	@Override
@@ -28,13 +30,8 @@ public class PSymbolPredicate extends PUnary {
 		return this.pred.toString().replace("&", "");
 	}
 
-	@Override
-	public boolean isEmpty() {
-		String s = this.pred.toString();
-		if (s.startsWith("&")) {
-			return false;
-		}
-		return true;
+	public boolean isAndPredicate() {
+		return this.andPred;
 	}
 
 	@Override

@@ -343,6 +343,76 @@ public class PAsmAPI {
 		}
 	}
 
+	// scan
+	public static class SymbolScanFunc implements SymbolFunc {
+		@Override
+		public boolean apply(NezParserContext px, State state, Symbol tag, int ppos) {
+
+			px.state = new State(tag, 0, extract(px, ppos, px.pos), state);
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "symbol";
+		}
+
+	}
+
+	public static class SymbolScanBitFunc implements SymbolFunc {
+
+		public SymbolScanBitFunc(long mask, int shift) {
+
+		}
+
+		@Override
+		public boolean apply(NezParserContext px, State state, Symbol tag, int ppos) {
+
+			px.state = new State(tag, 0, extract(px, ppos, px.pos), state);
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "symbol";
+		}
+
+	}
+
+	public static class SymbolDecFunc implements SymbolFunc {
+		@Override
+		public boolean apply(NezParserContext px, State state, Symbol tag, int ppos) {
+			if (state != null) {
+				if (state.tag == tag) {
+					state.cnt--;
+					return state.cnt > 0;
+				}
+				return this.apply(px, state.prevState, tag, ppos);
+			}
+			return false;
+		}
+
+		@Override
+		public String toString() {
+			return "dec";
+		}
+	}
+
+	public static class SymbolZeroFunc implements SymbolFunc {
+		@Override
+		public boolean apply(NezParserContext px, State state, Symbol tag, int ppos) {
+			if (state != null) {
+				return (state.tag == tag) ? state.cnt == 0 : this.apply(px, state.prevState, tag, ppos);
+			}
+			return false;
+		}
+
+		@Override
+		public String toString() {
+			return "zero";
+		}
+	}
+
 	// public static final boolean symbol1(NezParserContext px, State state,
 	// Symbol tag, int pos) {
 	// byte[] value = extract(px, pos);

@@ -25,23 +25,21 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PValue;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
 import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
+import blue.nez.peg.expression.PValue;
 
 public enum NonEmpty {
 	True, False, Unsure;
@@ -158,7 +156,7 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitRepetition(PRepetition e, Void a) {
+		public NonEmpty visitMany(PMany e, Void a) {
 			if (e.isOneMore()) {
 				return this.check(e.get(0), a);
 			}
@@ -216,23 +214,12 @@ public enum NonEmpty {
 		}
 
 		@Override
-		public NonEmpty visitScan(PScan e, Void a) {
-			return this.check(e.get(0), a);
-		}
-
-		@Override
-		public NonEmpty visitRepeat(PRepeat e, Void a) {
-			/* There is a case where we repeat 0 times */
+		public NonEmpty visitIf(PIf e, Void a) {
 			return NonEmpty.False;
 		}
 
 		@Override
-		public NonEmpty visitIf(PIfCondition e, Void a) {
-			return NonEmpty.False;
-		}
-
-		@Override
-		public NonEmpty visitOn(POnCondition e, Void a) {
+		public NonEmpty visitOn(POn e, Void a) {
 			return this.check(e.get(0), a);
 		}
 

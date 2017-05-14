@@ -9,16 +9,14 @@ import blue.nez.peg.expression.PDetree;
 import blue.nez.peg.expression.PDispatch;
 import blue.nez.peg.expression.PEmpty;
 import blue.nez.peg.expression.PFail;
-import blue.nez.peg.expression.PIfCondition;
+import blue.nez.peg.expression.PIf;
 import blue.nez.peg.expression.PLinkTree;
+import blue.nez.peg.expression.PMany;
 import blue.nez.peg.expression.PNonTerminal;
 import blue.nez.peg.expression.PNot;
-import blue.nez.peg.expression.POnCondition;
+import blue.nez.peg.expression.POn;
 import blue.nez.peg.expression.POption;
 import blue.nez.peg.expression.PPair;
-import blue.nez.peg.expression.PRepeat;
-import blue.nez.peg.expression.PRepetition;
-import blue.nez.peg.expression.PScan;
 import blue.nez.peg.expression.PSymbolAction;
 import blue.nez.peg.expression.PSymbolPredicate;
 import blue.nez.peg.expression.PSymbolScope;
@@ -89,7 +87,7 @@ public class Rewriter<A> extends ExpressionVisitor<Expression, A> {
 	}
 
 	@Override
-	public Expression visitRepetition(PRepetition e, A a) {
+	public Expression visitMany(PMany e, A a) {
 		e.set(0, this.rewrite(e, 0, a));
 		return e;
 	}
@@ -153,24 +151,12 @@ public class Rewriter<A> extends ExpressionVisitor<Expression, A> {
 	}
 
 	@Override
-	public Expression visitScan(PScan e, A a) {
-		e.set(0, this.rewrite(e, 0, a));
+	public Expression visitIf(PIf e, A a) {
 		return e;
 	}
 
 	@Override
-	public Expression visitRepeat(PRepeat e, A a) {
-		e.set(0, this.rewrite(e, 0, a));
-		return e;
-	}
-
-	@Override
-	public Expression visitIf(PIfCondition e, A a) {
-		return e;
-	}
-
-	@Override
-	public Expression visitOn(POnCondition e, A a) {
+	public Expression visitOn(POn e, A a) {
 		e.set(0, this.rewrite(e, 0, a));
 		return e;
 	}
