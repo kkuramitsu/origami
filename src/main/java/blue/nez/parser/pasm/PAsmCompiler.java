@@ -17,6 +17,8 @@
 package blue.nez.parser.pasm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +33,7 @@ import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
+import blue.nez.peg.expression.ByteSet;
 import blue.nez.peg.expression.PAnd;
 import blue.nez.peg.expression.PAny;
 import blue.nez.peg.expression.PByte;
@@ -89,13 +92,13 @@ public class PAsmCompiler implements ParserCompiler {
 		final ParserGrammar grammar;
 
 		boolean TreeConstruction = true;
-		// boolean BinaryGrammar = false;
-		boolean Optimization = false;
+		boolean binaryGrammar = false;
+		boolean Optimization = true;
 
 		CompilerVisitor(PAsmCode code, ParserGrammar grammar, OOption options) {
 			this.code = code;
 			this.grammar = grammar;
-			// this.BinaryGrammar = grammar.isBinary();
+			this.binaryGrammar = grammar.isBinaryGrammar();
 			this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
 		}
 
@@ -153,6 +156,32 @@ public class PAsmCompiler implements ParserCompiler {
 			}
 		}
 
+		/* conversion */
+
+		HashMap<String, boolean[]> boolsMap = new HashMap<>();
+		// HashMap<String, byte[]> bytesMap = new HashMap<>();
+
+		boolean[] conv(int byteChar) {
+			String key = String.valueOf(byteChar);
+			boolean[] b = this.boolsMap.get(key);
+			if (b == null) {
+				b = new boolean[256];
+				b[byteChar] = true;
+				this.boolsMap.put(key, b);
+			}
+			return b;
+		}
+
+		boolean[] conv(ByteSet bs) {
+			String key = bs.toString();
+			boolean[] b = this.boolsMap.get(key);
+			if (b == null) {
+				b = bs.bools();
+				this.boolsMap.put(key, b);
+			}
+			return b;
+		}
+
 		// encoding
 
 		private PAsmInst compile(Expression e, PAsmInst next) {
@@ -178,16 +207,16 @@ public class PAsmCompiler implements ParserCompiler {
 		@Override
 		public PAsmInst visitByte(PByte p, PAsmInst next) {
 			if (p.byteChar() == 0) {
-				next = new Pneof(next);
+				return new Neof(new Pbyte(0, next));
 			}
 			return new Pbyte(p.byteChar(), next);
 		}
 
 		@Override
 		public PAsmInst visitByteSet(PByteSet p, PAsmInst next) {
-			boolean[] b = p.bools();
-			if (b[0]) {
-				next = new Pneof(next);
+			boolean[] b = this.conv(p.byteSet());
+			if (b[0] == true) {
+				return new Neof(new Pset(b, next));
 			}
 			return new Pset(b, next);
 		}
@@ -201,6 +230,38 @@ public class PAsmCompiler implements ParserCompiler {
 		public final PAsmInst visitNonTerminal(PNonTerminal n, PAsmInst next) {
 			Production p = n.getProduction();
 			return new Icall(p.getUniqueName(), next);
+		}
+
+		private int byteChar(Expression e) {
+			if (e instanceof PByte) {
+				return ((PByte) e).byteChar();
+			}
+			if (e instanceof PByteSet) {
+				return ((PByteSet) e).byteSet().getUnsignedByte();
+			}
+			return -1;
+		}
+
+		private boolean[] anyBools = null;
+
+		private boolean[] byteSet(Expression e) {
+			if (e instanceof PByte) {
+				return this.conv(((PByte) e).byteSet());
+			}
+			if (e instanceof PByteSet) {
+				return this.conv(((PByteSet) e).byteSet());
+			}
+			if (e instanceof PAny) {
+				if (this.anyBools == null) {
+					this.anyBools = new boolean[256];
+					Arrays.fill(this.anyBools, true);
+					if (!this.binaryGrammar) {
+						this.anyBools[0] = false;
+					}
+				}
+				return this.anyBools;
+			}
+			return null;
 		}
 
 		private byte[] toMultiChar(Expression e) {
@@ -217,14 +278,15 @@ public class PAsmCompiler implements ParserCompiler {
 		public final PAsmInst visitOption(POption p, PAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof PByte) {
-					if (((PByte) inner).byteChar() != 0) {
-						return new Obyte(((PByte) inner).byteChar(), next);
-					}
+				int byteChar = this.byteChar(inner);
+				if (byteChar > 0) {
+					return new Obyte(byteChar, next);
 				}
-				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).bools();
-					if (b[0] != true) {
+				boolean[] b = this.byteSet(inner);
+				if (b != null) {
+					if (b[0]) {
+						return new Obin(b, next);
+					} else {
 						return new Oset(b, next);
 					}
 				}
@@ -239,24 +301,25 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitMany(PMany p, PAsmInst next) {
-			PAsmInst next2 = this.compileMany(p, next);
+			PAsmInst next2 = this.visitMany0(p, next);
 			if (p.isOneMore()) {
 				next2 = this.compile(p.get(0), next2);
 			}
 			return next2;
 		}
 
-		private PAsmInst compileMany(PMany p, PAsmInst next) {
+		private PAsmInst visitMany0(PMany p, PAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof PByte) {
-					if (((PByte) inner).byteChar() != 0) {
-						return new Rbyte(((PByte) inner).byteChar(), next);
-					}
+				int byteChar = this.byteChar(inner);
+				if (byteChar > 0) {
+					return new Rbyte(byteChar, next);
 				}
-				if (inner instanceof PByteSet) {
-					boolean[] b = ((PByteSet) inner).bools();
-					if (b[0] != true) {
+				boolean[] b = this.byteSet(inner);
+				if (b != null) {
+					if (b[0]) {
+						return new Rbin(b, next);
+					} else {
 						return new Rset(b, next);
 					}
 				}
@@ -281,22 +344,26 @@ public class PAsmCompiler implements ParserCompiler {
 		public final PAsmInst visitNot(PNot p, PAsmInst next) {
 			if (this.Optimization) {
 				Expression inner = this.getInnerExpression(p);
-				if (inner instanceof PByte) {
-					if (((PByte) inner).byteChar() != 0) {
-						next = new Pneof(next);
-					}
-					return new Nbyte(((PByte) inner).byteChar(), next);
-				}
-				// if (inner instanceof PByteSet) {
-				// boolean[] b = ((PByteSet) inner).bools();
-				// if (this.BinaryGrammar && b[0] == false) {
-				// next = new ASMNeof(next);
-				// return new ASMNbinset(b, next);
-				// }
-				// return new ASMNbset(b, next);
-				// }
 				if (inner instanceof PAny) {
-					return new Nany(next);
+					return new Peof(next);
+				}
+				int byteChar = this.byteChar(inner);
+				if (byteChar >= 0) {
+					/*
+					 * !'\0' accepts /* !'a' accepts '', not '\0'
+					 */
+					if (this.binaryGrammar && byteChar != 0) {
+						boolean[] b = this.conv(byteChar);
+						return new Nbin(b, next);
+					}
+					return new Nbyte(byteChar, next);
+				}
+				boolean[] b = this.byteSet(inner);
+				if (b != null) {
+					if (this.binaryGrammar && b[0] == false) {
+						return new Nbin(b, next);
+					}
+					return new Nset(b, next);
 				}
 				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);
@@ -309,6 +376,15 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitPair(PPair p, PAsmInst next) {
+			if (this.Optimization) {
+				ArrayList<Integer> l = new ArrayList<>();
+				Expression remain = Expression.extractMultiBytes(p, l);
+				if (l.size() > 2) {
+					byte[] text = Expression.toMultiBytes(l);
+					next = this.compile(remain, next);
+					return new Pstr(text, next);
+				}
+			}
 			PAsmInst nextStart = next;
 			for (int i = p.size() - 1; i >= 0; i--) {
 				Expression e = p.get(i);

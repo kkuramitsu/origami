@@ -66,7 +66,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		pg.log("memosize: %d", g.getMemoPointSize());
 		boolean isStateful = Stateful.isStateful(p);
 		pg.log("stateful: %s", isStateful);
-		pg.initGrammarProperty(g.isBinary(), isStateful);
+		pg.initGrammarProperty(g.isBinaryGrammar(), isStateful);
 		int c = 0;
 		this.waitingList.add(p.getExpression());
 		for (int i = 0; i < this.waitingList.size(); i++) {

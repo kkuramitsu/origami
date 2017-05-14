@@ -1,13 +1,13 @@
 package blue.nez.parser.pasm;
 
-public class Pneof extends PAsmInst {
+public final class Peof extends PAsmInst {
 
-	public Pneof(PAsmInst next) {
+	public Peof(PAsmInst next) {
 		super(next);
 	}
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
-		return neof(px) ? this.next : raiseFail(px);
+		return (neof(px)) ? raiseFail(px) : this.next;
 	}
 }

@@ -16,9 +16,8 @@
 
 package blue.nez.parser.pass;
 
-import blue.nez.parser.ParserPass;
+import blue.nez.parser.ParserGrammar;
 import blue.nez.peg.Expression;
-import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 import blue.origami.util.OOption;
 
@@ -26,7 +25,7 @@ class CommonPass extends ParserPass {
 	protected OOption options;
 
 	@Override
-	public Grammar perform(Grammar g, OOption options) {
+	public ParserGrammar perform(ParserGrammar g, OOption options) {
 		this.options = options;
 		this.prepare(g);
 		for (Production p : g) {
@@ -35,7 +34,7 @@ class CommonPass extends ParserPass {
 		return g;
 	}
 
-	protected void prepare(Grammar g) {
+	protected void prepare(ParserGrammar g) {
 
 	}
 

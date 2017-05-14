@@ -35,7 +35,7 @@ public class ParserGrammar extends Grammar {
 		this.options = options;
 	}
 
-	public boolean isBinary() {
+	public boolean isBinaryGrammar() {
 		return this.isBinary;
 	}
 

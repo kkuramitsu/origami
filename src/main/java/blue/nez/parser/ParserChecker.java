@@ -20,11 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
-import blue.nez.parser.pass.DispatchPass;
-import blue.nez.parser.pass.InlinePass;
-import blue.nez.parser.pass.NotCharPass;
+import blue.nez.parser.pass.ParserPass;
 import blue.nez.parser.pass.TreeCheckerPass;
-import blue.nez.parser.pass.TreePass;
 import blue.nez.peg.Duplicator;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
@@ -57,7 +54,6 @@ import blue.nez.peg.expression.PTag;
 import blue.nez.peg.expression.PTrap;
 import blue.nez.peg.expression.PTree;
 import blue.nez.peg.expression.PValue;
-import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
@@ -92,47 +88,9 @@ public class ParserChecker {
 		// if (flags.length > 0) {
 		// g.dump();
 		// }
-		g = (ParserGrammar) this.applyPass(g);
+		g = ParserPass.applyPass(g, this.options);
 		if (this.options.is(ParserOption.PackratParsing, true)) {
 			g.initMemoPoint();
-		}
-		return g;
-	}
-
-	private Grammar applyPass(Grammar g) {
-		if (this.options.is(ParserOption.Unoptimized, false)) {
-			return g;
-		}
-		String[] pass = this.options.stringList(ParserOption.Pass);
-		if (pass.length > 0) {
-			return this.applyPass(g, this.loadPassClass(pass));
-		} else {
-			return this.applyPass(g, NotCharPass.class, TreePass.class, DispatchPass.class, InlinePass.class);
-		}
-	}
-
-	private Class<?>[] loadPassClass(String[] pass) {
-		ArrayList<Class<?>> l = new ArrayList<>();
-		for (String p : pass) {
-			try {
-				l.add(OOption.loadClass(ParserPass.class, p, this.options.stringList(ParserOption.PassPath)));
-			} catch (ClassNotFoundException e) {
-				ODebug.traceException(e);
-			}
-		}
-		return l.toArray(new Class<?>[l.size()]);
-	}
-
-	private Grammar applyPass(Grammar g, Class<?>... classes) {
-		for (Class<?> c : classes) {
-			try {
-				ParserPass pass = (ParserPass) c.newInstance();
-				long t1 = this.options.nanoTime(null, 0);
-				g = pass.perform(g, this.options);
-				this.options.nanoTime("Pass: " + pass, t1);
-			} catch (InstantiationException | IllegalAccessException e) {
-				ODebug.traceException(e);
-			}
 		}
 		return g;
 	}
@@ -163,6 +121,9 @@ public class ParserChecker {
 		if (this.usedChars != null) {
 			if (e instanceof PByte) {
 				this.usedChars[((PByte) e).byteChar()] = true;
+				// if (((PByte) e).byteChar() == 0) {
+				// System.out.println("**** binary **** " + e);
+				// }
 				return;
 			}
 			if (e instanceof PByteSet) {
@@ -171,6 +132,9 @@ public class ParserChecker {
 						this.usedChars[i] = true;
 					}
 				}
+				// if (((PByteSet) e).is(0)) {
+				// System.out.println("**** binary **** " + e);
+				// }
 				return;
 			}
 		}
@@ -202,10 +166,6 @@ public class ParserChecker {
 			c++;
 		}
 		return n;
-	}
-
-	public void enabledCharList() {
-		this.usedChars = new boolean[256];
 	}
 
 	public final boolean isBinary() {

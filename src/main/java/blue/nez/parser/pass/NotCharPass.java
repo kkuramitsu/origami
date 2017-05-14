@@ -18,8 +18,6 @@ package blue.nez.parser.pass;
 
 import blue.nez.parser.ParserGrammar;
 import blue.nez.peg.Expression;
-import blue.nez.peg.Grammar;
-import blue.nez.peg.Production;
 import blue.nez.peg.expression.PAny;
 import blue.nez.peg.expression.PByte;
 import blue.nez.peg.expression.PByteSet;
@@ -31,34 +29,8 @@ public class NotCharPass extends CommonPass {
 	boolean BinaryGrammar = false;
 
 	@Override
-	protected void prepare(Grammar g) {
-		if (g instanceof ParserGrammar) {
-			this.BinaryGrammar = ((ParserGrammar) g).isBinary();
-		} else {
-			for (Production p : g.getAllProductions()) {
-				this.checkBinaryExpression(p.getExpression());
-			}
-		}
-	}
-
-	private void checkBinaryExpression(Expression e) {
-		if (this.BinaryGrammar) {
-			return;
-		}
-		if (e instanceof PByte) {
-			if (((PByte) e).byteChar() == 0) {
-				this.BinaryGrammar = true;
-			}
-		}
-		if (e instanceof PByteSet) {
-			PByteSet c1 = (PByteSet) e;
-			if (c1.is(0) == true) {
-				this.BinaryGrammar = true;
-			}
-		}
-		for (Expression sub : e) {
-			this.checkBinaryExpression(sub);
-		}
+	protected void prepare(ParserGrammar g) {
+		this.BinaryGrammar = g.isBinaryGrammar();
 	}
 
 	@Override

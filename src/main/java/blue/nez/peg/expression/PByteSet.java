@@ -46,14 +46,6 @@ public class PByteSet extends PTerm {
 		this.byteSet = this.byteSet.union(b.byteSet);
 	}
 
-	public final boolean[] bools() {
-		boolean[] b = new boolean[256];
-		for (int i = 0; i < 256; i++) {
-			b[i] = this.is(i);
-		}
-		return b;
-	}
-
 	// public final int n(int n) {
 	// return this.bits[n];
 	// }

@@ -19,9 +19,9 @@ package blue.nez.parser.pass;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import blue.nez.parser.ParserGrammar;
 import blue.nez.peg.Expression;
 import blue.nez.peg.ExpressionVisitor;
-import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 import blue.nez.peg.expression.PAnd;
 import blue.nez.peg.expression.PAny;
@@ -54,7 +54,7 @@ public class InlinePass extends CommonPass {
 	HashMap<String, Integer> countMap = new HashMap<>();
 
 	@Override
-	protected void prepare(Grammar g) {
+	protected void prepare(ParserGrammar g) {
 		Production start = g.getStartProduction();
 		this.countMap.put(start.getUniqueName(), 1);
 		this.count(start.getExpression());
@@ -77,7 +77,7 @@ public class InlinePass extends CommonPass {
 	}
 
 	@Override
-	public Grammar perform(Grammar g, OOption options) {
+	public ParserGrammar perform(ParserGrammar g, OOption options) {
 		this.options = options;
 		this.prepare(g);
 		for (Production p : g) {

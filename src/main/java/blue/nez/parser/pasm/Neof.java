@@ -1,13 +1,13 @@
 package blue.nez.parser.pasm;
 
-public final class Nany extends PAsmInst {
+public class Neof extends PAsmInst {
 
-	public Nany(PAsmInst next) {
+	public Neof(PAsmInst next) {
 		super(next);
 	}
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
-		return (neof(px)) ? raiseFail(px) : this.next;
+		return neof(px) ? this.next : raiseFail(px);
 	}
 }

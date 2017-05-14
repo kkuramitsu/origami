@@ -10,10 +10,7 @@ public class Nbyte extends PAsmInst {
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
-		if (getbyte(px) != this.byteChar) {
-			return this.next;
-		}
-		return raiseFail(px);
+		return (getbyte(px) != this.byteChar) ? this.next : raiseFail(px);
 	}
 
 }

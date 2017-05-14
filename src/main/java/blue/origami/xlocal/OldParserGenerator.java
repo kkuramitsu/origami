@@ -677,7 +677,7 @@ public abstract class OldParserGenerator
 
 		@Override
 		public Object visitByteSet(PByteSet e, Object a) {
-			OldParserGenerator.this.DeclSet(e.bools(), false);
+			OldParserGenerator.this.DeclSet(e.byteSet().bools(), false);
 			return null;
 		}
 
@@ -725,7 +725,7 @@ public abstract class OldParserGenerator
 		@Override
 		public Object visitMany(PMany e, Object a) {
 			if (OldParserGenerator.this.Optimization && e.get(0) instanceof PByteSet) {
-				OldParserGenerator.this.DeclSet(((PByteSet) e.get(0)).bools(), true);
+				OldParserGenerator.this.DeclSet(((PByteSet) e.get(0)).byteSet().bools(), true);
 				return null;
 			}
 			this.checkNonLexicalInner(e.get(0));
@@ -1057,7 +1057,7 @@ public abstract class OldParserGenerator
 
 		@Override
 		public Object visitByteSet(PByteSet e, Object a) {
-			boolean[] byteset = e.bools();
+			boolean[] byteset = e.byteSet().bools();
 			OldParserGenerator.this.If(OldParserGenerator.this._Not(this.MatchByteArray(byteset, true)));
 			{
 				OldParserGenerator.this.Fail();
@@ -1359,7 +1359,7 @@ public abstract class OldParserGenerator
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
-					boolean[] byteset = e.bools();
+					boolean[] byteset = e.byteSet().bools();
 					OldParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
 						if (OldParserGenerator.this.BinaryGrammar && byteset[0]) {
@@ -1419,7 +1419,7 @@ public abstract class OldParserGenerator
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
-					boolean[] byteset = e.bools();
+					boolean[] byteset = e.byteSet().bools();
 					if (OldParserGenerator.this.SSEOption) {
 						String name = OldParserGenerator.this._range(byteset);
 						if (name != null) {
@@ -1499,7 +1499,7 @@ public abstract class OldParserGenerator
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
-					boolean[] byteset = e.bools();
+					boolean[] byteset = e.byteSet().bools();
 					OldParserGenerator.this.If(OldParserGenerator.this._Not(this.MatchByteArray(byteset, false)));
 					{
 						OldParserGenerator.this.Fail();
@@ -1545,7 +1545,7 @@ public abstract class OldParserGenerator
 				}
 				if (inner instanceof PByteSet) {
 					PByteSet e = (PByteSet) inner;
-					boolean[] byteset = e.bools();
+					boolean[] byteset = e.byteSet().bools();
 					OldParserGenerator.this.If(this.MatchByteArray(byteset, false));
 					{
 						OldParserGenerator.this.Fail();

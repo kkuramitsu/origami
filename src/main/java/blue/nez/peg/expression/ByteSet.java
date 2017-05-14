@@ -47,7 +47,7 @@ public class ByteSet implements StringCombinator {
 		return bs;
 	}
 
-	public final boolean[] byteSet() {
+	public final boolean[] bools() {
 		boolean[] b = new boolean[256];
 		for (int i = 0; i < 256; i++) {
 			b[i] = this.is(i);

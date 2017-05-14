@@ -17,8 +17,8 @@
 package blue.nez.parser.pass;
 
 import blue.nez.ast.SourcePosition;
+import blue.nez.parser.ParserGrammar;
 import blue.nez.peg.Expression;
-import blue.nez.peg.Grammar;
 import blue.nez.peg.Production;
 import blue.nez.peg.Typestate;
 import blue.nez.peg.expression.PAnd;
@@ -47,7 +47,7 @@ public class TreeCheckerPass extends CommonPass {
 	}
 
 	@Override
-	public Grammar perform(Grammar g, OOption options) {
+	public ParserGrammar perform(ParserGrammar g, OOption options) {
 		this.options = options;
 		this.EnableDetree = true;
 		for (Production p : g) {
