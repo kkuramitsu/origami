@@ -96,15 +96,6 @@ public enum ByteAcceptance {
 		public ByteAcceptance visitNonTerminal(PNonTerminal e, Integer ch) {
 			Production p = e.getProduction();
 			return ByteAcceptance.acc(p, ch);
-			// if (this.memo != null) {
-			// return memo.acc(p, ch);
-			// }
-			// try {
-			// return accept(p.getExpression(), ch);
-			// } catch (StackOverflowError ex) {
-			// Verbose.debug(e + " at " + e.getLocalName());
-			// }
-			// return Accept;
 		}
 
 		@Override
@@ -235,6 +226,7 @@ public enum ByteAcceptance {
 
 		@Override
 		public ByteAcceptance visitSymbolPredicate(PSymbolPredicate e, Integer ch) {
+			// return Unconsumed;
 			return this.accept(e.get(0), ch);
 		}
 

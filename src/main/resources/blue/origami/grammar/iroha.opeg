@@ -18,7 +18,7 @@ ORIGAMI = 'blue.origami.rule.iroha.IrohaTypeSystem'
 /* Code Layout (Whitespace) */
 
 _            = ( S / BLOCKCOMMENT / LINECOMMENT )*
-S            = [ \t\u000B\u000C]
+S            = [ \t]
 EOF          = !.
 BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
 LINECOMMENT  = '//' ( !EOL . )* EOS
@@ -275,14 +275,13 @@ Identifiers = {
 	( "," $(Identifier) )* 
 }
 
-example NameDecl '''
+example AssumeDecl '''
 assume x,y,z : int
 '''
 
 /* #VarDecl[$name, $type?, $expr] */
 
-public 
-VarDecl = 
+public VarDecl = 
 	"var" SingleVarDecl 
 	{$ $("," SingleVarDecl)+ #MultiStmt }?
 
@@ -894,7 +893,7 @@ UnaryExpr
 	= PostExpr
     / { "-"  $expr(CastExpr) #MinusExpr }
     / { ("not" / "!")  $expr(CastExpr) #NotExpr }
-    / { "|"  $expr(Expression) "|"    #SizeOfExpr }
+    / { "|"  $expr(PostExpr) "|"    #SizeOfExpr }
     / { "#"  $expr(CastExpr)    #TweetExpr }
     / { "+"  $expr(CastExpr)    #PlusExpr }
     / { "++" $expr(UnaryExpr)   #IncExpr }
@@ -1247,6 +1246,7 @@ example UnitLiteral '''
 
 public TripleLiteral = 
 	'\'\'\'' { $(TripleContent)* #StringCatExpr } '\'\'\''
+
 TripleContent = 
 	'${' Expression '}'
 	/ '$[' Expression ']'

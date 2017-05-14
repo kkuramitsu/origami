@@ -21,13 +21,9 @@ import java.lang.reflect.Field;
 import blue.origami.util.OStringUtils;
 
 public abstract class PAsmInst extends PAsmAPI {
-	// public int id;
-	// public boolean joinPoint = false;
-	// public final PAsmFunc apply;
 	public PAsmInst next;
 
 	public PAsmInst(PAsmInst next) {
-		// this.id = -1;
 		this.next = next;
 	}
 

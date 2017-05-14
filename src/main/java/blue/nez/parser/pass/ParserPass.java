@@ -28,7 +28,7 @@ public abstract class ParserPass extends Rewriter<Void> {
 	public abstract ParserGrammar perform(ParserGrammar g, OOption options);
 
 	public final static ParserGrammar applyPass(ParserGrammar g, OOption options) {
-		if (options.is(ParserOption.Unoptimized, false)) {
+		if (!options.is(ParserOption.Optimized, true)) {
 			return g;
 		}
 		String[] pass = options.stringList(ParserOption.Pass);

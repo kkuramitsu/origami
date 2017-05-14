@@ -31,24 +31,44 @@ public class DispatchPass extends CommonPass {
 
 	@Override
 	public Expression visitChoice(PChoice choice, Void a) {
+		// Expression e1 = this.visitChoice1(choice, a);
+		Expression e2 = this.visitChoice2(choice, a);
+		// if (!e1.equals(e2)) {
+		// System.out.println("## " + e1.size() + ", " + e2.size());
+		// System.out.println(e1);
+		// System.out.println(e2);
+		// }
+		return e2;
+	}
+
+	Expression visitChoice2(PChoice choice, Void a) {
 		ArrayList<Expression> selected = new ArrayList<>(256);
 		ArrayList<String> keyList = new ArrayList<>(256);
+		this.expandChoice(choice, keyList, selected);
+		ArrayList<Expression> selected2 = new ArrayList<>(selected.size());
+		ArrayList<String> keyList2 = new ArrayList<>(keyList.size());
 		HashMap<String, Byte> indexMap = new HashMap<>();
 		ArrayList<Expression[]> uniqueList = new ArrayList<>();
 		byte[] charMap = new byte[256];
 		for (int ch = 0; ch < 256; ch++) {
-			selected.clear();
-			keyList.clear();
-			this.selectPredictedChoice(choice, ch, keyList, selected);
-			if (selected.size() == 0) {
+			selected2.clear();
+			keyList2.clear();
+			for (int i = 0; i < selected.size(); i++) {
+				Expression e = selected.get(i);
+				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
+				if (acc != ByteAcceptance.Reject) {
+					selected2.add(e);
+					keyList2.add(keyList.get(i));
+				}
+			}
+			if (selected2.size() == 0) {
 				charMap[ch] = 0;
 				continue;
 			}
-			String key = this.joinKeys(keyList);
+			String key = this.joinKeys(keyList2);
 			Byte index = indexMap.get(key);
 			if (index == null) {
-				// System.out.println("key=" + key);
-				uniqueList.add(selected.toArray(new Expression[selected.size()]));
+				uniqueList.add(selected2.toArray(new Expression[selected2.size()]));
 				charMap[ch] = (byte) uniqueList.size();
 				indexMap.put(key, charMap[ch]);
 			} else {
@@ -56,33 +76,85 @@ public class DispatchPass extends CommonPass {
 			}
 		}
 		int oc = 1;
-		selected.clear();
+		selected2.clear();
 		indexMap.clear();
 		for (Expression[] seq : uniqueList) {
 			Expression joined = this.mergeExpression(seq);
 			String key = joined.toString();
 			if (!indexMap.containsKey(key)) {
-				indexMap.put(key, (byte) selected.size());
-				selected.add(joined);
-				this.remap(charMap, oc, selected.size());
+				indexMap.put(key, (byte) selected2.size());
+				selected2.add(joined);
+				this.remap(charMap, oc, selected2.size());
 			} else {
 				this.remap(charMap, oc, indexMap.get(key));
 			}
 			oc++;
 		}
 		int c = 0;
-		Expression[] inners = new Expression[selected.size()];
-		for (Expression e : selected) {
+		int max = 1;
+		Expression[] inners = new Expression[selected2.size()];
+		for (Expression e : selected2) {
 			inners[c] = e;
+			if (e instanceof PChoice && max < e.size()) {
+				max = e.size();
+			}
 			c++;
 		}
-		// int c = 0;
-		// Expression[] inners = new Expression[uniqueList.size()];
-		// for (Expression[] seq : uniqueList) {
-		// inners[c] = this.mergeExpression(seq);
-		// c++;
+		// this.options.verbose("choice %d => %d", choice.size(), max);
+		// if (max >= 2) {
+		// this.options.verbose("choice %s", choice);
 		// }
 		return this.optimized(choice, new PDispatch(inners, charMap));
+	}
+
+	private void expandChoice(PChoice choice, ArrayList<String> keyList, ArrayList<Expression> selected) {
+		for (Expression p : choice) {
+			Expression e = Expression.deref(p);
+			if (e instanceof PChoice) {
+				this.expandChoice((PChoice) e, keyList, selected);
+			} else {
+				if (e instanceof PFail) {
+					return;
+				}
+				Expression first = this.firstExpression2(e);
+				if (PDispatch.isConsumed(e)) {
+					e = Expression.newSequence(first, this.nextExpression2(e));
+				}
+				String key = this.key2(e);
+				keyList.add(key);
+				selected.add(e);
+			}
+		}
+	}
+
+	private String key2(Expression e) {
+		StringBuilder sb = new StringBuilder();
+		if (PDispatch.isConsumed(e)) {
+			sb.append(". ''");
+			return sb.toString();
+		}
+		if (e instanceof PPair) {
+			if (PDispatch.isConsumed(e.get(0))) {
+				sb.append(". ");
+				e.get(1).strOut(sb);
+				return sb.toString();
+			}
+		}
+		e.strOut(sb);
+		return sb.toString();
+	}
+
+	private String joinKeys(ArrayList<String> keyList) {
+		if (keyList.size() == 1) {
+			return keyList.get(0);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (String key2 : keyList) {
+				sb.append(";");
+				sb.append(key2);
+			}
+			return sb.toString();
+		}
 	}
 
 	private void remap(byte[] charMap, int oc, int nc) {
@@ -95,72 +167,74 @@ public class DispatchPass extends CommonPass {
 		}
 	}
 
-	private void selectPredictedChoice(PChoice choice, int ch, ArrayList<String> keyList,
+	Expression visitChoice1(PChoice choice, Void a) {
+		ArrayList<Expression> selected = new ArrayList<>(256);
+		ArrayList<String> keyList = new ArrayList<>(256);
+		HashMap<String, Byte> indexMap = new HashMap<>();
+		ArrayList<Expression[]> uniqueList = new ArrayList<>();
+		byte[] charMap = new byte[256];
+		for (int ch = 0; ch < 256; ch++) {
+			selected.clear();
+			keyList.clear();
+			this.selectPredictedChoice1(choice, ch, keyList, selected);
+			if (selected.size() == 0) {
+				charMap[ch] = 0;
+				continue;
+			}
+			String key = this.joinKeys(keyList);
+			Byte index = indexMap.get(key);
+			if (index == null) {
+				uniqueList.add(selected.toArray(new Expression[selected.size()]));
+				charMap[ch] = (byte) uniqueList.size();
+				indexMap.put(key, charMap[ch]);
+			} else {
+				charMap[ch] = index;
+			}
+		}
+		int c = 0;
+		Expression[] inners = new Expression[uniqueList.size()];
+		for (Expression[] seq : uniqueList) {
+			inners[c] = this.mergeExpression(seq);
+			c++;
+		}
+		return this.optimized(choice, new PDispatch(inners, charMap));
+	}
+
+	private void selectPredictedChoice1(PChoice choice, int ch, ArrayList<String> keyList,
 			ArrayList<Expression> selected) {
 		for (Expression e : choice) {
 			Expression deref = Expression.deref(e);
 			if (deref instanceof PChoice) {
-				this.selectPredictedChoice((PChoice) deref, ch, keyList, selected);
+				this.selectPredictedChoice1((PChoice) deref, ch, keyList, selected);
 			} else {
 				ByteAcceptance acc = ByteAcceptance.acc(e, ch);
 				if (acc != ByteAcceptance.Reject) {
-					this.append(keyList, selected, deref);
+					this.append1(keyList, selected, deref);
 				}
 			}
 		}
 	}
 
-	private void append(ArrayList<String> keyList, ArrayList<Expression> selected, Expression e) {
+	private void append1(ArrayList<String> keyList, ArrayList<Expression> selected, Expression e) {
 		if (e instanceof PFail) {
 			return;
 		}
-		Expression first = this.firstExpression2(e);
-		if (PDispatch.isConsumed(e)) {
-			e = Expression.newSequence(first, this.nextExpression2(e));
-		}
-		String key = this.key(e);
+		String key = this.key1(e);
 		keyList.add(key);
 		selected.add(e);
 	}
 
-	private String joinKeys(ArrayList<String> keyList) {
-		if (keyList.size() == 0) {
-			return keyList.get(0);
-		} else {
-			StringBuilder sb = new StringBuilder();
-			for (String key2 : keyList) {
-				sb.append(";");
-				sb.append(key2);
-			}
-			return sb.toString();
-		}
-	}
-
-	private String key(Expression e) {
+	private String key1(Expression e) {
 		StringBuilder sb = new StringBuilder();
-		this.appendKey(e, sb);
-		return sb.toString();
-	}
-
-	private void appendKey(Expression e, StringBuilder sb) {
-		// I don't know why it is not working
-		if (PDispatch.isConsumed(e)) {
-			sb.append(". ''");
-			// this.nextExpression(e).strOut(sb);
-			return;
-		}
-		if (e instanceof PPair) {
-			if (PDispatch.isConsumed(e.get(0))) {
-				sb.append(". ");
-				e.get(1).strOut(sb);
-				return;
-			}
-		}
 		e.strOut(sb);
+		return sb.toString();
 	}
 
 	private Expression mergeExpression(Expression[] seq) {
 		if (seq.length == 1) {
+			if (PDispatch.isConsumed(seq[0])) {
+				return Expression.defaultAny;
+			}
 			return seq[0];
 		}
 		List<Expression> l = Expression.newList(seq.length);
@@ -237,21 +311,6 @@ public class DispatchPass extends CommonPass {
 			return this.nextExpression2(first, Expression.newSequence(e.get(1), next));
 		}
 		return next;
-	}
-
-	private Expression nextExpression(Expression e) {
-		e = Expression.deref(e);
-		if (e instanceof PPair) {
-			Expression first = Expression.deref(e.get(0));
-			if (first instanceof PPair) {
-				List<Expression> l = Expression.newList(16);
-				Expression.addSequence(l, first.get(1));
-				Expression.addSequence(l, e.get(1));
-				return Expression.newSequence(l);
-			}
-			return e.get(1);
-		}
-		return Expression.defaultEmpty;
 	}
 
 }

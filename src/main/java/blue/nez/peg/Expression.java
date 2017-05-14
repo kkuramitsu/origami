@@ -19,6 +19,7 @@ package blue.nez.peg;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import blue.nez.ast.SourcePosition;
 import blue.nez.ast.Symbol;
@@ -84,7 +85,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			Object[] p2 = ((Expression) o).extract();
 			if (p1.length == p2.length) {
 				for (int i = 0; i < p1.length; i++) {
-					if (!p1[i].equals(p2[i])) {
+					if (!Objects.equals(p1[i], p2[i])) {
 						return false;
 					}
 				}

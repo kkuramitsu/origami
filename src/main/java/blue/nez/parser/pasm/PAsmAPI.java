@@ -18,26 +18,25 @@ public class PAsmAPI {
 		State state;
 		MemoEntry[] memos;
 		TreeLog uLog;
-		TreeLog fLog;
 		State uState;
 
 		NezParserContext(Source s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
 			this.s = s;
 			this.pos = pos;
 			this.tree = null;
-			this.treeLog = null; //
+			this.treeLog = new TreeLog(null); //
 			this.newFunc = newFunc;
 			this.setFunc = setFunc;
 			this.state = null;
 			this.memos = null;
-			this.uLog = new TreeLog(null);
-			this.fLog = this.uLog;
+			this.uLog = new TreeLog(this.treeLog);
+			this.treeLog.nextLog = this.uLog;
 			this.uState = null;
 		}
 
-		void backtrack(int pos) {
-			this.pos = pos;
-		}
+		// void backtrack(int pos) {
+		// this.pos = pos;
+		// }
 
 	}
 
@@ -172,7 +171,9 @@ public class PAsmAPI {
 		// prevLog.prevLog = px.uLog;
 		// px.uLog = prevLog;
 		// }
-		px.uLog = treeLog == null ? px.fLog : treeLog.nextLog;
+		// px.uLog = treeLog == null ? px.fLog : treeLog.nextLog;
+		px.uLog = treeLog.nextLog;
+		assert (px.uLog != null);
 		return treeLog;
 	}
 
@@ -548,14 +549,6 @@ public class PAsmAPI {
 
 		private int head_pos;
 
-		@Override
-		void backtrack(int pos) {
-			if (pos > this.head_pos) {
-				this.head_pos = pos;
-			}
-			this.pos = pos;
-		}
-
 		public long getMaximumPosition() {
 			return this.head_pos;
 		}
@@ -633,13 +626,20 @@ public class PAsmAPI {
 	public static final PAsmInst raiseFail(PAsmContext px)/* popFail() */ {
 		PAsmStack s = px.longjmp;
 		// assert (s.type == StackType.Fail);
-		px.backtrack(s.pos);
+		backtrack(px, s.pos);
 		px.tree = s.tree;
 		px.treeLog = unuseTreeLog(px, s.treeLog);
 		px.state = s.state;
 		px.longjmp = s.longjmp;
 		px.unused = s;
 		return s.jump;
+	}
+
+	public static void backtrack(PAsmContext px, int pos) {
+		if (pos > px.head_pos) {
+			px.head_pos = pos;
+		}
+		px.pos = pos;
 	}
 
 	public static final PAsmInst updateFail(PAsmContext px, PAsmInst next) {
