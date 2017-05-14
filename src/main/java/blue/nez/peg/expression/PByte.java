@@ -17,7 +17,7 @@ public class PByte extends PTerm {
 	public final ByteSet byteSet;
 
 	public PByte(int byteChar) {
-		this.byteSet = ByteSet.CharSet(byteChar & 0xff);
+		this.byteSet = ByteSet.byteChar(byteChar & 0xff);
 	}
 
 	public final ByteSet byteSet() {

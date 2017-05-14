@@ -29,7 +29,6 @@ public abstract class PAsmInst extends PAsmAPI {
 	public PAsmInst(PAsmInst next) {
 		// this.id = -1;
 		this.next = next;
-		// this.apply = this::exec;
 	}
 
 	public final String getName() {

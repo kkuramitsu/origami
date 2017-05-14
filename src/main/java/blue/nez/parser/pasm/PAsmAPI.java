@@ -18,18 +18,20 @@ public class PAsmAPI {
 		State state;
 		MemoEntry[] memos;
 		TreeLog uLog;
+		TreeLog fLog;
 		State uState;
 
 		NezParserContext(Source s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
 			this.s = s;
 			this.pos = pos;
 			this.tree = null;
-			this.treeLog = null;
+			this.treeLog = null; //
 			this.newFunc = newFunc;
 			this.setFunc = setFunc;
 			this.state = null;
 			this.memos = null;
-			this.uLog = null;
+			this.uLog = new TreeLog(null);
+			this.fLog = this.uLog;
 			this.uState = null;
 		}
 
@@ -45,14 +47,12 @@ public class PAsmAPI {
 		Object data;
 		Object tree;
 		TreeLog prevLog;
+		TreeLog nextLog;
 
-		TreeLog() {
-			this.op = 0;
-			this.pos = 0;
-			this.data = null;
-			this.tree = null;
-			this.prevLog = null;
+		TreeLog(TreeLog prev) {
+			this.prevLog = prev;
 		}
+
 	}
 
 	public static class State {
@@ -122,23 +122,57 @@ public class PAsmAPI {
 
 	/* Tree Construction */
 
+	// public static final TreeLog useTreeLog(NezParserContext px) {
+	// if (px.uLog == null) {
+	// return new TreeLog(null);
+	// }
+	// TreeLog uLog = px.uLog;
+	// px.uLog = uLog.prevLog;
+	// return uLog;
+	// }
+	//
+	// public static final TreeLog unuseTreeLog(NezParserContext px, TreeLog
+	// treeLog) {
+	// TreeLog uLog = px.treeLog;
+	// while (uLog != treeLog) {
+	// TreeLog prevLog = uLog;
+	// uLog = uLog.prevLog;
+	// prevLog.prevLog = px.uLog;
+	// px.uLog = prevLog;
+	// }
+	// return treeLog;
+	// }
+	//
+	// public static final boolean logTree(NezParserContext px, int op, int pos,
+	// Object data, Object tree) {
+	// TreeLog treeLog = useTreeLog(px);
+	// treeLog.op = op;
+	// treeLog.pos = pos;
+	// treeLog.data = data;
+	// treeLog.tree = tree;
+	// treeLog.prevLog = px.treeLog;
+	// px.treeLog = treeLog;
+	// return true;
+	// }
+
 	public static final TreeLog useTreeLog(NezParserContext px) {
-		if (px.uLog == null) {
-			return new TreeLog();
-		}
 		TreeLog uLog = px.uLog;
-		px.uLog = uLog.prevLog;
+		if (uLog.nextLog == null) {
+			uLog.nextLog = new TreeLog(uLog);
+		}
+		px.uLog = uLog.nextLog;
 		return uLog;
 	}
 
 	public static final TreeLog unuseTreeLog(NezParserContext px, TreeLog treeLog) {
-		TreeLog uLog = px.treeLog;
-		while (uLog != treeLog) {
-			TreeLog prevLog = uLog;
-			uLog = uLog.prevLog;
-			prevLog.prevLog = px.uLog;
-			px.uLog = prevLog;
-		}
+		// TreeLog uLog = px.treeLog;
+		// while (uLog != treeLog) {
+		// TreeLog prevLog = uLog;
+		// uLog = uLog.prevLog;
+		// prevLog.prevLog = px.uLog;
+		// px.uLog = prevLog;
+		// }
+		px.uLog = treeLog == null ? px.fLog : treeLog.nextLog;
 		return treeLog;
 	}
 
@@ -148,7 +182,7 @@ public class PAsmAPI {
 		treeLog.pos = pos;
 		treeLog.data = data;
 		treeLog.tree = tree;
-		treeLog.prevLog = px.treeLog;
+		assert (treeLog.prevLog == px.treeLog);
 		px.treeLog = treeLog;
 		return true;
 	}
@@ -180,11 +214,9 @@ public class PAsmAPI {
 		while (prevLog.op != 0) {
 			if (prevLog.op == 3) {
 				cnt = cnt + 1;
-			}
-			if (tag == null && prevLog.op == 1) {
+			} else if (tag == null && prevLog.op == 1) {
 				tag = (Symbol) prevLog.data;
-			}
-			if (value == null && prevLog.op == 2) {
+			} else if (value == null && prevLog.op == 2) {
 				value = prevLog.data;
 			}
 			prevLog = prevLog.prevLog;
@@ -207,6 +239,10 @@ public class PAsmAPI {
 		linkTree(px, label);
 		px.tree = tree;
 		return true;
+	}
+
+	public final static boolean bitis(int[] bits, int n) {
+		return (bits[n / 32] & (1 << (n % 32))) != 0;
 	}
 
 	// public static final boolean initMemo(NezParserContext px) {
@@ -461,7 +497,7 @@ public class PAsmAPI {
 	}
 
 	public static final MemoEntry getMemo(NezParserContext px, long key) {
-		return px.memos[(int) key % px.memos.length];
+		return px.memos[(int) (key % px.memos.length)];
 	}
 
 	public static final int lookupMemo1(NezParserContext px, int memoPoint) {
@@ -544,7 +580,7 @@ public class PAsmAPI {
 	}
 
 	public static class PAsmStack {
-		StackType type;
+		// StackType type;
 		int pos;
 		Object tree;
 		TreeLog treeLog;
@@ -575,7 +611,7 @@ public class PAsmAPI {
 
 	public static final void pushFail(PAsmContext px, PAsmInst jump) {
 		PAsmStack s = px.unused;
-		s.type = StackType.Fail;
+		// s.type = StackType.Fail;
 		s.pos = px.pos;
 		s.tree = px.tree;
 		s.treeLog = px.treeLog;
@@ -588,7 +624,7 @@ public class PAsmAPI {
 
 	public static final int popFail(PAsmContext px) { // used in succ
 		PAsmStack s = px.longjmp;
-		assert (s.type == StackType.Fail);
+		// assert (s.type == StackType.Fail);
 		px.longjmp = s.longjmp;
 		px.unused = s;
 		return s.pos;
@@ -596,10 +632,10 @@ public class PAsmAPI {
 
 	public static final PAsmInst raiseFail(PAsmContext px)/* popFail() */ {
 		PAsmStack s = px.longjmp;
-		assert (s.type == StackType.Fail);
+		// assert (s.type == StackType.Fail);
 		px.backtrack(s.pos);
 		px.tree = s.tree;
-		px.treeLog = s.treeLog;
+		px.treeLog = unuseTreeLog(px, s.treeLog);
 		px.state = s.state;
 		px.longjmp = s.longjmp;
 		px.unused = s;
@@ -608,7 +644,7 @@ public class PAsmAPI {
 
 	public static final PAsmInst updateFail(PAsmContext px, PAsmInst next) {
 		PAsmStack s = px.longjmp;
-		assert (s.type == StackType.Fail);
+		// assert (s.type == StackType.Fail);
 		// System.out.printf("ppos=%d, pos=%d\n", s.pos, px.pos);
 		if (s.pos == px.pos) {
 			return raiseFail(px);
@@ -622,39 +658,39 @@ public class PAsmAPI {
 
 	public static void pushRet(PAsmContext px, PAsmInst jump) {
 		PAsmStack s = px.unused;
-		s.type = StackType.Ret;
+		// s.type = StackType.Ret;
 		s.jump = jump;
 		push(px, s);
 	}
 
 	public static final PAsmInst popRet(PAsmContext px) {
 		PAsmStack s = pop(px);
-		if (s.type != StackType.Ret) {
-			System.out.println("s.type = " + s.type);
-		}
-		assert (s.type == StackType.Ret);
+		// if (s.type != StackType.Ret) {
+		// System.out.println("s.type = " + s.type);
+		// }
+		// assert (s.type == StackType.Ret);
 		return s.jump;
 	}
 
 	public static final void pushPos(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.type = StackType.Pos;
+		// s.type = StackType.Pos;
 		s.pos = px.pos;
 		push(px, s);
 	}
 
 	public static final int popPos(PAsmContext px) {
 		PAsmStack s = pop(px);
-		if (s.type != StackType.Pos) {
-			System.out.println("s.type = " + s.type);
-		}
-		assert (s.type == StackType.Pos);
+		// if (s.type != StackType.Pos) {
+		// System.out.println("s.type = " + s.type);
+		// }
+		// assert (s.type == StackType.Pos);
 		return s.pos;
 	}
 
 	public static final void pushTree(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.type = StackType.Tree;
+		// s.type = StackType.Tree;
 		s.tree = px.tree;
 		s.treeLog = px.treeLog;
 		push(px, s);
@@ -662,35 +698,35 @@ public class PAsmAPI {
 
 	public static final void popTree(PAsmContext px) {
 		PAsmStack s = pop(px);
-		if (s.type != StackType.Tree) {
-			System.out.println("s.type = " + s.type);
-		}
-		assert (s.type == StackType.Tree);
+		// if (s.type != StackType.Tree) {
+		// System.out.println("s.type = " + s.type);
+		// }
+		// assert (s.type == StackType.Tree);
 		px.tree = s.tree;
-		px.treeLog = s.treeLog;
+		px.treeLog = unuseTreeLog(px, s.treeLog);
 	}
 
 	public static final void popTree(PAsmContext px, Symbol label) {
 		PAsmStack s = pop(px);
-		if (s.type != StackType.Tree) {
-			System.out.println("s.type = " + s.type);
-		}
-		assert (s.type == StackType.Tree);
-		px.treeLog = s.treeLog;
+		// if (s.type != StackType.Tree) {
+		// System.out.println("s.type = " + s.type);
+		// }
+		// assert (s.type == StackType.Tree);
+		px.treeLog = unuseTreeLog(px, s.treeLog);
 		linkTree(px, label);
 		px.tree = s.tree;
 	}
 
 	public static void pushState(PAsmContext px) {
 		PAsmStack s = px.unused;
-		s.type = StackType.State;
+		// s.type = StackType.State;
 		s.state = px.state;
 		push(px, s);
 	}
 
 	public static void popState(PAsmContext px) {
 		PAsmStack s = pop(px);
-		assert (s.type == StackType.State);
+		// assert (s.type == StackType.State);
 		px.state = s.state;
 	}
 

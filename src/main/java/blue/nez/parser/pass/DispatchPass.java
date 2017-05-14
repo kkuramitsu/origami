@@ -55,33 +55,33 @@ public class DispatchPass extends CommonPass {
 				charMap[ch] = index;
 			}
 		}
-		// int oc = 1;
-		// selected.clear();
-		// indexMap.clear();
-		// for (Expression[] seq : uniqueList) {
-		// Expression joined = this.mergeExpression(seq);
-		// String key = joined.toString();
-		// if (!indexMap.containsKey(key)) {
-		// indexMap.put(key, (byte) selected.size());
-		// selected.add(joined);
-		// this.remap(charMap, oc, selected.size());
-		// } else {
-		// this.remap(charMap, oc, indexMap.get(key));
-		// }
-		// oc++;
-		// }
-		// int c = 0;
-		// Expression[] inners = new Expression[selected.size()];
-		// for (Expression e : selected) {
-		// inners[c] = e;
-		// c++;
-		// }
-		int c = 0;
-		Expression[] inners = new Expression[uniqueList.size()];
+		int oc = 1;
+		selected.clear();
+		indexMap.clear();
 		for (Expression[] seq : uniqueList) {
-			inners[c] = this.mergeExpression(seq);
+			Expression joined = this.mergeExpression(seq);
+			String key = joined.toString();
+			if (!indexMap.containsKey(key)) {
+				indexMap.put(key, (byte) selected.size());
+				selected.add(joined);
+				this.remap(charMap, oc, selected.size());
+			} else {
+				this.remap(charMap, oc, indexMap.get(key));
+			}
+			oc++;
+		}
+		int c = 0;
+		Expression[] inners = new Expression[selected.size()];
+		for (Expression e : selected) {
+			inners[c] = e;
 			c++;
 		}
+		// int c = 0;
+		// Expression[] inners = new Expression[uniqueList.size()];
+		// for (Expression[] seq : uniqueList) {
+		// inners[c] = this.mergeExpression(seq);
+		// c++;
+		// }
 		return this.optimized(choice, new PDispatch(inners, charMap));
 	}
 

@@ -3,7 +3,7 @@ package blue.nez.parser;
 import blue.origami.util.OOption.OOptionKey;
 
 public enum ParserOption implements OOptionKey {
-	WindowSize, Pass, Unoptimized, PassPath, StrictChecker, TrapActions, //
+	Verbose, WindowSize, Pass, Unoptimized, PassPath, StrictChecker, TrapActions, //
 	TreeConstruction, PackratParsing, Coverage, GrammarFile, GrammarPath, Start, //
 	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles;
 

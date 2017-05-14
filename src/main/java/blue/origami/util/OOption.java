@@ -230,7 +230,11 @@ public class OOption {
 
 	// Messaging
 
-	private boolean verboseMode = true;
+	private boolean verboseMode = false;
+
+	public final void setVerbose(boolean b) {
+		this.verboseMode = b;
+	}
 
 	public final void verbose(String fmt, Object... a) {
 		if (this.verboseMode) {

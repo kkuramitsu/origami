@@ -17,7 +17,6 @@
 package blue.nez.parser.pasm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -121,6 +120,7 @@ public class PAsmCompiler implements ParserCompiler {
 					}
 				}
 			}
+			PAsmCompiler.this.options.verbose("Instructions: %s", this.code.getInstructionSize());
 			return this.code;
 		}
 
@@ -158,25 +158,13 @@ public class PAsmCompiler implements ParserCompiler {
 
 		/* conversion */
 
-		HashMap<String, boolean[]> boolsMap = new HashMap<>();
-		// HashMap<String, byte[]> bytesMap = new HashMap<>();
+		HashMap<String, int[]> boolsMap = new HashMap<>();
 
-		boolean[] conv(int byteChar) {
-			String key = String.valueOf(byteChar);
-			boolean[] b = this.boolsMap.get(key);
-			if (b == null) {
-				b = new boolean[256];
-				b[byteChar] = true;
-				this.boolsMap.put(key, b);
-			}
-			return b;
-		}
-
-		boolean[] conv(ByteSet bs) {
+		int[] bools(ByteSet bs) {
 			String key = bs.toString();
-			boolean[] b = this.boolsMap.get(key);
+			int[] b = this.boolsMap.get(key);
 			if (b == null) {
-				b = bs.bools();
+				b = bs.bits();
 				this.boolsMap.put(key, b);
 			}
 			return b;
@@ -214,8 +202,8 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitByteSet(PByteSet p, PAsmInst next) {
-			boolean[] b = this.conv(p.byteSet());
-			if (b[0] == true) {
+			int[] b = this.bools(p.byteSet());
+			if (PAsmAPI.bitis(b, 0)) {
 				return new Neof(new Pset(b, next));
 			}
 			return new Pset(b, next);
@@ -242,24 +230,28 @@ public class PAsmCompiler implements ParserCompiler {
 			return -1;
 		}
 
-		private boolean[] anyBools = null;
+		private ByteSet anyByteSet = null;
 
-		private boolean[] byteSet(Expression e) {
+		private ByteSet toByteSet(Expression e) {
 			if (e instanceof PByte) {
-				return this.conv(((PByte) e).byteSet());
+				return ((PByte) e).byteSet();
 			}
 			if (e instanceof PByteSet) {
-				return this.conv(((PByteSet) e).byteSet());
+				return ((PByteSet) e).byteSet();
 			}
 			if (e instanceof PAny) {
-				if (this.anyBools == null) {
-					this.anyBools = new boolean[256];
-					Arrays.fill(this.anyBools, true);
-					if (!this.binaryGrammar) {
-						this.anyBools[0] = false;
-					}
+				if (this.anyByteSet == null) {
+					this.anyByteSet = new ByteSet(this.binaryGrammar ? 0 : 1, 255);
 				}
-				return this.anyBools;
+				return this.anyByteSet;
+			}
+			return null;
+		}
+
+		private int[] bools(Expression e) {
+			ByteSet bs = this.toByteSet(e);
+			if (bs != null) {
+				return this.bools(bs);
 			}
 			return null;
 		}
@@ -282,9 +274,9 @@ public class PAsmCompiler implements ParserCompiler {
 				if (byteChar > 0) {
 					return new Obyte(byteChar, next);
 				}
-				boolean[] b = this.byteSet(inner);
+				int[] b = this.bools(inner);
 				if (b != null) {
-					if (b[0]) {
+					if (PAsmAPI.bitis(b, 0)) {
 						return new Obin(b, next);
 					} else {
 						return new Oset(b, next);
@@ -315,9 +307,9 @@ public class PAsmCompiler implements ParserCompiler {
 				if (byteChar > 0) {
 					return new Rbyte(byteChar, next);
 				}
-				boolean[] b = this.byteSet(inner);
+				int[] b = this.bools(inner);
 				if (b != null) {
-					if (b[0]) {
+					if (PAsmAPI.bitis(b, 0)) {
 						return new Rbin(b, next);
 					} else {
 						return new Rset(b, next);
@@ -336,6 +328,17 @@ public class PAsmCompiler implements ParserCompiler {
 
 		@Override
 		public PAsmInst visitAnd(PAnd p, PAsmInst next) {
+			if (this.Optimization) {
+				Expression inner = this.getInnerExpression(p);
+				ByteSet bs = this.toByteSet(inner);
+				if (bs != null) {
+					if (bs.is(0)) {
+						return new Pbis(this.bools(bs), next);
+					} else {
+						return new Pis(this.bools(bs), next);
+					}
+				}
+			}
 			PAsmInst inner = this.compile(p.get(0), new Ppop(next));
 			return new Ppush(inner);
 		}
@@ -347,23 +350,14 @@ public class PAsmCompiler implements ParserCompiler {
 				if (inner instanceof PAny) {
 					return new Peof(next);
 				}
-				int byteChar = this.byteChar(inner);
-				if (byteChar >= 0) {
-					/*
-					 * !'\0' accepts /* !'a' accepts '', not '\0'
-					 */
-					if (this.binaryGrammar && byteChar != 0) {
-						boolean[] b = this.conv(byteChar);
-						return new Nbin(b, next);
+				ByteSet bs = this.toByteSet(inner);
+				if (bs != null) {
+					bs = bs.not(this.binaryGrammar);
+					if (bs.is(0)) {
+						return new Pbis(this.bools(bs), next);
+					} else {
+						return new Pis(this.bools(bs), next);
 					}
-					return new Nbyte(byteChar, next);
-				}
-				boolean[] b = this.byteSet(inner);
-				if (b != null) {
-					if (this.binaryGrammar && b[0] == false) {
-						return new Nbin(b, next);
-					}
-					return new Nset(b, next);
 				}
 				if (Expression.isMultiBytes(inner)) {
 					byte[] utf8 = this.toMultiChar(inner);

@@ -114,6 +114,10 @@ public abstract class OCommand extends OConsole {
 				}
 				continue;
 			}
+			if (as.startsWith("--verbose")) {
+				options.setVerbose(true);
+				continue;
+			}
 			if (!as.startsWith("-")) {
 				fileList.add(as);
 				continue;

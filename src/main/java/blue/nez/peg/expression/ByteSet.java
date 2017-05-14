@@ -13,6 +13,11 @@ public class ByteSet implements StringCombinator {
 		this.bits = bits;
 	}
 
+	public ByteSet(int s, int e) {
+		this();
+		this.set(s, e, true);
+	}
+
 	public final boolean is(int n) {
 		return (this.bits[n / 32] & (1 << (n % 32))) != 0;
 	}
@@ -33,11 +38,28 @@ public class ByteSet implements StringCombinator {
 		}
 	}
 
-	// public final void union(ByteSet b) {
-	// for (int i = 0; i < this.bits.length; i++) {
-	// this.bits[i] = this.bits[i] | b.bits[i];
-	// }
-	// }
+	public ByteSet not(boolean binary) {
+		ByteSet bs = new ByteSet();
+		for (int i = 0; i < 256; i++) {
+			bs.set(i, !this.is(i));
+		}
+		if (!binary) {
+			bs.set(0, false);
+		}
+		return bs;
+	}
+
+	public ByteSet minus(ByteSet a) {
+		ByteSet bs = new ByteSet();
+		for (int i = 0; i < 256; i++) {
+			boolean b = this.is(i);
+			if (a.is(i)) {
+				b = false;
+			}
+			bs.set(i, b);
+		}
+		return bs;
+	}
 
 	public ByteSet union(ByteSet b) {
 		ByteSet bs = new ByteSet();
@@ -47,16 +69,16 @@ public class ByteSet implements StringCombinator {
 		return bs;
 	}
 
+	public final int[] bits() {
+		return this.bits;
+	}
+
 	public final boolean[] bools() {
 		boolean[] b = new boolean[256];
 		for (int i = 0; i < 256; i++) {
 			b[i] = this.is(i);
 		}
 		return b;
-	}
-
-	public final int[] bits() {
-		return this.bits;
 	}
 
 	@Override
@@ -148,19 +170,19 @@ public class ByteSet implements StringCombinator {
 		sb.append((char) ubyte);
 	}
 
+	// //
+	// public final static ByteSet AnyChar = new AnyCharSet();
 	//
-	public final static ByteSet AnyChar = new AnyCharSet();
-
-	static class AnyCharSet extends ByteSet {
-		@Override
-		public void strOut(StringBuilder sb) {
-			sb.append(".");
-		}
-	}
+	// static class AnyCharSet extends ByteSet {
+	// @Override
+	// public void strOut(StringBuilder sb) {
+	// sb.append(".");
+	// }
+	// }
 
 	private final static CharSet[] CharSet = new CharSet[256];
 
-	public static ByteSet CharSet(int ubyte) {
+	public final static ByteSet byteChar(int ubyte) {
 		if (CharSet[ubyte] == null) {
 			CharSet[ubyte] = new CharSet(ubyte);
 		}

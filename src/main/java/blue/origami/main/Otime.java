@@ -23,8 +23,9 @@ import blue.nez.parser.ParserOption;
 import blue.nez.parser.ParserSource;
 import blue.origami.util.OOption;
 
-public class Obench extends OCommand {
+public class Otime extends OCommand {
 
+	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, false);
@@ -36,7 +37,7 @@ public class Obench extends OCommand {
 			exit(1, "unavailable -t --text option");
 			return;
 		}
-		Parser parser = getParser(options);
+		Parser parser = this.getParser(options);
 		double total = 0.0;
 		int len = 0;
 		String[] files = options.stringList(ParserOption.InputFiles);
@@ -57,7 +58,7 @@ public class Obench extends OCommand {
 					break;
 				}
 			}
-			for (int c = 0; c < 5; c++) {
+			for (int c = 0; c < 10; c++) {
 				Source input = ParserSource.newFileSource(file, null);
 				long t1 = System.nanoTime();
 				Tree<?> node = parser.parse(input);
@@ -72,7 +73,7 @@ public class Obench extends OCommand {
 				dsum += d;
 			}
 			if (len > 0) {
-				System.out.printf("\t(ave) %.3f[ms]\n", (dsum / 5));
+				System.out.printf("\t(ave) %.3f[ms]\n", (dsum / 10));
 				total += dsum;
 			}
 		}

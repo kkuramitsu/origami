@@ -1,17 +1,16 @@
 package blue.nez.parser.pasm;
 
 public class Rset extends PAsmInst {
-	public final boolean[] bools;
+	public final int[] bits;
 
-	public Rset(boolean[] bools, PAsmInst next) {
+	public Rset(int[] bits, PAsmInst next) {
 		super(next);
-		this.bools = bools;
-		assert (bools[0] == false);
+		this.bits = bits;
 	}
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
-		while (this.bools[getbyte(px)]) {
+		while (bitis(this.bits, getbyte(px))) {
 			move(px, 1);
 		}
 		return this.next;

@@ -1,26 +1,21 @@
 package blue.nez.parser.pasm;
 
-public class Obin extends PAsmInst {
+public class Pbis extends PAsmInst {
 	public final int[] bits;
 
-	public Obin(int[] bits, PAsmInst next) {
+	public Pbis(int[] bits, PAsmInst next) {
 		super(next);
 		this.bits = bits;
+		assert (bitis(this.bits, 0));
 	}
 
 	@Override
 	public PAsmInst exec(PAsmContext px) throws PAsmTerminationException {
 		int c = getbyte(px);
 		if (c == 0) {
-			if (neof(px)) {
-				move(px, 1);
-			}
-			return this.next;
+			return neof(px) ? this.next : raiseFail(px);
 		}
-		if (bitis(this.bits, c)) {
-			move(px, 1);
-		}
-		return this.next;
+		return bitis(this.bits, c) ? this.next : raiseFail(px);
 	}
 
 }
