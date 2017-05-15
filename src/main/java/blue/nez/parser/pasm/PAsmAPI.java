@@ -17,7 +17,7 @@ public class PAsmAPI {
 		TreeSetFunc setFunc;
 		State state;
 		MemoEntry[] memos;
-		TreeLog uLog;
+		// TreeLog uLog;
 		State uState;
 
 		NezParserContext(Source s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
@@ -29,8 +29,8 @@ public class PAsmAPI {
 			this.setFunc = setFunc;
 			this.state = null;
 			this.memos = null;
-			this.uLog = new TreeLog(this.treeLog);
-			this.treeLog.nextLog = this.uLog;
+			// this.uLog = new TreeLog(this.treeLog);
+			// this.treeLog.nextLog = this.uLog;
 			this.uState = null;
 		}
 
@@ -155,12 +155,11 @@ public class PAsmAPI {
 	// }
 
 	public static final TreeLog useTreeLog(NezParserContext px) {
-		TreeLog uLog = px.uLog;
+		TreeLog uLog = px.treeLog;
 		if (uLog.nextLog == null) {
 			uLog.nextLog = new TreeLog(uLog);
 		}
-		px.uLog = uLog.nextLog;
-		return uLog;
+		return uLog.nextLog;
 	}
 
 	public static final TreeLog unuseTreeLog(NezParserContext px, TreeLog treeLog) {
@@ -172,8 +171,8 @@ public class PAsmAPI {
 		// px.uLog = prevLog;
 		// }
 		// px.uLog = treeLog == null ? px.fLog : treeLog.nextLog;
-		px.uLog = treeLog.nextLog;
-		assert (px.uLog != null);
+		// px.uLog = treeLog.nextLog;
+		// assert (px.uLog != null);
 		return treeLog;
 	}
 

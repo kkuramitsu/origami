@@ -174,3 +174,13 @@ public class PAsmCode implements ParserCode {
 	}
 
 }
+
+@SuppressWarnings("serial")
+class PAsmTerminationException extends Exception {
+	public boolean status;
+
+	public PAsmTerminationException(boolean status) {
+		super();
+		this.status = status;
+	}
+}
