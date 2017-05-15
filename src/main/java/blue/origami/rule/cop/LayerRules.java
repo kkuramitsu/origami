@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import blue.nez.ast.Tree;
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.OClassLoader;
 import blue.origami.ffi.OImportable;
@@ -38,6 +37,7 @@ import blue.origami.lang.OEnv.OBaseEnv;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.SyntaxAnalysis;

@@ -16,11 +16,11 @@
 
 package blue.origami.main;
 
-import blue.nez.ast.Source;
-import blue.nez.ast.Tree;
-import blue.nez.parser.Parser;
-import blue.nez.parser.ParserOption;
-import blue.nez.parser.ParserSource;
+import blue.origami.nez.ast.Source;
+import blue.origami.nez.ast.Tree;
+import blue.origami.nez.parser.Parser;
+import blue.origami.nez.parser.ParserOption;
+import blue.origami.nez.parser.ParserSource;
 import blue.origami.util.OOption;
 
 public class Otime extends OCommand {

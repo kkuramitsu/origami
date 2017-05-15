@@ -16,13 +16,13 @@
 
 package blue.origami.rule.iroha;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.callsite.IrohaMethodCallSite;
 import blue.origami.lang.callsite.OFuncCallSite;
 import blue.origami.lang.callsite.OGetterCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.OrigamiExpressionRules;
 import blue.origami.rule.OrigamiLiteralRules;
 import blue.origami.rule.OrigamiOperatorAPIs;

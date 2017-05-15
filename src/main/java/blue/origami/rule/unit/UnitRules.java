@@ -18,8 +18,6 @@ package blue.origami.rule.unit;
 
 import java.lang.reflect.Constructor;
 
-import blue.nez.ast.Symbol;
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OClassLoader;
 import blue.origami.asm.code.LoadArgCode;
@@ -35,6 +33,8 @@ import blue.origami.lang.type.OParamType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.lang.type.ThisType;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.ConstructorInvocationCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.EmptyCode;

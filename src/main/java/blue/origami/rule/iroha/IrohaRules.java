@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import blue.nez.ast.Symbol;
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCallSite;
 import blue.origami.asm.code.DupCode;
@@ -44,6 +42,8 @@ import blue.origami.lang.type.OParamType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.ArrayCode;
 import blue.origami.ocode.BlockGen;
 import blue.origami.ocode.DeclCode;

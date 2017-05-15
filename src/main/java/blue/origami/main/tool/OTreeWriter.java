@@ -16,7 +16,7 @@
 
 package blue.origami.main.tool;
 
-import blue.nez.ast.Tree;
+import blue.origami.nez.ast.Tree;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;

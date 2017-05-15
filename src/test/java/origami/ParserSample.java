@@ -2,9 +2,9 @@ package origami;
 
 import java.io.IOException;
 
-import blue.nez.ast.Tree;
-import blue.nez.parser.Parser;
-import blue.nez.peg.Grammar;
+import blue.origami.nez.ast.Tree;
+import blue.origami.nez.parser.Parser;
+import blue.origami.nez.peg.Grammar;
 
 public class ParserSample {
 

@@ -18,10 +18,10 @@ package blue.origami.main;
 
 import java.util.ArrayList;
 
-import blue.nez.ast.Source;
-import blue.nez.parser.Parser;
-import blue.nez.parser.ParserOption;
-import blue.nez.parser.ParserSource;
+import blue.origami.nez.ast.Source;
+import blue.origami.nez.parser.Parser;
+import blue.origami.nez.parser.ParserOption;
+import blue.origami.nez.parser.ParserSource;
 import blue.origami.util.OOption;
 
 public class Omatch extends OCommand {

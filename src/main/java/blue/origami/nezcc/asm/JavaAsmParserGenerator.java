@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.nez.ast.Symbol;
-import blue.nez.peg.expression.ByteSet;
 import blue.origami.OrigamiContext;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.nezcc.ParserGenerator;
 import blue.origami.nezcc.Block;
 import blue.origami.ocode.OCodeFactory;

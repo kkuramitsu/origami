@@ -19,7 +19,7 @@ package blue.origami.nezcc;
 import java.io.IOException;
 import java.util.List;
 
-import blue.nez.peg.expression.ByteSet;
+import blue.origami.nez.peg.expression.ByteSet;
 
 public class JavaParserGenerator extends ParserSourceGenerator {
 

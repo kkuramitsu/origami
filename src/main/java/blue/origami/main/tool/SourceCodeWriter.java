@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import blue.nez.ast.LocaleFormat;
-import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.type.OType;
+import blue.origami.nez.ast.LocaleFormat;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.ocode.ApplyCode;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;

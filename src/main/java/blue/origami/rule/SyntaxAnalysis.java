@@ -18,8 +18,6 @@ package blue.origami.rule;
 
 import java.util.Map;
 
-import blue.nez.ast.Symbol;
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
@@ -28,6 +26,8 @@ import blue.origami.lang.OTypeName;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.ErrorCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.UntypedCode;

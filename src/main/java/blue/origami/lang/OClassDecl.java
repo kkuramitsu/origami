@@ -19,7 +19,6 @@ package blue.origami.lang;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.asm.OCompilationUnit;
 import blue.origami.asm.code.LoadArgCode;
@@ -27,6 +26,7 @@ import blue.origami.asm.code.LoadThisCode;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OParamVarType;
 import blue.origami.lang.type.OType;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.ConstructorInvocationCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.MultiCode;

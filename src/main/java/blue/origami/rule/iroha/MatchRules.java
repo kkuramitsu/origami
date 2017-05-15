@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import blue.nez.ast.Symbol;
-import blue.nez.ast.Tree;
 import blue.origami.ffi.Case;
 import blue.origami.ffi.FieldExtractable;
 import blue.origami.ffi.ListExtractable;
@@ -38,6 +36,8 @@ import blue.origami.lang.OLocalVariable;
 import blue.origami.lang.type.NullableType;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.BlockGen;
 import blue.origami.ocode.DefaultValueCode;
 import blue.origami.ocode.EmptyCode;

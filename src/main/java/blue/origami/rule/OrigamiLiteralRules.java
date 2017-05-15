@@ -19,9 +19,9 @@ package blue.origami.rule;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import blue.nez.ast.Tree;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.NullCode;
 import blue.origami.ocode.ValueCode;

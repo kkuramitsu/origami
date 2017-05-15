@@ -21,7 +21,6 @@ import static blue.origami.rule.OFmt.quote;
 import java.util.HashSet;
 import java.util.Set;
 
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
@@ -31,6 +30,7 @@ import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.OUntypedMethod;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.BreakCode;
 import blue.origami.ocode.ContinueCode;
 import blue.origami.ocode.DefaultValueCode;

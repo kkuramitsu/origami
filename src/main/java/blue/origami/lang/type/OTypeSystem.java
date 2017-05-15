@@ -25,12 +25,12 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.asm.OClassLoader;
 import blue.origami.ffi.Immutable;
 import blue.origami.ffi.ONullable;
 import blue.origami.ffi.OrigamiObject;
 import blue.origami.lang.OEnv;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.ocode.NullCode;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.ValueCode;

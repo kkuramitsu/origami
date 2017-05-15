@@ -16,8 +16,8 @@
 
 package blue.origami.main;
 
-import blue.nez.peg.Grammar;
 import blue.origami.nezcc.ParserGenerator;
+import blue.origami.nez.peg.Grammar;
 import blue.origami.nezcc.JavaParserGenerator;
 import blue.origami.util.OOption;
 

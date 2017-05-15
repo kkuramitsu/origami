@@ -23,11 +23,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.asm.OCallSite;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OEnv.OListMatcher;
 import blue.origami.lang.type.OType;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.ocode.CastCode;
 import blue.origami.ocode.OCode;
 

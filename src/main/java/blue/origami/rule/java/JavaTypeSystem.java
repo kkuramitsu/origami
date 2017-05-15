@@ -16,11 +16,11 @@
 
 package blue.origami.rule.java;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.callsite.OFuncCallSite;
 import blue.origami.lang.callsite.OGetterCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.OrigamiCommonAPIs;
 import blue.origami.rule.OrigamiExpressionRules;
 import blue.origami.rule.OrigamiLiteralRules;

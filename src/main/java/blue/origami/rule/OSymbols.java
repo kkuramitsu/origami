@@ -16,7 +16,7 @@
 
 package blue.origami.rule;
 
-import blue.nez.ast.Symbol;
+import blue.origami.nez.ast.Symbol;
 
 public interface OSymbols {
 

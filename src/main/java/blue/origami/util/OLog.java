@@ -16,10 +16,10 @@
 
 package blue.origami.util;
 
-import blue.nez.ast.LocaleFormat;
-import blue.nez.ast.SourcePosition;
-import blue.nez.ast.Tree;
 import blue.origami.lang.OEnv;
+import blue.origami.nez.ast.LocaleFormat;
+import blue.origami.nez.ast.SourcePosition;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.WarningCode;
 

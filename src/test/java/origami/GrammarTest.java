@@ -18,11 +18,11 @@ package origami;
 
 import java.io.IOException;
 
-import blue.nez.ast.Source;
-import blue.nez.parser.Parser;
-import blue.nez.parser.ParserSource;
-import blue.nez.peg.Grammar;
-import blue.nez.peg.SourceGrammar;
+import blue.origami.nez.ast.Source;
+import blue.origami.nez.parser.Parser;
+import blue.origami.nez.parser.ParserSource;
+import blue.origami.nez.peg.Grammar;
+import blue.origami.nez.peg.SourceGrammar;
 
 public class GrammarTest {
 

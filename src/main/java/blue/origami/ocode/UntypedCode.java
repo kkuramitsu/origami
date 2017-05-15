@@ -16,13 +16,13 @@
 
 package blue.origami.ocode;
 
-import blue.nez.ast.Tree;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.OLocalVariable;
 import blue.origami.lang.OMethodDecl;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
 import blue.origami.lang.type.OVarType;
+import blue.origami.nez.ast.Tree;
 import blue.origami.rule.SyntaxAnalysis;
 import blue.origami.rule.TypeAnalysis;
 import blue.origami.util.ODebug;

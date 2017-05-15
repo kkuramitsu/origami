@@ -16,7 +16,7 @@
 
 package blue.origami.util;
 
-import blue.nez.ast.LocaleFormat;
+import blue.origami.nez.ast.LocaleFormat;
 
 public class OConsole {
 

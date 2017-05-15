@@ -18,8 +18,8 @@ package blue.origami.util;
 
 import java.lang.reflect.Method;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.OFmt;
 
 public class ODebug extends OConsole {

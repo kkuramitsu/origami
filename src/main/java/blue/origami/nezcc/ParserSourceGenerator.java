@@ -4,8 +4,8 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
 
-import blue.nez.ast.Symbol;
-import blue.nez.peg.expression.ByteSet;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.util.OStringUtils;
 
 public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilder, String> {

@@ -18,7 +18,6 @@ package blue.origami.ocode;
 
 import java.util.List;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.asm.OCallSite;
 import blue.origami.ffi.OCast;
 import blue.origami.lang.OEnv;
@@ -28,6 +27,7 @@ import blue.origami.lang.callsite.OGetterCallSite;
 import blue.origami.lang.callsite.OMethodCallSite;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.rule.OFmt;
 
 public interface OCode {

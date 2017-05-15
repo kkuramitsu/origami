@@ -19,13 +19,13 @@ package blue.origami.main;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.nez.parser.ParserContext;
-import blue.nez.parser.ParserOption;
-import blue.nez.parser.TrapAction;
-import blue.nez.peg.Expression;
-import blue.nez.peg.Grammar;
-import blue.nez.peg.Production;
-import blue.nez.peg.expression.PTrap;
+import blue.origami.nez.parser.ParserContext;
+import blue.origami.nez.parser.ParserOption;
+import blue.origami.nez.parser.TrapAction;
+import blue.origami.nez.peg.Expression;
+import blue.origami.nez.peg.Grammar;
+import blue.origami.nez.peg.Production;
+import blue.origami.nez.peg.expression.PTrap;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 

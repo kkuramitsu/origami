@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import blue.nez.ast.LocaleFormat;
+import blue.origami.nez.ast.LocaleFormat;
 
 public class OCommonWriter {
 	protected String fileName = null;

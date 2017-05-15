@@ -1,8 +1,8 @@
 package blue.origami.ocode;
 
-import blue.nez.ast.SourcePosition;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
+import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;

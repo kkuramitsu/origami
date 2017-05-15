@@ -16,7 +16,6 @@
 
 package blue.origami.rule.js;
 
-import blue.nez.ast.Tree;
 import blue.origami.asm.OAnno;
 import blue.origami.ffi.OImportable;
 import blue.origami.lang.OEnv;
@@ -24,6 +23,7 @@ import blue.origami.lang.OMethodHandle;
 import blue.origami.lang.OUntypedMethod;
 import blue.origami.lang.type.AnyType;
 import blue.origami.lang.type.OType;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.rule.SyntaxAnalysis;

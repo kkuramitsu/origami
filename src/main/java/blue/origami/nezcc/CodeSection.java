@@ -7,10 +7,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
-import blue.nez.peg.Expression;
-import blue.nez.peg.Stateful;
-import blue.nez.peg.Typestate;
-import blue.nez.peg.expression.PNonTerminal;
+import blue.origami.nez.peg.Expression;
+import blue.origami.nez.peg.Stateful;
+import blue.origami.nez.peg.Typestate;
+import blue.origami.nez.peg.expression.PNonTerminal;
 import blue.origami.util.OCommonWriter;
 
 abstract class CodeSection<C> {

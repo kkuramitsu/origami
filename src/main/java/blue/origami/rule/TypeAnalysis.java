@@ -16,11 +16,11 @@
 
 package blue.origami.rule;
 
-import blue.nez.ast.Symbol;
-import blue.nez.ast.Tree;
 import blue.origami.lang.OEnv;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OUntypedType;
+import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.ast.Tree;
 import blue.origami.ocode.OCode;
 import blue.origami.ocode.EmptyCode;
 import blue.origami.ocode.ErrorCode;
