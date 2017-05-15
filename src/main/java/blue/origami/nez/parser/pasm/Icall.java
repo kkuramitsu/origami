@@ -35,4 +35,9 @@ public class Icall extends PAsmInst {
 		return this.jump;
 	}
 
+	@Override
+	public PAsmInst[] branch() {
+		return new PAsmInst[] { this.jump };
+	}
+
 }

@@ -117,7 +117,7 @@ public class PAsmCode implements ParserCode {
 		return this.grammar.getMemoPointSize();
 	}
 
-	List<PAsmInst> codeList() {
+	public List<PAsmInst> codeList() {
 		return this.codeList;
 	}
 
