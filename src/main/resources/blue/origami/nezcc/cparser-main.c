@@ -128,7 +128,7 @@ static void Tree_free(Tree *t)
 static void TreeLog_free(struct TreeLog *t)
 {
   while(t != NULL) {
-    struct TreeLog *next = t->prevLog;
+    struct TreeLog *next = t->nextLog;
     _free(t);
     t = next;    
   }
@@ -141,13 +141,12 @@ static void NezParserContext_free(struct NezParserContext *px)
     px->memos = NULL;
   }
   TreeLog_free(px->treeLog);
-  TreeLog_free(px->uLog);
   _free(px);
 }
 
 void *Nez_parse(const char *inputs, TreeFunc fnew, TreeSetFunc fset)
 {
-  struct NezParserContext *px = newNezParserContext((const unsigned char*)inputs, strlen(inputs), fnew, fset);
+  struct NezParserContext *px = newNezParserContext((const unsigned char*)inputs, strlen(inputs), newTreeLog(NULL), fnew, fset);
   px->pos = (const unsigned char*)inputs;
   initMemo(px);
   void *result = NULL;
@@ -184,20 +183,36 @@ const char *Nez_readInput(const char *path)
     return path;
 }
 
+
+static double timediff(struct timeval *s, struct timeval *e)
+{
+	double t1 = (e->tv_sec - s->tv_sec) * 1000.0;
+	double t2 = (e->tv_usec - s->tv_usec) / 1000.0;
+	return t1 + t2; /* ms */
+}
+
 int main(int ac, const char **av)
 {
   int j;
   size_t len;
   if(ac == 1) {
-    fprintf(stdout, "Usage: %s file [or input-text]\n", av[0]);
+    fprintf(stdout, "Usage: %s file [or 'input-text']\n", av[0]);
     return 1;
   }
   for(j = 1; j < ac; j++) {
     const char *inputs = Nez_readInput(av[j]);
+#ifndef _WIN32
+    struct timeval s, e;
+	gettimeofday(&s, NULL);
+    Tree *data = Nez_parseTree(inputs);
+	gettimeofday(&e, NULL);
+    fprintf(stderr, "%s %f[ms]: ", av[j], timediff(&s, &e));
+#else
     Tree *data = Nez_parseTree(inputs);
     fprintf(stdout, "%s: ", av[j]);
+#endif
     Tree_dump(data, stdout);
-    fprintf(stdout, "\n");
+    fprintf(stderr, "\n");
     Tree_free(data);
     if(av[j] != inputs) {
       _free((void*)inputs);
@@ -205,4 +220,3 @@ int main(int ac, const char **av)
   }
   return 0;
 }
-

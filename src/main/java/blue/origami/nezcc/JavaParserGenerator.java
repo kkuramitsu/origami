@@ -46,7 +46,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("setFunc", "TreeSetFunc");
 		this.defineVariable("f", "ParserFunc");
 
-		this.defineVariable("ch", "byte");
+		this.defineVariable("c", "int");
 		this.defineVariable("cnt", "int");
 		this.defineVariable("shift", "int");
 		this.defineVariable("indexMap", "int[256]");
@@ -64,7 +64,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("memoPoint", "int");
 		this.defineVariable("result", "int");
 
-		this.defineSymbol("UtreeLog", "unuseTreeLog");
+		// this.defineSymbol("UtreeLog", "unuseTreeLog");
 	}
 
 	@Override

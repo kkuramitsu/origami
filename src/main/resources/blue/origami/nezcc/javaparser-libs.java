@@ -21,30 +21,6 @@ static int[] I(String s) {
   return b;
 }
 
-static byte[] T(String s) {
-  int len = s.length();
-  for (int i = 0; i < s.length(); i++) {
-    char c = s.charAt(i);
-    if(c == '~') len -= 2;
-  }  
-  byte[] b = new byte [len];
-  int p = 0;
-  for (int i = 0; i < s.length(); i++) {
-    char c = s.charAt(i);
-    if(c != '~') {
-      b[p] = (byte)c;
-    }
-    else {
-      String hex2 = s.substring(i+1, i+3);
-      b[p] = (byte)Integer.parseInt(hex2, 16);
-      i+=2;
-    }
-    p++;
-  }
-  //System.out.println("DEBUG " + s + " => " + new String(b));
-  return b;
-}
-
 private static int indent = 0;
 
 static boolean B(String s, NezParserContext px) {

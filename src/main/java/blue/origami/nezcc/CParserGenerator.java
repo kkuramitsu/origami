@@ -17,6 +17,7 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 public class CParserGenerator extends ParserSourceGenerator {
 
@@ -38,27 +39,29 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("px", "struct NezParserContext*");
 		this.defineVariable("inputs", "const unsigned char*");
 		this.defineVariable("length", "size_t");
+		this.usePointer(true);
 		this.defineVariable("pos", "const unsigned char*");
 		this.defineVariable("treeLog", "struct TreeLog*");
 		this.defineVariable("tree", "void*");
-		this.defineVariable("state", "void*");
+		this.defineVariable("state", "struct State*");
 		this.defineVariable("memos", "struct MemoEntry*");
 
 		this.defineVariable("newFunc", "TreeFunc");
 		this.defineVariable("setFunc", "TreeSetFunc");
 		this.defineVariable("f", "ParserFunc");
 
-		this.defineVariable("ch", "unsigned char");
+		this.defineVariable("c", "unsigned char");
 		this.defineVariable("cnt", "int");
 		this.defineVariable("shift", "int");
 		this.defineVariable("indexMap", "unsigned char[256]");
 		this.defineVariable("byteSet", "int[8]");
+		this.defineVariable("s", "const int*");
 
 		this.defineVariable("op", "int");
 		this.defineVariable("label", "const char*");
 		this.defineVariable("tag", "const char*");
-		this.defineVariable("value", "const char*");
-		this.defineSymbol("value.length", "((const unsigned char*)value+strlen(value))");
+		this.defineVariable("value", "const unsigned char*");
+		this.defineSymbol("len", "strlen(%s)");
 		this.defineVariable("data", "const void*");
 
 		this.defineVariable("m", "struct MemoEntry*");
@@ -76,6 +79,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineSymbol("getMemo", "getMemo");
 		this.defineSymbol("memcmp", "(memcmp(%s,%s,%s)==0)");
 		this.defineSymbol("matchBytes", "matchBytes");
+		this.defineSymbol("extract", "/*%s*/%s");
 
 		// link freelist
 		this.defineSymbol("UtreeLog", "unuseTreeLog");
@@ -146,6 +150,43 @@ public class CParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected void declProtoType(String ret, String funcName, String[] params) {
 		this.writeSection(String.format("%s %s", this.formatSignature(ret, funcName, params), this.s(";")));
+	}
+
+	String quote(byte[] bytes) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\"");
+		for (byte ch : bytes) {
+			if (ch >= 043 && ch < 126) {
+				sb.append((char) ch);
+			} else {
+				sb.append(String.format("\\x%02x", ch & 0xff));
+			}
+		}
+		sb.append("\"");
+		return sb.toString();
+	}
+
+	@Override
+	protected String matchBytes(byte[] bytes, boolean proceed) {
+		String expr;
+		if (bytes.length <= 8) {
+			expr = String.format("match%d(px->pos,(const unsigned char*)%s)", bytes.length, this.quote(bytes));
+		} else {
+			expr = String.format("(memcmp((void*)px->pos,%s,%d)==0)", this.quote(bytes), bytes.length);
+		}
+		if (proceed) {
+			expr = this.emitAnd(expr, this.emitMove(this.vInt(bytes.length)));
+		}
+		return expr;
+	}
+
+	@Override
+	protected String vValue(String s) {
+		if (s != null) {
+			byte[] buf = s.getBytes(Charset.forName("UTF-8"));
+			return this.getConstName(this.T("indexMap"), this.quote(buf));
+		}
+		return this.emitNull();
 	}
 
 }

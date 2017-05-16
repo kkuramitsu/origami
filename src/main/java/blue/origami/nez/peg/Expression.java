@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
+import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.nez.peg.expression.PAny;
 import blue.origami.nez.peg.expression.PByte;
 import blue.origami.nez.peg.expression.PByteSet;
@@ -406,6 +407,19 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 			e = next.getProduction().getExpression();
 		}
 		return e;
+	}
+
+	public final static ByteSet getByteSet(Expression e, boolean binary) {
+		if (e instanceof PByte) {
+			return ((PByte) e).byteSet();
+		}
+		if (e instanceof PByteSet) {
+			return ((PByteSet) e).byteSet();
+		}
+		if (e instanceof PAny) {
+			return new ByteSet(binary ? 0 : 1, 255);
+		}
+		return null;
 	}
 
 	// Visitor

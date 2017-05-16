@@ -151,10 +151,10 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			int stacks = pg.varStacks(POS, e.get(0));
 			inline = this.emitInlineOption(stacks, e, pg);
 		}
-		if (e instanceof PChoice) {
-			int stacks = pg.varStacks(POS, e);
-			inline = this.emitInlineChoice(stacks, e, pg);
-		}
+		// if (e instanceof PChoice) {
+		// int stacks = pg.varStacks(POS, e);
+		// inline = this.emitInlineChoice(stacks, e, pg);
+		// }
 		if (e instanceof PAnd) {
 			inline = this.emitInlineAnd(POS, e, pg);
 		}
@@ -218,7 +218,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			Expression remain = Expression.extractMultiBytes(e, l);
 			if (l.size() > 2) {
 				byte[] text = Expression.toMultiBytes(l);
-				C match = pg.matchBytes(text);
+				C match = pg.matchBytes(text, true);
 				if (!(remain instanceof PEmpty)) {
 					match = pg.emitAnd(match, this.match(remain, pg));
 				}
@@ -363,6 +363,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	C emitInlineMany(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchMany(e);
 		if (inline != null) {
+
 			return inline;
 		}
 		C innerFunc = this.getInnerFunction(e.get(0), pg);

@@ -87,7 +87,7 @@
 
   public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
     byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
-    NezParserContext px = new NezParserContext(inputs, inputs.length-1, newFunc, setFunc);
+    NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
     initMemo(px);
     e0(px);
     return px.tree;

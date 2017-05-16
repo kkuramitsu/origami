@@ -10,7 +10,7 @@ import blue.origami.util.OStringUtils;
 
 public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilder, String> {
 
-	protected boolean isDynamicTyping() {
+	protected boolean useDynamicTyping() {
 		return this.T("pos") == null;
 	}
 
@@ -33,7 +33,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 		if (this.isDefined("const")) {
 			decl = this.s("const") + " ";
 		}
-		if (typeName == null || this.isDynamicTyping()) {
+		if (typeName == null || this.useDynamicTyping()) {
 			this.writeSection(String.format("%s%s = %s%s", decl, constName, literal, this.s(";")));
 		} else {
 			constName = this.arrayName(typeName, constName);
@@ -56,7 +56,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	}
 
 	protected String formatSignature(String ret, String funcName, String[] params) {
-		if (ret == null || this.isDynamicTyping()) {
+		if (ret == null || this.useDynamicTyping()) {
 			return String.format("%s %s(%s)", this.s("function"), funcName, this.emitParams(params));
 		} else {
 			return String.format("%s %s %s(%s)", this.s("function"), ret, funcName, this.emitParams(params));
@@ -91,7 +91,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			}
 			c++;
 			String t = this.T(p);
-			if (t == null || this.isDynamicTyping()) {
+			if (t == null || this.useDynamicTyping()) {
 				sb.append(p);
 			} else {
 				sb.append(this.formatParam(t, p));
@@ -248,10 +248,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 
 	@Override
 	protected String emitChar(int uchar) {
-		if (this.isUnsigned) {
-			return "" + (uchar & 0xff);
-		}
-		return "" + (byte) uchar;
+		return "" + (uchar & 0xff);
 	}
 
 	@Override
@@ -307,6 +304,17 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 
 	@Override
 	protected String emitAnd(String expr, String expr2) {
+		String t = this.s("true");
+		String f = this.s("false");
+		if (expr.equals(f) || expr2.equals(f)) {
+			return f;
+		}
+		if (expr.equals(t)) {
+			return expr2;
+		}
+		if (expr2.equals(f)) {
+			return expr;
+		}
 		return String.format("%s %s %s", expr, this.s("&&"), expr2);
 	}
 
@@ -329,12 +337,13 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			StringBuilder block = this.beginBlock();
 			this.emitLine(block, "%s(%s) %s", this.s("switch"), index, this.s("{"));
 			this.incIndent();
-			for (int i = 1; i < cases.size(); i++) {
+			for (int i = 0; i < cases.size(); i++) {
 				this.emitLine(block, "case %s: return %s;", i, cases.get(i));
 			}
-			this.emitLine(block, "default: return %s;", cases.get(0));
+			// this.emitLine(block, "default: return %s;", cases.get(0));
 			this.decIndent();
 			this.emitStmt(block, this.s("}"));
+			this.Return(block, this.emitFail());
 			return this.endBlock(block);
 		} else {
 			StringBuilder block = this.beginBlock();

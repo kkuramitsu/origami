@@ -17,6 +17,7 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.expression.ByteSet;
+import blue.origami.nez.peg.expression.PMany;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;
@@ -160,6 +162,16 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return false;
 	}
 
+	private boolean usePointer = false;
+
+	protected final boolean usePointer() {
+		return this.usePointer;
+	}
+
+	protected final void usePointer(boolean b) {
+		this.usePointer = b;
+	}
+
 	protected final boolean useLambda() {
 		return this.isDefined("lambda");
 	}
@@ -203,7 +215,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected final C emitBack(String name, C expr) {
-		String uFunc = "U" + name;
+		String uFunc = "back" + name;
 		if (this.isDefined(uFunc)) {
 			expr = this.emitFunc(this.s(uFunc), this.V("px"), expr);
 		}
@@ -387,21 +399,40 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C emitMatchByteSet(ByteSet bs) {
+		return this.emitMatchByteSet(bs, null, true);
+	}
+
+	protected C emitMatchByteSet(ByteSet bs, C param, boolean proceed) {
+		C expr;
 		int uchar = bs.getUnsignedByte();
 		if (uchar != -1) {
-			return this.emitMatchByte(uchar);
-		} else {
-			C expr = this.emitUnsigned(this.emitFunc("nextbyte", this.V("px")));
-			if (this.isDefined("bitis")) {
-				expr = this.emitFunc("bitis", this.vByteSet(bs), expr);
+			if (param == null) {
+				param = this.emitChar(uchar);
+			}
+			if (proceed) {
+				expr = this.emitFunc("match", this.V("px"), param);
 			} else {
-				expr = this.emitArrayIndex(this.vByteSet(bs), expr);
+				expr = this.emitOp(this.emitFunc("getbyte", this.V("px")), "==", param);
 			}
-			if (bs.is(0)) {
-				expr = this.emitAnd(expr, this.emitNot(this.emitFunc("eof", this.V("px"))));
+		} else {
+			if (param == null) {
+				param = this.vByteSet(bs);
 			}
-			return expr;
+			expr = this.emitFunc(proceed ? "nextbyte" : "getbyte", this.V("px"));
+			if (this.isDefined("bitis")) {
+				expr = this.emitFunc("bitis", param, expr);
+			} else {
+				expr = this.emitArrayIndex(param, expr);
+			}
 		}
+		if (bs.is(0)) {
+			if (proceed) {
+				expr = this.emitAnd(expr, this.emitFunc("neof", this.V("px")));
+			} else {
+				expr = this.emitAnd(this.emitFunc("neof", this.V("px")), expr);
+			}
+		}
+		return expr;
 	}
 
 	protected C emitJumpIndex(byte[] indexMap, boolean isAllConsumed) {
@@ -427,27 +458,54 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C tagTree(Symbol tag) {
-		return this.emitFunc("tagTree", this.V("px"), this.vTag(tag));
+		if (this.isTreeConstruction()) {
+			return this.emitFunc("tagTree", this.V("px"), this.vTag(tag));
+		}
+		return this.emitSucc();
 	}
 
 	protected C valueTree(String value) {
-		return this.emitFunc("valueTree", this.V("px"), this.vValue(value));
+		if (this.isTreeConstruction()) {
+			if (this.usePointer()) {
+				byte[] buf = value.getBytes(Charset.forName("UTF-8"));
+				return this.emitFunc("valueTree", this.V("px"), this.vValue(value), this.vInt(buf.length));
+			} else {
+				return this.emitFunc("valueTree", this.V("px"), this.vValue(value));
+			}
+		}
+		return this.emitSucc();
 	}
 
 	protected C linkTree(Symbol label) {
-		return this.emitFunc("linkTree", this.V("px"), this.vTag(label));
+		if (this.isTreeConstruction()) {
+			return this.emitFunc("linkTree", this.V("px"), this.vTag(label));
+		}
+		return this.emitSucc();
 	}
 
 	protected C foldTree(int beginShift, Symbol label) {
-		return this.emitFunc("foldTree", this.V("px"), this.vInt(beginShift), this.vTag(label));
+		if (this.isTreeConstruction()) {
+			return this.emitFunc("foldTree", this.V("px"), this.vInt(beginShift), this.vTag(label));
+		}
+		return this.emitSucc();
 	}
 
 	protected C beginTree(int beginShift) {
-		return this.emitFunc("beginTree", this.V("px"), this.vInt(beginShift));
+		if (this.isTreeConstruction()) {
+			return this.emitFunc("beginTree", this.V("px"), this.vInt(beginShift));
+		}
+		return this.emitSucc();
 	}
 
 	protected C endTree(int endShift, Symbol tag, String value) {
-		return this.emitFunc("endTree", this.V("px"), this.vInt(endShift), this.vTag(tag), this.vValue(value));
+		if (this.isTreeConstruction()) {
+			C endTree = this.emitFunc("endTree", this.V("px"), this.vInt(endShift), this.vTag(tag));
+			if (value != null) {
+				endTree = this.emitAnd(this.valueTree(value), endTree);
+			}
+			return endTree;
+		}
+		return this.emitSucc();
 	}
 
 	protected C callAction(String action, Symbol label, Object thunk) {
@@ -471,7 +529,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return null;
 	}
 
-	protected C matchBytes(byte[] bytes) {
+	protected C matchBytes(byte[] bytes, boolean proceed) {
 		C result = null;
 		for (byte ch : bytes) {
 			if (result != null) {
@@ -484,19 +542,19 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C matchMany(Expression e) {
-		return null;
+		return this.makeManyInlineCall(this, (PMany) e);
 	}
 
 	protected C matchOption(Expression e) {
-		return null;
+		return this.makeOptionInlineCall(this, e);
 	}
 
 	protected C matchAnd(Expression e) {
-		return null;
+		return this.makeAndInlineCall(this, e);
 	}
 
 	protected C matchNot(Expression e) {
-		return null;
+		return this.makeNotInlineCall(this, e);
 	}
 
 	protected void declTree() {
@@ -545,6 +603,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.options = options;
 	}
 
+	protected final boolean isTreeConstruction() {
+		return this.options.is(ParserOption.TreeConstruction, true);
+	}
+
 	protected final String getFileBaseName() {
 		String file = this.options.stringValue(ParserOption.GrammarFile, "parser.opeg");
 		return SourcePosition.extractFileBaseName(file);
@@ -566,12 +628,17 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.defineVariable("tag", this.T("label"));
 		this.defineVariable("value", this.T("inputs"));
 		this.defineVariable("pos", this.T("cnt"));
+		this.defineVariable("head_pos", this.T("pos"));
 		this.defineVariable("shift", this.T("cnt"));
 		this.defineVariable("length", this.T("cnt"));
+		this.defineVariable("valuelen", this.T("length"));
+
 		this.defineVariable("memoPoint", this.T("cnt"));
 		this.defineVariable("result", this.T("cnt"));
 		this.defineVariable("prevLog", this.T("treeLog"));
+		this.defineVariable("nextLog", this.T("treeLog"));
 		this.defineVariable("prevState", this.T("state"));
+		this.defineVariable("nextState", this.T("state"));
 		this.defineVariable("uLog", this.T("treeLog"));
 		this.defineVariable("uState", this.T("state"));
 		this.defineVariable("epos", this.T("pos"));
@@ -580,10 +647,12 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.defineSymbol("Icnt", "0");
 		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Ipos", "0");
+		this.defineSymbol("Ihead_pos", "0");
 		this.defineSymbol("Iresult", "0");
 
 		this.defineVariable("indexMap", "array");
 		this.defineVariable("byteSet", "array");
+		this.defineVariable("s", this.T("byteSet"));
 		// this.defineVariable("funcMap", "array");
 
 		this.defineSymbol("{[", "{");
