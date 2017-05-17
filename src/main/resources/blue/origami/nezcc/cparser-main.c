@@ -212,6 +212,7 @@ int main(int ac, const char **av)
     fprintf(stdout, "%s: ", av[j]);
 #endif
     Tree_dump(data, stdout);
+    fflush(stdout);
     fprintf(stderr, "\n");
     Tree_free(data);
     if(av[j] != inputs) {

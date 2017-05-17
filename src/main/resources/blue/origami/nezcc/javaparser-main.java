@@ -37,37 +37,34 @@
     }
   }
 
-  static String readInputs(String[] a) throws IOException {
-    StringBuilder sb = new StringBuilder();
-    if (a.length > 0) {
-      File file = new File(a[0]);
-      if(file.exists()) {
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String str = br.readLine();
-        while(str != null){
-          sb.append(str);
-          sb.append("\n");
-          str = br.readLine();
-        }
-        br.close();
-      }
-      else {
-        sb.append(a[0]);
-      }
-    } else {
-      BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+  static String readInputs(String a) throws IOException {
+    File file = new File(a);
+    if(file.exists()) {
+      StringBuilder sb = new StringBuilder();
+      BufferedReader br = new BufferedReader(new FileReader(file));
       String str = br.readLine();
       while(str != null){
         sb.append(str);
         sb.append("\n");
         str = br.readLine();
       }
+      br.close();
+      return sb.toString();
     }
-    return sb.toString();
+    return a;
   }
   
   public final static void main(String[] args) throws IOException {
-    System.out.println(parse(readInputs(args)));
+    for(String a: args) {
+      String s = readInputs(a);
+      long st = System.nanoTime();
+      Object t = parse(a);
+      long et = System.nanoTime();
+      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
+      System.out.print(t);
+      System.out.flush();
+      System.err.printf("\n");
+    }
   }
   
   public static Object parse(String s) throws IOException {

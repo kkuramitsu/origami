@@ -51,6 +51,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("shift", "int");
 		this.defineVariable("indexMap", "int[256]");
 		this.defineVariable("byteSet", "boolean[256]");
+		this.defineVariable("s", "boolean[]");
 
 		this.defineVariable("op", "int");
 		this.defineVariable("label", "String");
@@ -115,10 +116,10 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.writeSection(this.endBlock(block));
 	}
 
-	@Override
-	protected String emitChar(int uchar) {
-		return "(byte)" + (byte) uchar;
-	}
+	// @Override
+	// protected String emitChar(int uchar) {
+	// return "(byte)" + (byte) uchar;
+	// }
 
 	@Override
 	protected String emitNewArray(String type, String index) {

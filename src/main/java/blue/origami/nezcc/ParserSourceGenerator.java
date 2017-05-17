@@ -223,7 +223,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 		if (t == null) {
 			return expr;
 		}
-		return String.format("(%s)%s", this.T(var), expr);
+		return String.format("(%s)(%s)", this.T(var), expr);
 	}
 
 	@Override
