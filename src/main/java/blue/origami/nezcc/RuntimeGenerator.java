@@ -21,6 +21,7 @@ import java.util.List;
 
 import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.expression.ByteSet;
+import blue.origami.nez.peg.expression.PAny;
 import blue.origami.nez.peg.expression.PMany;
 
 public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
@@ -204,6 +205,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 
 	C makeAndInlineCall(ParserGenerator<B, C> pg, Expression e) {
 		Expression p = Expression.deref(e.get(0));
+		if (p instanceof PAny) {
+			return pg.emitFunc("neof", pg.V("px"));
+		}
 		ByteSet bs = Expression.getByteSet(p, pg.isBinary());
 		if (bs != null) {
 			return pg.emitMatchByteSet(bs, null, false);
@@ -213,11 +217,14 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 
 	C makeNotInlineCall(ParserGenerator<B, C> pg, Expression e) {
 		Expression p = Expression.deref(e.get(0));
+		if (p instanceof PAny) {
+			return pg.emitNot(pg.emitFunc("neof", pg.V("px")));
+		}
 		ByteSet bs = Expression.getByteSet(p, pg.isBinary());
 		if (bs != null) {
 			bs = bs.not(pg.isBinary());
 			C expr = pg.emitMatchByteSet(bs, null, false);
-			System.out.println(" ** " + e + " => " + expr);
+			// System.out.println(" ** " + e + " => " + expr);
 			return expr;
 		}
 		return null;

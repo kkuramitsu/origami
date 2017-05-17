@@ -29,6 +29,7 @@ import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.expression.ByteSet;
+import blue.origami.nez.peg.expression.PMany;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;
@@ -541,23 +542,21 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C matchMany(Expression e) {
-		return null;
-		// return this.makeManyInlineCall(this, (PMany) e);
+		// return null;
+		return this.makeManyInlineCall(this, (PMany) e);
 	}
 
 	protected C matchOption(Expression e) {
-		return null;
-		// return this.makeOptionInlineCall(this, e);
+		// return null;
+		return this.makeOptionInlineCall(this, e);
 	}
 
 	protected C matchAnd(Expression e) {
-		return null;
-		// return this.makeAndInlineCall(this, e);
+		return this.makeAndInlineCall(this, e);
 	}
 
 	protected C matchNot(Expression e) {
-		return null;
-		// return this.makeNotInlineCall(this, e);
+		return this.makeNotInlineCall(this, e);
 	}
 
 	protected void declTree() {

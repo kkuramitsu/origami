@@ -58,9 +58,9 @@
     for(String a: args) {
       String s = readInputs(a);
       long st = System.nanoTime();
-      Object t = parse(a);
+      Object t = parse(s);
       long et = System.nanoTime();
-      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
+      System.err.printf("%s %s %f[ms]: ", a, t != null ? "OK": "NG", (et-st)/1000000.0);
       System.out.print(t);
       System.out.flush();
       System.err.printf("\n");

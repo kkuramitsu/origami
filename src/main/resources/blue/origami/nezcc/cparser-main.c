@@ -206,7 +206,7 @@ int main(int ac, const char **av)
 	gettimeofday(&s, NULL);
     Tree *data = Nez_parseTree(inputs);
 	gettimeofday(&e, NULL);
-    fprintf(stderr, "%s %f[ms]: ", av[j], timediff(&s, &e));
+    fprintf(stderr, "%s %s %f[ms]: ", av[j], data != NULL ? "OK" : "NG", timediff(&s, &e));
 #else
     Tree *data = Nez_parseTree(inputs);
     fprintf(stdout, "%s: ", av[j]);

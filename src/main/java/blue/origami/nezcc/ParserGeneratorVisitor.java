@@ -349,9 +349,6 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		if (e.isOneMore()) {
 			stacks |= CNT;
 		}
-		if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
-			stacks |= EMPTY;
-		}
 		C inline = this.emitInlineMany(stacks, e, pg);
 		if (inline == null) {
 			C cond = this.match(e.get(0), pg);
@@ -363,8 +360,10 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	C emitInlineMany(int stacks, Expression e, ParserGenerator<B, C> pg) {
 		C inline = pg.matchMany(e);
 		if (inline != null) {
-
 			return inline;
+		}
+		if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
+			stacks |= EMPTY;
 		}
 		C innerFunc = this.getInnerFunction(e.get(0), pg);
 		if (innerFunc != null) {
@@ -572,7 +571,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	}
 
 	C emitBacktrack(ParserGenerator<B, C> pg, int stacks) {
-		String funcName = pg.s("back") + (stacks & ~CNT);
+		String funcName = pg.s("back") + (stacks & ~(CNT | EMPTY));
 		String[] args = pg.getStackNames(stacks);
 		ArrayList<C> params = new ArrayList<>();
 		params.add(pg.V("px"));
@@ -583,7 +582,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	}
 
 	void makeBacktrackFunc(ParserGenerator<B, C> pg, int stacks) {
-		String funcName = pg.s("back") + (stacks & ~CNT);
+		String funcName = pg.s("back") + (stacks & ~(CNT | EMPTY));
 		if (!pg.isDefined(funcName)) {
 			pg.defineSymbol(funcName, pg.localName(funcName));
 			SourceSection prev = pg.openSection(RuntimeLibrary);

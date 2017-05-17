@@ -8,17 +8,17 @@ static boolean[] B(String s) {
   return b;
 }
 
-static int[] I(String s) {
-  int[] b = new int[256];
-  for (int i = 0; i < s.length(); i++) {
-    char c = s.charAt(i);
-    if (c > '0' && c <= '9') {
-      b[i] = c - '0';
-    } else if (c >= 'A' && c <= 'Z') {
-      b[i] = (c - 'A') + 10;
-    }
+static short[] I(String s) {
+  byte[] b = Base64.getDecoder().decode(s.getBytes());
+  short[] b2 = new short[256];
+  for (int i = 0; i < b.length; i++) {
+    b2[i] = (short)(b[i] & 0xff);
   }
-  return b;
+  return b2;
+}
+
+static byte[] B64(String s) {
+  return Base64.getDecoder().decode(s.getBytes());
 }
 
 private static int indent = 0;
@@ -37,9 +37,13 @@ static boolean E(String s, NezParserContext px, boolean r) {
   return r;
 }
 
+private final static boolean bitis(int[] bits, int n) {
+	return (bits[n / 32] & (1 << (n % 32))) != 0;
+}
+
 private static final byte[] emptyValue = new byte[0];
 
-static byte[] extract(NezParserContext px, int ppos) {
+private static byte[] extract(NezParserContext px, int ppos) {
   if(px.pos == ppos) {
     return emptyValue;
   }
@@ -48,14 +52,14 @@ static byte[] extract(NezParserContext px, int ppos) {
   return b;
 }
 
-static boolean matchBytes(NezParserContext px, byte[] t, int len) {
-  if (px.pos + len <= px.length) {
-    for (int i = 0; i < len; i++) {
+private static boolean matchBytes(NezParserContext px, byte[] t) {
+  if (px.pos + t.length <= px.length) {
+    for (int i = 0; i < t.length; i++) {
       if (t[i] != px.inputs[px.pos + i]) {
         return false;
       }
     }
-    px.pos += len;
+    px.pos += t.length;
     return true;
   }
   return false;

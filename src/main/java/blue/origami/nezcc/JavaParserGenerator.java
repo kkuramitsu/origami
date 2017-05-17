@@ -17,6 +17,7 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 import blue.origami.nez.peg.expression.ByteSet;
@@ -49,9 +50,16 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("c", "int");
 		this.defineVariable("cnt", "int");
 		this.defineVariable("shift", "int");
-		this.defineVariable("indexMap", "int[256]");
-		this.defineVariable("byteSet", "boolean[256]");
-		this.defineVariable("s", "boolean[]");
+		this.defineVariable("indexMap", "short[256]");
+		this.defineSymbol("bitis", "bitis");
+		if (this.isDefined("bitis")) {
+			this.defineVariable("byteSet", "int[8]");
+			this.defineVariable("s", "int[]");
+		} else {
+			this.defineVariable("byteSet", "boolean[256]");
+			this.defineVariable("s", "boolean[]");
+		}
+		this.defineSymbol("matchBytes", "matchBytes");
 
 		this.defineVariable("op", "int");
 		this.defineVariable("label", "String");
@@ -138,40 +146,15 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected String vIndexMap(byte[] indexMap) {
-		boolean overflow = false;
-		int last = 0;
-		for (int i = 0; i < 256; i++) {
-			if (indexMap[i] != 0) {
-				last = i;
-			}
-			if (indexMap[i] > 35) {
-				overflow = true;
-			}
-		}
-		StringBuilder sb = new StringBuilder();
-		if (overflow) {
-			sb.append("{");
-			for (byte index : indexMap) {
-				sb.append(index & 0xff);
-				sb.append(", ");
-			}
-			sb.append("}");
-		} else {
-			sb.append("I(\"");
-			for (int i = 0; i <= last; i++) {
-				if (indexMap[i] >= 10) {
-					sb.append((char) ('A' + (indexMap[i] - 10)));
-				} else {
-					sb.append((char) ('0' + indexMap[i]));
-				}
-			}
-			sb.append("\")");
-		}
-		return this.getConstName(this.T("indexMap"), sb.toString());
+		byte[] encoded = Base64.getEncoder().encode(indexMap);
+		return this.getConstName(this.T("indexMap"), "I(\"" + new String(encoded) + "\")");
 	}
 
 	@Override
 	protected String vByteSet(ByteSet bs) {
+		if (this.isDefined("bitis")) {
+			return super.vByteSet(bs);
+		}
 		int last = 0;
 		for (int i = 0; i < 256; i++) {
 			if (bs.is(i)) {
@@ -187,24 +170,14 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 		return this.getConstName(this.T("byteSet"), sb.toString());
 	}
 
-	// @Override
-	// protected String matchBytes(byte[] text) {
-	// return String.format("px.matchBytes(%s)", this.toMultiBytes(text));
-	// }
-	//
-	// protected String toMultiBytes(byte[] text) {
-	// StringBuilder sb = new StringBuilder();
-	// sb.append("t(\"");
-	// for (int i = 0; i < text.length; i++) {
-	// int ch = text[i];
-	// if (ch >= 0x20 && ch < 0x7e && ch != '\\' && ch != '"') {
-	// sb.append((char) ch);
-	// } else {
-	// sb.append(String.format("~%02x", ch & 0xff));
-	// }
-	// }
-	// sb.append("\")");
-	// return this.getConstName("byte[]", sb.toString());
-	// }
+	@Override
+	protected String matchBytes(byte[] text, boolean proceed) {
+		return String.format("matchBytes(px, %s)", this.vMultiBytes(text));
+	}
+
+	protected String vMultiBytes(byte[] text) {
+		byte[] encoded = Base64.getEncoder().encode(text);
+		return this.getConstName("byte[]", "B64(\"" + new String(encoded) + "\")");
+	}
 
 }
