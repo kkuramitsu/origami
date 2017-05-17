@@ -86,7 +86,9 @@
     byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
     NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
     initMemo(px);
-    e0(px);
+    if(!e0(px)) {
+    	System.err.printf("syntax error at %d\n", px.head_pos);
+    };
     return px.tree;
   }
 
