@@ -19,7 +19,7 @@ import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
-public class NewGenerator extends ParserSourceGenerator {
+public class GeneratorGenerator extends ParserSourceGenerator {
 
 	@Override
 	public void init(OOption options) {
@@ -40,7 +40,7 @@ public class NewGenerator extends ParserSourceGenerator {
 	private void importNezccFile(String path) {
 		try {
 			File f = new File(path);
-			InputStream s = f.isFile() ? new FileInputStream(path) : NewGenerator.class.getResourceAsStream(path);
+			InputStream s = f.isFile() ? new FileInputStream(path) : GeneratorGenerator.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			String name = null;

@@ -600,7 +600,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	@Override
 	public final Class<?> keyClass() {
-		return JavaParserGenerator.class;
+		return GeneratorGenerator.class;
 	}
 
 	@Override
@@ -635,10 +635,6 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected ParserGrammar grammar;
 
-	protected int maxDispatch() {
-		return this.grammar.maxDispatch();
-	}
-
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<B, C> pgv = new ParserGeneratorVisitor<>();
 		this.grammar = g;
@@ -661,7 +657,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.defineVariable("nextLog", this.T("treeLog"));
 		this.defineVariable("prevState", this.T("state"));
 		this.defineVariable("nextState", this.T("state"));
-		this.defineVariable("uLog", this.T("treeLog"));
+		// this.defineVariable("uLog", this.T("treeLog"));
 		this.defineVariable("uState", this.T("state"));
 		this.defineVariable("epos", this.T("pos"));
 		this.defineVariable("child", this.T("tree"));
