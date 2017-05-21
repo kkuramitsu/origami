@@ -24,7 +24,7 @@ begin            = {
 end              = }
 ;                = ;
 
-module           = final class %s {
+module           = final class $|base| {
 struct           = static class %s {
 field            = %s %s;
 constructor      = %s(%s) {

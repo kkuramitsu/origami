@@ -180,7 +180,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected final boolean useMultiBytes() {
-		return this.isDefined("matchBytes");
+		return true;
 	}
 
 	protected abstract C emitFuncRef(String funcName);

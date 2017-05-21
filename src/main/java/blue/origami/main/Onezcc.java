@@ -16,9 +16,9 @@
 
 package blue.origami.main;
 
-import blue.origami.nezcc.ParserGenerator;
 import blue.origami.nez.peg.Grammar;
-import blue.origami.nezcc.JavaParserGenerator;
+import blue.origami.nezcc.GeneratorGenerator;
+import blue.origami.nezcc.ParserGenerator;
 import blue.origami.util.OOption;
 
 public class Onezcc extends OCommand {
@@ -31,7 +31,7 @@ public class Onezcc extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Grammar g = this.getGrammar(options);
-		ParserGenerator<StringBuilder, String> pg = options.newInstance(JavaParserGenerator.class);
+		ParserGenerator<StringBuilder, String> pg = options.newInstance(GeneratorGenerator.class);
 		pg.generate(g);
 	}
 

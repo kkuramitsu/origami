@@ -103,6 +103,7 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 		String def = "def " + name;
 		if (this.isDefined(def)) {
 			this.defineSymbol(name, name);
+			this.makeLib(name);
 			return true;
 		}
 		return false;
@@ -167,7 +168,7 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 		}
 		if (this.isDefined("module")) {
 			this.writeLine("");
-			this.writeLine(this.s("module"), this.getFileBaseName());
+			this.writeLine(this.s("module"));
 		}
 		if (this.isDefined("libs")) {
 			this.writeLine("");
@@ -194,8 +195,11 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 		if (this.isDefined("main")) {
 			this.writeLine(this.s("main"));
 		}
-		if (this.isDefined("end module")) {
+		if (this.isDefined("module") && this.isDefined("end module")) {
 			this.writeLine(this.s("end module"));
+		}
+		if (this.isDefined("man")) {
+			OConsole.println(OConsole.color(OConsole.Cyan, this.s("man")));
 		}
 
 		// this.showResource("/blue/origami/nezcc/javaparser-man.txt", "$cmd$",
@@ -688,12 +692,12 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 			sb.append(this.emitNull());
 			for (byte[] s : this.valueList) {
 				sb.append(delim);
-				sb.append(this.cValue(s));
+				sb.append(this.rawValue(s));
 			}
 			sb.append(this.s("end array"));
 			this.declConst(this.T("value"), "VALUEs", this.valueList.size() + 1, sb.toString());
 		}
-		if (this.valueList.size() > 0) {
+		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
 			sb.append(this.vInt(0));
@@ -706,7 +710,7 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 		}
 	}
 
-	protected String cValue(byte[] buf) {
+	protected String rawValue(byte[] buf) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.s("array"));
 		for (byte b : buf) {
@@ -715,6 +719,29 @@ public class GeneratorGenerator extends ParserSourceGenerator {
 		}
 		sb.append(this.s("end array"));
 		return this.getConstName(this.s("Byte"), buf.length, sb.toString());
+	}
+
+	@Override
+	protected String matchBytes(byte[] bytes, boolean proceed) {
+		String expr;
+		if (bytes.length <= 8) {
+			if (this.check("match" + bytes.length)) {
+				expr = this.emitFunc("match" + bytes.length, this.V("px"), this.rawValue(bytes));
+				if (proceed) {
+					expr = this.emitAnd(expr, this.emitMove(this.vInt(bytes.length)));
+				}
+				return expr;
+			}
+		} else {
+			if (this.check("matchBytes")) {
+				expr = this.emitFunc("matchBytes", this.V("px"), this.rawValue(bytes), this.vInt(bytes.length));
+				if (!proceed) {
+					expr = this.emitAnd(expr, this.emitMove(this.vInt(-bytes.length)));
+				}
+				return expr;
+			}
+		}
+		return super.matchBytes(bytes, proceed);
 	}
 
 	@Override
