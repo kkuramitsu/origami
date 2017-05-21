@@ -23,7 +23,6 @@ public class CParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
-		this.useUnsignedByte(true);
 		this.defineSymbol("\t", "  ");
 		this.defineSymbol("null", "NULL");
 		this.defineSymbol("true", "1");
@@ -39,7 +38,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("px", "struct NezParserContext*");
 		this.defineVariable("inputs", "const unsigned char*");
 		this.defineVariable("length", "size_t");
-		this.usePointer(true);
+
 		this.defineVariable("pos", "const unsigned char*");
 		this.defineVariable("treeLog", "struct TreeLog*");
 		this.defineVariable("tree", "void*");
@@ -184,7 +183,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 	protected String vValue(String s) {
 		if (s != null) {
 			byte[] buf = s.getBytes(Charset.forName("UTF-8"));
-			return this.getConstName(this.T("indexMap"), this.quote(buf));
+			return this.getConstName(this.s("Byte"), buf.length, this.quote(buf));
 		}
 		return this.emitNull();
 	}

@@ -9,11 +9,11 @@ import blue.origami.lang.OClassDecl;
 import blue.origami.lang.OEnv;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.peg.expression.ByteSet;
-import blue.origami.nezcc.ParserGenerator;
 import blue.origami.nezcc.Block;
-import blue.origami.ocode.OCodeFactory;
+import blue.origami.nezcc.ParserGenerator;
 import blue.origami.ocode.MultiCode;
 import blue.origami.ocode.OCode;
+import blue.origami.ocode.OCodeFactory;
 
 public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> implements OCodeFactory {
 
@@ -54,7 +54,7 @@ public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> 
 	}
 
 	@Override
-	protected void declConst(String typeName, String constName, String literal) {
+	protected void declConst(String typeName, String constName, int arraySize, String literal) {
 		// TODO Auto-generated method stub
 
 	}
@@ -300,6 +300,18 @@ public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> 
 
 	@Override
 	public OCode V(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public OCode Const(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected OCode emitUnsigned(OCode expr) {
 		// TODO Auto-generated method stub
 		return null;
 	}

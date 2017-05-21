@@ -53,6 +53,13 @@ public class ParserGrammar extends Grammar {
 		return new Production[0];
 	}
 
+	/* MaxIndex */
+	int maxDispatch = -1; // TODO
+
+	public int maxDispatch() {
+		return this.maxDispatch;
+	}
+
 	/* MemoPoint */
 
 	public final static class MemoPoint {

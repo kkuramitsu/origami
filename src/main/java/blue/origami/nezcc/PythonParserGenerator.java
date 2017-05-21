@@ -22,8 +22,6 @@ public class PythonParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
-		this.useUnsignedByte(true);
-
 		this.defineSymbol("//", "#");
 		this.defineSymbol("\t", "  ");
 		this.defineSymbol("null", "None");

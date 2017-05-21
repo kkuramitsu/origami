@@ -19,7 +19,6 @@ package blue.origami.nezcc;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.parser.ParserGrammar;
 import blue.origami.nez.parser.ParserGrammar.MemoPoint;
 import blue.origami.nez.peg.Expression;
@@ -28,6 +27,7 @@ import blue.origami.nez.peg.NonEmpty;
 import blue.origami.nez.peg.Production;
 import blue.origami.nez.peg.Stateful;
 import blue.origami.nez.peg.Typestate;
+import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.nez.peg.expression.PAnd;
 import blue.origami.nez.peg.expression.PAny;
 import blue.origami.nez.peg.expression.PByte;
@@ -61,8 +61,8 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	public void start(ParserGrammar g, ParserGenerator<B, C> pg) {
 		Production p = g.getStartProduction();
-		pg.declConst("int", "MEMOSIZE", "" + g.getMemoPointSize());
-		pg.declConst("int", "MEMOS", "" + (g.getMemoPointSize() * 64 + 1));
+		pg.declConst("int", "MEMOSIZE", -1, "" + g.getMemoPointSize());
+		pg.declConst("int", "MEMOS", -1, "" + (g.getMemoPointSize() * 64 + 1));
 		pg.log("memosize: %d", g.getMemoPointSize());
 		boolean isStateful = Stateful.isStateful(p);
 		pg.log("stateful: %s", isStateful);
@@ -82,7 +82,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 				final MemoPoint memo = memoPoint;
 				SourceSection prev = pg.openSection(funcName);
 				pg.setCurrentFuncName(funcName);
-				pg.writeSection(pg.emitAsm(pg.s("//") + " " + target));
+				pg.writeSection(pg.emitAsm(pg.format("comment", target)));
 				pg.declFunc(pg.s("Tmatched"), funcName, "px", () -> {
 					return this.match(target, pg, memo);
 				});
@@ -91,36 +91,15 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			c++;
 		}
 		pg.log("funcsize: %d", c);
+		pg.declSymbolTables();
 	}
 
 	public C match(Expression e, ParserGenerator<B, C> pg, MemoPoint m) {
 		if (m == null) {
 			return this.match(e, pg, false);
 		}
-		boolean withTree = Typestate.compute(e) == Typestate.Tree;
-		String funcName = "memo" + (withTree ? "3" : "1");
-		this.makeMetaMemoFunc(pg, funcName, (withTree ? "3" : "1"));
-		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id), this.getInnerFunction(e, pg));
-	}
-
-	void makeMetaMemoFunc(ParserGenerator<B, C> pg, String funcName, String suffix) {
-		if (!pg.isDefined(funcName)) {
-			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
-			pg.defineFunction(funcName);
-			pg.declFunc(pg.s("Tmatched"), funcName, "px", "memoPoint", "f", () -> {
-				C lookup = pg.emitFunc("lookupMemo" + suffix, pg.V("px"), pg.V("memoPoint"));
-				B block = pg.beginBlock();
-				pg.emitVarDecl(block, false, "pos", pg.emitGetter("px.pos"));
-				ArrayList<C> cases = new ArrayList<>();
-				cases.add(pg.emitFail());
-				cases.add(pg.emitSucc());
-				cases.add(pg.emitFunc("storeMemo", pg.V("px"), pg.V("memoPoint"), pg.V("pos"),
-						pg.emitApply(pg.V("f"), pg.V("px"))));
-				pg.emitStmt(block, pg.emitDispatch(lookup, cases));
-				return pg.endBlock(block);
-			});
-			pg.closeSection(sec);
-		}
+		String funcName = pg.makeLib("memo", Typestate.compute(e) == Typestate.Tree ? TREE : POS);
+		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id), this.getInFunc(e, pg));
 	}
 
 	public C match(Expression e, ParserGenerator<B, C> px, boolean asFunction) {
@@ -138,25 +117,22 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		C inline = null;
 		if (e instanceof PMany) {
 			int stacks = pg.varStacks(POS, e.get(0));
-			inline = this.emitInlineMany(stacks, e, pg);
-		}
-		if (e instanceof PNot) {
+			inline = this.emitCombiMany(stacks, e, pg);
+		} else if (e instanceof PNot) {
 			int stacks = pg.varStacks(POS, e.get(0));
-			inline = this.emitInlineNot(stacks, e, pg);
-		}
-		if (e instanceof PLinkTree) {
-			inline = this.emitInlineLink((PLinkTree) e, pg);
-		}
-		if (e instanceof POption) {
+			inline = this.emitCombiNot(stacks, e, pg);
+		} else if (e instanceof PLinkTree) {
+			inline = this.emitCombiLink((PLinkTree) e, pg);
+		} else if (e instanceof POption) {
 			int stacks = pg.varStacks(POS, e.get(0));
-			inline = this.emitInlineOption(stacks, e, pg);
+			inline = this.emitCombiOption(stacks, e, pg);
 		}
 		// if (e instanceof PChoice) {
 		// int stacks = pg.varStacks(POS, e);
 		// inline = this.emitInlineChoice(stacks, e, pg);
 		// }
-		if (e instanceof PAnd) {
-			inline = this.emitInlineAnd(POS, e, pg);
+		else if (e instanceof PAnd) {
+			inline = this.emitCombiAnd(POS, e, pg);
 		}
 		if (inline != null) {
 			return inline;
@@ -233,10 +209,11 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	@Override
 	public C visitChoice(PChoice e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e);
-		C inline = this.emitInlineChoice(stacks, e, pg);
-		if (inline != null) {
-			return inline;
-		}
+		pg.makeLib("back", stacks);
+		// C inline = this.emitCombiChoice(stacks, e, pg);
+		// if (inline != null) {
+		// return inline;
+		// }
 		C first = this.match(e.get(0), pg);
 		for (int i = 1; i < e.size(); i++) {
 			C second = pg.emitAnd(this.emitBacktrack(pg, stacks), this.match(e.get(i), pg));
@@ -245,23 +222,24 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		return this.emitVarDecl(pg, stacks, pg.emitReturn(first));
 	}
 
-	private static boolean UseInlineChoice = false;
-
-	C emitInlineChoice(int stacks, Expression e, ParserGenerator<B, C> pg) {
-		if (UseInlineChoice && pg.useLambda()) {
-			C innerFunc = this.getInnerFunction(e.get(e.size() - 1), pg);
-			if (innerFunc != null) {
-				C second = innerFunc;
-				for (int i = e.size() - 2; i >= 0; i--) {
-					C first = this.getInnerFunction(e.get(i), pg);
-					innerFunc = this.emitChoiceFunc2(pg, stacks, first, second);
-					second = pg.emitParserLambda(innerFunc);
-				}
-				return innerFunc;
-			}
-		}
-		return null;
-	}
+	// private static boolean UseInlineChoice = false;
+	//
+	// private C emitCombiChoice(int stacks, Expression e, ParserGenerator<B, C>
+	// pg) {
+	// if (UseInlineChoice && pg.useLambda()) {
+	// C innerFunc = this.getInFunc(e.get(e.size() - 1), pg);
+	// if (innerFunc != null) {
+	// C second = innerFunc;
+	// for (int i = e.size() - 2; i >= 0; i--) {
+	// C first = this.getInFunc(e.get(i), pg);
+	// innerFunc = this.emitChoiceFunc2(pg, stacks, first, second);
+	// second = pg.emitParserLambda(innerFunc);
+	// }
+	// return innerFunc;
+	// }
+	// }
+	// return null;
+	// }
 
 	@Override
 	public C visitDispatch(PDispatch e, ParserGenerator<B, C> pg) {
@@ -324,21 +302,27 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	@Override
 	public C visitOption(POption e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
-		C inline = this.emitInlineOption(stacks, e, pg);
+		C inline = this.emitCombiOption(stacks, e, pg);
 		if (inline == null) {
 			return this.emitOption(pg, stacks, this.match(e.get(0), pg));
 		}
 		return inline;
 	}
 
-	C emitInlineOption(int stacks, Expression e, ParserGenerator<B, C> pg) {
-		C inline = pg.matchOption(e);
-		if (inline != null) {
-			return inline;
-		}
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			return this.emitOptionFunc(pg, stacks, innerFunc);
+	private C emitOption(ParserGenerator<B, C> pg, int stacks, C first) {
+		C second = this.emitBacktrack(pg, stacks);
+		return this.emitVarDecl(pg, stacks, pg.emitReturn(pg.emitOr(first, second)));
+	}
+
+	C emitCombiOption(int stacks, Expression e, ParserGenerator<B, C> pg) {
+		// C inline = pg.matchOption(e);
+		// if (inline != null) {
+		// return inline;
+		// }
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			String func = pg.makeLib("option", stacks);
+			return pg.emitFunc(func, pg.V("px"), lambda);
 		}
 		return null;
 	}
@@ -349,7 +333,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		if (e.isOneMore()) {
 			stacks |= CNT;
 		}
-		C inline = this.emitInlineMany(stacks, e, pg);
+		C inline = this.emitCombiMany(stacks, e, pg);
 		if (inline == null) {
 			C cond = this.match(e.get(0), pg);
 			return this.emitMany(pg, pg.getCurrentFuncName(), stacks, cond);
@@ -357,38 +341,69 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		return inline;
 	}
 
-	C emitInlineMany(int stacks, Expression e, ParserGenerator<B, C> pg) {
-		C inline = pg.matchMany(e);
-		if (inline != null) {
-			return inline;
+	private C emitMany(ParserGenerator<B, C> pg, String funcName, int stacks, C cond) {
+		C back = this.emitBacktrack(pg, stacks);
+		if ((stacks & CNT) == CNT) {
+			back = pg.emitAnd(pg.checkCountVar(), back);
 		}
-		if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
-			stacks |= EMPTY;
+		if ((stacks & EMPTY) == EMPTY) {
+			cond = pg.emitAnd(cond, pg.emitCheckNonEmpty());
 		}
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			return this.emitManyFunc(pg, stacks, innerFunc);
+		if (pg.isFunctional()) {
+			C main = pg.emitIf(cond, pg.emitNonTerminal(funcName), back);
+			return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
+		} else {
+			B block = pg.beginBlock();
+			pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, stacks));
+			pg.emitStmt(block, pg.emitReturn(back));
+			return this.emitVarDecl(pg, stacks, pg.endBlock(block));
+		}
+	}
+
+	private C emitCombiMany(int stacks, Expression e, ParserGenerator<B, C> pg) {
+		// C inline = pg.matchMany(e);
+		// if (inline != null) {
+		// return inline;
+		// }
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
+				stacks |= EMPTY;
+			}
+			String func = pg.makeLib("many", stacks);
+			return pg.emitFunc(func, pg.V("px"), lambda);
 		}
 		return null;
 	}
 
 	@Override
 	public C visitAnd(PAnd e, ParserGenerator<B, C> pg) {
-		C inline = this.emitInlineAnd(POS, e, pg);
+		C inline = this.emitCombiAnd(POS, e, pg);
 		if (inline == null) {
 			return this.emitAnd(pg, POS, this.match(e.get(0), pg));
 		}
 		return inline;
 	}
 
-	private C emitInlineAnd(int stacks, Expression e, ParserGenerator<B, C> pg) {
-		C inline = pg.matchAnd(e);
-		if (inline != null) {
-			return inline;
+	private C emitAnd(ParserGenerator<B, C> pg, int stacks, C inner) {
+		C main = pg.emitAnd(inner, this.emitBacktrack(pg, POS));
+		return this.emitVarDecl(pg, POS, pg.emitReturn(main));
+	}
+
+	private C emitCombiAnd(int stacks, Expression e, ParserGenerator<B, C> pg) {
+		Expression p = Expression.deref(e.get(0));
+		if (p instanceof PAny) {
+			return pg.emitFunc("neof", pg.V("px"));
 		}
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			return this.emitAndFunc(pg, stacks, innerFunc);
+		ByteSet bs = Expression.getByteSet(p, pg.isBinary());
+		if (bs != null) {
+			pg.makeLib("getbyte");
+			return pg.emitMatchByteSet(bs, null, false);
+		}
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			String func = pg.makeLib("and" + POS);
+			return pg.emitFunc(func, pg.V("px"), lambda);
 		}
 		return null;
 	}
@@ -396,26 +411,40 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	@Override
 	public C visitNot(PNot e, ParserGenerator<B, C> pg) {
 		int stacks = pg.varStacks(POS, e.get(0));
-		C inline = this.emitInlineNot(stacks, e, pg);
+		C inline = this.emitCombiNot(stacks, e, pg);
 		if (inline == null) {
 			return this.emitNot(pg, stacks, this.match(e.get(0), pg));
 		}
 		return inline;
 	}
 
-	C emitInlineNot(int stacks, Expression e, ParserGenerator<B, C> pg) {
-		C inline = pg.matchNot(e);
-		if (inline != null) {
-			return inline;
+	private C emitNot(ParserGenerator<B, C> pg, int stacks, C inner) {
+		C main = pg.emitIf(inner, pg.emitFail(), this.emitBacktrack(pg, stacks));
+		return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
+	}
+
+	private C emitCombiNot(int stacks, Expression e, ParserGenerator<B, C> pg) {
+		Expression p = Expression.deref(e.get(0));
+		if (p instanceof PAny) {
+			pg.makeLib("neof");
+			return pg.emitNot(pg.emitFunc("neof", pg.V("px")));
 		}
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			return this.emitNotFunc(pg, stacks, innerFunc);
+		ByteSet bs = Expression.getByteSet(p, pg.isBinary());
+		if (bs != null) {
+			bs = bs.not(pg.isBinary());
+			pg.makeLib("getbyte");
+			C expr = pg.emitMatchByteSet(bs, null, false);
+			return expr;
+		}
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			String func = pg.makeLib("not", stacks);
+			return pg.emitFunc(func, pg.V("px"), lambda);
 		}
 		return null;
 	}
 
-	private C getInnerFunction(Expression inner, ParserGenerator<B, C> pg) {
+	private C getInFunc(Expression inner, ParserGenerator<B, C> pg) {
 		if (pg.useLambda() && this.isInline(inner, pg)) {
 			return pg.emitParserLambda(this.match(inner, pg, false));
 		}
@@ -435,63 +464,40 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	@Override
 	public C visitDetree(PDetree e, ParserGenerator<B, C> pg) {
-		C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, TREE));
-		return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
-	}
-
-	C emitInlineDetree(PDetree e, ParserGenerator<B, C> pg) {
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			String funcName = /* pg.useFunc */("detree" + TREE);
-			this.makeMetaDetreeFunc(pg, funcName);
-			return pg.emitFunc(funcName, pg.V("px"), innerFunc);
-		}
-		return null;
-	}
-
-	void makeMetaDetreeFunc(ParserGenerator<B, C> pg, String funcName) {
-		this.makeBacktrackFunc(pg, TREE);
-		if (!pg.isDefined(funcName)) {
-			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
-			pg.defineFunction(funcName);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-				C main = pg.emitAnd(pg.emitApply(pg.V("f"), pg.V("px")), this.emitBacktrack(pg, TREE));
-				return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
-			});
-			pg.closeSection(sec);
-		}
-	}
-
-	@Override
-	public C visitLinkTree(PLinkTree e, ParserGenerator<B, C> pg) {
-		C inline = this.emitInlineLink(e, pg);
+		C inline = this.emitCombiDetree(e, pg);
 		if (inline == null) {
-			C main = pg.emitAnd(this.match(e.get(0), pg), pg.backLink(e.label));
+			C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, TREE));
 			return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
 		}
 		return inline;
 	}
 
-	C emitInlineLink(PLinkTree e, ParserGenerator<B, C> pg) {
-		C innerFunc = this.getInnerFunction(e.get(0), pg);
-		if (innerFunc != null) {
-			String funcName = /* pg.useFunc */("link" + TREE);
-			this.makeMetaLinkFunc(pg, funcName, e.label);
-			return pg.emitFunc(funcName, pg.V("px"), pg.vLabel(e.label), innerFunc);
+	private C emitCombiDetree(PDetree e, ParserGenerator<B, C> pg) {
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			String funcName = pg.makeLib("detree" + TREE);
+			return pg.emitFunc(funcName, pg.V("px"), lambda);
 		}
 		return null;
 	}
 
-	void makeMetaLinkFunc(ParserGenerator<B, C> pg, String funcName, Symbol label) {
-		if (!pg.isDefined(funcName)) {
-			SourceSection sec = pg.openSection(pg.RuntimeLibrary);
-			pg.defineFunction(funcName);
-			pg.declFunc(pg.T("matched"), funcName, "px", "label", "f", () -> {
-				C main = pg.emitAnd(pg.emitApply(pg.V("f"), pg.V("px")), pg.backLink(label));
-				return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
-			});
-			pg.closeSection(sec);
+	@Override
+	public C visitLinkTree(PLinkTree e, ParserGenerator<B, C> pg) {
+		C inline = this.emitCombiLink(e, pg);
+		if (inline == null) {
+			C main = pg.emitAnd(this.match(e.get(0), pg), pg.backLink(pg.vLabel(e.label)));
+			return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
 		}
+		return inline;
+	}
+
+	private C emitCombiLink(PLinkTree e, ParserGenerator<B, C> pg) {
+		C lambda = this.getInFunc(e.get(0), pg);
+		if (lambda != null) {
+			String funcName = pg.makeLib("link" + TREE);
+			return pg.emitFunc(funcName, pg.V("px"), pg.vLabel(e.label), lambda);
+		}
+		return null;
 	}
 
 	@Override
@@ -506,7 +512,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	@Override
 	public C visitSymbolScope(PSymbolScope e, ParserGenerator<B, C> pg) {
-		this.makeBacktrackFunc(pg, STATE);
+		pg.makeLib("back", STATE);
 		C main = pg.emitAnd(this.match(e.get(0), pg), this.emitBacktrack(pg, STATE));
 		if (e.label != null) {
 			main = pg.emitAnd(pg.callAction("reset", e.label, null), main);
@@ -550,8 +556,8 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		return pg.emitSucc();
 	}
 
-	// ---
-	private final static String RuntimeLibrary = null;
+	// // ---
+	// private final static String RuntimeLibrary = null;
 
 	C emitVarDecl(ParserGenerator<B, C> pg, int stacks, C returnExpr) {
 		B block = pg.beginBlock();
@@ -571,7 +577,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	}
 
 	C emitBacktrack(ParserGenerator<B, C> pg, int stacks) {
-		String funcName = pg.s("back") + (stacks & ~(CNT | EMPTY));
+		String funcName = pg.makeLib("back", (stacks & ~(CNT | EMPTY)));
 		String[] args = pg.getStackNames(stacks);
 		ArrayList<C> params = new ArrayList<>();
 		params.add(pg.V("px"));
@@ -581,130 +587,100 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		return pg.emitFunc(funcName, params);
 	}
 
-	void makeBacktrackFunc(ParserGenerator<B, C> pg, int stacks) {
-		String funcName = pg.s("back") + (stacks & ~(CNT | EMPTY));
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			String[] args = pg.getStackNames(stacks);
-			pg.declFunc(pg.T("matched"), funcName, pg.joins("px", args), () -> {
-				B block = pg.beginBlock();
-				for (String a : args) {
-					pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
-				}
-				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
-				return pg.endBlock(block);
+	protected void loadCombinator(ParserGenerator<B, C> pg) {
+		pg.defineLib2("back", (Object thunk) -> {
+			int stacks = (Integer) thunk;
+			String funcName = "back" + stacks;
+			pg.defineLib(funcName, () -> {
+				String[] args = pg.getStackNames(stacks);
+				pg.declFunc(pg.T("matched"), funcName, pg.joins("px", args), () -> {
+					B block = pg.beginBlock();
+					for (String a : args) {
+						pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
+					}
+					pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
+					return pg.endBlock(block);
+				});
 			});
-			pg.closeSection(prev);
-		}
-	}
+		});
 
-	C emitChoiceFunc2(ParserGenerator<B, C> pg, int stacks, C pe, C pe2) {
-		this.makeBacktrackFunc(pg, stacks);
-		String funcName = pg.s("choice") + (stacks & ~CNT);
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", "f2", () -> {
-				C first = pg.emitApply(pg.V("f"), pg.V("px"));
-				C second = pg.emitAnd(this.emitBacktrack(pg, stacks), pg.emitApply(pg.V("f2"), pg.V("px")));
-				C result = this.emitVarDecl(pg, stacks, pg.emitReturn(pg.emitOr(first, second)));
-				return result;
+		pg.defineLib2("choice", (Object thunk) -> {
+			int stacks = (Integer) thunk;
+			String funcName = "choice" + stacks;
+			pg.defineLib(funcName, () -> {
+				pg.makeLib("back", stacks & ~(CNT | EMPTY));
+				pg.makeLib("ParserFunc");
+				pg.declFunc(pg.T("matched"), funcName, "px", "f", "f2", () -> {
+					C first = pg.emitApply(pg.V("f"), pg.V("px"));
+					C second = pg.emitAnd(this.emitBacktrack(pg, stacks), pg.emitApply(pg.V("f2"), pg.V("px")));
+					C result = this.emitVarDecl(pg, stacks, pg.emitReturn(pg.emitOr(first, second)));
+					return result;
+				});
 			});
-			pg.closeSection(prev);
-		}
-		return pg.emitFunc(funcName, pg.V("px"), pe, pe2);
-	}
+		});
 
-	C emitOptionFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
-		String funcName = pg.s("option") + (stacks & ~CNT);
-		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-				return (this.emitOption(pg, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+		pg.defineLib2("many", (Object thunk) -> {
+			int stacks = (Integer) thunk;
+			String funcName = "many" + stacks;
+			pg.defineLib(funcName, () -> {
+				pg.makeLib("back", stacks & ~(CNT | EMPTY));
+				pg.makeLib("ParserFunc");
+				pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
+					return (this.emitMany(pg, funcName, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+				});
 			});
-			pg.closeSection(prev);
-		}
-		return pg.emitFunc(funcName, pg.V("px"), pe);
-	}
+		});
 
-	C emitOption(ParserGenerator<B, C> pg, int stacks, C first) {
-		C second = this.emitBacktrack(pg, stacks);
-		return this.emitVarDecl(pg, stacks, pg.emitReturn(pg.emitOr(first, second)));
-	}
-
-	C emitManyFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
-		String funcName = pg.s("many") + stacks;
-		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-				return (this.emitMany(pg, funcName, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+		pg.defineLib2("option", (Object thunk) -> {
+			int stacks = (Integer) thunk;
+			String funcName = "option" + stacks;
+			pg.defineLib(funcName, () -> {
+				pg.makeLib("back", stacks & ~(CNT | EMPTY));
+				pg.makeLib("ParserFunc");
+				pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
+					return (this.emitOption(pg, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+				});
 			});
-			pg.closeSection(prev);
-		}
-		return pg.emitFunc(funcName, pg.V("px"), pe);
-	}
+		});
 
-	C emitMany(ParserGenerator<B, C> pg, String funcName, int stacks, C cond) {
-		C back = this.emitBacktrack(pg, stacks);
-		if ((stacks & CNT) == CNT) {
-			back = pg.emitAnd(pg.checkCountVar(), back);
-		}
-		if ((stacks & EMPTY) == EMPTY) {
-			cond = pg.emitAnd(cond, pg.emitCheckNonEmpty());
-		}
-		if (pg.isFunctional()) {
-			C main = pg.emitIf(cond, pg.emitNonTerminal(funcName), back);
-			return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
-		} else {
-			B block = pg.beginBlock();
-			pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, stacks));
-			pg.emitStmt(block, pg.emitReturn(back));
-			return this.emitVarDecl(pg, stacks, pg.endBlock(block));
-		}
-	}
-
-	protected C emitAndFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
-		String funcName = pg.s("and") + (stacks & ~CNT);
-		this.makeBacktrackFunc(pg, POS);
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
+		pg.defineLib("and" + POS, () -> {
+			pg.makeLib("back", POS);
+			pg.makeLib("ParserFunc");
+			pg.declFunc(pg.T("matched"), "and" + POS, "px", "f", () -> {
 				return (this.emitAnd(pg, POS, pg.emitApply(pg.V("f"), pg.V("px"))));
 			});
-			pg.closeSection(prev);
-		}
-		return pg.emitFunc(funcName, pg.V("px"), pe);
-	}
+		});
 
-	protected C emitAnd(ParserGenerator<B, C> pg, int stacks, C inner) {
-		stacks = POS;
-		C main = pg.emitAnd(inner, this.emitBacktrack(pg, stacks));
-		return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
-	}
-
-	protected C emitNotFunc(ParserGenerator<B, C> pg, int stacks, C pe) {
-		String funcName = pg.s("not") + (stacks & ~CNT);
-		this.makeBacktrackFunc(pg, stacks);
-		if (!pg.isDefined(funcName)) {
-			pg.defineSymbol(funcName, pg.localName(funcName));
-			SourceSection prev = pg.openSection(RuntimeLibrary);
-			pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-				return (this.emitNot(pg, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+		pg.defineLib2("not", (Object thunk) -> {
+			int stacks = (Integer) thunk;
+			String funcName = "not" + stacks;
+			pg.defineLib(funcName, () -> {
+				pg.makeLib("back", stacks & ~(CNT | EMPTY));
+				pg.makeLib("ParserFunc");
+				pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
+					return (this.emitNot(pg, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+				});
 			});
-			pg.closeSection(prev);
-		}
-		return pg.emitFunc(funcName, pg.V("px"), pe);
-	}
+		});
 
-	protected C emitNot(ParserGenerator<B, C> pg, int stacks, C inner) {
-		C main = pg.emitIf(inner, pg.emitFail(), this.emitBacktrack(pg, stacks));
-		return this.emitVarDecl(pg, stacks, pg.emitReturn(main));
+		pg.defineLib("detree" + TREE, () -> {
+			pg.makeLib("back", TREE);
+			pg.makeLib("ParserFunc");
+			pg.declFunc(pg.T("matched"), "detree" + TREE, "px", "f", () -> {
+				C main = pg.emitAnd(pg.emitApply(pg.V("f"), pg.V("px")), this.emitBacktrack(pg, TREE));
+				return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
+			});
+		});
+
+		pg.defineLib("link" + TREE, () -> {
+			pg.makeLib("backLink");
+			pg.makeLib("ParserFunc");
+			pg.declFunc(pg.T("matched"), "link" + TREE, "px", "nlabel", "f", () -> {
+				C main = pg.emitAnd(pg.emitApply(pg.V("f"), pg.V("px")), pg.backLink(pg.V("nlabel")));
+				return this.emitVarDecl(pg, TREE, pg.emitReturn(main));
+			});
+		});
+
 	}
 
 }

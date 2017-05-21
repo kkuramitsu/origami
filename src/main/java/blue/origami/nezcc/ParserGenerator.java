@@ -17,19 +17,17 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserGrammar;
 import blue.origami.nez.parser.ParserOption;
-import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.expression.ByteSet;
-import blue.origami.nez.peg.expression.PMany;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;
@@ -48,11 +46,14 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	protected abstract void declFuncType(String ret, String typeName, String... params);
 
 	@Override
-	protected abstract void declConst(String typeName, String constName, String literal);
+	protected abstract void declConst(String typeName, String constName, int arraySize, String literal);
 
 	protected abstract void declProtoType(String ret, String funcName, String[] params);
 
 	protected abstract void declFunc(String ret, String funcName, String[] params, Block<C> block);
+
+	protected void declSymbolTables() {
+	}
 
 	// protected abstract void emitFuncReturn(C expr);
 
@@ -162,14 +163,12 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return false;
 	}
 
-	private boolean usePointer = false;
-
-	protected final boolean usePointer() {
-		return this.usePointer;
+	protected final boolean usePointerPosition() {
+		return Objects.equals(this.T("pos"), this.T("inputs"));
 	}
 
-	protected final void usePointer(boolean b) {
-		this.usePointer = b;
+	protected boolean useDynamicTyping() {
+		return this.T("pos") == null;
 	}
 
 	protected final boolean useLambda() {
@@ -191,6 +190,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	/* utils */
 
 	public abstract C V(String name);
+
+	public abstract C Const(String name);
 
 	protected final C emitGetter(String name) {
 		int loc = name.indexOf('.');
@@ -298,6 +299,18 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.emitFunc(func, l);
 	}
 
+	protected C emitFunc(String func, C a0, C a1, C a2, C a3, C a4, C a5, C a6) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		l.add(a4);
+		l.add(a5);
+		l.add(a6);
+		return this.emitFunc(func, l);
+	}
+
 	protected final C emitApply(C func, C a0) {
 		List<C> l = new ArrayList<>();
 		l.add(a0);
@@ -349,9 +362,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.emitApply(func, l);
 	}
 
-	protected C emitEqTag(C expr, C expr2) {
-		return this.emitOp(expr, "==", expr2);
-	}
+	// protected C emitEqTag(C expr, C expr2) {
+	// return this.emitOp(expr, "==", expr2);
+	// }
 
 	protected C emitIsNull(C expr) {
 		return this.emitOp(expr, "==", this.emitNull());
@@ -370,35 +383,29 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C emitMove(C shift) {
+		this.makeLib("move");
 		return this.emitFunc("move", this.V("px"), shift);
 	}
 
 	protected C emitMatchAny() {
+		this.makeLib("neof");
 		return this.emitAnd(this.emitFunc("neof", this.V("px")), this.emitMove(this.vInt(1)));
-	}
-
-	protected boolean isUnsigned = false;
-
-	protected void useUnsignedByte(boolean b) {
-		this.isUnsigned = b;
-	}
-
-	protected C emitUnsigned(C expr) {
-		if (this.isUnsigned) {
-			return expr;
-		}
-		return this.emitOp(expr, "&", this.vInt(0xff));
 	}
 
 	protected C emitMatchByte(int uchar) {
 		C expr = this.emitFunc("match", this.V("px"), this.emitChar(uchar));
+		this.makeLib("match");
 		if (uchar == 0) {
+			this.makeLib("neof");
 			expr = this.emitAnd(expr, this.emitFunc("neof", this.V("px")));
 		}
 		return expr;
 	}
 
 	protected C emitMatchByteSet(ByteSet bs) {
+		if (this.isDefined("bitis")) {
+			this.makeLib("bitis");
+		}
 		return this.emitMatchByteSet(bs, null, true);
 	}
 
@@ -420,6 +427,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 			}
 			expr = this.emitFunc(proceed ? "nextbyte" : "getbyte", this.V("px"));
 			if (this.isDefined("bitis")) {
+				// this.makeLib("bitis");
 				expr = this.emitFunc("bitis", param, expr);
 			} else {
 				expr = this.emitArrayIndex(param, expr);
@@ -435,9 +443,22 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return expr;
 	}
 
+	protected abstract C emitUnsigned(C expr);
+
 	protected C emitJumpIndex(byte[] indexMap, boolean proceed) {
+		this.makeLib(proceed ? "nextbyte" : "getbyte");
 		C a = this.vIndexMap(indexMap);
 		C index = this.emitFunc(proceed ? "nextbyte" : "getbyte", this.V("px"));
+		boolean hasMinusIndex = false;
+		for (byte b : indexMap) {
+			if (b < 0) {
+				hasMinusIndex = true;
+				break;
+			}
+		}
+		if (hasMinusIndex) {
+			return this.emitUnsigned(this.emitArrayIndex(a, index));
+		}
 		return this.emitArrayIndex(a, index);
 	}
 
@@ -459,47 +480,48 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected C tagTree(Symbol tag) {
 		if (this.isTreeConstruction()) {
-			return this.emitFunc("tagTree", this.V("px"), this.vTag(tag));
+			this.makeLib("tagT");
+			return this.emitFunc("tagT", this.V("px"), this.vTag(tag));
 		}
 		return this.emitSucc();
 	}
 
 	protected C valueTree(String value) {
 		if (this.isTreeConstruction()) {
-			if (this.usePointer()) {
-				byte[] buf = value.getBytes(Charset.forName("UTF-8"));
-				return this.emitFunc("valueTree", this.V("px"), this.vValue(value), this.vInt(buf.length));
-			} else {
-				return this.emitFunc("valueTree", this.V("px"), this.vValue(value));
-			}
+			this.makeLib("valueT");
+			return this.emitFunc("valueT", this.V("px"), this.vValue(value));
 		}
 		return this.emitSucc();
 	}
 
 	protected C linkTree(Symbol label) {
 		if (this.isTreeConstruction()) {
-			return this.emitFunc("linkTree", this.V("px"), this.vTag(label));
+			this.makeLib("linkT");
+			return this.emitFunc("linkT", this.V("px"), this.vTag(label));
 		}
 		return this.emitSucc();
 	}
 
 	protected C foldTree(int beginShift, Symbol label) {
 		if (this.isTreeConstruction()) {
-			return this.emitFunc("foldTree", this.V("px"), this.vInt(beginShift), this.vTag(label));
+			this.makeLib("foldT");
+			return this.emitFunc("foldT", this.V("px"), this.vInt(beginShift), this.vTag(label));
 		}
 		return this.emitSucc();
 	}
 
 	protected C beginTree(int beginShift) {
 		if (this.isTreeConstruction()) {
-			return this.emitFunc("beginTree", this.V("px"), this.vInt(beginShift));
+			this.makeLib("beginT");
+			return this.emitFunc("beginT", this.V("px"), this.vInt(beginShift));
 		}
 		return this.emitSucc();
 	}
 
 	protected C endTree(int endShift, Symbol tag, String value) {
 		if (this.isTreeConstruction()) {
-			C endTree = this.emitFunc("endTree", this.V("px"), this.vInt(endShift), this.vTag(tag));
+			this.makeLib("endT");
+			C endTree = this.emitFunc("endT", this.V("px"), this.vInt(endShift), this.vTag(tag));
 			if (value != null) {
 				endTree = this.emitAnd(this.valueTree(value), endTree);
 			}
@@ -509,20 +531,22 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C callAction(String action, Symbol label, Object thunk) {
-		String f = this.makeStateFunc(this, action, thunk);
+		String f = thunk == null ? this.makeLib(action + "S") : this.makeLib(action + "S", thunk);
 		return this.emitFunc(f, this.V("px"), this.emitGetter("px.state"), this.vLabel(label),
 				this.emitGetter("px.pos"));
 	}
 
 	protected C callActionPOS(String action, Symbol label, Object thunk) {
-		String f = this.makeStateFunc(this, action, thunk);
+		String f = thunk == null ? this.makeLib(action + "S") : this.makeLib(action + "S", thunk);
 		return this.emitFunc(f, this.V("px"), this.emitGetter("px.state"), this.vLabel(label), this.V("pos"));
 	}
 
 	/* Optimiztion */
 
-	protected C backLink(Symbol label) {
-		return this.emitFunc("backLink", this.V("px"), this.V("treeLog"), this.vLabel(label), this.V("tree"));
+	protected C backLink(C label) {
+		this.makeLib("backLink");
+		return this.emitFunc("backLink", this.V("px"), this.V("treeLog"), label,
+				/* this.vLabel(label) */ this.V("tree"));
 	}
 
 	protected C emitInc(C expr) {
@@ -541,25 +565,11 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return result;
 	}
 
-	protected C matchMany(Expression e) {
-		// return null;
-		return this.makeManyInlineCall(this, (PMany) e);
-	}
-
-	protected C matchOption(Expression e) {
-		// return null;
-		return this.makeOptionInlineCall(this, e);
-	}
-
-	protected C matchAnd(Expression e) {
-		return this.makeAndInlineCall(this, e);
-	}
-
-	protected C matchNot(Expression e) {
-		return this.makeNotInlineCall(this, e);
-	}
-
 	protected void declTree() {
+	}
+
+	protected C emitInputString(C text) {
+		return text;
 	}
 
 	protected C emitNewToken(C tag, C inputs, C pos, C epos) {
@@ -623,12 +633,22 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		}
 	}
 
+	protected ParserGrammar grammar;
+
+	protected int maxDispatch() {
+		return this.grammar.maxDispatch();
+	}
+
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<B, C> pgv = new ParserGeneratorVisitor<>();
+		this.grammar = g;
 		this.initSymbols();
-		this.defineVariable("label", this.T("tag"));
-		this.defineVariable("tag", this.T("label"));
+		this.defineVariable("label", this.s("Symbol"));
+		this.defineVariable("tag", this.s("Symbol"));
+		this.defineVariable("ntag", this.T("cnt"));
+		this.defineVariable("nlabel", this.T("cnt"));
 		this.defineVariable("value", this.T("inputs"));
+		this.defineVariable("nvalue", this.T("cnt"));
 		this.defineVariable("pos", this.T("cnt"));
 		this.defineVariable("head_pos", this.T("pos"));
 		this.defineVariable("shift", this.T("cnt"));
@@ -646,6 +666,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.defineVariable("epos", this.T("pos"));
 		this.defineVariable("child", this.T("tree"));
 		this.defineVariable("f2", this.T("f"));
+		this.defineSymbol("Intag", "0");
+		this.defineSymbol("Ikey", "-1");
 		this.defineSymbol("Icnt", "0");
 		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Ipos", "0");
@@ -660,34 +682,32 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.defineSymbol("{[", "{");
 		this.defineSymbol("]}", "}");
 
-		this.makeTypeDefinition(this, g.getMemoPointSize());
-		this.makeMatchLibs(this);
-		this.makeTreeLibs(this);
-		this.makeMemoLibs(this, g.getMemoPointSize(), 64);
-		// if (this.isStateful()) {
-		this.makeStateLibs(this);
-		// }
+		this.loadContext(this, g);
+		this.loadTreeLog(this);
+		this.loadState(this);
+		this.loadMemo(this, g);
+		pgv.loadCombinator(this);
+		this.loadMain(this);
+		this.makeLib("NezParserContext");
 		pgv.start(g, this);
 		ArrayList<String> funcList = this.sortFuncList("start");
 		for (String funcName : this.crossRefNames) {
 			this.declProtoType(this.T("matched"), funcName, new String[] { "px" });
 		}
 		this.writeHeader();
-		this.writeLine(this.lib.toString());
+		this.writeComment("*** const ***");
 		this.writeLine(this.head.toString());
+		this.writeComment("*** libs ***");
+		this.writeLine(this.lib.toString());
+
 		for (String funcName : funcList) {
 			SourceSection s = this.sectionMap.get(funcName);
 			if (s != null) {
 				this.write(s);
 			}
 		}
-
+		this.lib = new SourceSection();
 		this.writeFooter();
-		if (this.isDefined("Cinputs0")) {
-			this.lib = new SourceSection();
-			this.makeMain(this, g.getMemoPointSize());
-			this.writeLine(this.lib.toString());
-		}
 	}
 
 	protected void log(String line, Object... args) {

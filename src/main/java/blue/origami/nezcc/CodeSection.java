@@ -40,6 +40,14 @@ abstract class CodeSection<C> {
 		}
 	}
 
+	protected void writeComment(String format, Object... args) {
+		if (this.isDefined("comment")) {
+			String comment = (args.length == 0) ? format : String.format(format, args);
+			this.out.p(this.format("comment", comment));
+			this.out.println();
+		}
+	}
+
 	protected void writeResource(String path, String... stringReplacements) throws IOException {
 		this.out.importResourceContent(path, stringReplacements);
 		this.writeSection(null);
@@ -157,6 +165,22 @@ abstract class CodeSection<C> {
 
 	protected void defineSymbol(String key, String symbol) {
 		if (!this.isDefined(key)) {
+			if (symbol != null) {
+				int s = symbol.indexOf("$|");
+				while (s >= 0) {
+					int e = symbol.indexOf('|', s + 2);
+					String skey = symbol.substring(s + 2, e);
+					// if (this.symbolMap.get(skey) != null) {
+					symbol = symbol.replace("$|" + skey + "|", this.s(skey));
+					// }
+					e = s;
+					s = symbol.indexOf("$|");
+					if (e == s) {
+						break; // avoid infinite looping
+					}
+					// System.out.printf("'%s': %s\n", key, symbol);
+				}
+			}
 			this.symbolMap.put(key, symbol);
 		}
 	}
@@ -184,11 +208,18 @@ abstract class CodeSection<C> {
 		return this.symbolMap.getOrDefault(key, key);
 	}
 
+	protected String format(String key, Object... args) {
+		if (args.length == 0) {
+			return this.s(key);
+		}
+		return String.format(this.s(key), args);
+	}
+
 	protected void defineFunction(String funcName) {
 		this.symbolMap.put(funcName, funcName);
 	}
 
-	protected String getConstName(String typeName, String typeLiteral) {
+	protected String getConstName(String typeName, int arraySize, String typeLiteral) {
 		if (typeName == null) {
 			return typeLiteral;
 		}
@@ -199,13 +230,13 @@ abstract class CodeSection<C> {
 			this.symbolMap.put(key, constName);
 			SourceSection body = this.body;
 			this.body = this.head;
-			this.declConst(typeName, constName, typeLiteral);
+			this.declConst(typeName, constName, arraySize, typeLiteral);
 			this.body = body;
 		}
 		return constName;
 	}
 
-	protected abstract void declConst(String typeName, String constName, String literal);
+	protected abstract void declConst(String typeName, String constName, int arraySize, String literal);
 
 	// function
 	HashMap<String, String> exprFuncMap = new HashMap<>();

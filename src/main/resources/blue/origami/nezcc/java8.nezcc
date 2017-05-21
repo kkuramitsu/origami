@@ -1,0 +1,244 @@
+# nezcc file
+
+extension          = java
+
+# type
+
+Bool               = boolean
+Byte               = byte
+Int                = int
+Int32              = int
+Int64              = long
+Array              = %s[]
+Symbol             = String
+Tree               = Object
+String             = String
+
+unsigned           = %s & 0xff
+keyindex           = ($|Int|)(%s)
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+
+module           = final class %s {
+struct           = static class %s {
+field            = %s %s;
+constructor      = %s(%s) {
+init             = this.%s = %s;
+new              = new %s
+
+functype         = '''
+public interface %2$s {
+  public %1$s apply(%3$s);
+}
+'''
+
+const            = private static final %1$s %2$s = %3$s;
+
+function         = private static final %1$s %2$s(%3$s) {
+return           = return %s;
+
+cast             = (@@@@%s)(%s)
+
+alen             = %s.length
+aindex           = %s[%s]
+anew             = new %s[%s]
+
+apply            = %s.apply
+funcref          = $|base|::%s
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = switch(%s) {
+case             = case %s : %s
+#default          = default : %s
+
+lambda           = (%s) -> %s
+
+base64           = B("%s")
+bools            = B256("%s")
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.Objects;
+import java.io.*;
+'''
+
+libs = '''
+static byte[] B(String s) {
+  return Base64.getDecoder().decode(s.getBytes());
+}
+
+static boolean[] B256(String s) {
+  boolean[] b = new boolean[256];
+  for (int i = 0; i < s.length(); i++) {
+    if (s.charAt(i) == 'T' || s.charAt(i) == '1') {
+      b[i] = true;
+    }
+  }
+  return b;
+}
+'''
+
+def bitis = '''
+private final static boolean bitis(int[] bits, int n) {
+	return (bits[n / 32] & (1 << (n % 32))) != 0;
+}
+'''
+
+def extract = '''
+private static final byte[] emptyValue = new byte[0];
+
+private static byte[] extract(NezParserContext px, int ppos) {
+  if(px.pos == ppos) {
+    return emptyValue;
+  }
+  byte[] b = new byte[px.pos - ppos];
+  System.arraycopy(px.inputs, ppos, b, 0, b.length);
+  return b;
+}
+'''
+
+def matchBytes = '''
+private static boolean matchBytes(NezParserContext px, byte[] t, int length) {
+  if (px.pos + length <= px.length) {
+    for (int i = 0; i < length; i++) {
+      if (t[i] != px.inputs[px.pos + i]) {
+        return false;
+      }
+    }
+    px.pos += length;
+    return true;
+  }
+  return false;
+}
+'''
+
+ast = '''
+  public static class SimpleTree {
+    public String key;
+    public Object value;
+
+    SimpleTree(String key, Object value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      this.strOut(sb);
+      return sb.toString();
+    }
+
+    private void strOut(StringBuilder sb) {
+      sb.append("[#");
+      sb.append(this.key == null ? "" : this.key);
+      if (this.value instanceof SimpleTree[]) {
+        SimpleTree[] sub = (SimpleTree[]) this.value;
+        for (SimpleTree child : sub) {
+          sb.append(" ");
+          if (child.key != null) {
+            sb.append("$" + child.key + "=");
+          }
+          ((SimpleTree) child.value).strOut(sb);
+        }
+      } else {
+        sb.append(" '");
+        sb.append(this.value);
+        sb.append("'");
+      }
+      sb.append("]");
+    }
+  }
+'''
+
+exports = '''
+  public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
+    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
+    NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
+    initMemo(px);
+    if(!e0(px)) {
+    	System.err.printf("syntax error at %d\n", px.head_pos);
+    };
+    return px.tree;
+  }
+'''
+
+main = '''
+  public static Object parse(String s) throws IOException {
+    TreeFunc f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
+      if (size == 0) {
+        return new SimpleTree(tag, new String(inputs, pos, epos - pos));
+      }
+      return new SimpleTree(tag, new SimpleTree[size]);
+    };
+    TreeSetFunc f2 = (Object parent, int n, String label, Object child) -> {
+      SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+      childs[n] = new SimpleTree(label, child);
+      return parent;
+    };
+    return parse(s, f, f2);
+  }
+
+  static String readInputs(String a) throws IOException {
+    File file = new File(a);
+    if(file.exists()) {
+      StringBuilder sb = new StringBuilder();
+      BufferedReader br = new BufferedReader(new FileReader(file));
+      String str = br.readLine();
+      while(str != null){
+        sb.append(str);
+        sb.append("\n");
+        str = br.readLine();
+      }
+      br.close();
+      return sb.toString();
+    }
+    return a;
+  }
+  
+  public final static void main(String[] args) throws IOException {
+    for(String a: args) {
+      String s = readInputs(a);
+      long st = System.nanoTime();
+      Object t = parse(s);
+      long et = System.nanoTime();
+      System.err.printf("%s %s %f[ms]: ", a, t != null ? "OK": "NG", (et-st)/1000000.0);
+      System.out.print(t);
+      System.out.flush();
+      System.err.printf("\n");
+    }
+  }
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+'''
+

@@ -147,7 +147,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 	@Override
 	protected String vIndexMap(byte[] indexMap) {
 		byte[] encoded = Base64.getEncoder().encode(indexMap);
-		return this.getConstName(this.T("indexMap"), "I(\"" + new String(encoded) + "\")");
+		return this.getConstName(this.T("indexMap"), encoded.length, "I(\"" + new String(encoded) + "\")");
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 			sb.append(bs.is(i) ? "1" : "0");
 		}
 		sb.append("\")");
-		return this.getConstName(this.T("byteSet"), sb.toString());
+		return this.getConstName(this.T("byteSet"), 256, sb.toString());
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class JavaParserGenerator extends ParserSourceGenerator {
 
 	protected String vMultiBytes(byte[] text) {
 		byte[] encoded = Base64.getEncoder().encode(text);
-		return this.getConstName("byte[]", "B64(\"" + new String(encoded) + "\")");
+		return this.getConstName("byte[]", encoded.length, "B64(\"" + new String(encoded) + "\")");
 	}
 
 }

@@ -10,10 +10,6 @@ import blue.origami.util.OStringUtils;
 
 public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilder, String> {
 
-	protected boolean useDynamicTyping() {
-		return this.T("pos") == null;
-	}
-
 	protected void emitLine(StringBuilder block, String format, Object... args) {
 		if (args.length == 0) {
 			this.emitStmt(block, format);
@@ -28,7 +24,8 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	}
 
 	@Override
-	protected void declConst(String typeName, String constName, String literal) {
+	protected void declConst(String typeName, String constName, int arraySize, String literal) {
+
 		String decl = "";
 		if (this.isDefined("const")) {
 			decl = this.s("const") + " ";
@@ -174,6 +171,14 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			return String.format("%s = %s%s", this.s(name), expr, this.s(";"));
 		}
 		return String.format("%s %s = %s%s", t, this.s(name), expr, this.s(";"));
+	}
+
+	@Override
+	protected String emitUnsigned(String expr) {
+		if (!this.isDefined("unsigned")) {
+			return expr;
+		}
+		return this.format("unsigned", expr);
 	}
 
 	@Override
@@ -377,17 +382,17 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			if (c > 0) {
 				sb.append(this.s(","));
 			}
-			if (code.equals(this.s("false"))) {
-				sb.append(this.funcFail(this));
-			} else if (code.equals(this.s("true"))) {
-				sb.append(this.funcSucc(this));
-			} else {
-				sb.append(this.emitParserLambda(code));
-			}
+			// if (code.equals(this.s("false"))) {
+			// sb.append(this.funcFail(this));
+			// } else if (code.equals(this.s("true"))) {
+			// sb.append(this.funcSucc(this));
+			// } else {
+			sb.append(this.emitParserLambda(code));
+			// }
 			c++;
 		}
 		sb.append(this.s("]}"));
-		return this.getConstName(this.T("funcMap"), sb.toString());
+		return this.getConstName(this.T("f"), cases.size(), sb.toString());
 	}
 
 	@Override
@@ -419,7 +424,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			sb.append(", ");
 		}
 		sb.append(this.s("]}"));
-		return this.getConstName(this.T("indexMap"), sb.toString());
+		return this.getConstName(this.s("UInt8"), indexMap.length, sb.toString());
 	}
 
 	@Override
@@ -433,7 +438,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 				sb.append(",");
 			}
 			sb.append(this.s("]}"));
-			return this.getConstName(this.T("inputs"), sb.toString());
+			return this.getConstName(this.s("Byte"), buf.length, sb.toString());
 		}
 		return this.emitNull();
 	}
@@ -461,25 +466,29 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 
 	@Override
 	protected String vByteSet(ByteSet bs) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.s("{["));
 		if (this.isDefined("bitis")) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.s("{["));
 			for (int i = 0; i < 8; i++) {
 				if (i > 0) {
 					sb.append(this.s(","));
 				}
 				sb.append(bs.bits()[i]);
 			}
+			sb.append(this.s("]}"));
+			return this.getConstName(this.s("Int32"), 8, sb.toString());
 		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.s("{["));
 			for (int i = 0; i < 256; i++) {
 				if (i > 0) {
 					sb.append(this.s(","));
 				}
 				sb.append(bs.is(i) ? this.s("true") : this.s("false"));
 			}
+			sb.append(this.s("]}"));
+			return this.getConstName(this.s("Bool"), 256, sb.toString());
 		}
-		sb.append(this.s("]}"));
-		return this.getConstName(this.T("byteSet"), sb.toString());
 	}
 
 	@Override
@@ -498,6 +507,11 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	@Override
 	public String V(String name) {
 		return this.s(name);
+	}
+
+	@Override
+	public String Const(String name) {
+		return name;
 	}
 
 }

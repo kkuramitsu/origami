@@ -1,0 +1,43 @@
+# default nezcc
+
+# default syntax
+
+getter           = %s.%s
+setter           = %s.%s = %s$|;|
+
+group            = (%s)
+and              = %s && %s
+or               = (%s) || (%s)
+not              = !(%s)
+ifexpr           = (%s) ? (%s) : (%s)
+
+funccall         = %s(%s)
+args             = ,
+
+true             = true
+false            = false
+null             = null
+
+val              = %1$s %2$s = %3$s$|;|
+var              = $|val|
+assign           = %s = %s$|;|
+
+array            = {
+arrays           = ,
+end array        = }
+
+
+# 
+end module       = $|end|
+end struct       = $|end|
+end constructor  = $|end|
+end function     = $|end|
+end if           = $|end|
+end while        = $|end|
+end switch       = $|end|
+
+param            = %s %s
+params           = ,
+functypeparam    = $|param|
+functypeparams   = $|params|
+
