@@ -109,7 +109,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitCast(String var, C expr);
 
-	protected abstract C emitNull();
+	protected abstract C emitNull(String name);
 
 	protected abstract C emitArrayIndex(C a, C index);
 
@@ -175,9 +175,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.isDefined("lambda");
 	}
 
-	protected final boolean useFuncMap() {
-		return this.isDefined("TfuncMap");
-	}
+	// protected final boolean useFuncMap() {
+	// return this.isDefined("TfuncMap");
+	// }
 
 	protected final boolean useMultiBytes() {
 		return true;
@@ -367,11 +367,11 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	// }
 
 	protected C emitIsNull(C expr) {
-		return this.emitOp(expr, "==", this.emitNull());
+		return this.emitOp(expr, "==", this.emitNull(null));
 	}
 
 	protected C emitIsNotNull(C expr) {
-		return this.emitOp(expr, "!=", this.emitNull());
+		return this.emitOp(expr, "!=", this.emitNull(null));
 	}
 
 	protected C IfNull(C v, C v2) {
@@ -393,8 +393,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C emitMatchByte(int uchar) {
-		C expr = this.emitFunc("match", this.V("px"), this.emitChar(uchar));
-		this.makeLib("match");
+		C expr = this.emitFunc("next1", this.V("px"), this.emitChar(uchar));
+		this.makeLib("next1");
 		if (uchar == 0) {
 			this.makeLib("neof");
 			expr = this.emitAnd(expr, this.emitFunc("neof", this.V("px")));
@@ -417,7 +417,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 				param = this.emitChar(uchar);
 			}
 			if (proceed) {
-				expr = this.emitFunc("match", this.V("px"), param);
+				expr = this.emitFunc("next1", this.V("px"), param);
 			} else {
 				expr = this.emitOp(this.emitFunc("getbyte", this.V("px")), "==", param);
 			}
@@ -573,15 +573,15 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C emitNewToken(C tag, C inputs, C pos, C epos) {
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	protected C emitNewTree(C tag, C nsubs) {
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	protected C emitSetTree(C parent, C n, C label, C child) {
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	/* Utils */

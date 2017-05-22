@@ -185,7 +185,7 @@ public class CParserGenerator extends ParserSourceGenerator {
 			byte[] buf = s.getBytes(Charset.forName("UTF-8"));
 			return this.getConstName(this.s("Byte"), buf.length, this.quote(buf));
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 }

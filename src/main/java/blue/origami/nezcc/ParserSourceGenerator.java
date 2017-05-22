@@ -119,7 +119,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			if (this.isDefined("I" + n)) {
 				return this.s("I" + n);
 			} else {
-				return this.emitNull();
+				return this.emitNull(null);
 			}
 		}
 		return this.V(f);
@@ -232,7 +232,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	}
 
 	@Override
-	protected String emitNull() {
+	protected String emitNull(String name) {
 		return this.s("null");
 	}
 
@@ -335,10 +335,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 
 	@Override
 	protected String emitDispatch(String index, List<String> cases) {
-		if (this.useFuncMap() && this.isNotIncludeMemo(cases)) {
-			String funcMap = this.vFuncMap(cases);
-			return this.emitArrayIndex(funcMap, index) + "(px)";
-		} else if (this.isDefined("switch")) {
+		if (this.isDefined("switch")) {
 			StringBuilder block = this.beginBlock();
 			this.emitLine(block, "%s(%s) %s", this.s("switch"), index, this.s("{"));
 			this.incIndent();
@@ -440,7 +437,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 			sb.append(this.s("]}"));
 			return this.getConstName(this.s("Byte"), buf.length, sb.toString());
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	@Override
@@ -448,7 +445,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 		if (s != null) {
 			return this.vString(Objects.toString(s));
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	@Override
@@ -456,7 +453,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 		if (s != null) {
 			return this.vString(Objects.toString(s));
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	@Override

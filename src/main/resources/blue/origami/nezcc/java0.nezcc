@@ -11,11 +11,13 @@ Int32              = int
 Int64              = long
 Array              = %s[]
 Symbol             = String
-Tree               = Object
+Tree               = T
 String             = String
 
 unsigned           = %s & 0xff
 keyindex           = ($|Int|)(%s)
+
+typeparam          = %s<T>
 
 # syntax
 
@@ -25,21 +27,21 @@ end              = }
 ;                = ;
 
 module           = final class $|base| {
-struct           = static class %s {
+struct           = static class %s <T> {
 field            = %s %s;
 constructor      = %s(%s) {
 init             = this.%s = %s;
-new              = new %s
+new              = new %s<>
 
 functype         = '''
-public interface %2$s {
+public interface %2$s <T> {
   public %1$s apply(%3$s);
 }
 '''
 
 const            = private static final %1$s %2$s = %3$s;
 
-function         = private static final %1$s %2$s(%3$s) {
+function         = private static final <T> %1$s %2$s(%3$s) {
 return           = return %s;
 
 cast             = (%s)(%s)
@@ -56,7 +58,7 @@ else if          = else if(%s) {
 while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
-#default          = default : %s
+#default         = default : %s
 
 lambda           = (%s) -> %s
 
@@ -89,6 +91,19 @@ static boolean[] B256(String s) {
 }
 '''
 
+def initMemo = '''
+@SuppressWarnings({"unchecked"})
+private static final <T> boolean initMemo(NezParserContext<T> px) {
+  int cnt = 0;
+  px.memos = (MemoEntry<T>[])new MemoEntry[257];
+  while(cnt < 257) {
+    px.memos[cnt] = new MemoEntry();
+    cnt = cnt + 1;
+  }
+  return true;
+}
+'''
+
 def bitis = '''
 private final static boolean bitis(int[] bits, int n) {
 	return (bits[n / 32] & (1 << (n % 32))) != 0;
@@ -98,7 +113,7 @@ private final static boolean bitis(int[] bits, int n) {
 def extract = '''
 private static final byte[] emptyValue = new byte[0];
 
-private static byte[] extract(NezParserContext px, int ppos) {
+private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
   if(px.pos == ppos) {
     return emptyValue;
   }
@@ -109,7 +124,7 @@ private static byte[] extract(NezParserContext px, int ppos) {
 '''
 
 def matchBytes = '''
-private static boolean matchBytes(NezParserContext px, byte[] t, int length) {
+private static <T> boolean matchBytes(NezParserContext<T> px, byte[] t, int length) {
   if (px.pos + length <= px.length) {
     for (int i = 0; i < length; i++) {
       if (t[i] != px.inputs[px.pos + i]) {
@@ -163,9 +178,9 @@ ast = '''
 '''
 
 exports = '''
-  public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
+  public static <T> T parse(String s, TreeFunc<T> newFunc, TreeSetFunc<T> setFunc) throws IOException {
     byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
-    NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
+    NezParserContext<T> px = new NezParserContext<>(inputs, inputs.length-1, new TreeLog<>(null), newFunc, setFunc);
     initMemo(px);
     if(!e0(px)) {
     	System.err.printf("syntax error at %d\n", px.head_pos);
@@ -176,13 +191,13 @@ exports = '''
 
 main = '''
   public static Object parse(String s) throws IOException {
-    TreeFunc f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
+    TreeFunc<SimpleTree> f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
       if (size == 0) {
         return new SimpleTree(tag, new String(inputs, pos, epos - pos));
       }
       return new SimpleTree(tag, new SimpleTree[size]);
     };
-    TreeSetFunc f2 = (Object parent, int n, String label, Object child) -> {
+    TreeSetFunc<SimpleTree> f2 = (SimpleTree parent, int n, String label, SimpleTree child) -> {
       SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
       childs[n] = new SimpleTree(label, child);
       return parent;

@@ -166,7 +166,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 			if (this.isDefined("I" + n)) {
 				return this.s("I" + n);
 			} else {
-				return this.emitNull();
+				return this.emitNull(null);
 			}
 		}
 		return this.V(f);
@@ -241,7 +241,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	protected String emitNull() {
+	protected String emitNull(String name) {
 		return this.s("null");
 	}
 
@@ -374,7 +374,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 		if (s != null) {
 			return this.vString(Objects.toString(s));
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	@Override
@@ -382,7 +382,7 @@ public class HaskellParserGenerator extends ParserSourceGenerator {
 		if (s != null) {
 			return this.vString(Objects.toString(s));
 		}
-		return this.emitNull();
+		return this.emitNull(null);
 	}
 
 	@Override

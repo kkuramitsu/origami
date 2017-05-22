@@ -7,7 +7,6 @@ extension          = c
 
 Bool               = int
 Byte               = unsigned char
-Byte[]             = unsigned char *
 Int                = long
 Int32              = int
 Int64              = unsigned long long int
@@ -17,7 +16,6 @@ Tree               = void *
 String             = const char *
 
 Tpx                = struct NezParserContext *
-Tpos               = unsigned char *
 TtreeLog           = struct TreeLog *
 Tstate             = struct State *
 Tm                 = struct MemoEntry *
@@ -52,7 +50,7 @@ setter           = %s->%s = %s;
 
 #alen            = strlen(%s)
 aindex           = %s[%s]
-anew             = (%1$s *)_malloc(sizeof(%1$s) * %2$s)
+anew             = (struct %1$s *)_malloc(sizeof(struct %1$s) * %2$s)
 
 cast             = (%s)(%s)
 
@@ -65,7 +63,7 @@ else if          = else if(%s) {
 while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
-default          = default : %s
+#default          = default : %s
 
 #varprefix        = _
 #funcprefix       = _
@@ -94,7 +92,7 @@ struct NezParserContext;  // avoid referencing
 
 def next2 = '''
 static int next2(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 2;
   return c1[0] == c2[0] && c1[1] == c2[1];
 }
@@ -102,7 +100,7 @@ static int next2(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next3 = '''
 static int next3(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 3;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2];
 }
@@ -110,7 +108,7 @@ static int next3(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next4 = '''
 static int next4(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 4;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3];
 }
@@ -118,7 +116,7 @@ static int next4(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next5 = '''
 static int next5(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 5;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4];
 }
@@ -126,7 +124,7 @@ static int next5(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next6 = '''
 static int next6(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 6;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5];
 }
@@ -134,7 +132,7 @@ static int next6(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next7 = '''
 static int next7(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 7;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5] && c1[6] == c2[6];
 }
@@ -142,7 +140,7 @@ static int next7(struct NezParserContext *px, const $|Byte[]|  c2) {
 
 def next8 = '''
 static int next8(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->pos;
+  $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 8;
   return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5] && c1[6] == c2[6] && c1[7] == c2[7];
 }
@@ -161,33 +159,14 @@ static struct MemoEntry * newMemos(int size) {
 '''
 
 def longkey = '''
-static unsigned long long int longkey($|Byte[]|  pos, int memoPoint) {
-  $|Int64| key = ($|Int64|)pos;
-  return key * MEMOSIZE + memoPoint;
+static unsigned long long int longkey($|Int64| pos, int memoPoint) {
+  return pos * MEMOSIZE + memoPoint;
 }
 '''
 
 def getMemo = '''
 static struct MemoEntry* getMemo(struct NezParserContext* px, $|Int64| key) {
   return px->memos + (($|Int64|)(key % MEMOS));
-}
-'''
-
-def getbyte = '''
-static inline unsigned char getbyte(struct NezParserContext* px) {
-  return *(px->pos);
-}
-'''
-
-def nextbyte = '''
-static inline unsigned char nextbyte(struct NezParserContext* px) {
-  return *(px->pos++);
-}
-'''
-
-def neof = '''
-static inline int neof(struct NezParserContext* px) {
-  return px->pos < (px->inputs + px->length);
 }
 '''
 
@@ -199,14 +178,14 @@ static inline int bitis(const int *bits, size_t n)
 '''
 
 def extract = '''
-static $|Tpos| extract(struct NezParserContext *px, $|Tpos| pos) {
-  return pos;
+static $|Tpos| extract(struct NezParserContext *px, long pos) {
+  return px->inputs + pos;
 }
 '''
 
 def nextN = '''
 static int nextN(struct NezParserContext *px, const void *text, size_t len) {
-  if (px->pos + len < px->inputs + px->length && memcmp(px->pos, text, len) == 0) {
+  if (px->pos + len < px->length && memcmp(px->inputs + px->pos, text, len) == 0) {
     px->pos += len;
     return 1;
   }
@@ -222,13 +201,13 @@ typedef struct Tree {
   void      *value;
 } Tree;
 
-static void *Tree_new($|Symbol| tag, $|Byte[]|  inputs, $|Tpos| pos, $|Tpos| epos, $|Int| nsubs)
+static void *Tree_new($|Symbol| tag, $|Byte[]| inputs, $|Int| pos, $|Int| epos, $|Int| nsubs)
 {
   Tree *t = (Tree*)_malloc(sizeof(struct Tree));
   t->key  = tag;
   if(nsubs == 0) {
-    $|Byte[]|  p = pos == NULL ? inputs : pos;
-    t->size = (int)(-(epos-p));
+    $|Byte[]|  p = inputs + pos;
+    t->size = (int)(-(epos-pos));
     t->value = (void*)p;
   }
   else {
@@ -316,8 +295,7 @@ static void NezParserContext_free(struct NezParserContext *px)
 void *Nez_parse(const char *inputs, TreeFunc fnew, TreeSetFunc fset)
 {
   struct NezParserContext *px = NezParserContext(
-    ($|Byte[]|)inputs, strlen(inputs), 
-    ($|Byte[]|)inputs, ($|Byte[]|)inputs, 
+    ($|Byte[]|)inputs, strlen(inputs), 0, 0, 
     NULL, TreeLog(0, 0, NULL, NULL, NULL), 
     fnew, fset, NULL, newMemos(MEMOS)
   );

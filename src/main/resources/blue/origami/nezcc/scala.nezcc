@@ -1,0 +1,269 @@
+# nezcc file
+
+extension          = scala
+
+# type
+
+Bool               = Boolean
+Byte               = Byte
+Int                = Int
+Int32              = Int
+Int64              = Long
+Array              = Array[%s]
+Symbol             = Symbol
+Tree               = T
+String             = String
+
+TreeFunc           = ($|Symbol|, Array[Byte], Int, Int, Int) => T
+TreeSetFunc        = (T, Int, $|Symbol|, T) => T
+ParserFunc         = (NezParserContext[T]) => Boolean
+
+unsigned           = %s & 0xff
+keyindex           = (%s).toInt
+
+typeparam          = %s[T]
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = 
+
+module           = object $|base| {
+struct           = class %s[T](%s) {
+record           = var %2$s: %1$s
+records          = ,
+new              = new %s
+
+#functype         = 
+
+const            = private val %2$s: %1$s = %3$s
+
+#function         = private val %2$s = (%3$s) => {
+function         = private def %2$s[T](%3$s): %1$s = {
+param            = %2$s: %1$s
+return           = %s
+
+#cast             = (%s)(%s)
+
+alen             = %s.length
+aindex           = %s(%s)
+anew             = new %s[%s]
+
+//apply            = %s
+funcref          = (p: NezParserContext[T]) => %s(p)
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = %s match {
+case             = case %s => %s
+default          = case _ => %s
+
+lambda           = (%s: NezParserContext[T]) => (%s):Boolean
+
+base64           = B("%s")
+bools            = B256("%s")
+
+ifexpr           = (if (%s) %s else %s)
+
+val              = var %2$s: %1$s = %3$s
+var              = var %2$s: %1$s = %3$s
+assign           = %s = %s
+
+array            = Array(
+arrays           = ,
+end array        = )
+
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.Objects;
+//import java.io.*;
+'''
+
+libs = '''
+  def B(s: String): Array[Byte] = Base64.getDecoder.decode(s.getBytes)
+
+  def B256(s: String): Array[Boolean] = {
+    val b: Array[Boolean] = Array.ofDim[Boolean](256)
+    for (i <- 0 until s.length if s.charAt(i) == 'T' || s.charAt(i) == '1') {
+      b(i) = true
+    }
+    b
+  }
+'''
+
+def newMemos = '''
+  private def newMemos[T](size: Int) = {
+    var cnt: Int = 0
+    var memos = Array.ofDim[MemoEntry](size).asInstanceOf[Array[MemoEntry[T]]]
+    while (cnt < size) {
+      px.memos(cnt) = new MemoEntry()
+      cnt = cnt + 1
+    }
+    memos
+  }
+'''
+
+def bitis = '''
+  private def bitis(bits: Array[Int], n: Int): Boolean =
+    (bits(n / 32) & (1 << (n % 32))) != 0
+'''
+
+def extract = '''
+private static final byte[] emptyValue = new byte[0];
+
+private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
+  if(px.pos == ppos) {
+    return emptyValue;
+  }
+  byte[] b = new byte[px.pos - ppos];
+  System.arraycopy(px.inputs, ppos, b, 0, b.length);
+  return b;
+}
+'''
+
+def matchBytes = '''
+  private def nextN[T](px: NezParserContext[T],
+                            t: Array[Byte],
+                            length: Int): Boolean = {
+    if (px.pos + length <= px.length) {
+      for (i <- 0 until length if t(i) != px.inputs(px.pos + i)) {
+        false
+      }
+      px.pos += length
+      true
+    }
+    false
+  }
+'''
+
+ast = '''
+  class SimpleTree(var key: String, var value: AnyRef) {
+
+    override def toString(): String = {
+      val sb: StringBuilder = new StringBuilder()
+      this.strOut(sb)
+      sb.toString
+    }
+
+    private def strOut(sb: StringBuilder): Unit = {
+      sb.append("[#")
+      sb.append(if (this.key == null) "" else this.key)
+      if (this.value.isInstanceOf[Array[SimpleTree]]) {
+        val sub: Array[SimpleTree] = this.value.asInstanceOf[Array[SimpleTree]]
+        for (child <- sub) {
+          sb.append(" ")
+          if (child.key != null) {
+            sb.append("$" + child.key + "=")
+          }
+          child.value.asInstanceOf[SimpleTree].strOut(sb)
+        }
+      } else {
+        sb.append(" '")
+        sb.append(this.value)
+        sb.append("'")
+      }
+      sb.append("]")
+    }
+
+  }
+'''
+
+exports2 = '''
+  def parse[T](s: String, newFunc: TreeFunc[T], setFunc: TreeSetFunc[T]): T = {
+    val inputs: Array[Byte] = (s + "\0").getBytes(Charset.forName("UTF-8"))
+    val px: NezParserContext[T] = new NezParserContext[T](inputs,
+                                                          inputs.length - 1,
+                                                          new TreeLog(null),
+                                                          newFunc,
+                                                          setFunc)
+    initMemo(px)
+    if (!e0(px)) {
+      System.err.printf("syntax error at %d\n", px.head_pos)
+    }
+
+    px.tree
+  }
+'''
+
+main2 = '''
+  def parse(s: String): AnyRef = {
+    val f: TreeFunc[SimpleTree] =
+      (tag: String, inputs: Array[Byte], pos: Int, epos: Int, size: Int) => {
+        if (size == 0) {
+          new SimpleTree(tag, new String(inputs, pos, epos - pos))
+        }
+        new SimpleTree(tag, Array.ofDim[SimpleTree](size))
+      }
+    val f2: TreeSetFunc[SimpleTree] =
+      (parent: SimpleTree, n: Int, label: String, child: SimpleTree) => {
+        var childs: Array[SimpleTree] =
+          parent.asInstanceOf[SimpleTree].value.asInstanceOf[Array[SimpleTree]]
+        childs(n) = new SimpleTree(label, child)
+        parent
+      }
+    parse(s, f, f2)
+  }
+  
+  def readInputs(a: String): String = {
+    val file: File = new File(a)
+    if (file.exists()) {
+      val sb: StringBuilder = new StringBuilder()
+      val br: BufferedReader = new BufferedReader(new FileReader(file))
+      var str: String = br.readLine()
+      while (str != null) {
+        sb.append(str)
+        sb.append("\n")
+        str = br.readLine()
+      }
+      br.close()
+      sb.toString
+    }
+    a
+  }
+
+  def main(args: Array[String]): Unit = {
+    for (a <- args) {
+      val s: String = readInputs(a)
+      val st: Long = System.nanoTime()
+      val t: AnyRef = parse(s)
+      val et: Long = System.nanoTime()
+      System.err.printf("%s %s %f[ms]: ",
+                        a,
+                        if (t != null) "OK" else "NG",
+                        (et - st) / 1000000.0)
+      System.out.print(t)
+      System.out.flush()
+      System.err.printf("\n")
+    }
+  }
+'''
+
+man2 = '''
+=============
+ QUICK START
+=============
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+'''
+

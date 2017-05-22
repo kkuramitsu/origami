@@ -61,8 +61,8 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	public void start(ParserGrammar g, ParserGenerator<B, C> pg) {
 		Production p = g.getStartProduction();
-		pg.declConst("int", "MEMOSIZE", -1, "" + g.getMemoPointSize());
-		pg.declConst("int", "MEMOS", -1, "" + (g.getMemoPointSize() * 64 + 1));
+		pg.declConst(pg.T("length"), "MEMOSIZE", -1, "" + g.getMemoPointSize());
+		pg.declConst(pg.T("length"), "MEMOS", -1, "" + (g.getMemoPointSize() * 64 + 1));
 		pg.log("memosize: %d", g.getMemoPointSize());
 		boolean isStateful = Stateful.isStateful(p);
 		pg.log("stateful: %s", isStateful);
@@ -134,9 +134,9 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		else if (e instanceof PAnd) {
 			inline = this.emitCombiAnd(POS, e, pg);
 		}
-		if (inline != null) {
-			return inline;
-		}
+		// if (inline != null) {
+		// return inline;
+		// }
 		return this.match(e, pg, !this.isInline(e, pg));
 	}
 
@@ -148,9 +148,9 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
 			return true;
 		}
-		if (pg.useFuncMap() && e instanceof PDispatch) {
-			return true;
-		}
+		// if (pg.useFuncMap() && e instanceof PDispatch) {
+		// return true;
+		// }
 		return false;
 	}
 

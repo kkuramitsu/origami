@@ -144,7 +144,7 @@ public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> 
 	}
 
 	@Override
-	protected OCode emitNull() {
+	protected OCode emitNull(String name) {
 		// return new();
 		return null;
 	}
