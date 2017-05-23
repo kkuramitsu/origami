@@ -7,21 +7,16 @@ extension          = scala
 Bool               = Boolean
 Byte               = Byte
 Int                = Int
-Int32              = Int
-Int64              = Long
-Array              = Array[%s]
-Symbol             = Symbol
-Tree               = T
 String             = String
+Array              = Array[%s]
+Int64              = Long
+Tree               = T
+typeparam          = %s[%s]
 
-TreeFunc           = ($|Symbol|, Array[Byte], Int, Int, Int) => T
-TreeSetFunc        = (T, Int, $|Symbol|, T) => T
-ParserFunc         = (NezParserContext[T]) => Boolean
+#Symbol             = String
 
-unsigned           = %s & 0xff
-keyindex           = (%s).toInt
-
-typeparam          = %s[T]
+Byte->Int          = %s & 0xff
+Int64->Int         = (%s).toInt
 
 # syntax
 
@@ -31,12 +26,14 @@ end              = }
 ;                = 
 
 module           = object $|base| {
+
 struct           = class %s[T](%s) {
 record           = var %2$s: %1$s
 records          = ,
 new              = new %s
 
-#functype         = 
+functype         = (%3$s) => %1$s
+functypeparam    = %1$s
 
 const            = private val %2$s: %1$s = %3$s
 

@@ -7,6 +7,7 @@ extension          = c
 
 Bool               = int
 Byte               = unsigned char
+Byte[]             = unsigned char *
 Int                = long
 Int32              = int
 Int64              = unsigned long long int
@@ -23,7 +24,7 @@ Tmemos             = struct MemoEntry *
 Ts                 = const int *
 
 # unsigned         = %s & 0xff
-keyindex           = (size_t)(%s)
+Int64->Int         = (size_t)(%s)
 
 # syntax
 

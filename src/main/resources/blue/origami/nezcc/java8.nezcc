@@ -4,18 +4,16 @@ extension          = java
 
 # type
 
+String             = String
 Bool               = boolean
 Byte               = byte
 Int                = int
-Int32              = int
 Int64              = long
 Array              = %s[]
-Symbol             = String
 Tree               = Object
-String             = String
 
-unsigned           = %s & 0xff
-keyindex           = ($|Int|)(%s)
+Byte->Int          = %s & 0xff
+Int64->Int         = ($|Int|)(%s)
 
 # syntax
 
@@ -23,6 +21,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+assert           = assert(%s);
 
 module           = final class $|base| {
 struct           = static class %s {

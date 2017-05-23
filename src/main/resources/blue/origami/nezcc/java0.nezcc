@@ -7,17 +7,27 @@ extension          = java
 Bool               = boolean
 Byte               = byte
 Int                = int
-Int32              = int
 Int64              = long
 Array              = %s[]
-Symbol             = String
 Tree               = T
 String             = String
 
-unsigned           = %s & 0xff
-keyindex           = ($|Int|)(%s)
+typeparam          = %s<%s>
 
-typeparam          = %s<T>
+Byte->Int          = %s & 0xff
+Int64->Int         = (int)(%s)
+String->Byte[]     = %s.getBytes(Charset.forName("UTF-8"))
+Byte[]->String     = new String(%s)
+
+Array.new          = %s[%s]
+Array.size         = %s.length
+Array.get          = %s[%s]
+Array.slice        = %s[%s:%s]
+
+List               = ArrayList<%s>
+List.new           = new ArrayList<>()
+List.get           = %s.get(%s)
+List.add           = %s.add(%s)
 
 # syntax
 
@@ -44,12 +54,6 @@ const            = private static final %1$s %2$s = %3$s;
 function         = private static final <T> %1$s %2$s(%3$s) {
 return           = return %s;
 
-cast             = (%s)(%s)
-
-alen             = %s.length
-aindex           = %s[%s]
-anew             = new %s[%s]
-
 apply            = %s.apply
 funcref          = $|base|::%s
 
@@ -72,6 +76,7 @@ imports = '''
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.ArrayList;
 import java.io.*;
 '''
 
@@ -88,19 +93,6 @@ static boolean[] B256(String s) {
     }
   }
   return b;
-}
-'''
-
-def initMemo = '''
-@SuppressWarnings({"unchecked"})
-private static final <T> boolean initMemo(NezParserContext<T> px) {
-  int cnt = 0;
-  px.memos = (MemoEntry<T>[])new MemoEntry[257];
-  while(cnt < 257) {
-    px.memos[cnt] = new MemoEntry();
-    cnt = cnt + 1;
-  }
-  return true;
 }
 '''
 
@@ -123,8 +115,8 @@ private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
 }
 '''
 
-def matchBytes = '''
-private static <T> boolean matchBytes(NezParserContext<T> px, byte[] t, int length) {
+def nextN = '''
+private static <T> boolean nextN(NezParserContext<T> px, byte[] t, int length) {
   if (px.pos + length <= px.length) {
     for (int i = 0; i < length; i++) {
       if (t[i] != px.inputs[px.pos + i]) {
@@ -138,7 +130,20 @@ private static <T> boolean matchBytes(NezParserContext<T> px, byte[] t, int leng
 }
 '''
 
-ast = '''
+exports2 = '''
+  public static <T> T parse(String s, TreeFunc<T> newFunc, TreeSetFunc<T> setFunc) throws IOException {
+    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
+    NezParserContext<T> px = new NezParserContext<>(inputs, inputs.length-1, new TreeLog<>(null), newFunc, setFunc);
+    initMemo(px);
+    if(!e0(px)) {
+    	System.err.printf("syntax error at %d\n", px.head_pos);
+    };
+    return px.tree;
+  }
+'''
+
+main = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
   public static class SimpleTree {
     public String key;
     public Object value;
@@ -175,21 +180,7 @@ ast = '''
       sb.append("]");
     }
   }
-'''
 
-exports = '''
-  public static <T> T parse(String s, TreeFunc<T> newFunc, TreeSetFunc<T> setFunc) throws IOException {
-    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
-    NezParserContext<T> px = new NezParserContext<>(inputs, inputs.length-1, new TreeLog<>(null), newFunc, setFunc);
-    initMemo(px);
-    if(!e0(px)) {
-    	System.err.printf("syntax error at %d\n", px.head_pos);
-    };
-    return px.tree;
-  }
-'''
-
-main = '''
   public static Object parse(String s) throws IOException {
     TreeFunc<SimpleTree> f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
       if (size == 0) {

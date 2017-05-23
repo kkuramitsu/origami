@@ -270,43 +270,6 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			pg.makeLib("newMemos");
 		});
 
-		this.defineLib("parse", () -> {
-			pg.makeLib("newMemos");
-			this.defFunc(pg, this.T("tree"), "parse", "text", "newFunc", "setFunc", () -> {
-				B block = pg.beginBlock();
-				pg.emitVarDecl(block, false, "inputs", pg.emitFunc("toBytes", pg.emitInputString(pg.V("text"))));
-				if (this.isDefined("zero")) {
-					pg.emitVarDecl(block, false, "length",
-							pg.emitOp(pg.emitArrayLength(pg.V("inputs")), "-", pg.vInt(1)));
-				} else {
-					pg.emitVarDecl(block, false, "length", pg.emitArrayLength(pg.V("inputs")));
-				}
-				// New
-				ArrayList<C> args = new ArrayList<>();
-				args.add(pg.V("inputs"));
-				args.add(pg.V("length"));
-				args.add(pg.vInt(0));
-				args.add(pg.vInt(0));
-				args.add(pg.emitNull("tree"));
-				args.add(this.emitNewTreeLog(pg, null, null, null, null));
-				args.add(pg.IfNull(pg.V("newFunc"), pg.emitFuncRef("newTree")));
-				if (!pg.isFunctional()) {
-					this.makeLib("TreeSetFunc");
-					args.add(pg.IfNull(pg.V("setFunc"), pg.emitFuncRef("setTree")));
-				}
-				// if (pg.isStateful()) {
-				args.add(pg.emitNull("state"));
-				// }
-				// if (g.getMemoPointSize() > 0) {
-				args.add(pg.emitFunc("newMemos", pg.vInt(g.getMemoPointSize() * 64 + 1)));
-				// }
-				pg.emitVarDecl(block, false, "px", pg.emitFunc("NezParserContext", args));
-				pg.emitStmt(block, pg.emitReturn(
-						pg.emitIf(pg.emitNonTerminal("e0"), pg.emitGetter("px.tree"), pg.emitNull("tree"))));
-				return (pg.endBlock(block));
-			});
-		});
-
 	}
 
 	C makeOptionInlineCall(ParserGenerator<B, C> pg, Expression e) {
@@ -623,20 +586,23 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		this.defineLib("newMemos", () -> {
 			this.defFunc(pg, this.T("memos"), "newMemos", "length", () -> {
 				B block = pg.beginBlock();
-				if (memoSize > 0) {
-					pg.emitVarDecl(block, false, "cnt", pg.vInt(0));
-					pg.emitVarDecl(block, true, "memos", pg.emitNewArray(this.T("m"), pg.V("length")));
-					/* while */
-					C loopCond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
-					pg.emitWhileStmt(block, loopCond, () -> {
-						B block2 = pg.beginBlock();
+				pg.emitVarDecl(block, true, "memos", pg.emitNewArray(this.T("m"), pg.V("length")));
+				pg.emitVarDecl(block, false, "cnt", pg.vInt(0));
+				/* while */
+				C loopCond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
+				pg.emitWhileStmt(block, loopCond, () -> {
+					B block2 = pg.beginBlock();
+					C right = pg.emitFunc("MemoEntry", pg.vInt(-1), pg.vInt(0), pg.vInt(0), pg.emitNull("tree"),
+							pg.emitNull("state"));
+					if (!this.isDefined("List")) {
 						C left = pg.emitArrayIndex(pg.V("memos"), pg.V("cnt"));
-						pg.emitStmt(block2, pg.emitAssign2(left, pg.emitFunc("MemoEntry", pg.vInt(-1), pg.vInt(0),
-								pg.vInt(0), pg.emitNull("tree"), pg.emitNull("state"))));
-						pg.emitStmt(block2, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+", pg.vInt(1))));
-						return pg.endBlock(block2);
-					});
-				}
+						pg.emitStmt(block2, pg.emitAssign2(left, right));
+					} else {
+						pg.emitStmt(block2, pg.emitFunc("List.add", pg.V("memos"), right));
+					}
+					pg.emitStmt(block2, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+", pg.vInt(1))));
+					return pg.endBlock(block2);
+				});
 				pg.emitStmt(block, pg.emitReturn(pg.V("memos")));
 				return (pg.endBlock(block));
 			});
@@ -652,10 +618,8 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		this.defineLib("getMemo", () -> {
 			this.defFunc(pg, pg.T("m"), "getMemo", "px", "key", () -> {
 				C index = pg.emitOp(pg.V("key"), "%", pg.vInt(memoSize * window + 1));
-				if (this.isDefined("keyindex")) {
-					index = pg.emitFunc("keyindex", index);
-				} else {
-					index = pg.emitCast("cnt", index);
+				if (this.isDefined("Int64->Int")) {
+					index = pg.emitFunc("Int64->Int", index);
 				}
 				C m = pg.emitArrayIndex(pg.emitGetter("px.memos"), index);
 				return (m);
@@ -855,18 +819,58 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	// Tree
 
 	void loadMain(ParserGenerator<B, C> pg) {
-		this.defineLib("newTree", () -> {
-			this.defFunc(pg, this.T("tree"), "newTree", "tag", "inputs", "pos", "epos", "cnt", () -> {
+		this.defineLib("newSampleTree", () -> {
+			this.defFunc(pg, this.T("tree"), "newSampleTree", "tag", "inputs", "pos", "epos", "cnt", () -> {
 				return pg.emitIf(pg.emitOp(pg.V("cnt"), "==", pg.vInt(0)), //
 						pg.emitNewToken(pg.V("tag"), pg.V("inputs"), pg.V("pos"), pg.V("epos")), //
 						pg.emitNewTree(pg.V("tag"), pg.V("cnt")));
 			});
 		});
-		this.defineLib("setTree", () -> {
-			this.defFunc(pg, this.T("tree"), "setTree", "tree", "cnt", "label", "child", () -> {
+		this.defineLib("setSampleTree", () -> {
+			this.defFunc(pg, this.T("tree"), "setSampleTree", "tree", "cnt", "label", "child", () -> {
 				return pg.emitSetTree(pg.V("tree"), pg.V("cnt"), pg.V("label"), pg.V("child"));
 			});
 		});
+		this.defineLib("parse", () -> {
+			pg.makeLib("newSampleTree");
+			pg.makeLib("setSampleTree");
+			pg.makeLib("newMemos");
+
+			this.defFunc(pg, this.T("tree"), "parse", "text", "newFunc", "setFunc", () -> {
+				B block = pg.beginBlock();
+				pg.emitVarDecl(block, false, "inputs", pg.emitFunc("String->Byte[]", pg.emitInputString(pg.V("text"))));
+				if (this.isDefined("zero")) {
+					pg.emitVarDecl(block, false, "length",
+							pg.emitOp(pg.emitArrayLength(pg.V("inputs")), "-", pg.vInt(1)));
+				} else {
+					pg.emitVarDecl(block, false, "length", pg.emitArrayLength(pg.V("inputs")));
+				}
+				// New
+				ArrayList<C> args = new ArrayList<>();
+				args.add(pg.V("inputs"));
+				args.add(pg.V("length"));
+				args.add(pg.vInt(0));
+				args.add(pg.vInt(0));
+				args.add(pg.emitNull("tree"));
+				args.add(this.emitNewTreeLog(pg, null, null, null, null));
+				args.add(pg.IfNull(pg.V("newFunc"), pg.emitFuncRef("newSampleTree")));
+				if (!pg.isFunctional()) {
+					this.makeLib("TreeSetFunc");
+					args.add(pg.IfNull(pg.V("setFunc"), pg.emitFuncRef("setSampleTree")));
+				}
+				// if (pg.isStateful()) {
+				args.add(pg.emitNull("state"));
+				// }
+				// if (g.getMemoPointSize() > 0) {
+				args.add(pg.emitFunc("newMemos", pg.vInt(pg.grammar.getMemoPointSize() * 64 + 1)));
+				// }
+				pg.emitVarDecl(block, false, "px", pg.emitFunc("NezParserContext", args));
+				pg.emitStmt(block, pg.emitReturn(
+						pg.emitIf(pg.emitNonTerminal("e0"), pg.emitGetter("px.tree"), pg.emitNull("tree"))));
+				return (pg.endBlock(block));
+			});
+		});
+
 		this.defineLib("*", () -> {
 
 		});
