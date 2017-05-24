@@ -67,7 +67,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	}
 
 	@Override
-	protected void declFunc(String ret, String funcName, String[] params, Block<String> block) {
+	protected void declFunc(int acc, String ret, String funcName, String[] params, Block<String> block) {
 		this.writeSection(String.format("%s %s", this.formatSignature(ret, funcName, params), this.s("{")));
 		this.incIndent();
 		this.writeSection(this.formatFuncResult(block.block()));

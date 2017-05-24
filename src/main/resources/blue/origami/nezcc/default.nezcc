@@ -2,6 +2,20 @@
 
 # default syntax
 
+varname          = %s
+constname        = %s
+structname       = %s
+
+#Array.new          = %s[%s]
+#Array.size         = %s.length
+Array.get          = %s[%s]
+#Array.slice        = %s[%s:%s]
+
+#List               = ArrayList<%s>
+#List.new           = new ArrayList<>()
+List.get           = %s.get(%s)
+List.add           = %s.add(%s)
+
 getter           = %s.%s
 setter           = %s.%s = %s$|;|
 

@@ -220,13 +220,17 @@ abstract class CodeSection<C> {
 	}
 
 	protected String getConstName(String typeName, int arraySize, String typeLiteral) {
+		return this.getConstName(typeName, "c", arraySize, typeLiteral);
+	}
+
+	protected String getConstName(String typeName, String prefix, int arraySize, String typeLiteral) {
 		if (typeName == null) {
 			return typeLiteral;
 		}
 		String key = typeName + typeLiteral;
 		String constName = this.symbolMap.get(key);
 		if (constName == null) {
-			constName = "c" + this.symbolMap.size();
+			constName = prefix + this.symbolMap.size();
 			this.symbolMap.put(key, constName);
 			SourceSection body = this.body;
 			this.body = this.head;

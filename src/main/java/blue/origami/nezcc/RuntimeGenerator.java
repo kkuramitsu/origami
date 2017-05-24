@@ -100,7 +100,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, String ret, String funcName, String[] params, Block<C> block) {
-		pg.declFunc(ret, funcName, params, block);
+		pg.declFunc(0, ret, funcName, params, block);
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, String ret, String funcName, String a0, Block<C> block) {

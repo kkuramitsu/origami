@@ -50,7 +50,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract void declProtoType(String ret, String funcName, String[] params);
 
-	protected abstract void declFunc(String ret, String funcName, String[] params, Block<C> block);
+	public final int PUBLIC = 1;
+	public final int PARAMZ = 1 << 1;
+
+	protected abstract void declFunc(int acc, String ret, String funcName, String[] params, Block<C> block);
 
 	protected void declSymbolTables() {
 	}
@@ -224,23 +227,44 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected void declFunc(String ret, String funcName, Block<C> block) {
-		this.declFunc(ret, funcName, new String[0], block);
+		this.declFunc(0, ret, funcName, new String[0], block);
 	}
 
 	protected void declFunc(String ret, String funcName, String a0, Block<C> block) {
-		this.declFunc(ret, funcName, new String[] { a0 }, block);
+		this.declFunc(0, ret, funcName, new String[] { a0 }, block);
 	}
 
 	protected void declFunc(String ret, String funcName, String a0, String a1, Block<C> block) {
-		this.declFunc(ret, funcName, new String[] { a0, a1 }, block);
+		this.declFunc(0, ret, funcName, new String[] { a0, a1 }, block);
 	}
 
 	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, Block<C> block) {
-		this.declFunc(ret, funcName, new String[] { a0, a1, a2 }, block);
+		this.declFunc(0, ret, funcName, new String[] { a0, a1, a2 }, block);
 	}
 
 	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, String a3, Block<C> block) {
-		this.declFunc(ret, funcName, new String[] { a0, a1, a2, a3 }, block);
+		this.declFunc(0, ret, funcName, new String[] { a0, a1, a2, a3 }, block);
+	}
+
+	protected void declFunc(int acc, String ret, String funcName, Block<C> block) {
+		this.declFunc(acc, ret, funcName, new String[0], block);
+	}
+
+	protected void declFunc(int acc, String ret, String funcName, String a0, Block<C> block) {
+		this.declFunc(acc, ret, funcName, new String[] { a0 }, block);
+	}
+
+	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, Block<C> block) {
+		this.declFunc(acc, ret, funcName, new String[] { a0, a1 }, block);
+	}
+
+	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, String a2, Block<C> block) {
+		this.declFunc(acc, ret, funcName, new String[] { a0, a1, a2 }, block);
+	}
+
+	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, String a2, String a3,
+			Block<C> block) {
+		this.declFunc(acc, ret, funcName, new String[] { a0, a1, a2, a3 }, block);
 	}
 
 	protected final C emitFunc(String func) {

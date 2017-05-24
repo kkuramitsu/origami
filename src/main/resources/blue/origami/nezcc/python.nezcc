@@ -6,41 +6,27 @@ extension          = py
 
 Bool               = 
 Byte               = 
-Byte[]             = 
-Int32              = 
+Int                = 
 Int64              = 
 Array              = 
 Symbol             = 
 Tree               = 
-UInt8              = 
 
-# unsigned         = %s & 0xff
-
-# this.defineVariable("indexMap", "short[256]");
-# this.defineSymbol("bitis", "bitis");
 
 # syntax
 
 comment          = # %s
 ;                = 
-#module           = final class %s {
-#end module       = }
+#module          = final class %s {
+#end module      = }
 
 struct           = class %s :
 end struct       = 
 #field            = %s %s;
-constructor      = def __init__(self,%s=None):
+constructor      = def __init__(self,%s):
 end constructor  = 
 init             = self.%s = %s
 #new              = new %s
-
-#functype         = '''
-#public interface %2$s {
-#  public %1$s apply(%3$s);
-#}
-#'''
-#functypeparam    = %1$s %2$s
-#functypeparams   = ,
 
 const            = %2$s = %3$s
 
@@ -116,6 +102,20 @@ main = '''
 '''
 
 man = '''
+===================
+ QUICK INTEGRATION
+===================
+
+Just call $cmd$.parse() with an input text. You will get
+a key-value tree representation.
+
+   $ python3
+   >>> import $cmd$
+   >>> $cmd$.parse('input-text');
+   ...
+
+Customize TreeFunc and TreeSetFunc in the parse() functions.
+See $site$. 
 
 '''
 

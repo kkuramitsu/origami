@@ -66,7 +66,7 @@ public class JavaAsmParserGenerator extends ParserGenerator<List<OCode>, OCode> 
 	}
 
 	@Override
-	protected void declFunc(String ret, String funcName, String[] params, Block<OCode> block) {
+	protected void declFunc(int acc, String ret, String funcName, String[] params, Block<OCode> block) {
 		OClassDecl cdecl = this.env.getClassLoader().currentClassDecl(this.env);
 		OCode body = block.block();
 		// cdecl.addMethod(anno, ret, name, paramNames, paramTypes, exceptions,

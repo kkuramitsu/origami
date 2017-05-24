@@ -12,8 +12,6 @@ Array              = %s[]
 Tree               = T
 String             = String
 
-typeparam          = %s<%s>
-
 Byte->Int          = %s & 0xff
 Int64->Int         = (int)(%s)
 String->Byte[]     = %s.getBytes(Charset.forName("UTF-8"))
@@ -37,6 +35,9 @@ end              = }
 ;                = ;
 
 module           = final class $|base| {
+
+structname       = %s<T>
+
 struct           = static class %s <T> {
 field            = %s %s;
 constructor      = %s(%s) {
