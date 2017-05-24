@@ -1,0 +1,69 @@
+# nezcc file
+
+extension          = rs
+
+# type
+
+Bool               = bool
+Byte               = &str
+Int                = i32
+Int32              = i32
+Int64              = i64
+Array              = %s
+Symbol             = &str
+Tree               = Object
+String             = &str
+
+unsigned           = 
+keyindex           = (%s) as $|Int|
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+
+module           = mod $|base| {
+struct           = stract %s {
+field            = %2$s: %1$s,
+malloc           = 
+
+functype         = '''
+fn %2$s {
+   %1$s apply!(%3$s);
+}
+'''
+functypeparam    = %2$s: %1$s
+functypeparams   = ,
+
+const            = let %2$s: %1$s = %3$s;
+
+function         = fn %2$s(%3$s) -> %1$s {
+param             = %2$s: %1$s
+params            = ,
+return           = return %s;
+
+cast             = (@@@@%s)(%s)
+
+alen             = %s.len()
+aindex           = %s[%s]
+anew             = %s
+
+apply            = apply!(%s)
+funcref          =
+
+if               = if %s {
+else if          = else if %s {
+while            = while %s {
+switch           = match %s {
+case             = %s => %s
+#default          = _ => %s
+
+lambda           = (%s) -> %s
+
+
+#varprefix        = _
+#funcprefix       = _
+
+

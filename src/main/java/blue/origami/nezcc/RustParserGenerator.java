@@ -1,14 +1,13 @@
 package blue.origami.nezcc;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 public class RustParserGenerator extends ParserSourceGenerator {
 
 	@Override
 	protected void initSymbols() {
-		this.useUnsignedByte(true);
+
 		this.defineSymbol("\t", "  ");
 		this.defineSymbol("null", "ptr::null()");
 		this.defineSymbol("true", "true");
@@ -24,7 +23,7 @@ public class RustParserGenerator extends ParserSourceGenerator {
 		this.defineVariable("px", "struct NezParserContext*");
 		this.defineVariable("inputs", "const unsigned char*");
 		this.defineVariable("length", "size_t");
-		this.usePointer(true);
+
 		this.defineVariable("pos", "const unsigned char*");
 		this.defineVariable("treeLog", "struct TreeLog*");
 		this.defineVariable("tree", "void*");
@@ -75,25 +74,6 @@ public class RustParserGenerator extends ParserSourceGenerator {
 	}
 
 	@Override
-	void makeMatchFunc(ParserGenerator<StringBuilder, String> pg) {
-		/* match(px, ch) */
-		this.defFunc(pg, this.T("matched"), "match_", "px", "c", () -> {
-			String expr = pg.emitFunc("nextbyte", pg.V("px"));
-			expr = pg.emitOp(expr, "==", pg.V("c"));
-			return (expr);
-		});
-		/* backpos(px, pos) */
-		this.defFunc(pg, this.T("pos"), "backpos", "px", "pos", () -> {
-			StringBuilder block = pg.beginBlock();
-			pg.emitIfStmt(block, pg.emitOp(pg.emitGetter("px.head_pos"), "<", pg.V("pos")), false, () -> {
-				return pg.emitSetter("px.head_pos", pg.V("pos"));
-			});
-			pg.Return(block, pg.V("pos"));
-			return pg.endBlock(block);
-		});
-	}
-
-	@Override
 	protected void writeHeader() throws IOException {
 		this.open(this.getFileBaseName() + ".rs");
 	}
@@ -120,22 +100,6 @@ public class RustParserGenerator extends ParserSourceGenerator {
 			return String.format("let %s %s = %s%s", mut, this.s(name), expr, this.s(";"));
 		}
 		return String.format("let %s %s: %s = %s%s", mut, this.s(name), t, expr, this.s(";"));
-	}
-
-	@Override
-	protected void declConst(String typeName, String constName, String literal) {
-		String decl = "";
-		if (this.isDefined("const")) {
-			decl = this.s("const") + " ";
-		}
-		if (typeName == null || this.useDynamicTyping()) {
-			this.writeSection(String.format("%s%s = %s%s", decl, constName, literal, this.s(";")));
-		} else {
-			constName = this.arrayName(typeName, constName);
-			typeName = this.arrayType(typeName, constName);
-			this.writeSection(
-					String.format("%s%s = %s%s", decl, this.formatParam(typeName, constName), literal, this.s(";")));
-		}
 	}
 
 	@Override
@@ -251,15 +215,6 @@ public class RustParserGenerator extends ParserSourceGenerator {
 		this.emitStmt(block, this.s("}"));
 		this.Return(block, this.emitFail());
 		return this.endBlock(block);
-	}
-
-	@Override
-	protected String vValue(String s) {
-		if (s != null) {
-			byte[] buf = s.getBytes(Charset.forName("UTF-8"));
-			return this.getConstName(this.T("indexMap"), this.quote(buf));
-		}
-		return this.emitNull();
 	}
 
 }
