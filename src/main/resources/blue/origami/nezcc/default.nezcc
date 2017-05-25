@@ -30,7 +30,7 @@ args             = ,
 
 true             = true
 false            = false
-null             = null
+#null             = null
 
 val              = %1$s %2$s = %3$s$|;|
 var              = $|val|

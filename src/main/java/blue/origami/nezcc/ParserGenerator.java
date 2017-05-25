@@ -68,14 +68,14 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C endBlock(B block);
 
-	protected abstract C emitVarDecl(boolean mutable, String name, C expr);
+	protected abstract C emitVarDecl(boolean mutable, String name, C expr, C expr2);
 
 	protected abstract C emitIfStmt(C expr, boolean elseIf, Block<C> stmt);
 
 	protected abstract C emitWhileStmt(C expr, Block<C> stmt);
 
 	protected final void emitVarDecl(B block, boolean mutable, String name, C expr) {
-		this.emitStmt(block, this.emitVarDecl(mutable, name, expr));
+		this.emitStmt(block, this.emitVarDecl(mutable, name, expr, null));
 	}
 
 	protected final void emitIfStmt(B block, C expr, boolean elseIf, Block<C> stmt) {
@@ -665,44 +665,6 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		ParserGeneratorVisitor<B, C> pgv = new ParserGeneratorVisitor<>();
 		this.grammar = g;
 		this.initSymbols();
-		this.defineVariable("label", this.s("Symbol"));
-		this.defineVariable("tag", this.s("Symbol"));
-		this.defineVariable("ntag", this.T("cnt"));
-		this.defineVariable("nlabel", this.T("cnt"));
-		this.defineVariable("value", this.T("inputs"));
-		this.defineVariable("nvalue", this.T("cnt"));
-		this.defineVariable("pos", this.T("cnt"));
-		this.defineVariable("head_pos", this.T("pos"));
-		this.defineVariable("shift", this.T("cnt"));
-		this.defineVariable("length", this.T("cnt"));
-		this.defineVariable("valuelen", this.T("length"));
-
-		this.defineVariable("memoPoint", this.T("cnt"));
-		this.defineVariable("result", this.T("cnt"));
-		this.defineVariable("prevLog", this.T("treeLog"));
-		this.defineVariable("nextLog", this.T("treeLog"));
-		this.defineVariable("prevState", this.T("state"));
-		this.defineVariable("nextState", this.T("state"));
-		// this.defineVariable("uLog", this.T("treeLog"));
-		this.defineVariable("uState", this.T("state"));
-		this.defineVariable("epos", this.T("pos"));
-		this.defineVariable("child", this.T("tree"));
-		this.defineVariable("f2", this.T("f"));
-		this.defineSymbol("Intag", "0");
-		this.defineSymbol("Ikey", "-1");
-		this.defineSymbol("Icnt", "0");
-		this.defineSymbol("Iop", "0");
-		this.defineSymbol("Ipos", "0");
-		this.defineSymbol("Ihead_pos", "0");
-		this.defineSymbol("Iresult", "0");
-
-		this.defineVariable("indexMap", "array");
-		this.defineVariable("byteSet", "array");
-		this.defineVariable("s", this.T("byteSet"));
-		// this.defineVariable("funcMap", "array");
-
-		this.defineSymbol("{[", "{");
-		this.defineSymbol("]}", "}");
 
 		this.loadContext(this, g);
 		this.loadTreeLog(this);

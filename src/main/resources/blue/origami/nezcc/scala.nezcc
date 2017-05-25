@@ -11,9 +11,23 @@ String             = String
 Array              = Array[%s]
 Int64              = Long
 Tree               = T
-typeparam          = %s[%s]
-
 #Symbol             = String
+
+structname         = %s[T]
+
+Byte[].slice      = %s.slice(%s, %s)
+
+Array.size        = %s.length
+Array.get         = %s(%s)
+Array.new         = new Array[%s](%s)
+
+
+Option             = Option[%s]
+Some               = Some(%s)
+None               = None
+Option.get         = %s.get
+Option.isNone      = %s.isEmpty
+
 
 Byte->Int          = %s & 0xff
 Int64->Int         = (%s).toInt
@@ -40,13 +54,9 @@ const            = private val %2$s: %1$s = %3$s
 #function         = private val %2$s = (%3$s) => {
 function         = private def %2$s[T](%3$s): %1$s = {
 param            = %2$s: %1$s
-return           = %s
+#return           = %s
 
 #cast             = (%s)(%s)
-
-alen             = %s.length
-aindex           = %s(%s)
-anew             = new %s[%s]
 
 //apply            = %s
 funcref          = (p: NezParserContext[T]) => %s(p)
@@ -65,14 +75,14 @@ bools            = B256("%s")
 
 ifexpr           = (if (%s) %s else %s)
 
-val              = var %2$s: %1$s = %3$s
+val              = val %2$s: %1$s = %3$s
 var              = var %2$s: %1$s = %3$s
+letin            = { val %2$s: %1$s = %3$s; %4$s }
 assign           = %s = %s
 
 array            = Array(
 arrays           = ,
 end array        = )
-
 
 #varprefix        = _
 #funcprefix       = _
@@ -96,7 +106,7 @@ libs = '''
   }
 '''
 
-def newMemos = '''
+def newMemos2 = '''
   private def newMemos[T](size: Int) = {
     var cnt: Int = 0
     var memos = Array.ofDim[MemoEntry](size).asInstanceOf[Array[MemoEntry[T]]]
@@ -108,12 +118,12 @@ def newMemos = '''
   }
 '''
 
-def bitis = '''
+def bitis2 = '''
   private def bitis(bits: Array[Int], n: Int): Boolean =
     (bits(n / 32) & (1 << (n % 32))) != 0
 '''
 
-def extract = '''
+def extract2 = '''
 private static final byte[] emptyValue = new byte[0];
 
 private static <T> byte[] extract(NezParserContext<T> px, int ppos) {

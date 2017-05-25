@@ -13,9 +13,11 @@ Array              = [%s]
 String             = String
 Tree               = a
 
+Option             = Maybe %s
 Some               = Just %s
 None               = Nothing
-None.isEmpty       = (isNothing %s)
+Option.get         = (fromJust %s)
+Option.isNone      = (isNothing %s)
 
 Int64->_int        = (fromIntegral %s)
 String->Byte[]     = pack %s
@@ -25,11 +27,6 @@ Array.new          = []
 Array.size         = (index %s)
 Array.get          = (index %s %s)
 Array.slice        = 
-
-List               = @
-List.new           = ()
-List.get           = %s->[%s]
-List.add           = push(%s,%s)
 
 # syntax
 
@@ -78,9 +75,9 @@ assign           = %s <- %s
 if               = if(%s) 
 else if          = else if(%s) 
 while            = while(%s) 
-#switch           = switch(%s) {
-#case             = case %s : %s
-#default          = default : %s
+#switch          = switch(%s) {
+#case            = case %s : %s
+#default         = default : %s
 
 and              = %s && %s
 or               = (%s) || (%s)

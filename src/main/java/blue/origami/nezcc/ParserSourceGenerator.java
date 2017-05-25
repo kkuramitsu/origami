@@ -165,7 +165,7 @@ public abstract class ParserSourceGenerator extends ParserGenerator<StringBuilde
 	}
 
 	@Override
-	protected String emitVarDecl(boolean mutable, String name, String expr) {
+	protected String emitVarDecl(boolean mutable, String name, String expr, String expr2) {
 		String t = this.T(name);
 		if (t == null) {
 			return String.format("%s = %s%s", this.s(name), expr, this.s(";"));
