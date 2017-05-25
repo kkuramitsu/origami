@@ -126,6 +126,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitSetter(C self, String name, C expr);
 
+	protected abstract C emitNew(String func, List<C> params);
+
 	protected abstract C emitFunc(String func, List<C> params);
 
 	protected abstract C emitApply(C func, List<C> params);
@@ -394,9 +396,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.emitOp(expr, "==", this.emitNull(null));
 	}
 
-	protected C emitIsNotNull(C expr) {
-		return this.emitOp(expr, "!=", this.emitNull(null));
-	}
+	// protected C emitIsNotNull(C expr) {
+	// return this.emitOp(expr, "!=", this.emitNull(null));
+	// }
 
 	protected C IfNull(C v, C v2) {
 		return this.emitIf(this.emitIsNull(v), v2, v);

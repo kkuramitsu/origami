@@ -72,8 +72,10 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 						this.defineSymbol(name, text.toString());
 						text = null;
 					} else {
+						if (text.length() > 0) {
+							text.append("\n");
+						}
 						text.append(line);
-						text.append("\n");
 					}
 				}
 			}
@@ -225,6 +227,18 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
+		if (this.isDefined("value")) {
+			StringBuilder sb = new StringBuilder();
+			int c = 0;
+			for (String f : fields) {
+				if (c > 0) {
+					sb.append(",");
+				}
+				sb.append(f);
+				c++;
+			}
+			this.defineSymbol("fields " + typeName, sb.toString());
+		}
 		if (this.isDefined("def " + typeName)) {
 			this.writeSection(this.s("def " + typeName));
 			return;
@@ -329,7 +343,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			if (this.isAliasFuncType()) {
 				this.writeSection(decl);
 			} else {
-				System.out.println(typeName + " => " + decl);
+				// System.out.println(typeName + " => " + decl);
 				this.defineVariable(this.varname(typeName), decl);
 			}
 		}
@@ -355,7 +369,15 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void declFunc(int acc, String ret, String funcName, String[] params, Block<String> block) {
-		this.writeSection(this.format("function", ret, funcName, this.emitParams(params)));
+		String funcType = "";
+		if (this.isDefined("functype") && !this.isAliasFuncType()) {
+			ArrayList<String> l = new ArrayList<>();
+			for (String p : params) {
+				l.add(this.format("functypeparam", this.T(p), p));
+			}
+			funcType = this.format("functype", ret, funcName, this.emitList("functypeparams", l));
+		}
+		this.writeSection(this.format("function", ret, funcName, this.emitParams(params), funcType));
 		this.incIndent();
 		this.writeSection(this.formatFuncResult(block.block()));
 		this.decIndent();
@@ -378,9 +400,13 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	protected String emitList(String delim, List<String> list) {
 		StringBuilder sb = new StringBuilder();
 		int c = 0;
+		delim = this.s(delim);
+		if (delim.length() == 0) {
+			delim = " ";
+		}
 		for (String p : list) {
 			if (c > 0) {
-				sb.append(this.s(delim));
+				sb.append(delim);
 			}
 			sb.append(p);
 			c++;
@@ -422,7 +448,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected StringBuilder beginBlock() {
-		return new StringBuilder();
+		StringBuilder sb = new StringBuilder();
+		if (this.isDefined("do")) {
+			sb.append(this.s("do"));
+		}
+		return sb;
 	}
 
 	@Override
@@ -516,11 +546,18 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitNull(String name) {
-		String key = "N" + name;
-		if (this.isDefined(key)) {
-			return this.s(key);
+		if (this.isDefined("None")) {
+			return this.s("None");
 		}
 		return this.s("null");
+	}
+
+	@Override
+	protected String emitIsNull(String expr) {
+		if (this.isDefined("None.isEmpty")) {
+			return this.format("None.isEmpty", expr);
+		}
+		return super.emitIsNull(expr);
 	}
 
 	@Override
@@ -560,13 +597,35 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
+	protected String emitNew(String typeName, List<String> params) {
+		String value = null;
+		if (this.isDefined("value")) {
+			ArrayList<String> l = new ArrayList<>();
+			String[] names = this.s("fields " + typeName).split(",");
+			for (int i = 0; i < params.size(); i++) {
+				l.add(this.format("valueparam", names[i], params.get(i)));
+			}
+			value = this.format("value", typeName, this.emitList("valueparams", l));
+		} else {
+			value = this.emitFunc(typeName, params);
+		}
+		if (this.isDefined("Some") && (typeName.equals("TreeLog") || typeName.equals("State"))) {
+			value = this.format("Some", value);
+		}
+		return value;
+	}
+
+	@Override
 	protected String emitFunc(String func, List<String> params) {
 		String fmt = this.getSymbol(func);
 		if (fmt != null && fmt.indexOf("%s") >= 0) {
 			return String.format(fmt, params.toArray(new Object[params.size()]));
 		}
 		StringBuilder sb = new StringBuilder();
-		String delim = this.isDefined("args") ? this.s("args") : " ";
+		String delim = this.s("args");
+		if (delim.length() == 0) {
+			delim = " ";
+		}
 		int c = 0;
 		for (String p : params) {
 			if (c > 0) {
@@ -751,7 +810,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.symbolList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
-			sb.append(this.emitNull("tag"));
+			if (this.isDefined("null")) {
+				sb.append(this.emitNull("tag"));
+			} else {
+				sb.append(this.vString(""));
+			}
 			for (Symbol s : this.symbolList) {
 				sb.append(delim);
 				sb.append(this.vString(s.getSymbol()));
@@ -762,7 +825,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
-			sb.append(this.emitNull("value"));
+			if (this.isDefined("null")) {
+				sb.append(this.emitNull("value"));
+			} else {
+				sb.append(this.vString(""));
+			}
 			for (byte[] s : this.valueList) {
 				sb.append(delim);
 				sb.append(this.rawValue(s));

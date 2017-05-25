@@ -13,16 +13,18 @@ Array              = [%s]
 String             = String
 Tree               = a
 
-#structname         = State %1$s %1$s
+Some               = Just %s
+None               = Nothing
+None.isEmpty       = (isNothing %s)
 
+Int64->_int        = (fromIntegral %s)
 String->Byte[]     = pack %s
 Byte[]->String     = unpack %s
 
-
-Array.new          = %s[%s]
-Array.size         = ${%s}
-Array.get          = %s->[%s]
-Array.slice        = %s[%s:%s]
+Array.new          = []
+Array.size         = (index %s)
+Array.get          = (index %s %s)
+Array.slice        = 
 
 List               = @
 List.new           = ()
@@ -36,14 +38,18 @@ begin            =
 end              =
 ;                =
 
-module           = module $|base|(parse) where
-end module       = 
+#module           = module $|base|(parse) where
+#end module       = 
 struct           = data %1$s = %1$s {%2$s} deriving(Show)
 record           = %2$s :: %1$s
 records          = ,
+value            = %1$s {%2$s} 
+valueparam       = %1$s=%2$s 
+valueparams      = , 
+
 
 getter           = (%2$s %1$s)
-setter           = %s.%s = %s
+setter           = set%2$s %1$s %3$s
 
 functype         = %3$s -> %1$s
 functypeparam    = %1$s
@@ -55,14 +61,15 @@ const            = '''
 '''
 
 function         = '''
-%2$s :: %3$s
+%2$s :: %4$s
 %2$s %3$s = 
 '''
-apply            = %s
+param    = %2$s
+params   = 
 
 true             = True
 false            = False
-null             = Nothing
+$null             = NULL
 
 val              = let %2$s = %3$s in
 var              = let %2$s = %3$s in
@@ -92,6 +99,7 @@ lambda           = \%s -> %s
 varname           = %s'
 
 imports = '''
+module $|base|(parse) where
 import Control.Monad
 import Control.Monad.State
 import Control.Applicative

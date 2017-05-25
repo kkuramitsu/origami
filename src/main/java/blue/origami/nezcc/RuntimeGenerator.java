@@ -353,7 +353,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		if (this.useLinkList()) {
 			args.add(pg.emitNull("treeLog")); // nextLog;
 		}
-		return pg.emitFunc("TreeLog", args);
+		return pg.emitNew("TreeLog", args);
 	}
 
 	void loadTreeLog(ParserGenerator<B, C> pg) {
@@ -591,9 +591,14 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				/* while */
 				C loopCond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
 				pg.emitWhileStmt(block, loopCond, () -> {
+					List<C> l = new ArrayList<>();
+					l.add(pg.vInt(-1));
+					l.add(pg.vInt(0));
+					l.add(pg.vInt(0));
+					l.add(pg.emitNull("tree"));
+					l.add(pg.emitNull("state"));
 					B block2 = pg.beginBlock();
-					C right = pg.emitFunc("MemoEntry", pg.vInt(-1), pg.vInt(0), pg.vInt(0), pg.emitNull("tree"),
-							pg.emitNull("state"));
+					C right = pg.emitNew("MemoEntry", l);
 					if (!this.isDefined("List")) {
 						C left = pg.emitArrayIndex(pg.V("memos"), pg.V("cnt"));
 						pg.emitStmt(block2, pg.emitAssign2(left, right));
@@ -753,11 +758,16 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		this.defineLib("symbolS", () -> {
 			this.makeLib("extract");
 			this.defFunc(pg, this.T("matched"), "symbolS", "px", "state", "ntag", "pos", () -> {
+				List<C> l = new ArrayList<>();
+				l.add(pg.V("ntag"));
+				l.add(pg.V("length"));
+				l.add(pg.V("value"));
+				l.add(pg.emitGetter("px.state"));
+				//
 				B block = pg.beginBlock();
 				pg.emitVarDecl(block, false, "value", pg.emitFunc("extract", pg.V("px"), pg.V("pos")));
 				pg.emitVarDecl(block, false, "length", pg.emitOp(pg.emitGetter("px.pos"), "-", pg.V("pos")));
-				pg.emitStmt(block, pg.emitSetter("px.state", //
-						pg.emitFunc("State", pg.V("ntag"), pg.V("length"), pg.V("value"), pg.emitGetter("px.state"))));
+				pg.emitStmt(block, pg.emitSetter("px.state", pg.emitNew("State", l)));
 				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return pg.endBlock(block);
 			});
@@ -864,7 +874,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				// if (g.getMemoPointSize() > 0) {
 				args.add(pg.emitFunc("newMemos", pg.vInt(pg.grammar.getMemoPointSize() * 64 + 1)));
 				// }
-				pg.emitVarDecl(block, false, "px", pg.emitFunc("NezParserContext", args));
+				pg.emitVarDecl(block, false, "px", pg.emitNew("NezParserContext", args));
 				pg.emitStmt(block, pg.emitReturn(
 						pg.emitIf(pg.emitNonTerminal("e0"), pg.emitGetter("px.tree"), pg.emitNull("tree"))));
 				return (pg.endBlock(block));
