@@ -14,7 +14,7 @@ Symbol             = &str
 Tree               = Object
 String             = &str
 
-unsigned           = 
+unsigned           = %s & 0xff
 keyindex           = (%s) as $|Int|
 
 # syntax
@@ -25,17 +25,11 @@ end              = }
 ;                = ;
 
 module           = mod $|base| {
-struct           = stract %s {
+struct           = struct %s {
 field            = %2$s: %1$s,
 malloc           = 
 
-functype         = '''
-fn %2$s {
-   %1$s apply!(%3$s);
-}
-'''
-functypeparam    = %2$s: %1$s
-functypeparams   = ,
+#functype         = 
 
 const            = let %2$s: %1$s = %3$s;
 
@@ -44,7 +38,7 @@ param             = %2$s: %1$s
 params            = ,
 return           = return %s;
 
-cast             = (@@@@%s)(%s)
+#cast             = (@@@@%s)(%s)
 
 alen             = %s.len()
 aindex           = %s[%s]
@@ -61,6 +55,10 @@ case             = %s => %s
 #default          = _ => %s
 
 lambda           = (%s) -> %s
+
+array            = {
+arrays           = ,
+end array        = }
 
 
 #varprefix        = _
