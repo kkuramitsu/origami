@@ -452,9 +452,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 				param = this.vByteSet(bs);
 			}
 			expr = this.emitFunc(proceed ? "nextbyte" : "getbyte", this.V("px"));
-			if (this.isDefined("bitis")) {
-				// this.makeLib("bitis");
-				expr = this.emitFunc("bitis", param, expr);
+			if (this.isDefined("Int32")) {
+				this.makeLib("bits32");
+				expr = this.emitFunc("bits32", param, expr);
 			} else {
 				expr = this.emitArrayIndex(param, expr);
 			}
@@ -716,6 +716,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected String localName(String funcName) {
 		return funcName;
+	}
+
+	protected C emitGroup(C expr) {
+		return expr;
 	}
 
 }
