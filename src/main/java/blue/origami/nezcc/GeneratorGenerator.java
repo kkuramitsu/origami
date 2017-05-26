@@ -140,7 +140,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			this.defineVariable("state", t);
 		}
-		this.defineVariable("tcur", this.T("px"));
+		this.defineVariable("tcur", this.T("treeLog"));
 		this.defineVariable("scur", this.T("state"));
 		if (this.isDefined("functype")) {
 			if (this.isAliasFuncType()) { // alias version
