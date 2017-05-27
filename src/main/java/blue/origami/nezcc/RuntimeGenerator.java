@@ -151,8 +151,8 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		});
 		this.defineLib("nextbyte", () -> {
 			this.defFunc(pg, 0, this.T("c"), "nextbyte", "px", () -> {
-				C inc = pg.emitInc(pg.emitGetter("px.pos"));
-				if (inc != null) {
+				if (pg.isDefined("++")) {
+					C inc = pg.emitFunc("++", pg.emitGetter("px.pos"));
 					C expr = pg.emitArrayIndex(pg.emitGetter("px.inputs"), inc);
 					return ((pg.emitUnsigned(expr)));
 				} else {
