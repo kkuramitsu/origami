@@ -90,6 +90,8 @@ end array        = )
 
 ## Default AST
 
+Symbol           = String
+
 AST               = '''
   class SimpleTree(key: $|Symbol|, value: AnyRef) {
     override def toString = if (value.isInstanceOf[SimpleTree]) s"$key: $value" else s"[#$key $value]"
@@ -101,7 +103,7 @@ AST               = '''
 '''
 
 ## tag=%1$s, inputs=%2$s, pos=%3$s, epos=%4$s, nsubs=%5$s
-AST.new           = new SimpleTree(%1$s, if(%5$s > 0) new Array[SimpleTree](%5$s) else new String(%2$s, %3$s, %4$s))
+AST.new           = new SimpleTree(%1$s, if(%5$s > 0) new Array[SimpleTree](%5$s) else new String(%2$s, %3$s, (%4$s-%3$s)))
 
 ## parent=%1$s, n=%2$s, label=%3$s, child=%4$s
 AST.set           = %1$s.set(%2$s, %3$s, %4$s)
@@ -109,8 +111,10 @@ AST.set           = %1$s.set(%2$s, %3$s, %4$s)
 imports = '''
 import java.nio.charset.Charset;
 import java.util.Base64;
-import java.util.Objects;
-//import java.io.*;
+//import java.util.Objects;
+import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
 '''
 
 libs = '''
@@ -125,74 +129,7 @@ libs = '''
   }
 '''
 
-ast = '''
-  class SimpleTree(var key: String, var value: AnyRef) {
-
-    override def toString(): String = {
-      val sb: StringBuilder = new StringBuilder()
-      this.strOut(sb)
-      sb.toString
-    }
-
-    private def strOut(sb: StringBuilder): Unit = {
-      sb.append("[#")
-      sb.append(if (this.key == null) "" else this.key)
-      if (this.value.isInstanceOf[Array[SimpleTree]]) {
-        val sub: Array[SimpleTree] = this.value.asInstanceOf[Array[SimpleTree]]
-        for (child <- sub) {
-          sb.append(" ")
-          if (child.key != null) {
-            sb.append("$" + child.key + "=")
-          }
-          child.value.asInstanceOf[SimpleTree].strOut(sb)
-        }
-      } else {
-        sb.append(" '")
-        sb.append(this.value)
-        sb.append("'")
-      }
-      sb.append("]")
-    }
-
-  }
-'''
-
-exports2 = '''
-  def parse[T](s: String, newFunc: TreeFunc[T], setFunc: TreeSetFunc[T]): T = {
-    val inputs: Array[Byte] = (s + "\0").getBytes(Charset.forName("UTF-8"))
-    val px: NezParserContext[T] = new NezParserContext[T](inputs,
-                                                          inputs.length - 1,
-                                                          new TreeLog(null),
-                                                          newFunc,
-                                                          setFunc)
-    initMemo(px)
-    if (!e0(px)) {
-      System.err.printf("syntax error at %d\n", px.head_pos)
-    }
-
-    px.tree
-  }
-'''
-
-main2 = '''
-  def parse(s: String): AnyRef = {
-    val f: TreeFunc[SimpleTree] =
-      (tag: String, inputs: Array[Byte], pos: Int, epos: Int, size: Int) => {
-        if (size == 0) {
-          new SimpleTree(tag, new String(inputs, pos, epos - pos))
-        }
-        new SimpleTree(tag, new Array[SimpleTree](size))
-      }
-    val f2: TreeSetFunc[SimpleTree] =
-      (parent: SimpleTree, n: Int, label: String, child: SimpleTree) => {
-        var childs: Array[SimpleTree] =
-          parent.asInstanceOf[SimpleTree].value.asInstanceOf[Array[SimpleTree]]
-        childs(n) = new SimpleTree(label, child)
-        parent
-      }
-    parse(s, f, f2)
-  }
-  
+main = '''
   def readInputs(a: String): String = {
     val file: File = new File(a)
     if (file.exists()) {
@@ -207,33 +144,36 @@ main2 = '''
       br.close()
       sb.toString
     }
-    a
+    else {
+      a
+    }
   }
-
+      
   def main(args: Array[String]): Unit = {
     for (a <- args) {
       val s: String = readInputs(a)
       val st: Long = System.nanoTime()
-      val t: AnyRef = parse(s)
+      val t: SimpleTree = parseText(s, 
+        (tag, inputs, pos, epos, size) => newAST(tag, inputs, pos, epos, size), 
+        (parent, n, label, child) => subAST(parent, n, label, child))
       val et: Long = System.nanoTime()
-      System.err.printf("%s %s %f[ms]: ",
-                        a,
+      System.err.printf("%s %s %f[ms]: ", a,
                         if (t != null) "OK" else "NG",
                         (et - st) / 1000000.0)
-      System.out.print(t)
-      System.out.flush()
+      print(t)
+      System.out.flush
       System.err.printf("\n")
     }
   }
 '''
 
-man2 = '''
+man = '''
 =============
  QUICK START
 =============
  
- javac $|base|.java
- java $|base| <file> or <input-text>
+ scalac $|base|.java
+ scala $|base| <file> or <input-text>
  
 =============
  INTEGRATION

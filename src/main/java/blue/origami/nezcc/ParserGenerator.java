@@ -722,4 +722,6 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return expr;
 	}
 
+	protected abstract boolean check(String funcname);
+
 }

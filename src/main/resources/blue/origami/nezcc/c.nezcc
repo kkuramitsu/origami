@@ -8,8 +8,7 @@ extension          = c
 Bool               = int
 Byte               = unsigned char
 Byte[]             = unsigned char *
-Int                = long
-Int32              = int
+Int                = int
 Int64              = unsigned long long int
 Array              = %s*
 Symbol             = char *
@@ -21,10 +20,16 @@ TtreeLog           = struct TreeLog *
 Tstate             = struct State *
 Tm                 = struct MemoEntry *
 Tmemos             = struct MemoEntry *
-Ts                 = const int *
+Int32              = int
+Tbits              = const int *
 
 # unsigned         = %s & 0xff
 Int64->Int         = (size_t)(%s)
+String->Byte[]     = (unsigned char*)(%s)
+
+Array.size       = strlen((const char*)%s)
+Array.get        = %s[%s]
+Array.new        = (struct %1$s *)_malloc(sizeof(struct %1$s) * %2$s)
 
 # syntax
 
@@ -37,6 +42,9 @@ end struct       = };
 field            = %s %s;
 malloc           = (struct %1$s *)_malloc(sizeof (struct %1$s))
 
+getter           = %s->%s
+setter           = %s->%s = %s;
+
 functype         = typedef %1$s (*%2$s)(%3$s);
 
 const            = static const %1$s %2$s = %3$s;
@@ -46,12 +54,7 @@ prototype        = static %s %s(%s);
 function         = static %s %s(%s) {
 return           = return %s;
 
-getter           = %s->%s
-setter           = %s->%s = %s;
 
-#alen            = strlen(%s)
-aindex           = %s[%s]
-anew             = (struct %1$s *)_malloc(sizeof(struct %1$s) * %2$s)
 
 cast             = (%s)(%s)
 
@@ -65,9 +68,6 @@ while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
 #default          = default : %s
-
-#varprefix        = _
-#funcprefix       = _
 
 #lambda     = (%s) -> %s
 
@@ -91,7 +91,7 @@ struct NezParserContext;  // avoid referencing
 
 '''
 
-def next2 = '''
+def next2_ = '''
 static int next2(struct NezParserContext *px, const $|Byte[]|  c2) {
   $|Byte[]| c1 = px->inputs + px->pos;
   px->pos += 2;
@@ -99,56 +99,8 @@ static int next2(struct NezParserContext *px, const $|Byte[]|  c2) {
 }
 '''
 
-def next3 = '''
-static int next3(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 3;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2];
-}
-'''
-
-def next4 = '''
-static int next4(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 4;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3];
-}
-'''
-
-def next5 = '''
-static int next5(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 5;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4];
-}
-'''
-
-def next6 = '''
-static int next6(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 6;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5];
-}
-'''
-
-def next7 = '''
-static int next7(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 7;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5] && c1[6] == c2[6];
-}
-'''
-
-def next8 = '''
-static int next8(struct NezParserContext *px, const $|Byte[]|  c2) {
-  $|Byte[]| c1 = px->inputs + px->pos;
-  px->pos += 8;
-  return c1[0] == c2[0] && c1[1] == c2[1] && c1[2] == c2[2] && c1[3] == c2[3] && c1[4] == c2[4] && c1[5] == c2[5] && c1[6] == c2[6] && c1[7] == c2[7];
-}
-'''
-
 def newMemos = '''
-static struct MemoEntry * newMemos(int size) {
+static struct MemoEntry * newMemos($|Tree| t, int size) {
   int cnt = 0;
   struct MemoEntry * memos = (struct MemoEntry *)_calloc(sizeof(struct MemoEntry), size);
   while(cnt < size) {
@@ -171,15 +123,8 @@ static struct MemoEntry* getMemo(struct NezParserContext* px, $|Int64| key) {
 }
 '''
 
-def bitis = '''
-static inline int bitis(const int *bits, size_t n)
-{
-  return (bits[n / 32] & (1 << (n % 32))) != 0;
-}
-'''
-
 def extract = '''
-static $|Tpos| extract(struct NezParserContext *px, long pos) {
+static $|Byte[]| extract(struct NezParserContext *px, long pos) {
   return px->inputs + pos;
 }
 '''
@@ -194,39 +139,13 @@ static int nextN(struct NezParserContext *px, const void *text, size_t len) {
 }
 '''
 
-ast = '''
+AST = '''
 /* Tree */
 typedef struct Tree {
-  $|Symbol| key;
-  $|Int|  size;
+  $|Symbol|  key;
+  $|Int|     size;
   void      *value;
 } Tree;
-
-static void *Tree_new($|Symbol| tag, $|Byte[]| inputs, $|Int| pos, $|Int| epos, $|Int| nsubs)
-{
-  Tree *t = (Tree*)_malloc(sizeof(struct Tree));
-  t->key  = tag;
-  if(nsubs == 0) {
-    $|Byte[]|  p = inputs + pos;
-    t->size = (int)(-(epos-pos));
-    t->value = (void*)p;
-  }
-  else {
-    t->size = nsubs;
-    t->value = _calloc(nsubs, sizeof(Tree));
-  }
-  return t;
-}
-
-static void* Tree_set(void *parent, $|Int| n, $|Symbol| label, void *child)
-{
-  Tree *t = (Tree*)parent;
-  assert(t->size > 0);
-  Tree *sub = (Tree *)t->value;
-  sub[n].key = label;
-  sub[n].value = child;
-  return parent;
-}
 
 static void Tree_dump(Tree *t, FILE *fp)
 {
@@ -236,7 +155,7 @@ static void Tree_dump(Tree *t, FILE *fp)
     return;
   }
   fputs("[#", fp);
-  fputs(t->key != NULL ? t->key : "", fp);
+  fputs(t->key, fp);
   if(t->size <= 0) {
     const char *text = t->value;
     fputs(" '", fp);
@@ -250,7 +169,7 @@ static void Tree_dump(Tree *t, FILE *fp)
     for(i = 0; i < t->size; i++) {
       fputs(" ", fp);
       fputs("$", fp);
-      fputs(sub[i].key != NULL ? sub[i].key : "", fp);
+      fputs(sub[i].key, fp);
       fputs("=", fp);
       Tree_dump(sub[i].value, fp);
     }
@@ -273,7 +192,37 @@ static void Tree_free(Tree *t)
 }
 '''
 
-exports = '''
+def newAST = '''
+static void *newAST($|Symbol| tag, $|Byte[]| inputs, $|Int| pos, $|Int| epos, $|Int| nsubs)
+{
+  Tree *t = (Tree*)_malloc(sizeof(struct Tree));
+  t->key  = tag;
+  if(nsubs == 0) {
+    $|Byte[]|  p = inputs + pos;
+    t->size = (int)(-(epos-pos));
+    t->value = (void*)p;
+  }
+  else {
+    t->size = nsubs;
+    t->value = _calloc(nsubs, sizeof(Tree));
+  }
+  return t;
+}
+'''
+
+def subAST = '''
+static void* subAST(void *parent, $|Int| n, $|Symbol| label, void *child)
+{
+  Tree *t = (Tree*)parent;
+  assert(t->size > 0);
+  Tree *sub = (Tree *)t->value;
+  sub[n].key = label;
+  sub[n].value = child;
+  return parent;
+}
+'''
+
+def freeContext = '''
 static void TreeLog_free(struct TreeLog *t)
 {
   while(t != NULL) {
@@ -283,7 +232,7 @@ static void TreeLog_free(struct TreeLog *t)
   }
 }
 
-static void NezParserContext_free(struct NezParserContext *px)
+static void freeContext(struct NezParserContext *px)
 {
   if(px->memos != NULL) {
     _free(px->memos);
@@ -292,48 +241,29 @@ static void NezParserContext_free(struct NezParserContext *px)
   TreeLog_free(px->treeLog);
   _free(px);
 }
-
-void *Nez_parse(const char *inputs, TreeFunc fnew, TreeSetFunc fset)
-{
-  struct NezParserContext *px = NezParserContext(
-    ($|Byte[]|)inputs, strlen(inputs), 0, 0, 
-    NULL, TreeLog(0, 0, NULL, NULL, NULL), 
-    fnew, fset, NULL, newMemos(MEMOS)
-  );
-  void *result = NULL;
-  if(e0(px)) {
-    result = px->tree;
-  }
-  NezParserContext_free(px);
-  return result;
-}
-
-
-Tree *Nez_parseTree(const char *inputs)
-{
-  return (Tree *)Nez_parse(inputs, Tree_new, Tree_set);
-}
 '''
 
 main = '''
-const char *Nez_readInput(const char *path)
+static $|Byte[]| readInputs(const char *path, size_t *rlen)
 {
-    FILE *fp = fopen(path, "rb");
-    if(fp != NULL) {
-        size_t len;
-        fseek(fp, 0, SEEK_END);
-        len = (size_t) ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        char *buf = (char *) _calloc(1, len + 1);
-        size_t readed = fread(buf, 1, len, fp);
-        if(readed != len) {
-            fprintf(stderr, "read error: %s\n", path);
-            exit(1);
-        }
-        fclose(fp);
-        return (const char*)buf;
+  FILE *fp = fopen(path, "rb");
+  if(fp != NULL) {
+    size_t len;
+    fseek(fp, 0, SEEK_END);
+    len = (size_t) ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    char *buf = (char *) _calloc(1, len + 1);
+    size_t readed = fread(buf, 1, len, fp);
+    if(readed != len) {
+      fprintf(stderr, "read error: %s\n", path);
+      exit(1);
     }
-    return path;
+    fclose(fp);
+    rlen[0] = len;
+    return ($|Byte[]|)buf;
+  }
+  rlen[0] = strlen(path);
+  return ($|Byte[]|)path;
 }
 
 
@@ -347,28 +277,28 @@ static double timediff(struct timeval *s, struct timeval *e)
 int main(int ac, const char **av)
 {
   int j;
-  size_t len;
   if(ac == 1) {
     fprintf(stdout, "Usage: %s file [or 'input-text']\n", av[0]);
     return 1;
   }
   for(j = 1; j < ac; j++) {
-    const char *inputs = Nez_readInput(av[j]);
+    size_t len = 0;
+    $|Byte[]| inputs = readInputs(av[j], &len);
 #ifndef _WIN32
     struct timeval s, e;
 	gettimeofday(&s, NULL);
-    Tree *data = Nez_parseTree(inputs);
+    Tree *data = (Tree *)parse(inputs, len, newAST, subAST);
 	gettimeofday(&e, NULL);
-    fprintf(stderr, "%s %s %f[ms]: ", av[j], data != NULL ? "OK" : "NG", timediff(&s, &e));
+    fprintf(stderr, "%s %f[ms]: ", av[j], timediff(&s, &e));
 #else
-    Tree *data = Nez_parseTree(inputs);
+    Tree *data = (Tree *)parse(inputs, len, newAST, subAST);
     fprintf(stdout, "%s: ", av[j]);
 #endif
     Tree_dump(data, stdout);
     fflush(stdout);
     fprintf(stderr, "\n");
     Tree_free(data);
-    if(av[j] != inputs) {
+    if(av[j] != (const char*)inputs) {
       _free((void*)inputs);
     }
   }

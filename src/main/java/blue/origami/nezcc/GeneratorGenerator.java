@@ -101,7 +101,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		return name;
 	}
 
-	boolean check(String name) {
+	@Override
+	protected boolean check(String name) {
 		String def = "def " + name;
 		if (this.isDefined(def)) {
 			this.defineSymbol(name, name);
@@ -244,10 +245,6 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void writeFooter() throws IOException {
-		if (this.isDefined("AST")) {
-			this.writeLine(this.s("AST"));
-		}
-		// else {
 		this.lib = new SourceSection();
 		this.makeLib("parse");
 		this.writeLine(this.lib.toString());
@@ -256,6 +253,13 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		// this.writeLine(this.s("exports"));
 		// }
 		if (this.isDefined("main")) {
+			if (this.isDefined("AST")) {
+				this.writeLine(this.s("AST"));
+			}
+			this.lib = new SourceSection();
+			this.makeLib("newAST");
+			this.makeLib("subAST");
+			this.writeLine(this.lib.toString());
 			this.writeLine(this.s("main"));
 		}
 		if (this.isDefined("module") && this.isDefined("end module")) {
@@ -676,7 +680,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String emitFunc(String func, List<String> params) {
 		String fmt = this.getSymbol(func);
-		if (fmt != null && fmt.indexOf("%s") >= 0) {
+		if (fmt != null && (fmt.indexOf("%s") >= 0 || fmt.indexOf("%1$s") >= 0 || fmt.indexOf("%2$s") >= 0)) {
 			return String.format(fmt, params.toArray(new Object[params.size()]));
 		}
 		StringBuilder sb = new StringBuilder();
@@ -876,7 +880,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 				sb.append(this.vString(s.getSymbol()));
 			}
 			sb.append(this.s("end array"));
-			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 1, sb.toString());
+			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 2, sb.toString());
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();

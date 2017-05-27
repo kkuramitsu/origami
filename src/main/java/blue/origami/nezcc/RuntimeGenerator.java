@@ -568,14 +568,6 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 					pg.emitStmt(block2, loopNext);
 					return pg.endBlock(block2);
 				});
-				// pg.emitAssign("tag", ,
-				// field(pg, log, "pos")));
-				// pg.Assign(block3, "value", pg.emitFunc("getvalue",
-				// field(pg, log, "pos")));
-				// if (UseLength) {
-				// pg.Assign(block3, "length", pg.emitFunc("getlength",
-				// field(pg, log, "pos")));
-				// }
 
 				List<C> param = new ArrayList<>();
 				param.add(pg.emitFunc("gettag", pg.V("ntag")));
@@ -600,9 +592,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				pg.Setter(block, "px.tree", newTree);
 				// set..
 				if (Optional) {
-					pg.emitAssign("tcur", pg.emitFunc("Option.get", pg.V("treeLog")));
+					pg.Assign(block, "tcur", pg.emitFunc("Option.get", pg.V("treeLog")));
 				} else {
-					pg.emitAssign("tcur", pg.V("treeLog"));
+					pg.Assign(block, "tcur", pg.V("treeLog"));
 				}
 
 				pg.emitWhileStmt(block, loopCond, () -> {
@@ -949,6 +941,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			// pg.makeLib("subAST");
 			pg.makeLib("gettag");
 			pg.makeLib("newMemos");
+			final boolean freeContext = pg.check("freeContext");
 
 			this.defFunc(pg, 1, this.T("tree"), "parse", "inputs", "length", "newFunc", "setFunc", () -> {
 				B block = pg.beginBlock();
@@ -975,6 +968,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 						pg.emitIf(pg.emitNonTerminal("e0"), pg.emitGetter("px.tree"), //
 								pg.emitApply(pg.V("newFunc"), pg.emitFunc("gettag", pg.vInt(1)), pg.V("inputs"),
 										pg.emitGetter("px.headpos"), pg.V("length"), pg.vInt(0))));
+				if (freeContext) {
+					pg.emitStmt(block, pg.emitFunc("freeContext", pg.V("px")));
+				}
 				pg.Return(block, pg.V("tree"));
 				return (pg.endBlock(block));
 			});
