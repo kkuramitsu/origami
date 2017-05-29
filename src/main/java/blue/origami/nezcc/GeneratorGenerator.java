@@ -158,6 +158,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("matched", this.s("Bool"));
 		this.defineVariable("inputs", this.s("Byte[]"));
 		this.defineVariable("pos", this.s("Int"));
+		this.defineVariable("headpos", this.T("pos"));
 		this.defineVariable("length", this.s("Int"));
 		this.defineVariable("tree", this.s("Tree"));
 		this.defineVariable("c", this.s("Int"));
@@ -172,7 +173,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("bits", this.format("Array", this.s("Bool")));
 		}
 
-		this.defineVariable("op", this.s("Int32"));
+		this.defineVariable("op", this.s("Int"));
+		this.defineVariable("log", this.T("length"));
 		this.defineVariable("label", this.s("Symbol"));
 		this.defineVariable("tag", this.s("Symbol"));
 		this.defineVariable("value", this.T("inputs"));
@@ -182,14 +184,19 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("m", t);
 		}
 
-		if (this.isDefined("List")) {
-			this.defineVariable("memos", this.format("List", this.T("m")));
+		if (this.isDefined("ArrayList")) {
+			this.defineVariable("memos", this.format("ArrayList", this.T("m")));
 		} else {
 			this.defineVariable("memos", this.format("Array", this.T("m")));
 		}
+
+		this.defineVariable("subTrees", this.s("TList"));
+		this.defineSymbol("TList.empty", this.s("null"));
+		this.defineSymbol("TList.cons", "%3$s");
+
 		this.defineVariable("key", this.s("Int64"));
-		this.defineVariable("memoPoint", this.s("Int32"));
-		this.defineVariable("result", this.s("Int32"));
+		this.defineVariable("memoPoint", this.s("Int"));
+		this.defineVariable("result", this.s("Int"));
 		this.defineVariable("text", this.s("String"));
 
 		this.defineVariable("label", this.s("Symbol"));
@@ -199,8 +206,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("nlabel", this.T("cnt"));
 		this.defineVariable("value", this.T("inputs"));
 		this.defineVariable("nvalue", this.T("cnt"));
-		this.defineVariable("pos", this.T("cnt"));
-		this.defineVariable("headpos", this.T("pos"));
+		this.defineVariable("spos", this.T("cnt"));
+		this.defineVariable("epos", this.T("cnt"));
 		this.defineVariable("shift", this.T("cnt"));
 		this.defineVariable("length", this.T("cnt"));
 
@@ -248,19 +255,27 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.lib = new SourceSection();
 		this.makeLib("parse");
 		this.writeLine(this.lib.toString());
-		// }
-		// if (this.isDefined("exports")) {
-		// this.writeLine(this.s("exports"));
-		// }
-		if (this.isDefined("main")) {
-			if (this.isDefined("AST")) {
-				this.writeLine(this.s("AST"));
+		if (this.isDefined("TList")) {
+			if (this.isDefined("main")) {
+				if (this.isDefined("AST2")) {
+					this.writeLine(this.s("AST2"));
+				}
+				this.lib = new SourceSection();
+				this.makeLib("newAST2");
+				this.writeLine(this.lib.toString());
+				this.writeLine(this.s("main"));
 			}
-			this.lib = new SourceSection();
-			this.makeLib("newAST");
-			this.makeLib("subAST");
-			this.writeLine(this.lib.toString());
-			this.writeLine(this.s("main"));
+		} else {
+			if (this.isDefined("main")) {
+				if (this.isDefined("AST")) {
+					this.writeLine(this.s("AST"));
+				}
+				this.lib = new SourceSection();
+				this.makeLib("newAST");
+				this.makeLib("subAST");
+				this.writeLine(this.lib.toString());
+				this.writeLine(this.s("main"));
+			}
 		}
 		if (this.isDefined("module") && this.isDefined("end module")) {
 			this.writeLine(this.s("end module"));
@@ -430,7 +445,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			funcType = this.format("functype", ret, funcName, this.emitList("functypeparams", l));
 		}
-		this.writeSection(this.format("function", ret, funcName, this.emitParams(params), funcType));
+		String f = "function" + acc;
+		if (!this.isDefined(f)) {
+			f = "function";
+		}
+		this.writeSection(this.format(f, ret, funcName, this.emitParams(params), funcType));
 		this.incIndent();
 		this.writeSection(this.formatFuncResult(block.block()));
 		this.decIndent();
@@ -624,21 +643,27 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitArrayLength(String a) {
+		if ((a.endsWith("inputs") || a.endsWith("value")) && this.isDefined("Byte[].size")) {
+			return this.format("Byte[].size", a);
+		}
 		return this.format("Array.size", a);
 	}
 
 	@Override
 	protected String emitArrayIndex(String a, String index) {
-		if (a.endsWith("memos") && this.isDefined("List")) {
-			return this.format("List.get", a, index);
+		if ((a.endsWith("inputs") || a.endsWith("value")) && this.isDefined("Byte[].get")) {
+			return this.format("Byte[].get", a, index);
+		}
+		if (a.endsWith("memos") && this.isDefined("ArrayList.get")) {
+			return this.format("ArrayList.get", a, index);
 		}
 		return this.format("Array.get", a, index);
 	}
 
 	@Override
 	protected String emitNewArray(String type, String index) {
-		if (type.startsWith("MemoEntry") && this.isDefined("List")) {
-			return this.format("List.new", type, index);
+		if (type.startsWith("MemoEntry") && this.isDefined("ArrayList")) {
+			return this.format("ArrayList.new", type, index);
 		}
 		return this.format("Array.new", type, index);
 	}
@@ -679,9 +704,15 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitFunc(String func, List<String> params) {
-		String fmt = this.getSymbol(func);
-		if (fmt != null && (fmt.indexOf("%s") >= 0 || fmt.indexOf("%1$s") >= 0 || fmt.indexOf("%2$s") >= 0)) {
-			return String.format(fmt, params.toArray(new Object[params.size()]));
+		if (this.isDefined(func)) {
+			String fmt = this.getSymbol(func);
+			if (fmt.indexOf("%s") >= 0 || fmt.indexOf("%2$s") >= 0 || func.indexOf(".") > 0) {
+				try {
+					return String.format(fmt, params.toArray(new Object[params.size()]));
+				} catch (Exception e) {
+					System.out.println("ERROR " + func);
+				}
+			}
 		}
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("args");
@@ -873,14 +904,15 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
 			sb.append(this.vString(""));
-			sb.append(delim);
-			sb.append(this.vString("Error"));
 			for (Symbol s : this.symbolList) {
 				sb.append(delim);
 				sb.append(this.vString(s.getSymbol()));
 			}
+			sb.append(delim);
+			sb.append(this.vString("error"));
 			sb.append(this.s("end array"));
 			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 2, sb.toString());
+			this.declConst(this.s("Int"), "ParseError", -1, "" + (this.symbolList.size() + 1));
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
@@ -907,18 +939,32 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	protected String rawValue(byte[] buf) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.s("array"));
-		int c = 0;
-		for (byte b : buf) {
-			if (c > 0) {
-				sb.append(this.s("arrays"));
+		if (this.isDefined("Byte[].quote")) {
+			StringBuilder sb = new StringBuilder();
+			String fmt = this.s("Byte[].quote");
+			byte quote = (byte) fmt.charAt(fmt.length() - 1);
+			for (byte b : buf) {
+				if (b >= 32 && b <= 126 && b != quote) {
+					sb.append((char) b);
+				} else {
+					sb.append(this.format("Byte[].esc", (int) b));
+				}
 			}
-			sb.append(b);
-			c++;
+			return this.format("Byte[].quote", sb.toString());
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.s("array"));
+			int c = 0;
+			for (byte b : buf) {
+				if (c > 0) {
+					sb.append(this.s("arrays"));
+				}
+				sb.append(b);
+				c++;
+			}
+			sb.append(this.s("end array"));
+			return this.getConstName(this.s("Byte"), this.Const("data"), buf.length, sb.toString());
 		}
-		sb.append(this.s("end array"));
-		return this.getConstName(this.s("Byte"), this.Const("data"), buf.length, sb.toString());
 	}
 
 	@Override

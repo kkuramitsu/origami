@@ -93,28 +93,40 @@ end array        = )
 Symbol           = String
 
 AST               = '''
-  class SimpleTree(key: $|Symbol|, value: AnyRef) {
-    override def toString = if (value.isInstanceOf[SimpleTree]) s"$key: $value" else s"[#$key $value]"
-    def set(n: Int, label: $|Symbol|, child: SimpleTree) = {
-      value.asInstanceOf[Array[SimpleTree]](n) = new SimpleTree(label, child)
-      this
-    }
+  class SimpleTree(key: $|Symbol|, var value: AnyRef) {
+    override def toString = if (value.isInstanceOf[SimpleTree]) s"$key= $value" else s"[#$key $value]"
   }
 '''
 
-## tag=%1$s, inputs=%2$s, pos=%3$s, epos=%4$s, nsubs=%5$s
-AST.new           = new SimpleTree(%1$s, if(%5$s > 0) new Array[SimpleTree](%5$s) else new String(%2$s, %3$s, (%4$s-%3$s)))
+def newAST = '''
+  private def newAST(tag: String,
+                     inputs: Array[Byte],
+                     pos: Int,
+                     epos: Int,
+                     size: Int): SimpleTree =
+    new SimpleTree(tag,
+                   if ((size == 0)) new String(inputs, pos, epos - pos)
+                   else new Array[SimpleTree](size))
+'''
 
-## parent=%1$s, n=%2$s, label=%3$s, child=%4$s
-AST.set           = %1$s.set(%2$s, %3$s, %4$s)
+def subAST = '''
+  private def subAST(parent: SimpleTree,
+                     n: Int,
+                     label: String,
+                     child: SimpleTree): SimpleTree = {
+    val childs: Array[SimpleTree] =
+      (parent.asInstanceOf[SimpleTree]).value.asInstanceOf[Array[SimpleTree]]
+    childs(n) = new SimpleTree(label, child)
+    parent
+  }
+'''
 
 imports = '''
 import java.nio.charset.Charset;
 import java.util.Base64;
 //import java.util.Objects;
 import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
+import java.io.FileInputStream;
 '''
 
 libs = '''
@@ -130,36 +142,28 @@ libs = '''
 '''
 
 main = '''
-  def readInputs(a: String): String = {
+  def readInputs(a: String): Array[Byte] = {
     val file: File = new File(a)
     if (file.exists()) {
-      val sb: StringBuilder = new StringBuilder()
-      val br: BufferedReader = new BufferedReader(new FileReader(file))
-      var str: String = br.readLine()
-      while (str != null) {
-        sb.append(str)
-        sb.append("\n")
-        str = br.readLine()
-      }
-      br.close()
-      sb.toString
+      val buf: Array[Byte] = Array.ofDim[Byte](file.length.toInt + 1)
+      val fin: FileInputStream = new FileInputStream(file)
+      fin.read(buf, 0, file.length.toInt)
+      buf
     }
     else {
-      a
+      (a + "\0").getBytes(Charset.forName("UTF-8"))
     }
   }
       
   def main(args: Array[String]): Unit = {
     for (a <- args) {
-      val s: String = readInputs(a)
+      val buf = readInputs(a)
       val st: Long = System.nanoTime()
-      val t: SimpleTree = parseText(s, 
+      val t: SimpleTree = parse(buf, buf.length-1, 
         (tag, inputs, pos, epos, size) => newAST(tag, inputs, pos, epos, size), 
         (parent, n, label, child) => subAST(parent, n, label, child))
       val et: Long = System.nanoTime()
-      System.err.printf("%s %s %f[ms]: ", a,
-                        if (t != null) "OK" else "NG",
-                        (et - st) / 1000000.0)
+      System.err.printf("" + a + " " +  ((et - st) / 1000000.0) + "[ms] :")
       print(t)
       System.out.flush
       System.err.printf("\n")

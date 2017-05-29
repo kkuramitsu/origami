@@ -8,7 +8,7 @@ extension          = c
 Bool               = int
 Byte               = unsigned char
 Byte[]             = unsigned char *
-Int                = int
+Int                = long
 Int64              = unsigned long long int
 Array              = %s*
 Symbol             = char *
@@ -22,6 +22,10 @@ Tm                 = struct MemoEntry *
 Tmemos             = struct MemoEntry *
 Int32              = int
 Tbits              = const int *
+
+#Cnez
+#Tpos               = unsigned char *
+#Bytes[].get        = %2$s
 
 # unsigned         = %s & 0xff
 Int64->Int         = (size_t)(%s)

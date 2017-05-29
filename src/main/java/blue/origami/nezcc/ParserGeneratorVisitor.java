@@ -25,7 +25,6 @@ import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.ExpressionVisitor;
 import blue.origami.nez.peg.NonEmpty;
 import blue.origami.nez.peg.Production;
-import blue.origami.nez.peg.Stateful;
 import blue.origami.nez.peg.Typestate;
 import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.nez.peg.expression.PAnd;
@@ -64,9 +63,6 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		pg.declConst(pg.T("length"), "MEMOSIZE", -1, "" + g.getMemoPointSize());
 		pg.declConst(pg.T("length"), "MEMOS", -1, "" + (g.getMemoPointSize() * 64 + 1));
 		pg.log("memosize: %d", g.getMemoPointSize());
-		boolean isStateful = Stateful.isStateful(p);
-		pg.log("stateful: %s", isStateful);
-		pg.initGrammarProperty(g.isBinaryGrammar(), isStateful);
 		int c = 0;
 		this.waitingList.add(p.getExpression());
 		for (int i = 0; i < this.waitingList.size(); i++) {

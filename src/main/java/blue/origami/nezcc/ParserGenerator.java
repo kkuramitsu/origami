@@ -27,6 +27,9 @@ import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserGrammar;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
+import blue.origami.nez.peg.Production;
+import blue.origami.nez.peg.Stateful;
+import blue.origami.nez.peg.Typestate;
 import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
@@ -635,14 +638,26 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	private OOption options;
+	private boolean treeConstruction = true;
+	private boolean isBinary = false;
+	private boolean isStateful = true;
 
 	@Override
 	public void init(OOption options) {
 		this.options = options;
+		this.treeConstruction = this.options.is(ParserOption.TreeConstruction, true);
 	}
 
 	protected final boolean isTreeConstruction() {
-		return this.options.is(ParserOption.TreeConstruction, true);
+		return this.treeConstruction;
+	}
+
+	protected boolean isBinary() {
+		return this.isBinary;
+	}
+
+	protected boolean isStateful() {
+		return this.isStateful;
 	}
 
 	protected final String getFileBaseName() {
@@ -664,8 +679,15 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<B, C> pgv = new ParserGeneratorVisitor<>();
 		this.grammar = g;
+		Production start = g.getStartProduction();
+		if (this.treeConstruction) {
+			this.treeConstruction = Typestate.compute(start) == Typestate.Tree;
+		}
+		this.log("tree: %s", this.treeConstruction);
+		this.isBinary = g.isBinaryGrammar();
+		this.isStateful = Stateful.isStateful(start);
+		this.log("stateful: %s", this.isStateful);
 		this.initSymbols();
-
 		this.loadContext(this, g);
 		this.loadTreeLog(this);
 		this.loadState(this);
@@ -696,22 +718,6 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected void log(String line, Object... args) {
 		OConsole.println(line, args);
-	}
-
-	private boolean isBinary;
-	private boolean isStateful;
-
-	public final void initGrammarProperty(boolean binary, boolean isStateful) {
-		this.isBinary = binary;
-		this.isStateful = isStateful;
-	}
-
-	protected boolean isBinary() {
-		return this.isBinary;
-	}
-
-	protected boolean isStateful() {
-		return this.isStateful;
 	}
 
 	protected String localName(String funcName) {
