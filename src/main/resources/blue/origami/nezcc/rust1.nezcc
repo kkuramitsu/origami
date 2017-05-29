@@ -11,7 +11,8 @@ Int32              = i32
 Int64              = i64
 Array              = %s
 Symbol             = &str
-Tree               = Object
+Tree               = T
+typeparam          = %s<%s>
 String             = &str
 
 unsigned           = %s & 0xff
@@ -27,22 +28,26 @@ end              = }
 module           = mod $|base| {
 struct           = struct %s {
 field            = %2$s: %1$s,
-malloc           = 
+value            = %1$s {%2$s} 
+valueparam       = %1$s: %2$s 
+valueparams      = , 
+
 
 #functype         = 
 
-const            = let %2$s: %1$s = %3$s;
+const            = let %2$s = %3$s;
+const_array      = %2$s[%1$s; %3$s] = %4$s;
 
 function         = fn %2$s(%3$s) -> %1$s {
 param             = %2$s: %1$s
 params            = ,
-return           = return %s;
+return           = %s
 
 #cast             = (@@@@%s)(%s)
 
-alen             = %s.len()
-aindex           = %s[%s]
-anew             = %s
+Array.size        = %s.length
+Array.get         = %s[%s]
+#Array.new         = 
 
 apply            = apply!(%s)
 funcref          =
@@ -54,7 +59,13 @@ switch           = match %s {
 case             = %s => %s
 #default          = _ => %s
 
+ifexpr           = if %s {%s} else{%s} 
+
 lambda           = (%s) -> %s
+
+val              = let %2$s = %3$s;
+var              = let mut %2$s = %3$s;
+assign           = %s = %s
 
 array            = {
 arrays           = ,
