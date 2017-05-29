@@ -686,13 +686,13 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String emitNew(String typeName, List<String> params) {
 		String value = null;
-		if (this.isDefined("value")) {
+		if (this.isDefined("object")) {
 			ArrayList<String> l = new ArrayList<>();
 			String[] names = this.s("fields " + typeName).split(",");
 			for (int i = 0; i < params.size(); i++) {
-				l.add(this.format("valueparam", names[i], params.get(i)));
+				l.add(this.format("objectparam", names[i], params.get(i)));
 			}
-			value = this.format("value", typeName, this.emitList("valueparams", l));
+			value = this.format("object", typeName, this.emitList("objectparams", l));
 		} else {
 			value = this.emitFunc(typeName, params);
 		}

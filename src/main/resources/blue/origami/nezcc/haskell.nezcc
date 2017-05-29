@@ -40,9 +40,9 @@ end              =
 struct           = data %1$s = %1$s {%2$s} deriving(Show)
 record           = %2$s :: %1$s
 records          = ,
-value            = %1$s {%2$s} 
-valueparam       = %1$s=%2$s 
-valueparams      = , 
+object           = %1$s {%2$s} 
+objectparam      = %1$s=%2$s 
+objectparams     = , 
 
 
 getter           = (%2$s %1$s)
