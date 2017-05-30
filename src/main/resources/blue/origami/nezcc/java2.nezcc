@@ -4,28 +4,16 @@ extension          = java
 
 # type
 
+String             = String
 Bool               = boolean
 Byte               = byte
 Int                = int
 Int64              = long
 Array              = %s[]
-Tree               = T
-String             = String
+Tree               = Object
 
 Byte->Int          = %s & 0xff
-Int64->Int         = (int)(%s)
-String->Byte[]     = %s.getBytes(Charset.forName("UTF-8"))
-Byte[]->String     = new String(%s)
-
-Array.new          = %s[%s]
-Array.size         = %s.length
-Array.get          = %s[%s]
-Array.slice        = %s[%s:%s]
-
-List               = ArrayList<%s>
-List.new           = new ArrayList<>()
-List.get           = %s.get(%s)
-List.add           = %s.add(%s)
+Int64->Int         = ($|Int|)(%s)
 
 # syntax
 
@@ -33,27 +21,31 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+assert           = assert(%s);
 
 module           = final class $|base| {
-
-structname       = %s<T>
-
-struct           = static class %s <T> {
+struct           = static class %s {
 field            = %s %s;
 constructor      = %s(%s) {
 init             = this.%s = %s;
-new              = new %s<>
+new              = new %s
 
 functype         = '''
-public interface %2$s <T> {
+public interface %2$s {
   public %1$s apply(%3$s);
 }
 '''
 
 const            = private static final %1$s %2$s = %3$s;
 
-function         = private static final <T> %1$s %2$s(%3$s) {
+function         = private static final %1$s %2$s(%3$s) {
 return           = return %s;
+
+cast             = (%s)(%s)
+
+alen             = %s.length
+aindex           = %s[%s]
+anew             = new %s[%s]
 
 apply            = %s.apply
 funcref          = $|base|::%s
@@ -63,7 +55,7 @@ else if          = else if(%s) {
 while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
-#default         = default : %s
+#default          = default : %s
 
 lambda           = (%s) -> %s
 
@@ -77,7 +69,6 @@ imports = '''
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Objects;
-import java.util.ArrayList;
 import java.io.*;
 '''
 
@@ -106,7 +97,7 @@ private final static boolean bitis(int[] bits, int n) {
 def extract = '''
 private static final byte[] emptyValue = new byte[0];
 
-private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
+private static byte[] extract(NezParserContext px, int ppos) {
   if(px.pos == ppos) {
     return emptyValue;
   }
@@ -116,8 +107,8 @@ private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
 }
 '''
 
-def nextN = '''
-private static <T> boolean nextN(NezParserContext<T> px, byte[] t, int length) {
+def matchBytes = '''
+private static boolean matchBytes(NezParserContext px, byte[] t, int length) {
   if (px.pos + length <= px.length) {
     for (int i = 0; i < length; i++) {
       if (t[i] != px.inputs[px.pos + i]) {
@@ -131,20 +122,7 @@ private static <T> boolean nextN(NezParserContext<T> px, byte[] t, int length) {
 }
 '''
 
-exports2 = '''
-  public static <T> T parse(String s, TreeFunc<T> newFunc, TreeSetFunc<T> setFunc) throws IOException {
-    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
-    NezParserContext<T> px = new NezParserContext<>(inputs, inputs.length-1, new TreeLog<>(null), newFunc, setFunc);
-    initMemo(px);
-    if(!e0(px)) {
-    	System.err.printf("syntax error at %d\n", px.head_pos);
-    };
-    return px.tree;
-  }
-'''
-
-main = '''
-  /** Here is the main part. You may remove them if unnecessary. **/
+ast = '''
   public static class SimpleTree {
     public String key;
     public Object value;
@@ -181,15 +159,29 @@ main = '''
       sb.append("]");
     }
   }
+'''
 
+exports = '''
+  public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
+    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
+    NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
+    initMemo(px);
+    if(!e0(px)) {
+    	System.err.printf("syntax error at %d\n", px.head_pos);
+    };
+    return px.tree;
+  }
+'''
+
+main = '''
   public static Object parse(String s) throws IOException {
-    TreeFunc<SimpleTree> f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
+    TreeFunc f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
       if (size == 0) {
         return new SimpleTree(tag, new String(inputs, pos, epos - pos));
       }
       return new SimpleTree(tag, new SimpleTree[size]);
     };
-    TreeSetFunc<SimpleTree> f2 = (SimpleTree parent, int n, String label, SimpleTree child) -> {
+    TreeSetFunc f2 = (Object parent, int n, String label, Object child) -> {
       SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
       childs[n] = new SimpleTree(label, child);
       return parent;

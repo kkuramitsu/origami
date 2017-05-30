@@ -101,7 +101,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		return name;
 	}
 
-	boolean check(String name) {
+	@Override
+	protected boolean check(String name) {
 		String def = "def " + name;
 		if (this.isDefined(def)) {
 			this.defineSymbol(name, name);
@@ -118,7 +119,6 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 		this.defineSymbol("Byte[]", this.format("Array", this.s("Byte")));
 		this.defineSymbol("Int8", this.s("Byte"));
-		this.defineSymbol("Int32", this.s("Int"));
 		this.defineSymbol("Symbol", this.s("String"));
 
 		if (!this.isDefined("px")) {
@@ -141,7 +141,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			this.defineVariable("state", t);
 		}
-		this.defineVariable("tcur", this.T("px"));
+		this.defineVariable("tcur", this.T("treeLog"));
 		this.defineVariable("scur", this.T("state"));
 		if (this.isDefined("functype")) {
 			if (this.isAliasFuncType()) { // alias version
@@ -158,19 +158,23 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("matched", this.s("Bool"));
 		this.defineVariable("inputs", this.s("Byte[]"));
 		this.defineVariable("pos", this.s("Int"));
+		this.defineVariable("headpos", this.T("pos"));
 		this.defineVariable("length", this.s("Int"));
 		this.defineVariable("tree", this.s("Tree"));
 		this.defineVariable("c", this.s("Int"));
+		this.defineVariable("n", this.s("Int"));
 		this.defineVariable("cnt", this.s("Int"));
 		this.defineVariable("shift", this.s("Int"));
 
-		if (this.check("bitis")) {
-			this.defineVariable("s", this.format("Array", this.s("Int32")));
+		if (this.isDefined("Int32")) {
+			// this.makeLib("bits32");
+			this.defineVariable("bits", this.format("Array", this.s("Int32")));
 		} else {
-			this.defineVariable("s", this.format("Array", this.s("Bool")));
+			this.defineVariable("bits", this.format("Array", this.s("Bool")));
 		}
 
-		this.defineVariable("op", this.s("Int32"));
+		this.defineVariable("op", this.s("Int"));
+		this.defineVariable("log", this.T("length"));
 		this.defineVariable("label", this.s("Symbol"));
 		this.defineVariable("tag", this.s("Symbol"));
 		this.defineVariable("value", this.T("inputs"));
@@ -180,14 +184,19 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("m", t);
 		}
 
-		if (this.isDefined("List")) {
-			this.defineVariable("memos", this.format("List", this.T("m")));
+		if (this.isDefined("ArrayList")) {
+			this.defineVariable("memos", this.format("ArrayList", this.T("m")));
 		} else {
 			this.defineVariable("memos", this.format("Array", this.T("m")));
 		}
+
+		this.defineVariable("subTrees", this.s("TList"));
+		this.defineSymbol("TList.empty", this.s("null"));
+		this.defineSymbol("TList.cons", "%3$s");
+
 		this.defineVariable("key", this.s("Int64"));
-		this.defineVariable("memoPoint", this.s("Int32"));
-		this.defineVariable("result", this.s("Int32"));
+		this.defineVariable("memoPoint", this.s("Int"));
+		this.defineVariable("result", this.s("Int"));
 		this.defineVariable("text", this.s("String"));
 
 		this.defineVariable("label", this.s("Symbol"));
@@ -197,8 +206,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("nlabel", this.T("cnt"));
 		this.defineVariable("value", this.T("inputs"));
 		this.defineVariable("nvalue", this.T("cnt"));
-		this.defineVariable("pos", this.T("cnt"));
-		this.defineVariable("head_pos", this.T("pos"));
+		this.defineVariable("spos", this.T("cnt"));
+		this.defineVariable("epos", this.T("cnt"));
 		this.defineVariable("shift", this.T("cnt"));
 		this.defineVariable("length", this.T("cnt"));
 
@@ -218,24 +227,8 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineSymbol("Icnt", "0");
 		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Ipos", "0");
-		this.defineSymbol("Ihead_pos", "0");
+		this.defineSymbol("Iheadpos", "0");
 		this.defineSymbol("Iresult", "0");
-
-		this.defineVariable("indexMap", "array");
-		this.defineVariable("byteSet", "array");
-		this.defineVariable("s", this.T("byteSet"));
-		// this.defineVariable("funcMap", "array");
-
-		this.defineSymbol("{[", "{");
-		this.defineSymbol("]}", "}");
-
-	}
-
-	private String typeparam(String t) {
-		if (this.isDefined("typeparam")) {
-			return this.format("typeparam", t, this.s("Tree"));
-		}
-		return t;
 	}
 
 	@Override
@@ -259,18 +252,30 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void writeFooter() throws IOException {
-		if (this.isDefined("ast")) {
-			this.writeLine(this.s("ast"));
+		this.lib = new SourceSection();
+		this.makeLib("parse");
+		this.writeLine(this.lib.toString());
+		if (this.isDefined("TList")) {
+			if (this.isDefined("main")) {
+				if (this.isDefined("AST2")) {
+					this.writeLine(this.s("AST2"));
+				}
+				this.lib = new SourceSection();
+				this.makeLib("newAST2");
+				this.writeLine(this.lib.toString());
+				this.writeLine(this.s("main"));
+			}
 		} else {
-			this.lib = new SourceSection();
-			this.makeLib("parse");
-			this.writeLine(this.lib.toString());
-		}
-		if (this.isDefined("exports")) {
-			this.writeLine(this.s("exports"));
-		}
-		if (this.isDefined("main")) {
-			this.writeLine(this.s("main"));
+			if (this.isDefined("main")) {
+				if (this.isDefined("AST")) {
+					this.writeLine(this.s("AST"));
+				}
+				this.lib = new SourceSection();
+				this.makeLib("newAST");
+				this.makeLib("subAST");
+				this.writeLine(this.lib.toString());
+				this.writeLine(this.s("main"));
+			}
 		}
 		if (this.isDefined("module") && this.isDefined("end module")) {
 			this.writeLine(this.s("end module"));
@@ -351,7 +356,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 				}
 				params.add(f);
 			}
-			this.defFunc(this, this.T(var), typeName, params.toArray(new String[params.size()]), () -> {
+			this.defFunc(this, 0, this.T(var), typeName, params.toArray(new String[params.size()]), () -> {
 				StringBuilder block2 = this.beginBlock();
 				// this.emitLine(block, this.format("newfunc", typeName,
 				// this.emitParams(fields)));
@@ -440,7 +445,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			funcType = this.format("functype", ret, funcName, this.emitList("functypeparams", l));
 		}
-		this.writeSection(this.format("function", ret, funcName, this.emitParams(params), funcType));
+		String f = "function" + acc;
+		if (!this.isDefined(f)) {
+			f = "function";
+		}
+		this.writeSection(this.format(f, ret, funcName, this.emitParams(params), funcType));
 		this.incIndent();
 		this.writeSection(this.formatFuncResult(block.block()));
 		this.decIndent();
@@ -594,6 +603,11 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
+	protected String emitGroup(String expr) {
+		return this.format("group", expr);
+	}
+
+	@Override
 	protected String emitOp(String expr, String op, String expr2) {
 		return String.format("%s %s %s", expr, this.s(op), expr2);
 	}
@@ -629,21 +643,27 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitArrayLength(String a) {
+		if ((a.endsWith("inputs") || a.endsWith("value")) && this.isDefined("Byte[].size")) {
+			return this.format("Byte[].size", a);
+		}
 		return this.format("Array.size", a);
 	}
 
 	@Override
 	protected String emitArrayIndex(String a, String index) {
-		if (a.endsWith("memos") && this.isDefined("List")) {
-			return this.format("List.get", a, index);
+		if ((a.endsWith("inputs") || a.endsWith("value")) && this.isDefined("Byte[].get")) {
+			return this.format("Byte[].get", a, index);
+		}
+		if (a.endsWith("memos") && this.isDefined("ArrayList.get")) {
+			return this.format("ArrayList.get", a, index);
 		}
 		return this.format("Array.get", a, index);
 	}
 
 	@Override
 	protected String emitNewArray(String type, String index) {
-		if (type.startsWith("MemoEntry") && this.isDefined("List")) {
-			return this.format("List.new", type, index);
+		if (type.startsWith("MemoEntry") && this.isDefined("ArrayList")) {
+			return this.format("ArrayList.new", type, index);
 		}
 		return this.format("Array.new", type, index);
 	}
@@ -666,13 +686,13 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String emitNew(String typeName, List<String> params) {
 		String value = null;
-		if (this.isDefined("value")) {
+		if (this.isDefined("object")) {
 			ArrayList<String> l = new ArrayList<>();
 			String[] names = this.s("fields " + typeName).split(",");
 			for (int i = 0; i < params.size(); i++) {
-				l.add(this.format("valueparam", names[i], params.get(i)));
+				l.add(this.format("objectparam", names[i], params.get(i)));
 			}
-			value = this.format("value", typeName, this.emitList("valueparams", l));
+			value = this.format("object", typeName, this.emitList("objectparams", l));
 		} else {
 			value = this.emitFunc(typeName, params);
 		}
@@ -684,9 +704,15 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitFunc(String func, List<String> params) {
-		String fmt = this.getSymbol(func);
-		if (fmt != null && fmt.indexOf("%s") >= 0) {
-			return String.format(fmt, params.toArray(new Object[params.size()]));
+		if (this.isDefined(func)) {
+			String fmt = this.getSymbol(func);
+			if (fmt.indexOf("%s") >= 0 || fmt.indexOf("%2$s") >= 0 || func.indexOf(".") > 0) {
+				try {
+					return String.format(fmt, params.toArray(new Object[params.size()]));
+				} catch (Exception e) {
+					System.out.println("ERROR " + func);
+				}
+			}
 		}
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("args");
@@ -878,14 +904,15 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
 			sb.append(this.vString(""));
-			sb.append(delim);
-			sb.append(this.vString("Error"));
 			for (Symbol s : this.symbolList) {
 				sb.append(delim);
 				sb.append(this.vString(s.getSymbol()));
 			}
+			sb.append(delim);
+			sb.append(this.vString("error"));
 			sb.append(this.s("end array"));
-			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 1, sb.toString());
+			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 2, sb.toString());
+			this.declConst(this.s("Int"), "ParseError", -1, "" + (this.symbolList.size() + 1));
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
@@ -912,18 +939,32 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	protected String rawValue(byte[] buf) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.s("array"));
-		int c = 0;
-		for (byte b : buf) {
-			if (c > 0) {
-				sb.append(this.s("arrays"));
+		if (this.isDefined("Byte[].quote")) {
+			StringBuilder sb = new StringBuilder();
+			String fmt = this.s("Byte[].quote");
+			byte quote = (byte) fmt.charAt(fmt.length() - 1);
+			for (byte b : buf) {
+				if (b >= 32 && b <= 126 && b != quote) {
+					sb.append((char) b);
+				} else {
+					sb.append(this.format("Byte[].esc", (int) b));
+				}
 			}
-			sb.append(b);
-			c++;
+			return this.format("Byte[].quote", sb.toString());
+		} else {
+			StringBuilder sb = new StringBuilder();
+			sb.append(this.s("array"));
+			int c = 0;
+			for (byte b : buf) {
+				if (c > 0) {
+					sb.append(this.s("arrays"));
+				}
+				sb.append(b);
+				c++;
+			}
+			sb.append(this.s("end array"));
+			return this.getConstName(this.s("Byte"), this.Const("data"), buf.length, sb.toString());
 		}
-		sb.append(this.s("end array"));
-		return this.getConstName(this.s("Byte"), this.Const("data"), buf.length, sb.toString());
 	}
 
 	@Override
@@ -1006,7 +1047,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String vByteSet(ByteSet bs) {
 		String delim = this.s("arrays");
-		if (this.isDefined("bitis")) {
+		if (this.isDefined("Int32")) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
 			for (int i = 0; i < 8; i++) {
@@ -1112,7 +1153,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	protected String emitNewToken(String tag, String inputs, String pos, String epos) {
 		if (this.isDefined("pair")) {
 			String sub = this.format("subbytes", inputs, pos, epos);
-			return this.format("pair", tag, this.format("toString", sub));
+			return this.format("AST", tag, this.format("toString", sub));
 		}
 		return this.emitNull("tree");
 	}

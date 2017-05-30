@@ -4,16 +4,38 @@ extension          = java
 
 # type
 
-String             = String
 Bool               = boolean
 Byte               = byte
 Int                = int
 Int64              = long
 Array              = %s[]
-Tree               = Object
+Tree               = T
+String             = String
 
 Byte->Int          = %s & 0xff
-Int64->Int         = ($|Int|)(%s)
+Int64->Int         = (int)(%s)
+String->Byte[]     = %s.getBytes(Charset.forName("UTF-8"))
+#Byte[]->String     = new String(%s)
+
+#if use base64 encoding 
+base64             = B("%s")
+bools              = B256("%s")
+
+Array.new          = %s[%s]
+Array.size         = %s.length
+Array.get          = %s[%s]
+Array.slice        = %s[%s:%s]
+
+ArrayList          = ArrayList<%s>
+ArrayList.new      = new ArrayList<>()
+ArrayList.get      = %s.get(%s)
+ArrayList.add      = %s.add(%s)
+
+#In case of AST2
+#TList               = TList<T>
+#TList.empty         = null
+#TList.cons          = new TList<>(%s,%s,%s)
+#mainparams          = $|base|::newAST
 
 # syntax
 
@@ -21,31 +43,28 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
-assert           = assert(%s);
 
 module           = final class $|base| {
-struct           = static class %s {
+
+structname       = %s<T>
+
+struct           = static class %s <T> {
 field            = %s %s;
 constructor      = %s(%s) {
 init             = this.%s = %s;
-new              = new %s
+new              = new %s<>
 
 functype         = '''
-public interface %2$s {
+public interface %2$s <T> {
   public %1$s apply(%3$s);
 }
 '''
 
 const            = private static final %1$s %2$s = %3$s;
 
-function         = private static final %1$s %2$s(%3$s) {
+function         = private static final <T> %1$s %2$s(%3$s) {
+function1        = public static final <T> %1$s %2$s(%3$s) {
 return           = return %s;
-
-cast             = (%s)(%s)
-
-alen             = %s.length
-aindex           = %s[%s]
-anew             = new %s[%s]
 
 apply            = %s.apply
 funcref          = $|base|::%s
@@ -55,12 +74,9 @@ else if          = else if(%s) {
 while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
-#default          = default : %s
+#default         = default : %s
 
 lambda           = (%s) -> %s
-
-base64           = B("%s")
-bools            = B256("%s")
 
 #varprefix        = _
 #funcprefix       = _
@@ -69,35 +85,39 @@ imports = '''
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.ArrayList;
 import java.io.*;
 '''
 
 libs = '''
-static byte[] B(String s) {
-  return Base64.getDecoder().decode(s.getBytes());
-}
-
-static boolean[] B256(String s) {
-  boolean[] b = new boolean[256];
-  for (int i = 0; i < s.length(); i++) {
-    if (s.charAt(i) == 'T' || s.charAt(i) == '1') {
-      b[i] = true;
+  static byte[] B(String s) {
+    return Base64.getDecoder().decode(s.getBytes());
+  }
+  static boolean[] B256(String s) {
+    boolean[] b = new boolean[256];
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) == 'T' || s.charAt(i) == '1') {
+        b[i] = true;
+      }
+    }
+    return b;
+  }
+  public static class TList<T> {
+    String label;
+    T tree;
+    TList<T> next;
+    TList(String label, T tree, TList<T> next) {
+      this.label = label;
+      this.tree = tree;
+      this.next = next;
     }
   }
-  return b;
-}
-'''
-
-def bitis = '''
-private final static boolean bitis(int[] bits, int n) {
-	return (bits[n / 32] & (1 << (n % 32))) != 0;
-}
 '''
 
 def extract = '''
 private static final byte[] emptyValue = new byte[0];
 
-private static byte[] extract(NezParserContext px, int ppos) {
+private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
   if(px.pos == ppos) {
     return emptyValue;
   }
@@ -107,22 +127,8 @@ private static byte[] extract(NezParserContext px, int ppos) {
 }
 '''
 
-def matchBytes = '''
-private static boolean matchBytes(NezParserContext px, byte[] t, int length) {
-  if (px.pos + length <= px.length) {
-    for (int i = 0; i < length; i++) {
-      if (t[i] != px.inputs[px.pos + i]) {
-        return false;
-      }
-    }
-    px.pos += length;
-    return true;
-  }
-  return false;
-}
-'''
-
-ast = '''
+AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
   public static class SimpleTree {
     public String key;
     public Object value;
@@ -130,6 +136,11 @@ ast = '''
     SimpleTree(String key, Object value) {
       this.key = key;
       this.value = value;
+    }
+
+    SimpleTree set(int n, String label, SimpleTree child) {
+    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
+    	return this;
     }
 
     @Override
@@ -141,7 +152,7 @@ ast = '''
 
     private void strOut(StringBuilder sb) {
       sb.append("[#");
-      sb.append(this.key == null ? "" : this.key);
+      sb.append(this.key);
       if (this.value instanceof SimpleTree[]) {
         SimpleTree[] sub = (SimpleTree[]) this.value;
         for (SimpleTree child : sub) {
@@ -161,62 +172,56 @@ ast = '''
   }
 '''
 
-exports = '''
-  public static Object parse(String s, TreeFunc newFunc, TreeSetFunc setFunc) throws IOException {
-    byte[] inputs = (s + "\0").getBytes(Charset.forName("UTF-8"));
-    NezParserContext px = new NezParserContext(inputs, inputs.length-1, new TreeLog(null), newFunc, setFunc);
-    initMemo(px);
-    if(!e0(px)) {
-    	System.err.printf("syntax error at %d\n", px.head_pos);
-    };
-    return px.tree;
+def newAST = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
+    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
+    //return new SimpleTree(tag, new SimpleTree[size]);
+    //return null;
   }
 '''
 
-main = '''
-  public static Object parse(String s) throws IOException {
-    TreeFunc f = (String tag, byte[] inputs, int pos, int epos, int size) -> {
-      if (size == 0) {
-        return new SimpleTree(tag, new String(inputs, pos, epos - pos));
-      }
-      return new SimpleTree(tag, new SimpleTree[size]);
-    };
-    TreeSetFunc f2 = (Object parent, int n, String label, Object child) -> {
-      SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
-      childs[n] = new SimpleTree(label, child);
-      return parent;
-    };
-    return parse(s, f, f2);
+def subAST = '''
+  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
+    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+    childs[n] = new SimpleTree(label, child);
+    return parent;
   }
+'''
 
-  static String readInputs(String a) throws IOException {
+mainparams = $|base|::newAST, $|base|::subAST
+main = '''
+  static byte[] readInputs(String a) throws IOException {
     File file = new File(a);
     if(file.exists()) {
-      StringBuilder sb = new StringBuilder();
-      BufferedReader br = new BufferedReader(new FileReader(file));
-      String str = br.readLine();
-      while(str != null){
-        sb.append(str);
-        sb.append("\n");
-        str = br.readLine();
-      }
-      br.close();
-      return sb.toString();
+      byte[] buf = new byte[((int)file.length())+1];  // adding '\0' termination
+      FileInputStream fin = new FileInputStream(file);
+      fin.read(buf, 0, (int)file.length());
+      return buf;
     }
-    return a;
+    else {
+      return (a + "\0").getBytes(Charset.forName("UTF-8"));
+    }
   }
   
   public final static void main(String[] args) throws IOException {
     for(String a: args) {
-      String s = readInputs(a);
+      byte[] buf = readInputs(a);
       long st = System.nanoTime();
-      Object t = parse(s);
+      SimpleTree t = parse(buf, buf.length-1, $|mainparams|);
       long et = System.nanoTime();
-      System.err.printf("%s %s %f[ms]: ", a, t != null ? "OK": "NG", (et-st)/1000000.0);
+      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
       System.out.print(t);
       System.out.flush();
       System.err.printf("\n");
     }
+  }
+'''
+
+AST2        = $|AST|
+
+def newAST2 = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
+    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
   }
 '''
 
