@@ -29,7 +29,7 @@ Tstate             = State?
 unsigned           = Int(%s)
 keyindex           = ($|Int|)(%s)
 
-val              = var %2$s: %1$s = %3$s/*val*/
+val              = let %2$s: %1$s = %3$s
 var              = var %2$s: %1$s = %3$s
 assign           = %s = %s
 
@@ -46,11 +46,7 @@ constructor      = init(%2$s) {
 init             = self.%s = %s
 new              = %s
 
-functype         = '''
-protocol %2$s {
-  func apply(%3$s) -> %1$s
-}
-'''
+functype         =
 
 const            = let %2$s :%1$s = %3$s
 
@@ -134,8 +130,8 @@ class NezParserContext{
     var headpos :Int
     var tree :Any?
     var treeLog :TreeLog?
-    var newFunc :(String,[UInt8],Int,Int,Int) -> Any?
-    var setFunc :(Any?,Int,String,[Any?]) -> Any?
+    let newFunc :(String,[UInt8],Int,Int,Int) -> Any?
+    let setFunc :(Any?,Int,String,[Any?]) -> Any?
     var state :State?
     var memos :[MemoEntry]
     init(_ inputs :[UInt8],_ length :Int,_ pos :Int,_ headpos :Int,_ tree :Any?,_ treeLog :TreeLog?,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :@escaping (Any?,Int,String,[Any?]) -> Any?,_ state :State?,_ memos :[MemoEntry]) {
@@ -153,50 +149,31 @@ class NezParserContext{
 }
 func newMemos (_ tree :Any?,_ length :Int) -> [MemoEntry] {
   let memos: [MemoEntry] = Array(repeating:MemoEntry(-1,0,0,nil,nil), count:length)
-  var cnt: Int = 0
-  while cnt < length {
-    memos[cnt] = MemoEntry(-1,0,0,tree,nil)
-    cnt = cnt + 1
-  }
   return memos
 }
 '''
-def logT = '''
-func useTreeLog (_ px :NezParserContext) -> TreeLog? {
+def logT =
+def backLink = '''
+func useTreeLog (_ px :NezParserContext) -> TreeLog {
     let tcur: TreeLog = px.treeLog!
     if tcur.nextLog == nil {
         tcur.nextLog = TreeLog(0,0,nil,px.treeLog,nil)
     }
-    return tcur.nextLog
+    return tcur.nextLog!
 }
 func logT (_ px :NezParserContext,_ op :Int,_ log :Int,_ tree :Any?) -> Bool {
-    let tcur: TreeLog? = useTreeLog(px)
-    tcur!.op = op
-    tcur!.log = log
-    tcur!.tree = tree
+    let tcur: TreeLog = useTreeLog(px)
+    tcur.op = op
+    tcur.log = log
+    tcur.tree = tree
     px.treeLog = tcur
     return true
 }
-class AST{
-  var key :String
-  var value :[Any?]
-  init(_ key :String, _ value :[Any?]){
-    self.key = key
-    self.value = value
-  }
-}
-let subAST = {(_ parent :Any?,_ n :Int,_ label :String,_ child :[Any?]) -> Any? in
-  var childs = (parent as! AST).value
-  childs[n] = AST(label, child)
-  return parent
-}
-let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> Any? in
-    if(n == 0){
-      let pre = inputs.prefix(epos-spos+1)
-      return AST(tag,pre.dropFirst(spos).map{$0})
-    }else{
-      return AST(tag,Array(repeating:AST("",[]), count:n))
-  }
+func backLink (_ px :NezParserContext,_ treeLog :TreeLog?,_ nlabel :Int,_ tree :Any?) -> Bool {
+  px.treeLog = treeLog
+  let a = linkT(px,nlabel)
+  px.tree = tree
+  return a
 }
 '''
 
@@ -232,20 +209,22 @@ func endT (_ px :NezParserContext,_ shift :Int,_ ntag0 :Int) -> Bool {
         tcur = tcur!.prevLog
     }
     if let tcur2 = tcur {
-      px.tree = (nvalue == 0) ? (newAST(gettag(ntag),px.inputs,tcur2.log,epos,cnt)) : (newAST(gettag(ntag),getvalue(nvalue),0,getlength(nvalue),cnt))
+      px.tree = (nvalue == 0) ? (px.newFunc(gettag(ntag),px.inputs,tcur2.log,epos,cnt)) : (px.newFunc(gettag(ntag),getvalue(nvalue),0,getlength(nvalue),cnt))
     }else{
-      px.tree = newAST(gettag(ntag),getvalue(nvalue),0,getlength(nvalue),cnt)
+      px.tree = px.newFunc(gettag(ntag),getvalue(nvalue),0,getlength(nvalue),cnt)
     }
     tcur = px.treeLog
     while tcur?.op != 0 {
-        if tcur!.op == 3 {
-            cnt = cnt - 1
-            px.tree = subAST(px.tree,cnt,getlabel(tcur!.log),[tcur!.tree])
+      if let tcur3 = tcur {
+        if tcur3.op == 3 {
+            cnt -= 1
+            px.tree = px.setFunc(px.tree,cnt,getlabel(tcur3.log),[tcur3.tree])
         }
-        tcur = tcur!.prevLog
+        tcur = tcur3.prevLog
+      }
     }
-    if let tcur3 = tcur {
-      px.treeLog = tcur3.prevLog
+    if let tcur4 = tcur {
+      px.treeLog = tcur4.prevLog
     }else{
       px.treeLog = nil
     }
@@ -254,13 +233,13 @@ func endT (_ px :NezParserContext,_ shift :Int,_ ntag0 :Int) -> Bool {
 '''
 
 def parse = '''
-func parse (_ inputs :[UInt8],_ length :Int,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :(Any?,Int,String,[Any?]) -> Any?) -> Any? {
+func parse (_ inputs :[UInt8],_ length :Int,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :@escaping (Any?,Int,String,[Any?]) -> Any?) -> Any? {
     var tree: Any? = newAST(gettag(0),inputs,0,length,0)
-    let px: NezParserContext = NezParserContext(inputs,length,0,0,tree,TreeLog(0,0,tree,nil,nil),newAST ,subAST ,nil,newMemos(tree,257))
+    let px: NezParserContext = NezParserContext(inputs,length,0,0,tree,TreeLog(0,0,tree,nil,nil),newFunc ,setFunc ,nil,newMemos(tree,257))
     tree = (e0(px)) ? (px.tree) : (newAST(gettag(ParseError),inputs,px.headpos,length,0))
     return tree
 }
-func parseText (_ text :String,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :(Any?,Int,String,[Any?]) -> Any?) -> Any? {
+func parseText (_ text :String,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :@escaping (Any?,Int,String,[Any?]) -> Any?) -> Any? {
     let inputs: [UInt8] = [UInt8](text.utf8)
     let length: Int = inputs.count
     return parse(inputs,length,newFunc,setFunc)
@@ -268,15 +247,36 @@ func parseText (_ text :String,_ newFunc :@escaping (String,[UInt8],Int,Int,Int)
 '''
 
 def newAST = '''
-
+let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> Any? in
+    if(n == 0){
+      let pre = inputs.prefix(epos-spos+1)
+      return AST(tag,pre.dropFirst(spos).map{$0})
+    }else{
+      return AST(tag,Array(repeating:AST("",[]), count:n))
+  }
+}
 '''
 
 def subAST = '''
-
+let subAST = {(_ parent :Any?,_ n :Int,_ label :String,_ child :[Any?]) -> Any? in
+  var childs = (parent as! AST).value
+  if childs.count > n {
+    childs[n] = AST(label, child)
+  }
+  (parent as! AST).value = childs
+  return parent
+}
 '''
 
 AST = '''
-
+class AST{
+  var key :String
+  var value :[Any?]
+  init(_ key :String, _ value :[Any?]){
+    self.key = key
+    self.value = value
+  }
+}
 '''
 
 main = '''
@@ -304,7 +304,7 @@ while true {
   }else{
     print("\(inputString) NG \(time)[s]: ")
   }
-  print(object)
+  print(object!)
 }
 '''
 
