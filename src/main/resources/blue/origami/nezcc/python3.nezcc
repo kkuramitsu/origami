@@ -1,9 +1,29 @@
+
 # nezcc file
 
 extension          = py
 
 # type
 
+<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
+Bool               =
+Byte               =
+Byte[]             =
+Int                =
+Int64              =
+Array              =
+Symbol             =
+Tree               =
+
+Byte[]->String   = %s.decode('utf-8')
+String->Byte[]   = %s.encode('utf-8')
+
+Array.size       = len(%s)
+Array.get        = %s[%s]
+Array.new        = [None] * %2$s
+Array.slice      = %s[%s:%s]
+
+=======
 Bool               = 
 Byte               = 
 Byte[]             = 
@@ -21,6 +41,7 @@ Array.get        = %s[%s]
 Array.new        = [None] * %2$s
 Array.slice      = %s[%s:%s]
 
+>>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
 Byte[].quote     = b'%s'
 Byte[].esc       = '\x%02x'
 
@@ -28,13 +49,22 @@ Byte[].esc       = '\x%02x'
 
 comment          = # %s
 begin            = :
+<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
+end              =
+;                =
+=======
 end              = 
 ;                = 
+>>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
 
 struct           = class %s :
 #field            = %s %s;
 constructor      = def __init__(self,%2$s):
+<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
+end constructor  =
+=======
 end constructor  = 
+>>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
 init             = self.%s = %s
 
 getter           = %s.%s
@@ -142,7 +172,10 @@ a key-value tree representation.
    ...
 
 Customize TreeFunc and TreeSetFunc in the parse() functions.
+<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
+See.
+=======
 See. 
+>>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
 
 '''
-
