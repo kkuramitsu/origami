@@ -784,7 +784,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		this.defineLib("newMemos", () -> {
 			this.defFunc(pg, 0, this.T("memos"), "newMemos", "tree", "length", () -> {
 				B block = pg.beginBlock();
-				pg.emitVarDecl(block, false, "memos", pg.emitNewArray(this.T("m"), pg.V("length")));
+				pg.emitVarDecl(block, true, "memos", pg.emitNewArray(this.T("m"), pg.V("length")));
 				pg.emitVarDecl(block, true, "cnt", pg.vInt(0));
 				/* while */
 				C loopCond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));

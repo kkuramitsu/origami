@@ -40,6 +40,7 @@ end              =
 struct           = data %1$s = %1$s {%2$s} deriving(Show)
 record           = %2$s :: %1$s
 records          = ,
+
 object           = %1$s {%2$s} 
 objectparam      = %1$s=%2$s 
 objectparams     = , 
