@@ -5,18 +5,21 @@ extension          = rs
 # type
 
 Bool               = bool
-Byte               = &str
+Byte               = u8
 Int                = i32
 Int32              = i32
 Int64              = i64
 Array              = %s
-Symbol             = &str
+Symbol             = str
 Tree               = T
 typeparam          = %s<%s>
-String             = &str
+String             = str
 
-unsigned           = %s & 0xff
-keyindex           = (%s) as $|Int|
+Byte->Int          = %s as i32
+Int64->Int         = %s as i32
+String->Byte[]     = %s.as_bytes()
+Byte[]->String     = str::from_utf8(&%s)
+
 
 # syntax
 
@@ -26,53 +29,200 @@ end              = }
 ;                = ;
 
 module           = mod $|base| {
-struct           = struct %s {
+struct           = struct %s<T> {
 field            = %2$s: %1$s,
 value            = %1$s {%2$s} 
 valueparam       = %1$s: %2$s 
 valueparams      = , 
 
-
 #functype         = 
 
 const            = let %2$s = %3$s;
-const_array      = %2$s[%1$s; %3$s] = %4$s;
+const_array      = let %2$s = vec!%4$s;
 
-function         = fn %2$s(%3$s) -> %1$s {
-param             = %2$s: %1$s
+function         = fn %2$s<T>(%3$s) -> %1$s {
+param             = %2$s: &%1$s
 params            = ,
-return           = %s
+return           = return %s;
 
 #cast             = (@@@@%s)(%s)
 
-Array.size        = %s.length
+Array.size        = %s.len()
 Array.get         = %s[%s]
-#Array.new         = 
+Array.new         = vec :: new()
 
-apply            = apply!(%s)
-funcref          =
+Option             = Option<%s>
+Some               = Some(%s)
+None               = None
+Option.get         = %s.unwrap
+Option.isNone      = %s.is_none()
+
+#apply            = apply!(%s)
+#funcref          =
 
 if               = if %s {
 else if          = else if %s {
 while            = while %s {
 switch           = match %s {
 case             = %s => %s
-#default          = _ => %s
+default          = _ => %s
 
 ifexpr           = if %s {%s} else{%s} 
 
-lambda           = (%s) -> %s
+#lambda           = |%s| { %s }
 
 val              = let %2$s = %3$s;
 var              = let mut %2$s = %3$s;
-assign           = %s = %s
+assign           = %s = %s;
 
-array            = {
+array            = [
 arrays           = ,
-end array        = }
+end array        = ]
 
 
 #varprefix        = _
 #funcprefix       = _
+
+imports = '''
+use std::io;
+'''
+
+libs = '''
+  public static class TList<T> {
+    String label;
+    T tree;
+    TList<T> next;
+    TList(String label, T tree, TList<T> next) {
+      this.label = label;
+      this.tree = tree;
+      this.next = next;
+    }
+  }
+'''
+
+def extract = '''
+private static final byte[] emptyValue = new byte[0];
+
+private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
+  if(px.pos == ppos) {
+    return emptyValue;
+  }
+  byte[] b = new byte[px.pos - ppos];
+  System.arraycopy(px.inputs, ppos, b, 0, b.length);
+  return b;
+}
+'''
+
+AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
+  public static class SimpleTree {
+    public String key;
+    public Object value;
+
+    SimpleTree(String key, Object value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    SimpleTree set(int n, String label, SimpleTree child) {
+    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
+    	return this;
+    }
+
+    private void strOut(StringBuilder sb) {
+      sb.append("[#");
+      sb.append(this.key);
+      if (this.value instanceof SimpleTree[]) {
+        SimpleTree[] sub = (SimpleTree[]) this.value;
+        for (SimpleTree child : sub) {
+          sb.append(" ");
+          if (child.key != null) {
+            sb.append("$" + child.key + "=");
+          }
+          ((SimpleTree) child.value).strOut(sb);
+        }
+      } else {
+        sb.append(" '");
+        sb.append(this.value);
+        sb.append("'");
+      }
+      sb.append("]");
+    }
+  }
+'''
+
+def newAST = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
+    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
+    //return new SimpleTree(tag, new SimpleTree[size]);
+    //return null;
+  }
+'''
+
+def subAST = '''
+  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
+    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+    childs[n] = new SimpleTree(label, child);
+    return parent;
+  }
+'''
+
+mainparams = $|base|::newAST, $|base|::subAST
+main = '''
+  static byte[] readInputs(String a) throws IOException {
+    File file = new File(a);
+    if(file.exists()) {
+      byte[] buf = new byte[((int)file.length())+1];  // adding '\0' termination
+      FileInputStream fin = new FileInputStream(file);
+      fin.read(buf, 0, (int)file.length());
+      return buf;
+    }
+    else {
+      return (a + "\0").getBytes(Charset.forName("UTF-8"));
+    }
+  }
+  
+  public final static void main(String[] args) throws IOException {
+    for(String a: args) {
+      byte[] buf = readInputs(a);
+      long st = System.nanoTime();
+      SimpleTree t = parse(buf, buf.length-1, $|mainparams|);
+      long et = System.nanoTime();
+      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
+      System.out.print(t);
+      System.out.flush();
+      System.err.printf("\n");
+    }
+  }
+'''
+
+AST2        = $|AST|
+
+def newAST2 = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
+    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
+  }
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+'''
 
 
