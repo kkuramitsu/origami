@@ -268,7 +268,7 @@ let subAST = {(_ parent :Any?,_ n :Int,_ label :String,_ child :[Any?]) -> Any? 
 }
 '''
 
-AST = '''
+def AST = '''
 class AST{
   var key :String
   var value :[Any?]

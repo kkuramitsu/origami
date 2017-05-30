@@ -412,8 +412,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C emitMove(C shift) {
-		this.makeLib("move");
-		return this.emitFunc("move", this.V("px"), shift);
+		this.makeLib("movep");
+		return this.emitFunc("movep", this.V("px"), shift);
 	}
 
 	protected C emitMatchAny() {

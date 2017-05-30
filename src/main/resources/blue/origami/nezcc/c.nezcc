@@ -86,6 +86,8 @@ imports = '''
 #endif
 
 struct NezParserContext;  // avoid referencing
+static void *newAST($|Symbol| tag, $|Byte[]| inputs, $|Int| pos, $|Int| epos, $|Int| nsubs);
+static void* subAST(void *parent, $|Int| n, $|Symbol| label, void *child);
 
 /* local malloc */
 #define _malloc malloc
@@ -134,7 +136,7 @@ static int nextN(struct NezParserContext *px, const void *text, size_t len) {
 }
 '''
 
-AST = '''
+def AST = '''
 /* Tree */
 typedef struct Tree {
   $|Symbol|  key;

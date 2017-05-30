@@ -127,7 +127,7 @@ private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
 }
 '''
 
-AST = '''
+def AST = '''
   /** Here is the main part. You may remove them if unnecessary. **/
   public static class SimpleTree {
     public String key;
@@ -217,8 +217,6 @@ main = '''
   }
 '''
 
-AST2        = $|AST|
-
 def newAST2 = '''
   private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
     return new SimpleTree(tag, new String(inputs, pos, epos - pos));
@@ -226,13 +224,6 @@ def newAST2 = '''
 '''
 
 man = '''
-=============
- QUICK START
-=============
- 
- javac $|base|.java
- java $|base| <file> or <input-text>
- 
 =============
  INTEGRATION
 =============
@@ -244,5 +235,16 @@ a simple tree representation ($|base|.SimpleTree).
    if(t != null) {
       System.out.println(t);
    }
+
+=============
+ QUICK START
+=============
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
+ 
 '''
 

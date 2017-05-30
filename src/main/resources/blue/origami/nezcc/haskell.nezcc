@@ -153,9 +153,9 @@ newMemos tree' length' = replicate length' $ MemoEntry {_key=-1,_result=0,_pos=0
 
 '''
 
-def move = '''
-move :: NezParserContext -> Int -> (NezParserContext,Bool)
-move px' shift' = (modify pos (+ shift') px',True)
+def movep = '''
+movep :: NezParserContext -> Int -> (NezParserContext,Bool)
+movep px' shift' = (modify pos (+ shift') px',True)
 
 '''
 

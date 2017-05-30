@@ -92,7 +92,7 @@ end array        = )
 
 Symbol           = String
 
-AST               = '''
+def AST          = '''
   class SimpleTree(key: $|Symbol|, var value: AnyRef) {
     override def toString = if (value.isInstanceOf[SimpleTree]) s"$key= $value" else s"[#$key $value]"
   }

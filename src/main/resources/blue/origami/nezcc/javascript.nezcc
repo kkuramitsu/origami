@@ -36,13 +36,14 @@ struct           =
 constructor      = function %s (%2$s){
 end constructor  =
 new              = new %s
-
 init             = this.%s = %s;
 
 getter           = %s.%s
 setter           = %s.%s = %s
 
 const            = %2$s = %3$s
+val              = var %2$s = %3$s;
+var              = $|val|
 
 function         = function %2$s(%3$s){
 param            = %2$s
@@ -72,10 +73,10 @@ assign           = %s = %s;
 if               = if (%s){
 while            = while (%s){
 
-#switch           = switch(%s) {
-#case             = case %s : %s
-#default          = default : %s
-#end switch       = }
+switch           = switch(%s) {
+case             = case %s : %s
+default          = default : %s
+end switch       = }
 
 lambda           = ((%s) => %s)
 
@@ -85,11 +86,8 @@ end array        = ]
 
 
 imports = '''
-
-function fTrue(px){ return true; }
-
-function fFalse(px){ return false; }
-
+//function fTrue(px){ return true; }
+//function fFalse(px){ return false; }
 '''
 
 def newAST = '''
@@ -112,12 +110,10 @@ function subAST(parent, n, label, child){
 main = '''
 
 (function main(){
-
   var expr = "1+1+1-1";
   var inputs = createUTF8BytesFromString(expr+'\0');
   var result = parse(inputs,inputs.length-1, newAST, subAST);
   console.log(result);
-
 })();
 
 
@@ -167,7 +163,6 @@ function unicodeToUTF8Bytes(code, result) {
     if(! result) {
         result = {};
     }
-
     if(code <= 0x7F) {
         result.length = 1;
         result[0] = code;
@@ -212,10 +207,5 @@ a key-value tree representation.
    ...
 
 Customize TreeFunc and TreeSetFunc in the parse() functions.
-<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
 See.
-=======
-See.
->>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
-
 '''

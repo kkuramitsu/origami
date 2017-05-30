@@ -229,6 +229,10 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineSymbol("Ipos", "0");
 		this.defineSymbol("Iheadpos", "0");
 		this.defineSymbol("Iresult", "0");
+		if (this.isDefined("paraminit")) {
+			this.defineSymbol("PInewFunc", this.emitFuncRef("newAST"));
+			this.defineSymbol("PIsetFunc", this.emitFuncRef("subAST"));
+		}
 	}
 
 	@Override
@@ -257,20 +261,16 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.writeLine(this.lib.toString());
 		if (this.isDefined("TList")) {
 			if (this.isDefined("main")) {
-				if (this.isDefined("AST2")) {
-					this.writeLine(this.s("AST2"));
-				}
 				this.lib = new SourceSection();
+				this.makeLib("AST");
 				this.makeLib("newAST2");
 				this.writeLine(this.lib.toString());
 				this.writeLine(this.s("main"));
 			}
 		} else {
 			if (this.isDefined("main")) {
-				if (this.isDefined("AST")) {
-					this.writeLine(this.s("AST"));
-				}
 				this.lib = new SourceSection();
+				this.makeLib("AST");
 				this.makeLib("newAST");
 				this.makeLib("subAST");
 				this.writeLine(this.lib.toString());
@@ -295,7 +295,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
-		if (this.isDefined("value")) {
+		if (this.isDefined("objectparam")) {
 			StringBuilder sb = new StringBuilder();
 			int c = 0;
 			for (String f : fields) {
@@ -464,7 +464,12 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 				continue;
 			}
 			String t = this.T(p);
-			l.add(this.format("param", t, this.V(p)));
+			String pinit = this.s("PI", p);
+			if (pinit != null && this.isDefined("paraminit")) {
+				l.add(this.format("paraminit", t, this.V(p), pinit));
+			} else {
+				l.add(this.format("param", t, this.V(p)));
+			}
 		}
 		return this.emitList("params", l);
 	}

@@ -152,7 +152,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			pg.declFuncType(this.T("matched"), "ParserFunc", "px");
 		});
 		this.defineLib("getbyte", () -> {
-			this.makeLib("move");
+			this.makeLib("movep");
 			this.defFunc(pg, 0, this.T("c"), "getbyte", "px", () -> {
 				C expr = pg.emitArrayIndex(pg.emitGetter("px.inputs"), pg.emitGetter("px.pos"));
 				return (pg.emitUnsigned(expr));
@@ -174,8 +174,8 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				}
 			});
 		});
-		this.defineLib("move", () -> {
-			this.defFunc(pg, 0, this.T("matched"), "move", "px", "shift", () -> {
+		this.defineLib("movep", () -> {
+			this.defFunc(pg, 0, this.T("matched"), "movep", "px", "shift", () -> {
 				B block = pg.beginBlock();
 				pg.Setter(block, "px.pos", pg.emitOp(pg.emitGetter("px.pos"), "+", pg.V("shift")));
 				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
@@ -1004,7 +1004,13 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	// Tree
 
 	void loadMain(ParserGenerator<B, C> pg) {
+
+		this.defineLib("AST", () -> {
+
+		});
+
 		this.defineLib("newAST", () -> {
+			pg.makeLib("AST");
 			this.defFunc(pg, 0, this.T("tree"), "newAST", "tag", "inputs", "pos", "epos", "cnt", () -> {
 				return pg.emitFunc("AST.new", pg.V("tag"), pg.V("inputs"), pg.V("pos"), pg.V("epos"), pg.V("cnt"));
 			});
@@ -1056,9 +1062,17 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				args.add(pg.vInt(0));
 				args.add(pg.V("tree"));
 				args.add(this.emitNewTreeLog(pg, null, null, pg.V("tree"), null));
-				args.add(pg.V("newFunc"));
+				if (this.isDefined("null") && !this.isDefined("paraminit")) {
+					args.add(pg.IfNull(pg.V("newFunc"), pg.emitFuncRef("newAST")));
+				} else {
+					args.add(pg.V("newFunc"));
+				}
 				if (!this.isDefined("TList")) {
-					args.add(pg.V("setFunc"));
+					if (this.isDefined("null") && !this.isDefined("paraminit")) {
+						args.add(pg.IfNull(pg.V("setFunc"), pg.emitFuncRef("subAST")));
+					} else {
+						args.add(pg.V("setFunc"));
+					}
 				}
 				args.add(pg.emitNull("state"));
 				args.add(pg.emitFunc("newMemos", pg.V("tree"), pg.vInt(pg.grammar.getMemoPointSize() * 64 + 1)));

@@ -36,6 +36,7 @@ const            = %2$s = %3$s
 
 function         = def %2$s(%3$s):
 param            = %2$s
+paraminit        = %2$s=%3$s
 params           = ,
 return           = return %s
 
@@ -101,11 +102,11 @@ main = '''
 def read_inputs(a):
   try:
     f = open(a, 'rb')
-    data = f.read() + b'\0'
+    data = f.read() + b'\0'  # Zero Termination
     f.close()
     return data
   except:
-    return a.encode() + b'\0'
+    return a.encode() + b'\0' # Zero Termination
 
 if __name__ == "__main__":
   for a in sys.argv[1:]:
@@ -121,20 +122,13 @@ if __name__ == "__main__":
 '''
 
 man = '''
-===================
- QUICK INTEGRATION
-===================
-
-Just call $|base|.parse() with an input text. You will get
-a key-value tree representation.
-
-   $ python3
-   >>> import $|base|
-   >>> $|base|.parse('input-text');
-   ...
-
-Customize TreeFunc and TreeSetFunc in the parse() functions.
-See. 
-
+=============
+ QUICK START
+=============
+ 
+ python $|base|.py <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
 '''
 

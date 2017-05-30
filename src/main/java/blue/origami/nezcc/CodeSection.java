@@ -192,6 +192,14 @@ abstract class CodeSection<C> {
 		}
 	}
 
+	protected String s(String prefix, String varname) {
+		String key = prefix + varname;
+		if (!this.isDefined(key)) {
+			return null;
+		}
+		return this.s(key);
+	}
+
 	protected String T(String varname) {
 		String key = "T" + varname;
 		if (!this.isDefined(key)) {
