@@ -1,50 +1,54 @@
+
 # nezcc file
 
 extension          = py
 
 # type
 
-Bool               = 
-Byte               = 
-Int                = 
-Int64              = 
-Array              = 
-Symbol             = 
-Tree               = 
+Bool               =
+Byte               =
+Byte[]             =
+Int                =
+Int64              =
+Array              =
+Symbol             =
+Tree               =
 
+Byte[]->String   = %s.decode('utf-8')
+String->Byte[]   = %s.encode('utf-8')
+
+Array.size       = len(%s)
+Array.get        = %s[%s]
+Array.new        = [None] * %2$s
+Array.slice      = %s[%s:%s]
+
+Byte[].quote     = b'%s'
+Byte[].esc       = '\x%02x'
 
 # syntax
 
 comment          = # %s
-;                = 
-#module          = final class %s {
-#end module      = }
+begin            = :
+end              =
+;                =
 
 struct           = class %s :
-end struct       = 
 #field            = %s %s;
-constructor      = def __init__(self,%s):
-end constructor  = 
+constructor      = def __init__(self,%2$s):
+end constructor  =
 init             = self.%s = %s
-#new              = new %s
-
-const            = %2$s = %3$s
-
-function         = def %2$s(%3$s):
-end function     = 
-param            = %2$s
-params           = ,
-return           = return %s
 
 getter           = %s.%s
 setter           = %s.%s = %s
 
-alen             = len(%s)
-aindex           = %s[%s]
-anew             = [None] * %2$s
-group            = (%s)
+const            = %2$s = %3$s
 
-#cast             = (%s)(%s)
+function         = def %2$s(%3$s):
+param            = %2$s
+params           = ,
+return           = return %s
+
+group            = (%s)
 
 and              = %s and %s
 or               = (%s) or (%s)
@@ -65,10 +69,7 @@ var              = %2$s = %3$s
 assign           = %s = %s
 
 if               = if %s:
-end if           = 
-
 while            = while %s:
-end while        = 
 
 #switch           = switch(%s) {
 #case             = case %s : %s
@@ -76,29 +77,56 @@ end while        =
 #end switch       = }
 
 lambda           = (lambda %s : %s)
-varprefix        = _
-#funcprefix       = _
 
-# main
-zero             = (%s + '\0')
-subbyte          = %s[%s:%s]
-toString         = %s.decode('utf-8')
-toBytes          = %s.encode('utf-8')
-
-pair             = (%s,%s)
-second           = %s[1]
+array            = [
+arrays           = ,
+end array        = ]
 
 
 imports = '''
+import sys, time
+
+def fTrue(px): return True
+
+def fFalse(px): return False
 
 '''
 
-libs = '''
+def newAST = '''
+def newAST(tag, inputs, pos, epos, size):
+  if (size == 0) :
+    return (tag, inputs[pos:epos])
+  else:
+    return (tag, [None]*size)
+'''
 
+def subAST = '''
+def subAST(parent, n, label, child):
+  parent[1][n] = (label, child)
+  return parent
 '''
 
 main = '''
+def read_inputs(a):
+  try:
+    f = open(a, 'rb')
+    data = f.read() + b'\0'
+    f.close()
+    return data
+  except:
+    return a.encode() + b'\0'
 
+if __name__ == "__main__":
+  for a in sys.argv[1:]:
+    s = read_inputs(a)
+    st = time.time()
+    t = parse(s, len(s)-1, newAST, subAST)
+    et = time.time()
+    sys.stderr.write(a + " " + str((et-st)*1000.0) + "[ms]: ")
+    sys.stderr.flush()
+    sys.stdout.write(str(t))
+    sys.stdout.flush()
+    sys.stderr.write('\n')
 '''
 
 man = '''
@@ -106,16 +134,15 @@ man = '''
  QUICK INTEGRATION
 ===================
 
-Just call $cmd$.parse() with an input text. You will get
+Just call $|base|.parse() with an input text. You will get
 a key-value tree representation.
 
    $ python3
-   >>> import $cmd$
-   >>> $cmd$.parse('input-text');
+   >>> import $|base|
+   >>> $|base|.parse('input-text');
    ...
 
 Customize TreeFunc and TreeSetFunc in the parse() functions.
-See $site$. 
+See.
 
 '''
-
