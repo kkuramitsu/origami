@@ -1,0 +1,221 @@
+# nezcc file
+
+extension          = js
+
+# type
+Bool               = var
+Byte               = var
+Byte[]             = var
+Int                = var
+Int64              = var
+Array              = var
+Symbol             = var
+Tree               = var
+
+Byte[]->String   = %s;
+String->Byte[]   = createUTF8BytesFromString(%s);
+
+Array.size       = %s.length
+Array.get        = %s[%s]
+Array.new        = new Array(%2$s).fill(null)
+Array.slice      = %s.slice(%s,%s))
+
+
+#Byte[].quote     = %s
+#Byte[].esc       = '\x%02x'
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+
+struct           =
+#field           = %s %s;
+constructor      = function %s (%2$s){
+end constructor  =
+new              = new %s
+
+init             = this.%s = %s;
+
+getter           = %s.%s
+setter           = %s.%s = %s
+
+const            = %2$s = %3$s
+
+function         = function %2$s(%3$s){
+param            = %2$s
+params           = ,
+return           = return %s;
+
+#group            = (%s)
+
+and              = (%s) && (%s)
+or               = (%s) || (%s)
+not              = !(%s)
+ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
+
+funccall         = %s(%s)
+args             = ,
+#apply            = %s.apply
+#funcref          = $|base|::%s
+
+true             = true
+false            = false
+null             = null
+
+val              = var %2$s = %3$s;
+var              = var %2$s = %3$s;
+assign           = %s = %s;
+
+if               = if (%s){
+while            = while (%s){
+
+#switch           = switch(%s) {
+#case             = case %s : %s
+#default          = default : %s
+#end switch       = }
+
+lambda           = ((%s) => %s)
+
+array            = [
+arrays           = ,
+end array        = ]
+
+
+imports = '''
+
+function fTrue(px){ return true; }
+
+function fFalse(px){ return false; }
+
+'''
+
+def newAST = '''
+function newAST(tag, inputs, pos, epos, size){
+  if (size == 0) {
+    return [tag, (inputs.slice(pos,epos))];
+   }else{
+    return [tag, new Array(size).fill(null)];
+   }
+}
+'''
+
+def subAST = '''
+function subAST(parent, n, label, child){
+  parent[1][n] = [label, child];
+  return parent;
+}
+'''
+
+main = '''
+
+(function main(){
+
+  var expr = "1+1+1-1";
+  var inputs = createUTF8BytesFromString(expr+'\0');
+  var result = parse(inputs,inputs.length-1, newAST, subAST);
+  console.log(result);
+
+})();
+
+
+/**
+ * createUTF8BytesFromString
+ * StringオブジェクトをUTF8コード列に変換しUint8Arrayとして返す
+ */
+function createUTF8BytesFromString(str) {
+    var i, j;
+    var strLen = str.length;
+
+    //変換結果を代入するUint8配列
+    var utf8Bytes = new Uint8Array(strLen * 3);
+    var utf8Length = 0;
+
+    //Unicodeポイント
+    var code;
+    //サロゲートペア
+    var high, low;
+    //Unicodeポイントに対応するUTF-8コード列
+    var bytes = null;
+
+    i = 0;
+    while(i < strLen) {
+        code = str.charCodeAt(i++);
+        if( 0xD800 <= code && code <= 0xDFFF ) {
+            high = code;
+            low = str.charCodeAt(i++);
+
+            code = 0x10000 + (high - 0xD800) * 0x400 + (low - 0xDC00);
+        }
+
+        bytes = unicodeToUTF8Bytes(code, bytes);
+
+        for(j = 0; j < bytes.length; j++) {
+            utf8Bytes[utf8Length++] = bytes[j];
+        }
+    }
+
+    return utf8Bytes.subarray(0, utf8Length);
+}
+
+/**
+ * UnicodeポイントからUTF8形式のバイト列を返す
+ */
+function unicodeToUTF8Bytes(code, result) {
+    if(! result) {
+        result = {};
+    }
+
+    if(code <= 0x7F) {
+        result.length = 1;
+        result[0] = code;
+    }
+    else if(code <= 0xD77) {
+        result.length = 2;
+        result[0] = 0xC0 | (code >>> 6);
+        result[1] = 0x80 | (code & 0x3F);
+    }
+    else if(code <= 0xFFFF) {
+        result.length = 3;
+        result[0] = 0xE0 | (code >>> 12);
+        result[1] = 0x80 | ((code >>> 6) & 0x3F);
+        result[2] = 0x80 | (code & 0x3F);
+    }
+    else if(code <= 0x10FFFF) {
+        result.length = 4;
+        result[0] = 0xF0 | (code >>> 18);
+        result[1] = 0x80 | ((code >>> 12) & 0x3F);
+        result[2] = 0x80 | ((code >>> 6) & 0x3F);
+        result[3] = 0x80 | (code & 0x3F);
+    }
+    else {
+        result.length = 0;
+    }
+
+    return result;
+}
+'''
+
+man = '''
+===================
+ QUICK INTEGRATION
+===================
+
+Just call $|base|.parse() with an input text. You will get
+a key-value tree representation.
+
+   $ python3
+   >>> import $|base|
+   >>> $|base|.parse('input-text');
+   ...
+
+Customize TreeFunc and TreeSetFunc in the parse() functions.
+<<<<<<< HEAD:src/main/resources/blue/origami/nezcc/python.nezcc
+See.
+=======
+See.
+>>>>>>> 820db49b9ce3830d59bf70a86e026c82bc336165:src/main/resources/blue/origami/nezcc/python3.nezcc
+
+'''
