@@ -345,7 +345,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		if ((stacks & EMPTY) == EMPTY) {
 			cond = pg.emitAnd(cond, pg.emitCheckNonEmpty());
 		}
-		if (pg.isFunctional()) {
+		if (!pg.isDefined("while")) {
 			C main = pg.emitIf(cond, pg.emitNonTerminal(funcName), back);
 			return this.emitVarDecl(pg, stacks, false, pg.emitReturn(main));
 		} else {

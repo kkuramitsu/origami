@@ -295,7 +295,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
-		if (this.isDefined("objectparam")) {
+		if (this.isDefined("object")) {
 			StringBuilder sb = new StringBuilder();
 			int c = 0;
 			for (String f : fields) {
@@ -789,21 +789,25 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined("switch")) {
 			StringBuilder block = this.beginBlock();
 			this.emitLine(block, this.format("switch", index));
-			this.incIndent();
 			if (this.isDefined("default")) {
+				this.incIndent();
 				for (int i = 1; i < cases.size(); i++) {
 					this.emitLine(block, this.format("case", i, this.emitReturn(cases.get(i))));
 				}
 				this.emitLine(block, this.format("default", this.emitReturn(cases.get(0))));
+				this.decIndent();
+				this.emitStmt(block, this.s("end switch"));
+
 			} else {
+				this.incIndent();
 				for (int i = 0; i < cases.size(); i++) {
 					this.emitLine(block, this.format("case", i, this.emitReturn(cases.get(i))));
 				}
-			}
-			this.decIndent();
-			this.emitStmt(block, this.s("end switch"));
-			if (this.isDefined("return")) {
-				this.Return(block, this.emitFail());
+				this.decIndent();
+				this.emitStmt(block, this.s("end switch"));
+				if (this.isDefined("return")) {
+					this.Return(block, this.emitFail());
+				}
 			}
 			return this.endBlock(block);
 		} else if (this.useLambda() && this.isNotIncludeMemo(cases)) {

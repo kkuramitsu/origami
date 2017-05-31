@@ -1,3 +1,4 @@
+package blue.origami.nezcc.asm;
 /// ***********************************************************************
 // * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
 // *

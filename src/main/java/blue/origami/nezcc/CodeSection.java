@@ -220,7 +220,12 @@ abstract class CodeSection<C> {
 		if (args.length == 0) {
 			return this.s(key);
 		}
-		return String.format(this.s(key), args);
+		try {
+			return String.format(this.s(key), args);
+		} catch (Exception e) {
+			System.out.printf("FIXME: %s = %s by %s\n", key, this.s(key), e);
+			return "FIXME(" + key + ")";
+		}
 	}
 
 	protected void defineFunction(String funcName) {
