@@ -53,23 +53,27 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract void declProtoType(String ret, String funcName, String[] params);
 
-	public final int PUBLIC = 1;
-	public final int PARAMZ = 1 << 1;
-
 	protected abstract void declFunc(int acc, String ret, String funcName, String[] params, Block<C> block);
 
 	protected void declSymbolTables() {
 	}
 
-	// protected abstract void emitFuncReturn(C expr);
-
-	protected abstract C emitParams(String... params);
+	// protected abstract C emitParams(String... params);
 
 	protected abstract B beginBlock();
 
 	protected abstract void emitStmt(B block, C expr);
 
 	protected abstract C endBlock(B block);
+
+	protected abstract C emitBlockExpr(String name, List<C> exprs);
+
+	protected C emitBlockExpr(String name, C expr, C expr2) {
+		ArrayList<C> l = new ArrayList<>();
+		l.add(expr);
+		l.add(expr2);
+		return this.emitBlockExpr(name, l);
+	}
 
 	protected abstract C emitVarDecl(boolean mutable, String name, C expr, C expr2);
 

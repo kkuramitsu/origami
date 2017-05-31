@@ -456,7 +456,6 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.writeSection(this.s("end function"));
 	}
 
-	@Override
 	protected String emitParams(String... params) {
 		ArrayList<String> l = new ArrayList<>();
 		for (String p : params) {
@@ -547,6 +546,19 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String endBlock(StringBuilder block) {
 		return block.toString();
+	}
+
+	@Override
+	protected String emitBlockExpr(String type, List<String> exprs) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.format("block", type));
+		for (int i = 0; i < exprs.size() - 1; i++) {
+			String e = exprs.get(i);
+			sb.append(e);
+			sb.append(this.s("blocks"));
+		}
+		sb.append(this.format("end block", exprs.get(exprs.size() - 1)));
+		return sb.toString();
 	}
 
 	@Override

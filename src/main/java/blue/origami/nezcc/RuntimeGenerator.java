@@ -251,11 +251,11 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			} else {
 				this.makeLib("next1");
 				this.defFunc(pg, 0, pg.T("matched"), "rnextN", "px", "value", "cnt", "length", () -> {
-					C cond2 = pg.emitFunc("next1", pg.emitUnsigned(value));
+					C cond2 = pg.emitFunc("next1", pg.V("px"), pg.emitUnsigned(value));
 					C rec = pg.emitFunc("rnextN", pg.V("px"), pg.V("value"), cnt_pp, pg.V("length"));
 					return pg.emitIf(cnt_len, pg.emitAnd(cond2, rec), pg.emitSucc());
 				});
-				this.defFunc(pg, 0, pg.T("matched"), "nextN", "px", "value", "cnt", "length", () -> {
+				this.defFunc(pg, 0, pg.T("matched"), "nextN", "px", "value", "length", () -> {
 					return pg.emitFunc("rnextN", pg.V("px"), pg.V("value"), pg.vInt(0), pg.V("length"));
 				});
 			}
@@ -528,9 +528,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				B block = pg.beginBlock();
 				pg.emitStmt(block, pg.emitBack("treeLog", pg.V("treeLog")));
 				if (this.isDefined("_")) {
-					pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
-				} else {
 					pg.Assign(block, "_", pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
+				} else {
+					pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				}
 				pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				pg.emitStmt(block, pg.emitBack("tree", pg.V("tree")));
@@ -768,6 +768,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 
 	/* Memo */
 
+	// @SuppressWarnings("unchecked")
 	void loadMemo(ParserGenerator<B, C> pg, ParserGrammar g) {
 		final int memoSize = g.getMemoPointSize();
 		final int window = 64;
@@ -810,17 +811,11 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			} else {
 				this.defFunc(pg, 0, this.T("memos"), "rMemo", "memos", "tree", "cnt", "length", () -> {
 					C cond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
-					B block2 = pg.beginBlock();
-					if (!this.isDefined("ArrayList")) {
-						C left = pg.emitArrayIndex(pg.V("memos"), pg.V("cnt"));
-						pg.emitStmt(block2, pg.emitAssign2(left, newMemo));
-					} else {
-						pg.emitStmt(block2, pg.emitFunc("ArrayList.add", pg.V("memos"), newMemo));
-					}
-					C cnt = pg.emitOp(pg.V("cnt"), "+", pg.vInt(1));
-					pg.emitStmt(block2, pg.emitFunc("rMemo", pg.V("memos"), pg.V("tree"), cnt, pg.V("length")));
-					pg.endBlock(block2);
-					return pg.emitIf(cond, pg.endBlock(block2), pg.V("memos"));
+					C expr1 = (this.isDefined("ArrayList")) ? pg.emitFunc("ArrayList.add", pg.V("memos"), newMemo)
+							: pg.emitAssign2(pg.emitArrayIndex(pg.V("memos"), pg.V("cnt")), newMemo);
+					C expr2 = pg.emitFunc("rMemo", pg.V("memos"), pg.V("tree"), pg.emitOp(pg.V("cnt"), "+", pg.vInt(1)),
+							pg.V("length"));
+					return pg.emitIf(cond, pg.emitBlockExpr(this.T("memos"), expr1, expr2), pg.V("memos"));
 				});
 				this.defFunc(pg, 0, this.T("memos"), "newMemos", "tree", "length", () -> {
 					return pg.emitFunc("rMemo", pg.emitNewArray(this.T("m"), pg.V("length")), pg.V("tree"), pg.vInt(0),
