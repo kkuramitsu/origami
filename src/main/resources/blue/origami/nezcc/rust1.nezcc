@@ -1,0 +1,193 @@
+# nezcc file
+
+extension          = rs
+
+# type
+
+move               = mov
+
+Bool               = bool
+Byte               = u8
+Byte[]             = Vec<u8>
+Int                = i32
+Int32              = i32
+Int64              = i64
+Array              = %s
+Symbol             = &'static str
+Tree               = T
+TreeFunc           = T
+TreeSetFunc        = T
+ParserFunc         = T
+typeparam          = %s<%s>
+String             = str
+Tpx                = NezParserContext<T>
+Ttreelog           = Box<TreeLog<T>>
+Tstate             = Box<State<T>>
+Tm                 = MemoEntry<T>
+
+
+Byte->Int          = %s as i32
+Int64->Int         = %s as i32
+String->Byte[]     = %s.as_bytes()
+Byte[]->String     = str::from_utf8(&%s)
+
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+
+#module           = mod $|base| {
+struct           = struct %s<T> {
+field            = %2$s: %1$s,
+object           = %1$s {%2$s} 
+objectparam      = %1$s: %2$s 
+objectparams     = ,
+
+#functype        = 
+
+const            = static %2$s:%1$s = %3$s;
+const_array      = static %2$s:Vec<%1$s> = vec!%4$s;
+
+function         = fn %2$s<T>(%3$s) -> %1$s {
+param            = %2$s: %1$s
+params           = ,
+return           = %s
+
+funccall         
+
+#cast            = (@@@@%s)(%s)
+
+Array.size       = %s.len()
+Array.get        = %s[%s]
+Array.new        = Vec :: new()
+Array.slice      = %s.drain(%s..%s).collect()
+
+Option             = Option<Box<%s<T>>>
+Some               = Some(%s)
+None               = None
+Option.get         = %s.unwrap
+Option.isNone      = %s.is_none()
+
+#funcref          =
+
+if               = if %s {
+else if          = else if %s {
+while            = while %s {
+#switch           = match %s {
+#case             = %s => %s
+#default          = _ => %s
+
+ifexpr           = if %s {%s} else{%s} 
+
+#lambda           = |%s| { %s }
+
+val              = let %2$s = %3$s;
+var              = let mut %2$s = %3$s;
+letin            = let mut %2$s = %3$s; %4$s
+assign           = %s = %s;
+
+array            = [
+arrays           = ,
+end array        = ]
+
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+
+'''
+
+libs = '''
+use std::io;
+use std::option;
+use std::env;
+use std::time::{Duration, Instant};
+use std::fs::File;
+use std::vec;
+'''
+
+#def extract = '''
+
+'''
+
+AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
+
+'''
+
+def newAST = '''
+fn newAST<T>(tag: &i32, inputs: &Vec<u8>, pos: &i32, epos: &i32, size: i32) -> (i32, T){
+	if size == 0 {
+		(tag,inputs[pos..epos+1])
+	}else{
+		(tag,Vec :: new())
+	}
+}
+'''
+
+def subAST = '''
+fn subAST<T>(parent: &T,n: &i32,label: &str,child: &T) -> T {
+	parent[1][n] = (label, child);
+	parent
+}
+'''
+
+mainparams = newAST, subAST
+main = '''
+	fn readInputs(a: &str) -> Vec<u8>{
+    	let mut file = match File::open(a) {
+        	Err(why) => return (a + "\0").as_bytes(),
+        	Ok(file) => (file + "\0"),
+    	};
+    	file.as_bytes()
+	}
+	
+	fn main()  {
+  	let args: Vec<String> = env::args().collect();
+  	
+  	for a in args[1..]{
+  	  let buf = readInputs(a);
+      let st =  Instant::now();
+      let t = parse(buf, buf.length-1, $|mainparams|);
+      let et = st.elapsed();
+      println!("{} {}.{:03}[ms]: ", a, et.as_secs(), et.subsec_nanos()/1000000.0);
+      println!("{}",t);
+  	}
+   
+  }
+  
+
+'''
+
+AST2        = $|AST|
+
+def newAST2 = '''
+
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ rustc $|base|.java
+ ./$|base| <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+'''
+
+
