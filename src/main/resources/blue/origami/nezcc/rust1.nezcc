@@ -4,16 +4,27 @@ extension          = rs
 
 # type
 
+move               = mov
+
 Bool               = bool
 Byte               = u8
+Byte[]             = Vec<u8>
 Int                = i32
 Int32              = i32
 Int64              = i64
 Array              = %s
-Symbol             = str
+Symbol             = &'static str
 Tree               = T
+TreeFunc           = T
+TreeSetFunc        = T
+ParserFunc         = T
 typeparam          = %s<%s>
 String             = str
+Tpx                = NezParserContext<T>
+Ttreelog           = Box<TreeLog<T>>
+Tstate             = Box<State<T>>
+Tm                 = MemoEntry<T>
+
 
 Byte->Int          = %s as i32
 Int64->Int         = %s as i32
@@ -28,44 +39,46 @@ begin            = {
 end              = }
 ;                = ;
 
-module           = mod $|base| {
+#module           = mod $|base| {
 struct           = struct %s<T> {
 field            = %2$s: %1$s,
-value            = %1$s {%2$s} 
-valueparam       = %1$s: %2$s 
-valueparams      = , 
+object           = %1$s {%2$s} 
+objectparam      = %1$s: %2$s 
+objectparams     = ,
 
-#functype         = 
+#functype        = 
 
-const            = let %2$s = %3$s;
-const_array      = let %2$s = vec!%4$s;
+const            = static %2$s:%1$s = %3$s;
+const_array      = static %2$s:Vec<%1$s> = vec!%4$s;
 
 function         = fn %2$s<T>(%3$s) -> %1$s {
-param             = %2$s: &%1$s
-params            = ,
-return           = return %s;
+param            = %2$s: %1$s
+params           = ,
+return           = %s
 
-#cast             = (@@@@%s)(%s)
+funccall         
 
-Array.size        = %s.len()
-Array.get         = %s[%s]
-Array.new         = vec :: new()
+#cast            = (@@@@%s)(%s)
 
-Option             = Option<%s>
+Array.size       = %s.len()
+Array.get        = %s[%s]
+Array.new        = Vec :: new()
+Array.slice      = %s.drain(%s..%s).collect()
+
+Option             = Option<Box<%s<T>>>
 Some               = Some(%s)
 None               = None
 Option.get         = %s.unwrap
 Option.isNone      = %s.is_none()
 
-#apply            = apply!(%s)
 #funcref          =
 
 if               = if %s {
 else if          = else if %s {
 while            = while %s {
-switch           = match %s {
-case             = %s => %s
-default          = _ => %s
+#switch           = match %s {
+#case             = %s => %s
+#default          = _ => %s
 
 ifexpr           = if %s {%s} else{%s} 
 
@@ -73,6 +86,7 @@ ifexpr           = if %s {%s} else{%s}
 
 val              = let %2$s = %3$s;
 var              = let mut %2$s = %3$s;
+letin            = let mut %2$s = %3$s; %4$s
 assign           = %s = %s;
 
 array            = [
@@ -84,124 +98,75 @@ end array        = ]
 #funcprefix       = _
 
 imports = '''
-use std::io;
+
 '''
 
 libs = '''
-  public static class TList<T> {
-    String label;
-    T tree;
-    TList<T> next;
-    TList(String label, T tree, TList<T> next) {
-      this.label = label;
-      this.tree = tree;
-      this.next = next;
-    }
-  }
+use std::io;
+use std::option;
+use std::env;
+use std::time::{Duration, Instant};
+use std::fs::File;
+use std::vec;
 '''
 
-def extract = '''
-private static final byte[] emptyValue = new byte[0];
+#def extract = '''
 
-private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
-  if(px.pos == ppos) {
-    return emptyValue;
-  }
-  byte[] b = new byte[px.pos - ppos];
-  System.arraycopy(px.inputs, ppos, b, 0, b.length);
-  return b;
-}
 '''
 
 AST = '''
   /** Here is the main part. You may remove them if unnecessary. **/
-  public static class SimpleTree {
-    public String key;
-    public Object value;
 
-    SimpleTree(String key, Object value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    SimpleTree set(int n, String label, SimpleTree child) {
-    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
-    	return this;
-    }
-
-    private void strOut(StringBuilder sb) {
-      sb.append("[#");
-      sb.append(this.key);
-      if (this.value instanceof SimpleTree[]) {
-        SimpleTree[] sub = (SimpleTree[]) this.value;
-        for (SimpleTree child : sub) {
-          sb.append(" ");
-          if (child.key != null) {
-            sb.append("$" + child.key + "=");
-          }
-          ((SimpleTree) child.value).strOut(sb);
-        }
-      } else {
-        sb.append(" '");
-        sb.append(this.value);
-        sb.append("'");
-      }
-      sb.append("]");
-    }
-  }
 '''
 
 def newAST = '''
-  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
-    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
-    //return new SimpleTree(tag, new SimpleTree[size]);
-    //return null;
-  }
+fn newAST<T>(tag: &i32, inputs: &Vec<u8>, pos: &i32, epos: &i32, size: i32) -> (i32, T){
+	if size == 0 {
+		(tag,inputs[pos..epos+1])
+	}else{
+		(tag,Vec :: new())
+	}
+}
 '''
 
 def subAST = '''
-  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
-    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
-    childs[n] = new SimpleTree(label, child);
-    return parent;
-  }
+fn subAST<T>(parent: &T,n: &i32,label: &str,child: &T) -> T {
+	parent[1][n] = (label, child);
+	parent
+}
 '''
 
-mainparams = $|base|::newAST, $|base|::subAST
+mainparams = newAST, subAST
 main = '''
-  static byte[] readInputs(String a) throws IOException {
-    File file = new File(a);
-    if(file.exists()) {
-      byte[] buf = new byte[((int)file.length())+1];  // adding '\0' termination
-      FileInputStream fin = new FileInputStream(file);
-      fin.read(buf, 0, (int)file.length());
-      return buf;
-    }
-    else {
-      return (a + "\0").getBytes(Charset.forName("UTF-8"));
-    }
+	fn readInputs(a: &str) -> Vec<u8>{
+    	let mut file = match File::open(a) {
+        	Err(why) => return (a + "\0").as_bytes(),
+        	Ok(file) => (file + "\0"),
+    	};
+    	file.as_bytes()
+	}
+	
+	fn main()  {
+  	let args: Vec<String> = env::args().collect();
+  	
+  	for a in args[1..]{
+  	  let buf = readInputs(a);
+      let st =  Instant::now();
+      let t = parse(buf, buf.length-1, $|mainparams|);
+      let et = st.elapsed();
+      println!("{} {}.{:03}[ms]: ", a, et.as_secs(), et.subsec_nanos()/1000000.0);
+      println!("{}",t);
+  	}
+   
   }
   
-  public final static void main(String[] args) throws IOException {
-    for(String a: args) {
-      byte[] buf = readInputs(a);
-      long st = System.nanoTime();
-      SimpleTree t = parse(buf, buf.length-1, $|mainparams|);
-      long et = System.nanoTime();
-      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
-      System.out.print(t);
-      System.out.flush();
-      System.err.printf("\n");
-    }
-  }
+
 '''
 
 AST2        = $|AST|
 
 def newAST2 = '''
-  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
-    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
-  }
+
 '''
 
 man = '''
@@ -209,8 +174,8 @@ man = '''
  QUICK START
 =============
  
- javac $|base|.java
- java $|base| <file> or <input-text>
+ rustc $|base|.java
+ ./$|base| <file> or <input-text>
  
 =============
  INTEGRATION

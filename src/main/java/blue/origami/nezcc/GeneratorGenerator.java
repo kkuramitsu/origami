@@ -295,7 +295,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected void declStruct(String typeName, String... fields) {
-		if (this.isDefined("value")) {
+		if (this.isDefined("object")) {
 			StringBuilder sb = new StringBuilder();
 			int c = 0;
 			for (String f : fields) {
