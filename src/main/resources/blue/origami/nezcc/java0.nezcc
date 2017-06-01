@@ -1,0 +1,256 @@
+# nezcc file
+
+style              = java8
+extension          = java
+
+# type
+
+Bool               = boolean
+Byte               = byte
+Int                = int
+Int64              = long
+Array              = %s[]
+Tree               = T
+String             = String
+
+Byte->Int          = %s & 0xff
+Int64->Int         = (int)(%s)
+String->Byte[]     = %s.getBytes(Charset.forName("UTF-8"))
+#Byte[]->String     = new String(%s)
+
+#if use base64 encoding 
+base64             = B("%s")
+bools              = B256("%s")
+
+Array.new          = %s[%s]
+Array.size         = %s.length
+Array.get          = %s[%s]
+Array.slice        = %s[%s:%s]
+
+ArrayList          = ArrayList<%s>
+ArrayList.new      = new ArrayList<>()
+ArrayList.get      = %s.get(%s)
+ArrayList.add      = %s.add(%s)
+
+#In case of AST2
+TList               = TList<T>
+TList.empty         = null
+TList.cons          = new TList<>(%s,%s,%s)
+mainparams          = $|base|::newAST
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+
+module           = final class $|base| {
+
+structname       = %s<T>
+
+struct           = static class %s <T> {
+field            = %s %s;
+constructor      = %s(%s) {
+init             = this.%s = %s;
+new              = new %s<>
+
+functype         = '''
+public interface %2$s <T> {
+  public %1$s apply(%3$s);
+}
+'''
+
+const            = private static final %1$s %2$s = %3$s;
+
+function         = private static final <T> %1$s %2$s(%3$s) {
+function1        = public static final <T> %1$s %2$s(%3$s) {
+return           = return %s;
+
+apply            = %s.apply
+funcref          = $|base|::%s
+
+if               = if(%s) {
+else if          = else if(%s) {
+#while            = while(%s) {
+switch           = switch(%s) {
+case             = case %s : %s
+#default         = default : %s
+
+lambda           = (%s) -> %s
+
+block            = ((Supplier<%s>)(()-> {
+blocks           = ;
+end block        = return %s;})).get()
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.Objects;
+import java.util.ArrayList;
+import java.util.function.Supplier;
+import java.io.*;
+'''
+
+libs = '''
+  static byte[] B(String s) {
+    return Base64.getDecoder().decode(s.getBytes());
+  }
+  static boolean[] B256(String s) {
+    boolean[] b = new boolean[256];
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) == 'T' || s.charAt(i) == '1') {
+        b[i] = true;
+      }
+    }
+    return b;
+  }
+  public static class TList<T> {
+    String label;
+    T tree;
+    TList<T> next;
+    TList(String label, T tree, TList<T> next) {
+      this.label = label;
+      this.tree = tree;
+      this.next = next;
+    }
+  }
+'''
+
+def extract = '''
+private static final byte[] emptyValue = new byte[0];
+
+private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
+  if(px.pos == ppos) {
+    return emptyValue;
+  }
+  byte[] b = new byte[px.pos - ppos];
+  System.arraycopy(px.inputs, ppos, b, 0, b.length);
+  return b;
+}
+'''
+
+def AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
+  public static class SimpleTree {
+    public String key;
+    public Object value;
+
+    SimpleTree(String key, Object value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    SimpleTree set(int n, String label, SimpleTree child) {
+    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
+    	return this;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      this.strOut(sb);
+      return sb.toString();
+    }
+
+    private void strOut(StringBuilder sb) {
+      sb.append("[#");
+      sb.append(this.key);
+      if (this.value instanceof SimpleTree[]) {
+        SimpleTree[] sub = (SimpleTree[]) this.value;
+        for (SimpleTree child : sub) {
+          sb.append(" ");
+          if (child.key != null) {
+            sb.append("$" + child.key + "=");
+          }
+          ((SimpleTree) child.value).strOut(sb);
+        }
+      } else {
+        sb.append(" '");
+        sb.append(this.value);
+        sb.append("'");
+      }
+      sb.append("]");
+    }
+  }
+'''
+
+def newAST = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
+    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
+    //return new SimpleTree(tag, new SimpleTree[size]);
+    //return null;
+  }
+'''
+
+def subAST = '''
+  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
+    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+    childs[n] = new SimpleTree(label, child);
+    return parent;
+  }
+'''
+
+mainparams = $|base|::newAST, $|base|::subAST
+main = '''
+  static byte[] readInputs(String a) throws IOException {
+    File file = new File(a);
+    if(file.exists()) {
+      byte[] buf = new byte[((int)file.length())+1];  // adding '\0' termination
+      FileInputStream fin = new FileInputStream(file);
+      fin.read(buf, 0, (int)file.length());
+      return buf;
+    }
+    else {
+      return (a + "\0").getBytes(Charset.forName("UTF-8"));
+    }
+  }
+  
+  public final static void main(String[] args) throws IOException {
+    for(String a: args) {
+      byte[] buf = readInputs(a);
+      long st = System.nanoTime();
+      SimpleTree t = parse(buf, buf.length-1, $|mainparams|);
+      long et = System.nanoTime();
+      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
+      System.out.print(t);
+      System.out.flush();
+      System.err.printf("\n");
+    }
+  }
+'''
+
+def newAST2 = '''
+  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
+    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
+  }
+'''
+
+man = '''
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+
+=============
+ QUICK START
+=============
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
+ 
+'''
+

@@ -1,0 +1,185 @@
+# nezcc file
+
+extension          = fs
+
+# type
+
+Bool               = bool
+Byte               = byte
+Int                = int
+String             = string
+Array              = array<%s>
+Int64              = uint64
+Tree               = 'tree
+
+#Byte->Int          = %s & 0xff
+Int64->Int         = (%s).toInt
+String->Byte[]     = (%s).getBytes("UTF-8")
+String.+0          = (%s + "\0")
+
+# If 32bit-length integer exists, 
+Int32             = int32
+
+#java
+#base64           = B("%s")
+#bools            = B256("%s")
+
+#structname         = %s[T]
+
+Array.size        = %s.Length
+Array.get         = %s.[%s]
+Array.new         = Array.zeroCreate %2$s
+
+Byte[].slice      = %s.[(%s..%s]
+
+
+#Option             = Option[%s]
+#Some               = Some(%s)
+#None               = None
+#Option.get         = %s.get
+#Option.isNone      = %s.isEmpty
+
+# syntax
+
+comment          = // %s
+begin            = 
+end              = 
+;                = 
+
+module           = module $|base|
+
+struct           = type %s = {%s}
+record           = %2$s: %1$s
+records          = ;
+
+object           = %1$s {%2$s} 
+objectparam      = %1$s=%2$s 
+objectparams     = , 
+
+functype         = %3$s->%1$s
+functypeparam    = %1$s
+functypeparams   = ->
+
+const            = let %2$s: %1$s = %3$s
+
+function         = let %2$s (%3$s): %1$s =
+param            = %2$s: %1$s
+#return           = %s
+
+#cast             = (%s)(%s)
+
+//apply            = %s
+funcref          = %s
+lambda           = (fun %s -> %s)
+
+if               = if %s then
+else if          = else if %s then
+while            = while %s do
+switch           = %s match with
+case             = | %s -> %s
+default          = | _ -> %s
+
+
+ifexpr           = if %s then %s else %s
+
+letin            = let %2$s: %1$s = %3$s in %4$s
+val              = let %2$s: %1$s = %3$s
+var              = let mutable %2$s: %1$s = %3$s
+assign           = %s <- %s
+
+array            = [|
+arrays           = ;
+end array        = |]
+
+## Default AST
+
+Symbol           = String
+
+def AST2          = '''
+  class SimpleTree(key: $|Symbol|, var value: AnyRef) {
+    override def toString = if (value.isInstanceOf[SimpleTree]) s"$key= $value" else s"[#$key $value]"
+  }
+'''
+
+def newAST2 = '''
+  private def newAST(tag: String,
+                     inputs: Array[Byte],
+                     pos: Int,
+                     epos: Int,
+                     size: Int): SimpleTree =
+    new SimpleTree(tag,
+                   if ((size == 0)) new String(inputs, pos, epos - pos)
+                   else new Array[SimpleTree](size))
+'''
+
+def subAST2 = '''
+  private def subAST(parent: SimpleTree,
+                     n: Int,
+                     label: String,
+                     child: SimpleTree): SimpleTree = {
+    val childs: Array[SimpleTree] =
+      (parent.asInstanceOf[SimpleTree]).value.asInstanceOf[Array[SimpleTree]]
+    childs(n) = new SimpleTree(label, child)
+    parent
+  }
+'''
+
+imports = '''
+
+'''
+
+libs = '''
+
+'''
+
+main2 = '''
+  def readInputs(a: String): Array[Byte] = {
+    val file: File = new File(a)
+    if (file.exists()) {
+      val buf: Array[Byte] = Array.ofDim[Byte](file.length.toInt + 1)
+      val fin: FileInputStream = new FileInputStream(file)
+      fin.read(buf, 0, file.length.toInt)
+      buf
+    }
+    else {
+      (a + "\0").getBytes(Charset.forName("UTF-8"))
+    }
+  }
+      
+  def main(args: Array[String]): Unit = {
+    for (a <- args) {
+      val buf = readInputs(a)
+      val st: Long = System.nanoTime()
+      val t: SimpleTree = parse(buf, buf.length-1, 
+        (tag, inputs, pos, epos, size) => newAST(tag, inputs, pos, epos, size), 
+        (parent, n, label, child) => subAST(parent, n, label, child))
+      val et: Long = System.nanoTime()
+      System.err.printf("" + a + " " +  ((et - st) / 1000000.0) + "[ms] :")
+      print(t)
+      System.out.flush
+      System.err.printf("\n")
+    }
+  }
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ scalac $|base|.java
+ scala $|base| <file> or <input-text>
+ 
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+'''
+
