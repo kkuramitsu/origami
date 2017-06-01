@@ -17,7 +17,8 @@ Some               = Just %s
 None               = Nothing
 None.isEmpty       = (isNothing %s)
 
-Int64->_int        = (fromIntegral %s)
+Int64->Int         = (fromIntegral %s)
+Int->Int64         = (fromIntegral %s)
 String->Byte[]     = pack %s
 Byte[]->String     = unpack %s
 
@@ -25,6 +26,8 @@ Array.new          = []
 Array.size         = (length %s)
 Array.get          = (%s !! %s)
 Array.slice        = (drop %s (take %s %s))
+array            = [
+end array        = ]
 
 List               = IntMap
 List.new           = empty
@@ -78,7 +81,6 @@ assign           = %s <- %s
 
 if               = if (%s)
 else if          = else if (%s)
-while            = --while (%s) action accumulator
 #switch           = switch(%s) {
 #case             = case %s : %s
 #default          = default : %s
