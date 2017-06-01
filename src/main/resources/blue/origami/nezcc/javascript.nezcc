@@ -18,7 +18,7 @@ String->Byte[]   = createUTF8BytesFromString(%s);
 Array.size       = %s.length
 Array.get        = %s[%s]
 Array.new        = new Array(%2$s).fill(null)
-Array.slice      = %s.slice(%s,%s))
+Array.slice      = %s.slice(%s,%s)
 
 
 #Byte[].quote     = %s
@@ -42,7 +42,7 @@ getter           = %s.%s
 setter           = %s.%s = %s
 
 const            = %2$s = %3$s
-val              = var %2$s = %3$s;
+val              = var %2$s = %3$s
 var              = $|val|
 
 function         = function %2$s(%3$s){
@@ -110,10 +110,9 @@ function subAST(parent, n, label, child){
 main = '''
 
 (function main(){
-  var expr = "1+1+1-1";
-  var inputs = createUTF8BytesFromString(expr+'\0');
-  var result = parse(inputs,inputs.length-1, newAST, subAST);
-  console.log(result);
+    var inputs = createUTF8BytesFromString(process.argv[2]+"\0");
+    var result = parse(inputs,inputs.length-1, newAST, subAST);
+    console.dir(JSON.stringify(result));
 })();
 
 
@@ -201,10 +200,7 @@ man = '''
 Just call $|base|.parse() with an input text. You will get
 a key-value tree representation.
 
-   $ python3
-   >>> import $|base|
-   >>> $|base|.parse('input-text');
-   ...
+   $ node $|base|.js 'input-text'
 
 Customize TreeFunc and TreeSetFunc in the parse() functions.
 See.
