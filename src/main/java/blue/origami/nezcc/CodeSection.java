@@ -1,6 +1,5 @@
 package blue.origami.nezcc;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,51 +10,9 @@ import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.Stateful;
 import blue.origami.nez.peg.Typestate;
 import blue.origami.nez.peg.expression.PNonTerminal;
-import blue.origami.util.OCommonWriter;
+import blue.origami.util.OConsole;
 
 abstract class CodeSection<C> {
-
-	private boolean debug = System.getenv("DEBUG") != null;
-
-	protected boolean isDebug() {
-		return this.debug;
-	}
-
-	private OCommonWriter out = new OCommonWriter();
-
-	protected void open(String file) throws IOException {
-		this.out.open(file);
-	}
-
-	protected void write(Object value) {
-		this.out.p(value);
-	}
-
-	protected void writeLine(String format, Object... args) {
-		if (args.length == 0) {
-			this.out.p(format);
-			this.out.println();
-		} else {
-			this.out.println(format, args);
-		}
-	}
-
-	protected void writeComment(String format, Object... args) {
-		if (this.isDefined("comment")) {
-			String comment = (args.length == 0) ? format : String.format(format, args);
-			this.out.p(this.format("comment", comment));
-			this.out.println();
-		}
-	}
-
-	protected void writeResource(String path, String... stringReplacements) throws IOException {
-		this.out.importResourceContent(path, stringReplacements);
-		this.writeSection(null);
-	}
-
-	protected void showResource(String path, String... stringReplacements) throws IOException {
-		this.out.showResourceContent(path, stringReplacements);
-	}
 
 	protected SourceSection head = new SourceSection();
 
@@ -72,7 +29,7 @@ abstract class CodeSection<C> {
 	}
 
 	protected String Indent(String stmt) {
-		return this.body.Indent(this.s("\t"), stmt);
+		return this.body.Indent(this.s("tab"), stmt);
 	}
 
 	protected void incIndent() {
@@ -282,7 +239,6 @@ abstract class CodeSection<C> {
 
 	HashSet<String> crossRefNames = new HashSet<>();
 	HashMap<String, HashSet<String>> depsMap = new HashMap<>();
-	// HashMap<String, Integer> memoPointMap = new HashMap<>();
 
 	protected final void addFunctionDependency(String sour, String dest) {
 		if (sour != null) {
@@ -343,8 +299,12 @@ abstract class CodeSection<C> {
 		if (!funcList.contains(start)) {
 			funcList.add(start);
 		}
-		this.depsMap.clear();
+		// this.depsMap.clear();
 		return funcList;
+	}
+
+	protected void log(String line, Object... args) {
+		OConsole.println(line, args);
 	}
 
 }

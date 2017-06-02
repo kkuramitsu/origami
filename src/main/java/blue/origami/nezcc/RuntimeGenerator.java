@@ -19,6 +19,7 @@ package blue.origami.nezcc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import blue.origami.nez.parser.ParserGrammar;
 import blue.origami.nez.peg.Expression;
@@ -104,11 +105,12 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	public final static int Anoparam = 1 << 1;
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String[] params,
-			Block<C> block) {
+			Supplier<C> block) {
 		pg.declFunc(acc, ret, funcName, params, block);
 	}
 
-	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0, Block<C> block) {
+	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0,
+			Supplier<C> block) {
 		if (a0.indexOf(",") > 0) {
 			this.defFunc(pg, acc, ret, funcName, a0.split(","), block);
 		} else {
@@ -117,22 +119,22 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0, String a1,
-			Block<C> block) {
+			Supplier<C> block) {
 		this.defFunc(pg, acc, ret, funcName, new String[] { a0, a1 }, block);
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0, String a1,
-			String a2, Block<C> block) {
+			String a2, Supplier<C> block) {
 		this.defFunc(pg, acc, ret, funcName, new String[] { a0, a1, a2 }, block);
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0, String a1,
-			String a2, String a3, Block<C> block) {
+			String a2, String a3, Supplier<C> block) {
 		this.defFunc(pg, acc, ret, funcName, new String[] { a0, a1, a2, a3 }, block);
 	}
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String a0, String a1,
-			String a2, String a3, String a4, Block<C> block) {
+			String a2, String a3, String a4, Supplier<C> block) {
 		this.defFunc(pg, acc, ret, funcName, new String[] { a0, a1, a2, a3, a4 }, block);
 	}
 
@@ -532,7 +534,6 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				} else {
 					pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				}
-				pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				pg.emitStmt(block, pg.emitBack("tree", pg.V("tree")));
 				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return (pg.endBlock(block));
@@ -550,20 +551,20 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		});
 		this.defineLib("gettag", () -> {
 			this.defFunc(pg, 0, this.s("Symbol"), "gettag", "ntag", () -> {
-				return pg.emitCast("tag", pg.emitArrayIndex(pg.Const("SYMBOLs"), pg.V("ntag")));
+				return pg.emitCast("tag", pg.emitArrayIndex(pg.Const("nezsymbols"), pg.V("ntag")));
 			});
 			this.defFunc(pg, 0, this.s("Symbol"), "getlabel", "nlabel", () -> {
-				return pg.emitCast("label", pg.emitArrayIndex(pg.Const("SYMBOLs"), pg.V("nlabel")));
+				return pg.emitCast("label", pg.emitArrayIndex(pg.Const("nezsymbols"), pg.V("nlabel")));
 			});
 		});
 		this.defineLib("getvalue", () -> {
 			this.defFunc(pg, 0, this.T("value"), "getvalue", "nvalue", () -> {
-				return pg.emitCast("value", pg.emitArrayIndex(pg.Const("VALUEs"), pg.V("nvalue")));
+				return pg.emitCast("value", pg.emitArrayIndex(pg.Const("nezvalues"), pg.V("nvalue")));
 			});
 		});
 		this.defineLib("getlength", () -> {
 			this.defFunc(pg, 0, this.T("length"), "getlength", "nvalue", () -> {
-				return pg.emitCast("length", pg.emitArrayIndex(pg.Const("LENGTHs"), pg.V("nvalue")));
+				return pg.emitCast("length", pg.emitArrayIndex(pg.Const("nezvaluesizes"), pg.V("nvalue")));
 			});
 		});
 
@@ -924,9 +925,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			});
 		});
 
-		this.defineLib("symbolS", () -> {
+		this.defineLib("nezsymbols", () -> {
 			this.makeLib("extract");
-			this.defFunc(pg, 0, this.T("matched"), "symbolS", "px", "state", "ntag", "pos", () -> {
+			this.defFunc(pg, 0, this.T("matched"), "nezsymbols", "px", "state", "ntag", "pos", () -> {
 				List<C> l = new ArrayList<>();
 				l.add(pg.V("ntag"));
 				l.add(pg.V("length"));
