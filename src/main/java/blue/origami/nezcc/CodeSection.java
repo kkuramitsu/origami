@@ -29,7 +29,7 @@ abstract class CodeSection<C> {
 	}
 
 	protected String Indent(String stmt) {
-		return this.body.Indent(this.s("\t"), stmt);
+		return this.body.Indent(this.s("tab"), stmt);
 	}
 
 	protected void incIndent() {

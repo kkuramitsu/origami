@@ -534,7 +534,6 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				} else {
 					pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				}
-				pg.emitStmt(block, pg.emitFunc("linkT", pg.V("px"), pg.V("nlabel")));
 				pg.emitStmt(block, pg.emitBack("tree", pg.V("tree")));
 				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 				return (pg.endBlock(block));
@@ -552,20 +551,20 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		});
 		this.defineLib("gettag", () -> {
 			this.defFunc(pg, 0, this.s("Symbol"), "gettag", "ntag", () -> {
-				return pg.emitCast("tag", pg.emitArrayIndex(pg.Const("SYMBOLs"), pg.V("ntag")));
+				return pg.emitCast("tag", pg.emitArrayIndex(pg.Const("nezsymbols"), pg.V("ntag")));
 			});
 			this.defFunc(pg, 0, this.s("Symbol"), "getlabel", "nlabel", () -> {
-				return pg.emitCast("label", pg.emitArrayIndex(pg.Const("SYMBOLs"), pg.V("nlabel")));
+				return pg.emitCast("label", pg.emitArrayIndex(pg.Const("nezsymbols"), pg.V("nlabel")));
 			});
 		});
 		this.defineLib("getvalue", () -> {
 			this.defFunc(pg, 0, this.T("value"), "getvalue", "nvalue", () -> {
-				return pg.emitCast("value", pg.emitArrayIndex(pg.Const("VALUEs"), pg.V("nvalue")));
+				return pg.emitCast("value", pg.emitArrayIndex(pg.Const("nezvalues"), pg.V("nvalue")));
 			});
 		});
 		this.defineLib("getlength", () -> {
 			this.defFunc(pg, 0, this.T("length"), "getlength", "nvalue", () -> {
-				return pg.emitCast("length", pg.emitArrayIndex(pg.Const("LENGTHs"), pg.V("nvalue")));
+				return pg.emitCast("length", pg.emitArrayIndex(pg.Const("nezvaluesizes"), pg.V("nvalue")));
 			});
 		});
 
@@ -926,9 +925,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			});
 		});
 
-		this.defineLib("symbolS", () -> {
+		this.defineLib("nezsymbols", () -> {
 			this.makeLib("extract");
-			this.defFunc(pg, 0, this.T("matched"), "symbolS", "px", "state", "ntag", "pos", () -> {
+			this.defFunc(pg, 0, this.T("matched"), "nezsymbols", "px", "state", "ntag", "pos", () -> {
 				List<C> l = new ArrayList<>();
 				l.add(pg.V("ntag"));
 				l.add(pg.V("length"));

@@ -28,6 +28,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		super.init(options);
 		this.defineSymbol("base", this.getFileBaseName());
 		String[] files = options.stringList(ParserOption.InputFiles);
+		this.initDefaultSymbols();
 		for (String file : files) {
 			if (!file.endsWith(".nezcc")) {
 				continue;
@@ -114,20 +115,29 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		return false;
 	}
 
+	protected void initDefaultSymbols() {
+		this.defineSymbol("nezcc", "nezcc/1.0.1");
+		this.defineSymbol("space", " ");
+	}
+
 	@Override
-	protected void initSymbols() {
+	protected void setupSymbols() {
+		if (this.isDefined("include")) {
+			this.importNezccFile(this.s("include"));
+		}
 		this.importNezccFile("/blue/origami/nezcc/default.nezcc");
-		this.defineSymbol("\t", "  ");
+
+		this.defineSymbol("tab", "  ");
 
 		this.defineSymbol("Byte[]", this.format("Array", this.s("Byte")));
 		this.defineSymbol("Int8", this.s("Byte"));
 		this.defineSymbol("Symbol", this.s("String"));
 
-		if (!this.isDefined("px")) {
+		if (!this.isDefined("Tpx")) {
 			String t = this.format("structname", "NezParserContext");
 			this.defineVariable("px", t);
 		}
-		if (!this.isDefined("treeLog")) {
+		if (!this.isDefined("TtreeLog")) {
 			String t = this.format("structname", "TreeLog");
 			if (this.isDefined("Option")) {
 				this.defineVariable("tcur", t);
@@ -135,7 +145,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			this.defineVariable("treeLog", t);
 		}
-		if (!this.isDefined("state")) {
+		if (!this.isDefined("Tstate")) {
 			String t = this.format("structname", "State");
 			if (this.isDefined("Option")) {
 				this.defineVariable("scur", t);
@@ -218,9 +228,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("prevLog", this.T("treeLog"));
 		this.defineVariable("nextLog", this.T("treeLog"));
 		this.defineVariable("prevState", this.T("state"));
-		// this.defineVariable("nextState", this.T("state"));
-		// this.defineVariable("uLog", this.T("treeLog"));
-		// this.defineVariable("uState", this.T("state"));
+
 		this.defineVariable("epos", this.T("pos"));
 		this.defineVariable("child", this.T("tree"));
 		this.defineVariable("f2", this.T("f"));
@@ -254,24 +262,6 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	protected void writeSourceSection(SourceSection section) {
 		this.out.p(section);
 	}
-
-	// protected void writeLine(String format, Object... args) {
-	// if (args.length == 0) {
-	// this.out.p(format);
-	// this.out.println();
-	// } else {
-	// this.out.println(format, args);
-	// }
-	// }
-	//
-	// protected void writeComment(String format, Object... args) {
-	// if (this.isDefined("comment")) {
-	// String comment = (args.length == 0) ? format : String.format(format,
-	// args);
-	// this.out.p(this.format("comment", comment));
-	// this.out.println();
-	// }
-	// }
 
 	@Override
 	protected void writeHeader() throws IOException {
@@ -974,7 +964,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			sb.append(delim);
 			sb.append(this.vString("error"));
 			sb.append(this.s("end array"));
-			this.declConst(this.s("Symbol"), "SYMBOLs", this.symbolList.size() + 2, sb.toString());
+			this.declConst(this.s("Symbol"), "nezsymbols", this.symbolList.size() + 2, sb.toString());
 			this.declConst(this.s("Int"), "ParseError", -1, "" + (this.symbolList.size() + 1));
 		}
 		if (this.valueList.size() >= 0) {
@@ -986,7 +976,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				sb.append(this.rawValue(s));
 			}
 			sb.append(this.s("end array"));
-			this.declConst(this.T("value"), "VALUEs", this.valueList.size() + 1, sb.toString());
+			this.declConst(this.T("value"), "nezvalues", this.valueList.size() + 1, sb.toString());
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
@@ -997,7 +987,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				sb.append(this.vInt(s.length));
 			}
 			sb.append(this.s("end array"));
-			this.declConst(this.T("length"), "LENGTHs", this.valueList.size() + 1, sb.toString());
+			this.declConst(this.T("length"), "nezvaluesizes", this.valueList.size() + 1, sb.toString());
 		}
 	}
 

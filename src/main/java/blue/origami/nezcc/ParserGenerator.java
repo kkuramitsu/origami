@@ -38,7 +38,7 @@ import blue.origami.util.OptionalFactory;
 public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		implements OptionalFactory<ParserGenerator<B, C>> {
 
-	protected abstract void initSymbols();
+	protected abstract void setupSymbols();
 
 	protected abstract void writeHeader() throws IOException;
 
@@ -58,15 +58,13 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	protected void declSymbolTables() {
 	}
 
-	// protected abstract C emitParams(String... params);
-
 	protected abstract B beginBlock();
 
 	protected abstract void emitStmt(B block, C expr);
 
 	protected abstract C endBlock(B block);
 
-	protected abstract C emitBlockExpr(String name, List<C> exprs);
+	protected abstract C emitBlockExpr(String type, List<C> exprs);
 
 	protected abstract C emitVarDecl(boolean mutable, String name, C expr, C expr2);
 
@@ -684,7 +682,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.isBinary = g.isBinaryGrammar();
 		this.isStateful = Stateful.isStateful(start);
 		this.log("stateful: %s", this.isStateful);
-		this.initSymbols();
+		this.setupSymbols();
 		this.loadContext(this, g);
 		this.loadTreeLog(this);
 		this.loadState(this);
@@ -698,9 +696,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 			this.declProtoType(this.T("matched"), funcName, new String[] { "px" });
 		}
 		this.writeHeader();
-		// this.writeComment("*** const ***");
 		this.writeSourceSection(this.head);
-		// this.writeComment("*** libs ***");
 		this.writeSourceSection(this.lib);
 
 		for (String funcName : funcList) {
