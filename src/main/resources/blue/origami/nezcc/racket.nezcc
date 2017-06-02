@@ -1,0 +1,121 @@
+# nezcc file
+
+extension          = rkt
+
+# type
+
+Byte[]->String   = (bytes->string/utf-8 %s)
+String->Byte[]   = (string->bytes/utf-8 %s)
+
+Byte[].get       = (string->bytes/utf-8 (substring %1$s %2$s (+ %2$s 1)))
+Byte[].quote     = "%s"
+
+Array.size       = (length %s)
+Array.get        = (list-ref %s %s)
+Array.new        = empty
+Array.slice      = (slice %s %s %s)
+
+# syntax
+
+comment          = ; %s
+begin            = (
+end              = )
+;                =
+
+# FIXME classname + %
+struct           = (define %s (class object (super-new)
+constructor      = (init %2$s)
+end constructor  =
+init             = (fileld [_%s %s])
+#field            = (field [_%s %s])
+
+getter           = (get-field %2$s %1$s)
+setter           = (set-field! %2$s %1$s %3$s)
+
+const            = (define %2$s %3$s)
+
+function         = (define (%2$s %3$s)
+param            = %2$s
+params           =
+
+and              = (and %s %s)
+or               = (or %s %s)
+not              = (not %s)
+
+ifexpr           = (if (%1$s) %2$s %3$s)
+funccall         = (%s %s)
+args             =
+#apply            = %s.apply
+#funcref          = $|base|::%s
+
+true             = #t
+false            = #f
+null             = null
+
+val              = (define %2$s %3$s)
+var              = (define %2$s %3$s)
+assign           = (set! %s %s)
+
+# TODO white space
+array            = (list
+arrays           =
+end array        = )
+
+if               = (if (%s)
+switch           = (match %s
+case             = [%s %s]
+#default          = default : %s
+
+lambda           = (lambda (%s) %s)
+
+
+def slice = '''
+(define get-n-items
+    (lambda (lst num)
+        (if (> num 0)
+            (cons (car lst) (get-n-items (cdr lst) (- num 1)))
+            '())))
+
+(define slice
+    (lambda (lst start count)
+        (if (> start 1)
+            (slice (cdr lst) (- start 1) count)
+            (get-n-items lst count))))
+'''
+
+imports = '''
+
+
+'''
+
+libs = '''
+
+
+'''
+
+main = '''
+(define (read_inputs a)
+  (define f (open-input-file a))
+  ; TODO
+  (close-input-port f)
+  )
+
+
+
+
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+
+
+
+=============
+ INTEGRATION
+=============
+
+
+
+'''
