@@ -128,6 +128,12 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.importNezccFile("/blue/origami/nezcc/default.nezcc");
 
 		this.defineSymbol("tab", "  ");
+		if (this.isDefined("eq")) {
+			this.defineSymbol("==", this.s("eq"));
+		}
+		if (this.isDefined("ne")) {
+			this.defineSymbol("!=", this.s("ne"));
+		}
 
 		this.defineSymbol("Byte[]", this.format("Array", this.s("Byte")));
 		this.defineSymbol("Int8", this.s("Byte"));
@@ -648,14 +654,13 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined(op)) {
 			return this.format(op, expr, expr2);
 		}
-		return String.format("%s %s %s", expr, this.s(op), expr2);
+		return String.format("%s %s %s", expr, op, expr2);
 	}
 
 	@Override
-	protected String emitCast(String var, String expr) {
-		String conv = this.getSymbol("C" + var);
-		if (conv != null) {
-			return String.format(conv, expr);
+	protected String emitConv(String var, String expr) {
+		if (this.isDefined(var)) {
+			return this.format(var, expr);
 		}
 		String t = this.T(var);
 		if (t != null && this.isDefined("cast")) {
@@ -930,13 +935,16 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (delim.length() == 0) {
 			delim = " ";
 		}
-
 		sb.append(this.s("array"));
 		for (int i = 0; i < indexMap.length; i++) {
 			if (i > 0) {
 				sb.append(delim);
 			}
-			sb.append(indexMap[i] & 0xff);
+			if (this.isDefined("Int8''")) {
+				sb.append(this.format("Int8''", indexMap[i] & 0xff));
+			} else {
+				sb.append(indexMap[i] & 0xff);
+			}
 		}
 		sb.append(this.s("end array"));
 		return this.getConstName(this.s("Int8"), this.Const("choice"), indexMap.length, sb.toString());
@@ -965,7 +973,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			sb.append(this.vString("error"));
 			sb.append(this.s("end array"));
 			this.declConst(this.s("Symbol"), "nezsymbols", this.symbolList.size() + 2, sb.toString());
-			this.declConst(this.s("Int"), "ParseError", -1, "" + (this.symbolList.size() + 1));
+			this.declConst(this.s("Int"), "nezerror", -1, "" + (this.symbolList.size() + 1));
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
@@ -1016,7 +1024,13 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				if (c > 0) {
 					sb.append(delim);
 				}
-				sb.append(b);
+				if (this.isDefined("Byte''")) {
+					sb.append(this.format("Byte''", b & 0xff));
+				} else if (this.isDefined("Int8''")) {
+					sb.append(this.format("Int8''", b & 0xff));
+				} else {
+					sb.append(b & 0xff);
+				}
 				c++;
 			}
 			sb.append(this.s("end array"));
