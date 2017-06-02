@@ -11,15 +11,17 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.expression.ByteSet;
+import blue.origami.util.OCommonWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OStringUtils;
 
-public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
+public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	public void init(OOption options) {
@@ -40,7 +42,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	private void importNezccFile(String path) {
 		try {
 			File f = new File(path);
-			InputStream s = f.isFile() ? new FileInputStream(path) : GeneratorGenerator.class.getResourceAsStream(path);
+			InputStream s = f.isFile() ? new FileInputStream(path) : SourceGenerator.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			String name = null;
@@ -235,37 +237,64 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		}
 	}
 
+	private OCommonWriter out = new OCommonWriter();
+
+	protected void open(String file) throws IOException {
+		this.out.open(file);
+	}
+
+	protected void writeCode(String symbol) {
+		if (this.isDefined(symbol)) {
+			this.out.p(this.s(symbol));
+			this.out.println();
+		}
+	}
+
+	@Override
+	protected void writeSourceSection(SourceSection section) {
+		this.out.p(section);
+	}
+
+	// protected void writeLine(String format, Object... args) {
+	// if (args.length == 0) {
+	// this.out.p(format);
+	// this.out.println();
+	// } else {
+	// this.out.println(format, args);
+	// }
+	// }
+	//
+	// protected void writeComment(String format, Object... args) {
+	// if (this.isDefined("comment")) {
+	// String comment = (args.length == 0) ? format : String.format(format,
+	// args);
+	// this.out.p(this.format("comment", comment));
+	// this.out.println();
+	// }
+	// }
+
 	@Override
 	protected void writeHeader() throws IOException {
 		if (this.isDefined("extension")) {
 			this.open(this.getFileBaseName() + "." + this.s("extension"));
 		}
-		if (this.isDefined("imports")) {
-			this.writeLine(this.s("imports"));
-		}
-		if (this.isDefined("module")) {
-			this.writeLine("");
-			this.writeLine(this.s("module"));
-		}
-		if (this.isDefined("libs")) {
-			this.writeLine("");
-			this.writeLine(this.s("libs"));
-		}
-		this.writeLine("");
+		this.writeCode("imports");
+		this.writeCode("module");
+		this.writeCode("libs");
 	}
 
 	@Override
 	protected void writeFooter() throws IOException {
 		this.lib = new SourceSection();
 		this.makeLib("parse");
-		this.writeLine(this.lib.toString());
+		this.writeSourceSection(this.lib);
 		if (this.isDefined("TList")) {
 			if (this.isDefined("main")) {
 				this.lib = new SourceSection();
 				this.makeLib("AST");
 				this.makeLib("newAST2");
-				this.writeLine(this.lib.toString());
-				this.writeLine(this.s("main"));
+				this.writeSourceSection(this.lib);
+				this.writeCode("main");
 			}
 		} else {
 			if (this.isDefined("main")) {
@@ -273,12 +302,12 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 				this.makeLib("AST");
 				this.makeLib("newAST");
 				this.makeLib("subAST");
-				this.writeLine(this.lib.toString());
-				this.writeLine(this.s("main"));
+				this.writeSourceSection(this.lib);
+				this.writeCode("main");
 			}
 		}
-		if (this.isDefined("module") && this.isDefined("end module")) {
-			this.writeLine(this.s("end module"));
+		if (this.isDefined("module")) {
+			this.writeCode("end module");
 		}
 		if (this.isDefined("man")) {
 			OConsole.println(OConsole.color(OConsole.Cyan, this.s("man")));
@@ -436,7 +465,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
-	protected void declFunc(int acc, String ret, String funcName, String[] params, Block<String> block) {
+	protected void declFunc(int acc, String ret, String funcName, String[] params, Supplier<String> block) {
 		String funcType = "";
 		if (this.isDefined("functype") && !this.isAliasFuncType()) {
 			ArrayList<String> l = new ArrayList<>();
@@ -451,7 +480,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		}
 		this.writeSection(this.format(f, ret, funcName, this.emitParams(params), funcType));
 		this.incIndent();
-		this.writeSection(this.formatFuncResult(block.block()));
+		this.writeSection(this.formatFuncResult(block.get()));
 		this.decIndent();
 		this.writeSection(this.s("end function"));
 	}
@@ -594,7 +623,7 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
-	protected String emitIfStmt(String expr, boolean elseIf, Block<String> stmt) {
+	protected String emitIfStmt(String expr, boolean elseIf, Supplier<String> stmt) {
 		StringBuilder sb = this.beginBlock();
 		if (this.isDefined("else if")) {
 			sb.append(this.format(elseIf ? "else if" : "if", expr));
@@ -602,18 +631,18 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			sb.append(this.format("if", expr));
 		}
 		this.incIndent();
-		this.emitStmt(sb, stmt.block());
+		this.emitStmt(sb, stmt.get());
 		this.decIndent();
 		this.emitStmt(sb, this.format("end if"));
 		return this.endBlock(sb);
 	}
 
 	@Override
-	protected String emitWhileStmt(String expr, Block<String> stmt) {
+	protected String emitWhileStmt(String expr, Supplier<String> stmt) {
 		StringBuilder sb = this.beginBlock();
 		this.emitLine(sb, this.s("while"), expr);
 		this.incIndent();
-		this.emitStmt(sb, stmt.block());
+		this.emitStmt(sb, stmt.get());
 		this.decIndent();
 		this.emitStmt(sb, this.s("end while"));
 		return this.endBlock(sb);
@@ -626,6 +655,9 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitOp(String expr, String op, String expr2) {
+		if (this.isDefined(op)) {
+			return this.format(op, expr, expr2);
+		}
 		return String.format("%s %s %s", expr, this.s(op), expr2);
 	}
 
@@ -854,6 +886,9 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		this.makeLib("fFalse");
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("arrays");
+		if (delim.length() == 0) {
+			delim = " ";
+		}
 		sb.append(this.s("array"));
 		int c = 0;
 		for (String code : cases) {
@@ -902,6 +937,10 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 		}
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("arrays");
+		if (delim.length() == 0) {
+			delim = " ";
+		}
+
 		sb.append(this.s("array"));
 		for (int i = 0; i < indexMap.length; i++) {
 			if (i > 0) {
@@ -921,6 +960,9 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected void declSymbolTables() {
 		String delim = this.s("arrays");
+		if (delim.length() == 0) {
+			delim = " ";
+		}
 		if (this.symbolList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
@@ -973,12 +1015,16 @@ public class GeneratorGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			return this.format("Byte[].quote", sb.toString());
 		} else {
+			String delim = this.s("arrays");
+			if (delim.length() == 0) {
+				delim = " ";
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
 			int c = 0;
 			for (byte b : buf) {
 				if (c > 0) {
-					sb.append(this.s("arrays"));
+					sb.append(delim);
 				}
 				sb.append(b);
 				c++;

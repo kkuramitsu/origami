@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
@@ -31,7 +32,6 @@ import blue.origami.nez.peg.Production;
 import blue.origami.nez.peg.Stateful;
 import blue.origami.nez.peg.Typestate;
 import blue.origami.nez.peg.expression.ByteSet;
-import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;
 
@@ -53,7 +53,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract void declProtoType(String ret, String funcName, String[] params);
 
-	protected abstract void declFunc(int acc, String ret, String funcName, String[] params, Block<C> block);
+	protected abstract void declFunc(int acc, String ret, String funcName, String[] params, Supplier<C> block);
 
 	protected void declSymbolTables() {
 	}
@@ -68,28 +68,21 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitBlockExpr(String name, List<C> exprs);
 
-	protected C emitBlockExpr(String name, C expr, C expr2) {
-		ArrayList<C> l = new ArrayList<>();
-		l.add(expr);
-		l.add(expr2);
-		return this.emitBlockExpr(name, l);
-	}
-
 	protected abstract C emitVarDecl(boolean mutable, String name, C expr, C expr2);
 
-	protected abstract C emitIfStmt(C expr, boolean elseIf, Block<C> stmt);
+	protected abstract C emitIfStmt(C expr, boolean elseIf, Supplier<C> stmt);
 
-	protected abstract C emitWhileStmt(C expr, Block<C> stmt);
+	protected abstract C emitWhileStmt(C expr, Supplier<C> stmt);
 
 	protected final void emitVarDecl(B block, boolean mutable, String name, C expr) {
 		this.emitStmt(block, this.emitVarDecl(mutable, name, expr, null));
 	}
 
-	protected final void emitIfStmt(B block, C expr, boolean elseIf, Block<C> stmt) {
+	protected final void emitIfStmt(B block, C expr, boolean elseIf, Supplier<C> stmt) {
 		this.emitStmt(block, this.emitIfStmt(expr, elseIf, stmt));
 	}
 
-	protected final void emitWhileStmt(B block, C expr, Block<C> stmt) {
+	protected final void emitWhileStmt(B block, C expr, Supplier<C> stmt) {
 		this.emitStmt(block, this.emitWhileStmt(expr, stmt));
 	}
 
@@ -235,44 +228,45 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.emitSetter(this.V("px"), name, expr);
 	}
 
-	protected void declFunc(String ret, String funcName, Block<C> block) {
+	protected void declFunc(String ret, String funcName, Supplier<C> block) {
 		this.declFunc(0, ret, funcName, new String[0], block);
 	}
 
-	protected void declFunc(String ret, String funcName, String a0, Block<C> block) {
+	protected void declFunc(String ret, String funcName, String a0, Supplier<C> block) {
 		this.declFunc(0, ret, funcName, new String[] { a0 }, block);
 	}
 
-	protected void declFunc(String ret, String funcName, String a0, String a1, Block<C> block) {
+	protected void declFunc(String ret, String funcName, String a0, String a1, Supplier<C> block) {
 		this.declFunc(0, ret, funcName, new String[] { a0, a1 }, block);
 	}
 
-	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, Block<C> block) {
+	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, Supplier<C> block) {
 		this.declFunc(0, ret, funcName, new String[] { a0, a1, a2 }, block);
 	}
 
-	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, String a3, Block<C> block) {
+	protected void declFunc(String ret, String funcName, String a0, String a1, String a2, String a3,
+			Supplier<C> block) {
 		this.declFunc(0, ret, funcName, new String[] { a0, a1, a2, a3 }, block);
 	}
 
-	protected void declFunc(int acc, String ret, String funcName, Block<C> block) {
+	protected void declFunc(int acc, String ret, String funcName, Supplier<C> block) {
 		this.declFunc(acc, ret, funcName, new String[0], block);
 	}
 
-	protected void declFunc(int acc, String ret, String funcName, String a0, Block<C> block) {
+	protected void declFunc(int acc, String ret, String funcName, String a0, Supplier<C> block) {
 		this.declFunc(acc, ret, funcName, new String[] { a0 }, block);
 	}
 
-	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, Block<C> block) {
+	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, Supplier<C> block) {
 		this.declFunc(acc, ret, funcName, new String[] { a0, a1 }, block);
 	}
 
-	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, String a2, Block<C> block) {
+	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, String a2, Supplier<C> block) {
 		this.declFunc(acc, ret, funcName, new String[] { a0, a1, a2 }, block);
 	}
 
 	protected void declFunc(int acc, String ret, String funcName, String a0, String a1, String a2, String a3,
-			Block<C> block) {
+			Supplier<C> block) {
 		this.declFunc(acc, ret, funcName, new String[] { a0, a1, a2, a3 }, block);
 	}
 
@@ -395,17 +389,16 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		return this.emitApply(func, l);
 	}
 
-	// protected C emitEqTag(C expr, C expr2) {
-	// return this.emitOp(expr, "==", expr2);
-	// }
+	protected C emitBlockExpr(String name, C expr, C expr2) {
+		ArrayList<C> l = new ArrayList<>();
+		l.add(expr);
+		l.add(expr2);
+		return this.emitBlockExpr(name, l);
+	}
 
 	protected C emitIsNull(C expr) {
 		return this.emitOp(expr, "==", this.emitNull(null));
 	}
-
-	// protected C emitIsNotNull(C expr) {
-	// return this.emitOp(expr, "!=", this.emitNull(null));
-	// }
 
 	protected C IfNull(C v, C v2) {
 		return this.emitIf(this.emitIsNull(v), v2, v);
@@ -633,7 +626,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	@Override
 	public final Class<?> keyClass() {
-		return GeneratorGenerator.class;
+		return SourceGenerator.class;
 	}
 
 	@Override
@@ -705,24 +698,22 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 			this.declProtoType(this.T("matched"), funcName, new String[] { "px" });
 		}
 		this.writeHeader();
-		this.writeComment("*** const ***");
-		this.writeLine(this.head.toString());
-		this.writeComment("*** libs ***");
-		this.writeLine(this.lib.toString());
+		// this.writeComment("*** const ***");
+		this.writeSourceSection(this.head);
+		// this.writeComment("*** libs ***");
+		this.writeSourceSection(this.lib);
 
 		for (String funcName : funcList) {
 			SourceSection s = this.sectionMap.get(funcName);
 			if (s != null) {
-				this.write(s);
+				this.writeSourceSection(s);
 			}
 		}
 		this.lib = new SourceSection();
 		this.writeFooter();
 	}
 
-	protected void log(String line, Object... args) {
-		OConsole.println(line, args);
-	}
+	protected abstract void writeSourceSection(SourceSection head);
 
 	protected String localName(String funcName) {
 		return funcName;
