@@ -697,8 +697,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		}
 		this.writeHeader();
 		this.writeSourceSection(this.head);
+		if (this.isDefined("dummypeg")) {
+			this.lib.L(this.s("dummypeg"));
+		}
 		this.writeSourceSection(this.lib);
-
 		for (String funcName : funcList) {
 			SourceSection s = this.sectionMap.get(funcName);
 			if (s != null) {

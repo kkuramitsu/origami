@@ -103,6 +103,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 	public final static int Aprivate = 0;
 	public final static int Apublic = 1;
 	public final static int Arec = 1 << 1;
+	public final static int Apeg = 1 << 2;
 	public final static int Anoparam = 1 << 2;
 
 	protected void defFunc(ParserGenerator<B, C> pg, int acc, String ret, String funcName, String[] params,

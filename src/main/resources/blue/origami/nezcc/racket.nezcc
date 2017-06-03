@@ -36,7 +36,7 @@ const            = (define %2$s %3$s)
 
 function         = (define (%2$s %3$s)
 param            = %2$s
-params           =
+params           = $|space|
 
 and              = (and %s %s)
 or               = (or %s %s)
@@ -44,7 +44,7 @@ not              = (not %s)
 
 ifexpr           = (if (%1$s) %2$s %3$s)
 funccall         = (%s %s)
-args             =
+args             = $|space|
 #apply            = %s.apply
 #funcref          = $|base|::%s
 
@@ -57,8 +57,8 @@ var              = (define %2$s %3$s)
 assign           = (set! %s %s)
 
 # TODO white space
-array            = (list
-arrays           =
+array            = (list$|space|
+arrays           = $|space|
 end array        = )
 
 if               = (if (%s)

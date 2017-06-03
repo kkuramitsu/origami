@@ -67,12 +67,17 @@ functype         = %3$s -> %1$s
 functypeparam    = %1$s
 functypeparams   = $|space|->$|space|
 
-const            = let %2$s: %1$s = %3$s
+const            = let private %2$s: %1$s = %3$s
 
-function         = let %2$s %3$s: %1$s =
-function2        = let rec %2$s %3$s: %1$s =
+function         = let private %2$s %3$s: %1$s =
 param            = (%2$s: %1$s)
 params           = $|space|
+function1        = let %2$s %3$s: %1$s =
+function2        = let rec %2$s %3$s: %1$s =
+function4        = and %2$s %3$s: %1$s =
+dummypeg         = '''
+let rec dummy n  = dummy 1
+'''
 
 funccall         = (%s %s)
 arg              = (%s)
@@ -147,7 +152,7 @@ main = '''
 let readinputs (a: string) =
   if File.Exists(a) then 
     let buf = File.ReadAllBytes a
-    Array.append buf [|0uy|]
+    Array.append buf [|0uy;0uy|]
   else
     System.Text.Encoding.ASCII.GetBytes(a + "\0")  
   
@@ -157,7 +162,7 @@ let main args =
     let buf = readinputs a
     let timer = new System.Diagnostics.Stopwatch()
     timer.Start()
-    let t = parse buf ((Array.length buf) - 1) newAST subAST
+    let t = parse buf ((Array.length buf) - 2) newAST subAST
     eprintf "%s %i[ms]: " a timer.ElapsedMilliseconds
     printf "%O" t
     eprintfn ""
