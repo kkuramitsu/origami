@@ -10,10 +10,11 @@ String->Byte[]   = (string->bytes/utf-8 %s)
 Byte[].get       = (string->bytes/utf-8 (substring %1$s %2$s (+ %2$s 1)))
 Byte[].quote     = "%s"
 
-Array.size       = (length %s)
-Array.get        = (list-ref %s %s)
-Array.new        = empty
-Array.slice      = (slice %s %s %s)
+Array.size       = (vector-length %s)
+Array.get        = (vector-ref %s %s)
+;Two dimensions(Pass by Reference) -> (make-vector %2$s (make-vector %2$s))
+Array.new        = (make-vector %2$s)
+#Array.slice      = (slice %s %s %s)
 
 # syntax
 
@@ -22,30 +23,41 @@ begin            = (
 end              = )
 ;                =
 
+module           = #lang racket
+
 struct           = (define %s%% (class object%% (super-new)
 constructor      = (init %2$s)
-end constructor  =
-init             = (fileld [_%s %s])
+end constructor  = )
+init             = (field [_%s %s])
 #field            = (field [_%s %s])
 
-getter           = (get-field %2$s %1$s)
-setter           = (set-field! %2$s %1$s %3$s)
+getter           = (get-field _%2$s %1$s)
+setter           = (set-field! _%2$s %1$s %3$s)
 
 const            = (define %2$s %3$s)
 
 function         = (define (%2$s %3$s)
 param            = %2$s
-params           = $|space|
+params           =$|space|
+#FIXME
+#return           = (when %1$s %1$s)
+block            =
 
 and              = (and %s %s)
 or               = (or %s %s)
 not              = (not %s)
+eq               = (= %s %s)
+>                = (> %s %s)
+<                = (< %s %s)
++                = (+ %s %s)
+-                = (- %s %s)
+*                = (* %s %s)
+/                = (/ %s %s)
 
-ifexpr           = (if (%1$s) %2$s %3$s)
+
+ifexpr           = (if (%1$s) (begin %2$s) (begin %3$s))
 funccall         = (%s %s)
-args             = $|space|
-#apply            = %s.apply
-#funcref          = $|base|::%s
+args             =
 
 true             = #t
 false            = #f
@@ -55,9 +67,8 @@ val              = (define %2$s %3$s)
 var              = (define %2$s %3$s)
 assign           = (set! %s %s)
 
-# TODO white space
-array            = (list$|space|
-arrays           = $|space|
+array            = (vector$|space|
+arrays           =$|space|
 end array        = )
 
 if               = (if (%s)
@@ -67,56 +78,68 @@ case             = [%s %s]
 
 lambda           = (lambda (%s) %s)
 
-
 def slice = '''
 (define get-n-items
     (lambda (lst num)
         (if (> num 0)
-            (cons (car lst) (get-n-items (cdr lst) (- num 1)))
+            (vector-append (vector-take lst 1) (get-n-items (vector-drop lst 1) (- num 1)))
             '())))
 
 (define slice
     (lambda (lst start count)
         (if (> start 1)
-            (slice (cdr lst) (- start 1) count)
+            (slice (vector-drop lst 1) (- start 1) count)
             (get-n-items lst count))))
 '''
 
 imports = '''
-
-
 '''
 
 libs = '''
-
-
 '''
 
 def newAST = '''
-(define newAST (tag inputs pos epos size) (if (= size 0) (list tag (slice inputs pos epos) ) (list tag empty) )
+(define (newAST tag inputs pos epos size)
+  (if (= size 0)
+    (vector tag (slice inputs pos epos) )
+    (vector tag empty)
+  )
+)
 '''
 
 def subAST = '''
-(define subAST (parent n label child) )
-  ; TODO
-  ;parent[1][n] = (label, child)
-  ;return parent
+(define (subAST parent n label child)
+  ;FIXME Pass by Reference
+  (vector-set! (vector-ref parent 1) n (vector label child))
+)
 '''
 
-
 main = '''
-(define (read_inputs a)
-  (define f (open-input-file a))
-  ; TODO
-  (close-input-port f)
-  )
+(define (read_inputs file-name)
+  (let ((p (open-input-file file-name)))
+    (let loop((ls1 '()) (c (read-char p)))
+      (if (eof-object? c)
+	  (begin
+	    (close-input-port p)
+	    (list->string (reverse ls1)))
+	  (loop (cons c ls1) (read-char p)))))
 
-; TODO rec
-  (define s (read_inputs a))
-  (define st (current-seconds))
-  (define t (parse s (- (len s) 1) newAST subAST ))
-  (define et (current-seconds))
-  ; TODO output
+(define (main args)
+  (do ((i 0 (+ i 1)))
+      ((eof-object? (vector-ref args i)))
+      (let buf (read_inputs a))
+      (let st (current-seconds))
+      (let t (parse buf (- (string-length buf) 1) newAST subAST ))
+      (let et (current-seconds))
+      (print (vector-ref args i))
+      (print " ")
+      (print (* (- et st) 1000.0) )
+      (print "[ms]: ")
+      (newline)
+      (print t)
+      (newline)
+  )
+)
 
 '''
 
@@ -126,8 +149,5 @@ man = '''
 =============
 
 racket $|base|.rkt <file> or <input-text>
-
-Read the main function. You will know how to
-integrate the parser into your programs.
 
 '''
