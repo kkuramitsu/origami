@@ -22,8 +22,7 @@ begin            = (
 end              = )
 ;                =
 
-# FIXME classname + %
-struct           = (define %s (class object (super-new)
+struct           = (define %s%% (class object%% (super-new)
 constructor      = (init %2$s)
 end constructor  =
 init             = (fileld [_%s %s])
