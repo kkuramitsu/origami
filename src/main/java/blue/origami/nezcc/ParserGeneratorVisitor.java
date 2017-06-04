@@ -79,7 +79,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 				SourceSection prev = pg.openSection(funcName);
 				pg.setCurrentFuncName(funcName);
 				pg.writeSection(pg.emitAsm(pg.format("comment", target)));
-				pg.declFunc(pg.s("Tmatched"), funcName, "px", () -> {
+				pg.declFunc(RuntimeGenerator.Apeg, pg.s("Tmatched"), funcName, "px", () -> {
 					return this.match(target, pg, memo);
 				});
 				pg.closeSection(prev);
@@ -130,9 +130,9 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		else if (e instanceof PAnd) {
 			inline = this.emitCombiAnd(POS, e, pg);
 		}
-		// if (inline != null) {
-		// return inline;
-		// }
+		if (inline != null) {
+			return inline;
+		}
 		return this.match(e, pg, !this.isInline(e, pg));
 	}
 

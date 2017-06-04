@@ -36,7 +36,7 @@ const            = (define %2$s %3$s)
 
 function         = (define (%2$s %3$s)
 param            = %2$s
-params           =
+params           = $|space|
 
 and              = (and %s %s)
 or               = (or %s %s)
@@ -44,7 +44,7 @@ not              = (not %s)
 
 ifexpr           = (if (%1$s) %2$s %3$s)
 funccall         = (%s %s)
-args             =
+args             = $|space|
 #apply            = %s.apply
 #funcref          = $|base|::%s
 
@@ -57,8 +57,8 @@ var              = (define %2$s %3$s)
 assign           = (set! %s %s)
 
 # TODO white space
-array            = (list
-arrays           =
+array            = (list$|space|
+arrays           = $|space|
 end array        = )
 
 if               = (if (%s)
@@ -93,6 +93,18 @@ libs = '''
 
 '''
 
+def newAST = '''
+(define newAST (tag inputs pos epos size) (if (= size 0) (list tag (slice inputs pos epos) ) (list tag empty) )
+'''
+
+def subAST = '''
+(define subAST (parent n label child) )
+  ; TODO
+  ;parent[1][n] = (label, child)
+  ;return parent
+'''
+
+
 main = '''
 (define (read_inputs a)
   (define f (open-input-file a))
@@ -100,8 +112,12 @@ main = '''
   (close-input-port f)
   )
 
-
-
+; TODO rec
+  (define s (read_inputs a))
+  (define st (current-seconds))
+  (define t (parse s (- (len s) 1) newAST subAST ))
+  (define et (current-seconds))
+  ; TODO output
 
 '''
 
@@ -110,12 +126,9 @@ man = '''
  QUICK START
 =============
 
+racket $|base|.rkt <file> or <input-text>
 
-
-=============
- INTEGRATION
-=============
-
-
+Read the main function. You will know how to
+integrate the parser into your programs.
 
 '''

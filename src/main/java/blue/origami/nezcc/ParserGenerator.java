@@ -108,7 +108,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitOp(C expr, String op, C expr2);
 
-	protected abstract C emitCast(String var, C expr);
+	protected abstract C emitConv(String var, C expr);
 
 	protected abstract C emitNull(String name);
 
@@ -697,8 +697,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		}
 		this.writeHeader();
 		this.writeSourceSection(this.head);
+		if (this.isDefined("dummypeg")) {
+			this.lib.L(this.s("dummypeg"));
+		}
 		this.writeSourceSection(this.lib);
-
 		for (String funcName : funcList) {
 			SourceSection s = this.sectionMap.get(funcName);
 			if (s != null) {

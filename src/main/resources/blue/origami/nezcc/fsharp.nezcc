@@ -10,12 +10,15 @@ Int                = int
 String             = string
 Array              = array<%s>
 Int64              = uint64
-Tree               = 'tree
+Tree               = 't
 
-#Byte->Int          = %s & 0xff
-Int64->Int         = (%s).toInt
-String->Byte[]     = (%s).getBytes("UTF-8")
+Byte->Int          = (int %s)
+Int64->Int         = (int (%s))
+Int->Int64         = (uint64 %s) 
+String->Byte[]     = System.Text.Encoding.ASCII.GetBytes(%s)
 String.+0          = (%s + "\0")
+Byte''             = %suy
+Int8''             = %suy
 
 # If 32bit-length integer exists, 
 Int32             = int32
@@ -24,20 +27,19 @@ Int32             = int32
 #base64           = B("%s")
 #bools            = B256("%s")
 
-#structname         = %s[T]
 
 Array.size        = %s.Length
 Array.get         = %s.[%s]
 Array.new         = Array.zeroCreate %2$s
 
-Byte[].slice      = %s.[(%s..%s]
+Byte[].slice      = %s.[%s..%s]
 
 
-#Option             = Option[%s]
-#Some               = Some(%s)
-#None               = None
-#Option.get         = %s.get
-#Option.isNone      = %s.isEmpty
+Option             = %s option
+Some               = Some(%s)
+None               = None
+Option.get         = (Option.get %s)
+Option.isNone      = (Option.isNone %s)
 
 # syntax
 
@@ -48,23 +50,38 @@ end              =
 
 module           = module $|base|
 
-struct           = type %s = {%s}
-record           = %2$s: %1$s
+structname       = %s<'t>
+
+struct           = type %s<'t> = {%s}
+record           = mutable %2$s: %1$s
 records          = ;
 
-object           = %1$s {%2$s} 
+object           = (* %1$s *){%2$s} 
 objectparam      = %1$s=%2$s 
-objectparams     = , 
+objectparams     = ; 
 
-functype         = %3$s->%1$s
+getter           = %s.%s
+setter           = %s.%s <- %s
+
+functype         = %3$s -> %1$s
 functypeparam    = %1$s
-functypeparams   = ->
+functypeparams   = $|space|->$|space|
 
-const            = let %2$s: %1$s = %3$s
+const            = let private %2$s: %1$s = %3$s
 
-function         = let %2$s (%3$s): %1$s =
-param            = %2$s: %1$s
-#return           = %s
+function         = let private %2$s %3$s: %1$s =
+param            = (%2$s: %1$s)
+params           = $|space|
+function1        = let %2$s %3$s: %1$s =
+function2        = let rec %2$s %3$s: %1$s =
+function4        = and %2$s %3$s: %1$s =
+dummypeg         = '''
+let rec dummy n  = dummy 1
+'''
+
+funccall         = (%s %s)
+arg              = (%s)
+args             =
 
 #cast             = (%s)(%s)
 
@@ -75,7 +92,7 @@ lambda           = (fun %s -> %s)
 if               = if %s then
 else if          = else if %s then
 while            = while %s do
-switch           = %s match with
+switch           = match (int %s) with
 case             = | %s -> %s
 default          = | _ -> %s
 
@@ -83,83 +100,73 @@ default          = | _ -> %s
 ifexpr           = if %s then %s else %s
 
 letin            = let %2$s: %1$s = %3$s in %4$s
-val              = let %2$s: %1$s = %3$s
-var              = let mutable %2$s: %1$s = %3$s
+val              = let %2$s: %1$s = %3$s in
+var              = let mutable %2$s: %1$s = %3$s in
 assign           = %s <- %s
 
 array            = [|
 arrays           = ;
 end array        = |]
 
+eq               = %s = %s
+ne               = %s <> %s
+not              = not %s
+&                = %s &&& %s
+<<               = %s <<< %s
+
+##
+def newMemos = '''
+let newMemos (tree: 't) (length: int): array<MemoEntry<'t>> =
+  Array.init<MemoEntry<'t>> length (fun x -> {key=(uint64 -1);result=0;pos=0;tree=tree;state=None})
+'''
+
 ## Default AST
 
-Symbol           = String
+Symbol           = $|String|
 
-def AST2          = '''
-  class SimpleTree(key: $|Symbol|, var value: AnyRef) {
-    override def toString = if (value.isInstanceOf[SimpleTree]) s"$key= $value" else s"[#$key $value]"
-  }
+def AST          = '''
+type Tree = {
+  tag: string
+  text: string
+  subs: array<string * Tree>
+}
 '''
 
-def newAST2 = '''
-  private def newAST(tag: String,
-                     inputs: Array[Byte],
-                     pos: Int,
-                     epos: Int,
-                     size: Int): SimpleTree =
-    new SimpleTree(tag,
-                   if ((size == 0)) new String(inputs, pos, epos - pos)
-                   else new Array[SimpleTree](size))
+def newAST = '''
+let newAST (tag: string) (inputs: byte array) (pos: int) (epos: int) (size: int) =
+  (tag, inputs.[pos..epos], size)
 '''
 
-def subAST2 = '''
-  private def subAST(parent: SimpleTree,
-                     n: Int,
-                     label: String,
-                     child: SimpleTree): SimpleTree = {
-    val childs: Array[SimpleTree] =
-      (parent.asInstanceOf[SimpleTree]).value.asInstanceOf[Array[SimpleTree]]
-    childs(n) = new SimpleTree(label, child)
-    parent
-  }
+def subAST = '''
+let subAST parent n label child = parent 
 '''
 
 imports = '''
-
 '''
 
 libs = '''
-
+open System.IO
 '''
 
-main2 = '''
-  def readInputs(a: String): Array[Byte] = {
-    val file: File = new File(a)
-    if (file.exists()) {
-      val buf: Array[Byte] = Array.ofDim[Byte](file.length.toInt + 1)
-      val fin: FileInputStream = new FileInputStream(file)
-      fin.read(buf, 0, file.length.toInt)
-      buf
-    }
-    else {
-      (a + "\0").getBytes(Charset.forName("UTF-8"))
-    }
-  }
-      
-  def main(args: Array[String]): Unit = {
-    for (a <- args) {
-      val buf = readInputs(a)
-      val st: Long = System.nanoTime()
-      val t: SimpleTree = parse(buf, buf.length-1, 
-        (tag, inputs, pos, epos, size) => newAST(tag, inputs, pos, epos, size), 
-        (parent, n, label, child) => subAST(parent, n, label, child))
-      val et: Long = System.nanoTime()
-      System.err.printf("" + a + " " +  ((et - st) / 1000000.0) + "[ms] :")
-      print(t)
-      System.out.flush
-      System.err.printf("\n")
-    }
-  }
+main = '''
+let readinputs (a: string) =
+  if File.Exists(a) then 
+    let buf = File.ReadAllBytes a
+    Array.append buf [|0uy;0uy|]
+  else
+    System.Text.Encoding.ASCII.GetBytes(a + "\0")  
+  
+[<EntryPoint>]
+let main args =
+  for a in args do
+    let buf = readinputs a
+    let timer = new System.Diagnostics.Stopwatch()
+    timer.Start()
+    let t = parse buf ((Array.length buf) - 2) newAST subAST
+    eprintf "%s %i[ms]: " a timer.ElapsedMilliseconds
+    printf "%O" t
+    eprintfn ""
+  0
 '''
 
 man = '''
@@ -167,19 +174,8 @@ man = '''
  QUICK START
 =============
  
- scalac $|base|.java
- scala $|base| <file> or <input-text>
+ fsharpc $|base|.fs
+ mono $|base|.exe <file> or <input-text>
  
-=============
- INTEGRATION
-=============
-
-Just call $|base|.parse() like below. You will get
-a simple tree representation ($|base|.SimpleTree).
-
-   SimpleTree t = $|base|.parse("sometext");
-   if(t != null) {
-      System.out.println(t);
-   }
-'''
+ '''
 
