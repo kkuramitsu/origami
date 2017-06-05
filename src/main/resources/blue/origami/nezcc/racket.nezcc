@@ -14,7 +14,14 @@ Array.size       = (vector-length %s)
 Array.get        = (vector-ref %s %s)
 ;Two dimensions(Pass by Reference) -> (make-vector %2$s (make-vector %2$s))
 Array.new        = (make-vector %2$s)
-#Array.slice      = (slice %s %s %s)
+Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
+
+#In case of AST2
+# FIXME recT rLog
+#TList               = ( TList
+#TList.empty         = null
+#TList.cons          = ( TList %s %s %s)
+#mainparams          = $|base|::newAST
 
 # syntax
 
@@ -39,8 +46,7 @@ const            = (define %2$s %3$s)
 function         = (define (%2$s %3$s)
 param            = %2$s
 params           =$|space|
-#FIXME
-#return           = (when %1$s %1$s)
+return           = (when #t %s)
 block            =
 
 and              = (and %s %s)
@@ -53,9 +59,11 @@ eq               = (= %s %s)
 -                = (- %s %s)
 *                = (* %s %s)
 /                = (/ %s %s)
+%                = (modulo %s %s)
 
 
 ifexpr           = (if (%1$s) (begin %2$s) (begin %3$s))
+# FIXME divide class const
 funccall         = (%s %s)
 args             =
 
@@ -70,7 +78,6 @@ assign           = (set! %s %s)
 array            = (vector$|space|
 arrays           =$|space|
 end array        = )
-
 if               = (if (%s)
 switch           = (match %s
 case             = [%s %s]
@@ -78,18 +85,42 @@ case             = [%s %s]
 
 lambda           = (lambda (%s) %s)
 
-def slice = '''
-(define get-n-items
-    (lambda (lst num)
-        (if (> num 0)
-            (vector-append (vector-take lst 1) (get-n-items (vector-drop lst 1) (- num 1)))
-            '())))
+def newMemos = '''
+(define (rMemo memos tree cnt length)
+  (when #t (if ((< cnt length)) (begin (vector-set! (vector-ref memos cnt) (MemoEntry% -1 0 0 tree null))) (begin memos)))
+)
 
-(define slice
-    (lambda (lst start count)
-        (if (> start 1)
-            (slice (vector-drop lst 1) (- start 1) count)
-            (get-n-items lst count))))
+(define (newMemos tree length)
+  (when #t (rMemo (make-vector length) tree 0 length))
+)
+'''
+
+def logT = '''
+(define (useTreeLog px)
+  (define tcur (get-field _treeLog px))
+  (match (get-field _nextLog tcur)
+    [null (set-field! _nextLog tcur (TreeLog% 0 0 null (get-field _treeLog px) null))]
+  )
+  (when #t (get-field _nextLog tcur))
+)
+
+(define (logT px op log tree)
+  (define tcur (useTreeLog px))
+  (set-field! _op tcur op)
+  (set-field! _log tcur log)
+  (set-field! _tree tcur tree)
+  (set-field! _treeLog px tcur)
+  (when #t #t)
+)
+'''
+
+def parse = '''
+(define (parse inputs length newFunc setFunc)
+  (define tree (newFunc (gettag 0) inputs 0 length 0))
+  (define px (NezParserContext% inputs length 0 0 tree (TreeLog% 0 0 tree null null) (if ((= newFunc null)) (begin newAST) (begin newFunc)) (if ((= setFunc null)) (begin subAST) (begin setFunc)) null (newMemos tree 257)))
+  (set! tree (if ((e0 px)) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
+  (when #t tree)
+)
 '''
 
 imports = '''
@@ -101,7 +132,7 @@ libs = '''
 def newAST = '''
 (define (newAST tag inputs pos epos size)
   (if (= size 0)
-    (vector tag (slice inputs pos epos) )
+    (vector tag (vector-drop (vector-take inputs epos) pos) )
     (vector tag empty)
   )
 )
@@ -122,11 +153,12 @@ main = '''
 	  (begin
 	    (close-input-port p)
 	    (list->string (reverse ls1)))
-	  (loop (cons c ls1) (read-char p)))))
+	  (loop (cons c ls1) (read-char p))))))
 
 (define (main args)
   (do ((i 0 (+ i 1)))
       ((eof-object? (vector-ref args i)))
+      ; FIXME can't define var
       (let buf (read_inputs a))
       (let st (current-seconds))
       (let t (parse buf (- (string-length buf) 1) newAST subAST ))
@@ -139,9 +171,9 @@ main = '''
       (print t)
       (newline)
   )
-)
 
 '''
+# Match the number of parentheses
 
 man = '''
 =============
