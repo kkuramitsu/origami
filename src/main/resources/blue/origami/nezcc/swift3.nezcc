@@ -8,10 +8,10 @@ Bool              = Bool
 Byte              = UInt8
 Int               = Int
 Int32             = Int
-Int64             = Int
+Int64             = UInt64
 Array             = [%s]
 Symbol            = String
-Tree              = Any?
+Tree              = AST
 String            = String
 
 Option            = Optional<%s>
@@ -26,14 +26,13 @@ end array         = ]
 
 Byte->Int         = Int(%s)
 String->Byte[]    = [UInt8](%s.utf8)
+Int64->Int         = Int(%s)
+Int->Int64        = UInt64(%s)
 
 Tf                = (NezParserContext) -> Bool
-TtreeLog          = TreeLog?
-Tstate            = State?
-TnewFunc          = @escaping (String,[UInt8],Int,Int,Int) -> Any?
-TsetFunc          = @escaping (Any?,Int,String,Any?) -> Any?
+TnewFunc          = @escaping (String,[UInt8],Int,Int,Int) -> AST
+TsetFunc          = @escaping (AST,Int,String,AST) -> AST
 
-unsigned          = Int(%s)
 keyindex          = Int(%s)
 
 val               = let %2$s: %1$s = %3$s
@@ -68,7 +67,7 @@ funccallparam     = (%s)
 alen              = %s.count
 aindex            = %1$s[%1$s.index(%1$s.startIndex, offsetBy: %2$s)]
 Array.size        = $|alen|
-Array.new         = Array(repeating:%1$s(-1,0,0,tree,nil), count:%2$s)
+#Array.new         = Array(repeating:%1$s(-1,0,0,tree,nil), count:%2$s)
 
 if                = if %s {
 else if           = else if %s {
@@ -76,7 +75,6 @@ while             = while %s {
 switch            = switch %s {
 case              = case %s : %s
 default           = default : %s
-#ifexpr            = if %s {(%s)} else {(%s)}
 
 lambda            = {(%s:NezParserContext) -> Bool in return %s}
 
@@ -88,10 +86,10 @@ def NezParserContext = '''
 final private class TreeLog{
   var op :Int
   var log :Int
-  var tree :Any?
-  var prevLog :TreeLog?
-  var nextLog :TreeLog?
-  init(_ op :Int,_ log :Int,_ tree :Any?,_ prevLog :TreeLog?,_ nextLog :TreeLog?) {
+  var tree :AST
+  var prevLog :Optional<TreeLog>
+  var nextLog :Optional<TreeLog>
+  init(_ op :Int,_ log :Int,_ tree :AST,_ prevLog :Optional<TreeLog>,_ nextLog :Optional<TreeLog>) {
     self.op = op
     self.log = log
     self.tree = tree
@@ -103,8 +101,8 @@ final private class State{
   var ntag :Int
   var cnt :Int
   var value :[UInt8]
-  var prevState :State?
-  init(_ ntag :Int,_ cnt :Int,_ value :[UInt8],_ prevState :State?) {
+  var prevState :Optional<State>
+  init(_ ntag :Int,_ cnt :Int,_ value :[UInt8],_ prevState :Optional<State>) {
     self.ntag = ntag
     self.cnt = cnt
     self.value = value
@@ -112,12 +110,12 @@ final private class State{
   }
 }
 final private class MemoEntry{
-  var key :Int
+  var key :UInt64
   var result :Int
   var pos :Int
-  var tree :Any?
-  var state :State?
-  init(_ key :Int, _ result :Int, _ pos :Int, _ tree :Any?, _ state :State?) {
+  var tree :AST
+  var state :Optional<State>
+  init(_ key :UInt64,_ result :Int,_ pos :Int,_ tree :AST,_ state :Optional<State>) {
     self.key = key
     self.result = result
     self.pos = pos
@@ -126,17 +124,17 @@ final private class MemoEntry{
   }
 }
 final private class NezParserContext{
-  let inputs :[UInt8]
-  let length :Int
+  var inputs :[UInt8]
+  var length :Int
   var pos :Int
-  let headpos :Int
-  var tree :Any?
-  var treeLog :TreeLog?
-  let newFunc :(String,[UInt8],Int,Int,Int) -> Any?
-  let setFunc :(Any?,Int,String,Any?) -> Any?
-  var state :State?
+  var headpos :Int
+  var tree :AST
+  var treeLog :Optional<TreeLog>
+  var newFunc :(String,[UInt8],Int,Int,Int) -> AST
+  var setFunc :(AST,Int,String,AST) -> AST
+  var state :Optional<State>
   var memos :[MemoEntry]
-  init(_ inputs :[UInt8],_ length :Int,_ pos :Int,_ headpos :Int,_ tree :Any?,_ treeLog :TreeLog?,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> Any?,_ setFunc :@escaping (Any?,Int,String,Any?) -> Any?,_ state :State?,_ memos :[MemoEntry]) {
+  init(_ inputs :[UInt8],_ length :Int,_ pos :Int,_ headpos :Int,_ tree :AST,_ treeLog :Optional<TreeLog>,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> AST,_ setFunc :@escaping (AST,Int,String,AST) -> AST,_ state :Optional<State>,_ memos :[MemoEntry]) {
     self.inputs = inputs
     self.length = length
     self.pos = pos
@@ -151,14 +149,14 @@ final private class NezParserContext{
 }
 '''
 
-def newMemos = '''
-private func newMemos (_ tree :Any?,_ length :Int) -> [MemoEntry] {
+#def newMemos = '''
+private func newMemos (_ tree :AST,_ length :Int) -> [MemoEntry] {
   return Array(repeating:MemoEntry(-1,0,0,tree,nil), count:length)
 }
 '''
 
 def newAST = '''
-private let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> Any? in
+private let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> AST in
   if(n == 0){
     let pre = inputs.prefix(epos)
     return AST(tag,pre.dropFirst(spos).map{$0})
@@ -169,41 +167,20 @@ private let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_
 '''
 
 def subAST = '''
-private let subAST = {(_ parent :Any?,_ n :Int,_ label :String,_ child :Any?) -> Any? in
-  if var childs = (parent as! AST).value as? [AST] {
-    if child is [AST] {
-      if childs.count > n {
-        childs[n] = AST(label, child)
-      }
-      (parent as! AST).value = childs
-      return parent
-    }else if child is AST {
-      if childs.count > n {
-        childs[n] = AST(label, [child])
-      }
-      (parent as! AST).value = childs
-      return parent
-    }
-  }else if var childs = (parent as! AST).value as? AST {
-    if child is [AST] {
-      childs = AST(label, child)
-      (parent as! AST).value = childs
-      return parent
-    }else if child is AST {
-      childs = AST(label, [child])
-      (parent as! AST).value = childs
-      return parent
-    }
+private let subAST = {(_ parent :AST,_ n :Int,_ label :String,_ child :AST) -> AST in
+  if var childs = parent.value as? [AST] {
+    childs[n] = AST(label, [child])
+    parent.value = childs
   }
   return parent
 }
 '''
 
-def AST = '''
+libs = '''
 final private class AST{
   var key :String
-  var value :Any?
-  init(_ key :String, _ value :Any?){
+  var value :[Any]
+  init(_ key :String, _ value :[Any]){
     self.key = key
     self.value = value
   }
@@ -220,22 +197,7 @@ final private class AST{
           for val2 in val1.value as! [AST] {
             out += val2.print()
           }
-        }else if let val2 = val1.value as? AST{
-          out += val2.print()
         }
-      }
-    }else if let val1 = self.value as? AST {
-      if val1.key != "" {
-        out += " $\(val1.key)="
-      }else{
-        out += " "
-      }
-      if val1.value is [AST] {
-        for val2 in val1.value as! [AST] {
-          out += val2.print()
-        }
-      }else if let val2 = val1.value as? AST {
-        out += val2.print()
       }
     }else if let val1 = self.value as? [UInt8]{
       let val = String(describing: NSString(bytes:val1, length: val1.count, encoding:String.Encoding.utf8.rawValue)!)
@@ -271,10 +233,8 @@ while(arguments.count > 0){
   let start :Date = Date()
   let object = parseText(inputS, newAST, subAST)
   let time = Double(Date().timeIntervalSince(start)) * 1000
-  if let ob = object as? AST{
-    print("\(inputString) \(time)[ms]:", terminator: " ")
-    print(ob.print())
-  }
+  print("\(inputString) \(time)[ms]:")
+  print(object.print())
 }
 '''
 
