@@ -149,9 +149,9 @@ final private class NezParserContext{
 }
 '''
 
-#def newMemos = '''
+def newMemos = '''
 private func newMemos (_ tree :AST,_ length :Int) -> [MemoEntry] {
-  return Array(repeating:MemoEntry(-1,0,0,tree,nil), count:length)
+  return Array(repeating:MemoEntry(UInt64.max,0,0,tree,nil), count:length)
 }
 '''
 
@@ -243,10 +243,10 @@ man = '''
  QUICK START
 =============
 
- swiftc -O $|base|.swift
+ swiftc -Ounchecked $|base|.swift
  ./$|base| <file> or <input-text>
  or
- swift -O $|base|.swift <file> or <input-text>
+ swift -Ounchecked $|base|.swift <file> or <input-text>
 
 Read the main function. You will know how to
 integrate the parser into your programs.
