@@ -8,9 +8,9 @@ Bool              = Bool
 Byte              = UInt8
 Int               = Int
 Int32             = Int
-Int64             = Int
+#Int64             = Int
+Int64             = UInt64
 Array             = [%s]
-Symbol            = String
 Tree              = Any?
 String            = String
 #null              = nil
@@ -21,21 +21,21 @@ None              = nil
 Option.get        = %s!
 Option.isNone     = %s == nil
 
+Byte->Int         = Int(%s)
+String->Byte[]    = [UInt8](%s.utf8)
+
 array             = [
 arrays            = ,
 end array         = ]
 
-Byte->Int         = Int(%s)
-String->Byte[]    = [UInt8](%s.utf8)
-
-Tf                = (NezParserContext) -> Bool
-TtreeLog          = TreeLog?
-Tstate            = State?
+#Tf                = (NezParserContext) -> Bool
+#TtreeLog          = TreeLog?
+#Tstate            = State?
 TnewFunc          = @escaping (String,[UInt8],Int,Int,Int) -> Any?
 TsetFunc          = @escaping (Any?,Int,String,Any?) -> Any?
 
-unsigned          = Int(%s)
-keyindex          = ($|Int|)(%s)
+#unsigned          = Int(%s)
+#keyindex          = ($|Int|)(%s)
 
 val               = let %2$s: %1$s = %3$s
 var               = var %2$s: %1$s = %3$s
@@ -68,10 +68,9 @@ funccallparam     = (%s)
 
 #cast             = %s(%s)
 
-alen              = %s.count
-aindex            = %1$s[%1$s.index(%1$s.startIndex, offsetBy: %2$s)]
-anew              = Array(repeating:nil, count:%2$s) as [%1$s?]
-Array.size        = $|alen|
+#aindex            = %1$s[%1$s.index(%1$s.startIndex, offsetBy: %2$s)]
+#anew              = Array(repeating:nil, count:%2$s) as [%1$s?]
+Array.size        = %s.count
 Array.new         = Array(repeating:%1$s(-1,0,0,tree,nil), count:%2$s)
 
 if                = if %s {
