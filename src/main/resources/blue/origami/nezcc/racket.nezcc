@@ -18,9 +18,9 @@ Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
 
 #In case of AST2
 # FIXME recT rLog
-#TList               = ( TList
-#TList.empty         = null
-#TList.cons          = ( TList %s %s %s)
+#TList               = TList%%
+#List.empty         = null
+#TList.cons          = (TList%% %s %s %s)
 #mainparams          = $|base|::newAST
 
 # syntax
@@ -127,6 +127,13 @@ imports = '''
 '''
 
 libs = '''
+(define TList% (class object% (super-new)
+    (init label tree next)
+    (field [_label label])
+    (field [_tree tree])
+    (field [_next next])
+  )
+)
 '''
 
 def newAST = '''
@@ -156,20 +163,25 @@ main = '''
 	  (loop (cons c ls1) (read-char p))))))
 
 (define (main args)
-  (do ((i 0 (+ i 1)))
-      ((eof-object? (vector-ref args i)))
-      ; FIXME can't define var
-      (let buf (read_inputs a))
-      (let st (current-seconds))
-      (let t (parse buf (- (string-length buf) 1) newAST subAST ))
-      (let et (current-seconds))
-      (print (vector-ref args i))
-      (print " ")
-      (print (* (- et st) 1000.0) )
-      (print "[ms]: ")
-      (newline)
-      (print t)
-      (newline)
+  (begin
+    (define i 0)
+    (define buf (read_inputs (vector-ref args i)))
+    (do (
+          (i 1 (+ i 1))
+          (buf (read_inputs (vector-ref args i)) (read_inputs (vector-ref args i)))
+          (st (current-inexact-milliseconds) (current-inexact-milliseconds))
+          (t (parse buf (- (string-length buf) 1) newAST subAST ) (parse buf (- (string-length buf) 1) newAST subAST ))
+          (et (current-inexact-milliseconds) (current-inexact-milliseconds))
+        )
+        ((eof-object? (vector-ref args i)))
+        (print (vector-ref args i))
+        (print " ")
+        (print (- et st))
+        (print "[ms]: ")
+        (newline)
+        (print t)
+        (newline)
+    )
   )
 
 '''
