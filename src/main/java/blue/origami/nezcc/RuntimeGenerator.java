@@ -566,93 +566,103 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			});
 		});
 
-		this.defineLib("endT", () -> {
-			this.makeLib("gettag");
-			this.makeLib("getvalue");
-			this.makeLib("getlength");
-			this.defFunc(pg, 0, this.T("matched"), "endT", "px", "shift", "ntag0", () -> {
-				B block = pg.beginBlock();
-				pg.emitVarDecl(block, true, "cnt", pg.vInt(0));
-				pg.emitVarDecl(block, true, "treeLog", pg.emitGetter("px.treeLog"));
-				if (Optional) {
-					pg.emitVarDecl(block, true, "tcur", pg.emitFunc("Option.get", pg.V("treeLog")));
-				} else {
-					pg.emitVarDecl(block, true, "tcur", pg.V("treeLog"));
-				}
-				// pg.emitVarDecl(block, true, "ntag", pg.vInt(0));
-				pg.emitVarDecl(block, true, "ntag", pg.V("ntag0"));
-				pg.emitVarDecl(block, true, "nvalue", pg.vInt(0));
-				/* while */
-				C loopCond = pg.emitOp(pg.emitGetter("tcur.op"), "!=", pg.vInt(OpNew));
-				C loopNext = pg.emitAssign("tcur", Optional ? pg.emitFunc("Option.get", pg.emitGetter("tcur.prevLog"))
-						: pg.emitGetter("tcur.prevLog"));
-				C ifLinkCond = pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpLink));
-				pg.emitWhileStmt(block, loopCond, () -> {
-					C ifTagCond = pg.emitAnd(pg.emitOp(pg.V("ntag"), "==", pg.vInt(0)),
-							pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpTag)));
-					C ifValueCond = pg.emitAnd(pg.emitOp(pg.V("nvalue"), "==", pg.vInt(0)),
-							pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpValue)));
-					B block2 = pg.beginBlock();
-					pg.emitIfStmt(block2, ifLinkCond, false, () -> {
-						return pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+", pg.vInt(1)));
-					});
-					pg.emitIfStmt(block2, ifTagCond, false, () -> {
-						return pg.emitAssign("ntag", pg.emitGetter("tcur.log"));
-					});
-					pg.emitIfStmt(block2, ifValueCond, false, () -> {
-						B block3 = pg.beginBlock();
-						pg.Assign(block3, "nvalue", pg.emitGetter("tcur.log"));
-						return pg.endBlock(block3);
-					});
-					pg.emitStmt(block2, loopNext);
-					return pg.endBlock(block2);
-				});
-				List<C> param = new ArrayList<>();
-				param.add(pg.emitFunc("gettag", pg.V("ntag")));
-				param.add(pg.emitGetter("px.inputs"));
-				param.add(pg.emitGetter("tcur.log"));
-				param.add(pg.emitOp(pg.emitGetter("px.pos"), "+", pg.V("shift")));
-				param.add(pg.V("cnt"));
-				List<C> param2 = new ArrayList<>();
-				param2.add(pg.emitFunc("gettag", pg.V("ntag")));
-				param2.add(pg.emitFunc("getvalue", pg.V("nvalue")));
-				param2.add(pg.vInt(0));
-				if (UsePointerPosition) {
-					param2.add(pg.emitOp(pg.emitFunc("getvalue", pg.V("nvalue")), "+",
-							pg.emitFunc("getlength", pg.V("nvalue"))));
-				} else {
-					param2.add(pg.emitFunc("getlength", pg.V("nvalue")));
-				}
-				param2.add(pg.V("cnt"));
-				C newTree = pg.emitIf(pg.emitOp(pg.V("nvalue"), "==", pg.vInt(0)),
-						pg.emitApply(pg.emitGetter("px.newFunc"), param),
-						pg.emitApply(pg.emitGetter("px.newFunc"), param2));
-				pg.Setter(block, "px.tree", newTree);
-				// set..
-				if (Optional) {
-					pg.Assign(block, "tcur", pg.emitFunc("Option.get", pg.V("treeLog")));
-				} else {
-					pg.Assign(block, "tcur", pg.V("treeLog"));
-				}
-
-				pg.emitWhileStmt(block, loopCond, () -> {
-					B block2 = pg.beginBlock();
-					pg.emitIfStmt(block2, ifLinkCond, false, () -> {
-						B block3 = pg.beginBlock();
-						pg.emitStmt(block3, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "-", pg.vInt(1))));
-						C setFunc = pg.emitApply(pg.emitGetter("px.setFunc"), pg.emitGetter("px.tree"), pg.V("cnt"),
-								pg.emitFunc("getlabel", pg.emitGetter("tcur.log")), pg.emitGetter("tcur.tree"));
-						pg.emitStmt(block3, pg.emitSetter("px.tree", setFunc));
-						return pg.endBlock(block3);
-					});
-					pg.emitStmt(block2, loopNext);
-					return pg.endBlock(block2);
-				});
-				pg.emitStmt(block, pg.emitBack("treeLog", pg.emitGetter("tcur.prevLog")));
-				pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
-				return (pg.endBlock(block));
-			});
-		});
+		// this.defineLib("endT", () -> {
+		// this.makeLib("gettag");
+		// this.makeLib("getvalue");
+		// this.makeLib("getlength");
+		// this.defFunc(pg, 0, this.T("matched"), "endT", "px", "shift",
+		// "ntag0", () -> {
+		// B block = pg.beginBlock();
+		// pg.emitVarDecl(block, true, "cnt", pg.vInt(0));
+		// pg.emitVarDecl(block, true, "treeLog", pg.emitGetter("px.treeLog"));
+		// if (Optional) {
+		// pg.emitVarDecl(block, true, "tcur", pg.emitFunc("Option.get",
+		// pg.V("treeLog")));
+		// } else {
+		// pg.emitVarDecl(block, true, "tcur", pg.V("treeLog"));
+		// }
+		// // pg.emitVarDecl(block, true, "ntag", pg.vInt(0));
+		// pg.emitVarDecl(block, true, "ntag", pg.V("ntag0"));
+		// pg.emitVarDecl(block, true, "nvalue", pg.vInt(0));
+		// /* while */
+		// C loopCond = pg.emitOp(pg.emitGetter("tcur.op"), "!=",
+		// pg.vInt(OpNew));
+		// C loopNext = pg.emitAssign("tcur", Optional ?
+		// pg.emitFunc("Option.get", pg.emitGetter("tcur.prevLog"))
+		// : pg.emitGetter("tcur.prevLog"));
+		// C ifLinkCond = pg.emitOp(pg.emitGetter("tcur.op"), "==",
+		// pg.vInt(OpLink));
+		// pg.emitWhileStmt(block, loopCond, () -> {
+		// C ifTagCond = pg.emitAnd(pg.emitOp(pg.V("ntag"), "==", pg.vInt(0)),
+		// pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpTag)));
+		// C ifValueCond = pg.emitAnd(pg.emitOp(pg.V("nvalue"), "==",
+		// pg.vInt(0)),
+		// pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpValue)));
+		// B block2 = pg.beginBlock();
+		// pg.emitIfStmt(block2, ifLinkCond, false, () -> {
+		// return pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+", pg.vInt(1)));
+		// });
+		// pg.emitIfStmt(block2, ifTagCond, false, () -> {
+		// return pg.emitAssign("ntag", pg.emitGetter("tcur.log"));
+		// });
+		// pg.emitIfStmt(block2, ifValueCond, false, () -> {
+		// B block3 = pg.beginBlock();
+		// pg.Assign(block3, "nvalue", pg.emitGetter("tcur.log"));
+		// return pg.endBlock(block3);
+		// });
+		// pg.emitStmt(block2, loopNext);
+		// return pg.endBlock(block2);
+		// });
+		// List<C> param = new ArrayList<>();
+		// param.add(pg.emitFunc("gettag", pg.V("ntag")));
+		// param.add(pg.emitGetter("px.inputs"));
+		// param.add(pg.emitGetter("tcur.log"));
+		// param.add(pg.emitOp(pg.emitGetter("px.pos"), "+", pg.V("shift")));
+		// param.add(pg.V("cnt"));
+		// List<C> param2 = new ArrayList<>();
+		// param2.add(pg.emitFunc("gettag", pg.V("ntag")));
+		// param2.add(pg.emitFunc("getvalue", pg.V("nvalue")));
+		// param2.add(pg.vInt(0));
+		// if (UsePointerPosition) {
+		// param2.add(pg.emitOp(pg.emitFunc("getvalue", pg.V("nvalue")), "+",
+		// pg.emitFunc("getlength", pg.V("nvalue"))));
+		// } else {
+		// param2.add(pg.emitFunc("getlength", pg.V("nvalue")));
+		// }
+		// param2.add(pg.V("cnt"));
+		// C newTree = pg.emitIf(pg.emitOp(pg.V("nvalue"), "==", pg.vInt(0)),
+		// pg.emitApply(pg.emitGetter("px.newFunc"), param),
+		// pg.emitApply(pg.emitGetter("px.newFunc"), param2));
+		// pg.Setter(block, "px.tree", newTree);
+		// // set..
+		// if (Optional) {
+		// pg.Assign(block, "tcur", pg.emitFunc("Option.get", pg.V("treeLog")));
+		// } else {
+		// pg.Assign(block, "tcur", pg.V("treeLog"));
+		// }
+		//
+		// pg.emitWhileStmt(block, loopCond, () -> {
+		// B block2 = pg.beginBlock();
+		// pg.emitIfStmt(block2, ifLinkCond, false, () -> {
+		// B block3 = pg.beginBlock();
+		// pg.emitStmt(block3, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "-",
+		// pg.vInt(1))));
+		// C setFunc = pg.emitApply(pg.emitGetter("px.setFunc"),
+		// pg.emitGetter("px.tree"), pg.V("cnt"),
+		// pg.emitFunc("getlabel", pg.emitGetter("tcur.log")),
+		// pg.emitGetter("tcur.tree"));
+		// pg.emitStmt(block3, pg.emitSetter("px.tree", setFunc));
+		// return pg.endBlock(block3);
+		// });
+		// pg.emitStmt(block2, loopNext);
+		// return pg.endBlock(block2);
+		// });
+		// pg.emitStmt(block, pg.emitBack("treeLog",
+		// pg.emitGetter("tcur.prevLog")));
+		// pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
+		// return (pg.endBlock(block));
+		// });
+		// });
 
 		C NotNew = pg.emitOp(pg.emitGetter("tcur.op"), "!=", pg.vInt(OpNew));
 		C ifLink = pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpLink));
@@ -732,23 +742,19 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				});
 			} else {
 				C ifLinkNew = pg.emitOp(pg.emitGetter("tcur.op"), "==", pg.vInt(OpNew));
-				this.defineLib("recT", () -> {
-					String[] params = { "px", "tcur", "ntag", "nvalue", "epos", "subTrees" };
-					this.defFunc(pg, 0, pg.s("T"), "recT", params, () -> {
-						C rec = pg.emitFunc("recT", pg.V("px"), prevLog,
-								pg.emitIf(ifTag, pg.emitGetter("tcur.log"), pg.V("ntag")), //
-								pg.emitIf(ifValue, pg.emitGetter("tcur.log"), pg.V("nvalue")), pg.V("epos"), //
-								pg.emitIf(ifLink, subTrees, pg.V("subTrees")));
-						//
-						return pg.emitIf(ifLinkNew,
-								this.ApplyTreeFunc(pg, pg.emitGetter("tcur.log"), pg.V("epos"), pg.V("subTrees")), rec);
-					});
+				String[] params = { "px", "tcur", "ntag", "nvalue", "epos", "subTrees" };
+				this.defFunc(pg, 0, pg.s("T"), "recT", params, () -> {
+					C rec = pg.emitFunc("recT", pg.V("px"), prevLog,
+							pg.emitIf(ifTag, pg.emitGetter("tcur.log"), pg.V("ntag")), //
+							pg.emitIf(ifValue, pg.emitGetter("tcur.log"), pg.V("nvalue")), pg.V("epos"), //
+							pg.emitIf(ifLink, subTrees, pg.V("subTrees")));
+					//
+					return pg.emitIf(ifLinkNew,
+							this.ApplyTreeFunc(pg, pg.emitGetter("tcur.log"), pg.V("epos"), pg.V("subTrees")), rec);
 				});
 
-				this.defineLib("rLog", () -> {
-					this.defFunc(pg, 0, pg.T("treeLog"), "rLog", "tcur", () -> {
-						return pg.emitIf(ifLinkNew, pg.emitGetter("tcur.prevLog"), pg.emitFunc("rLog", prevLog));
-					});
+				this.defFunc(pg, 0, pg.T("treeLog"), "rLog", "tcur", () -> {
+					return pg.emitIf(ifLinkNew, pg.emitGetter("tcur.prevLog"), pg.emitFunc("rLog", prevLog));
 				});
 
 				this.defFunc(pg, 0, this.T("matched"), "endT", "px", "shift", "ntag", () -> {
