@@ -55,6 +55,9 @@ constructor      = %s(%s) {
 init             = this.%s = %s;
 new              = new %s<>
 
+setter2          = /*foldr*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s;
+setter3          = /*foldr*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s; %1$s.%6$s = %7$s;
+
 functype         = '''
 public interface %2$s <T> {
   public %1$s apply(%3$s);

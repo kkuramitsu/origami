@@ -597,9 +597,10 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 				String[] args = pg.getStackNames(stacks);
 				pg.declFunc(0, pg.T("matched"), funcName, pg.joins("px", args), () -> {
 					B block = pg.beginBlock();
-					for (String a : args) {
-						pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
-					}
+					// for (String a : args) {
+					// pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
+					// }
+					pg.emitBack2(block, args);
 					pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 					return pg.endBlock(block);
 				});

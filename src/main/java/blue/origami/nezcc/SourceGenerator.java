@@ -179,6 +179,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("headpos", this.T("pos"));
 		this.defineVariable("length", this.s("Int"));
 		this.defineVariable("tree", this.s("Tree"));
+		this.defineVariable("tree0", this.T("tree"));
 		this.defineVariable("c", this.s("Int"));
 		this.defineVariable("n", this.s("Int"));
 		this.defineVariable("cnt", this.s("Int"));
@@ -571,6 +572,27 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String endBlock(StringBuilder block) {
 		return block.toString();
+	}
+
+	@Override
+	protected void Setter2(StringBuilder block, String base, String name, String expr, String name2, String expr2) {
+		if (this.isDefined("setter2")) {
+			this.emitStmt(block, this.emitFunc("setter2", base, name, expr, name2, expr2));
+		} else {
+			super.Setter2(block, base, name, expr, name2, expr2);
+		}
+	}
+
+	@Override
+	protected void emitBack2(StringBuilder block, String... vars) {
+		if (vars.length == 2 && this.isDefined("setter2")) {
+			this.emitStmt(block, this.emitFunc("setter2", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1])));
+		} else if (vars.length == 3 && this.isDefined("setter3")) {
+			this.emitStmt(block, this.emitFunc("setter3", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1]),
+					vars[2], this.V(vars[2])));
+		} else {
+			super.emitBack2(block, vars);
+		}
 	}
 
 	@Override
