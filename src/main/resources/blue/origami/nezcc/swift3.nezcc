@@ -68,7 +68,7 @@ args              = ,
 funccallparam     = (%s)
 
 alen              = %s.count
-aindex            = %1$s[%1$s.index(%1$s.startIndex, offsetBy: %2$s)]
+#aindex            = %1$s[%1$s.index(%1$s.startIndex, offsetBy: %2$s)]
 Array.size        = $|alen|
 #Array.new         = Array(repeating:%1$s(-1,0,0,tree,nil), count:%2$s)
 
@@ -161,10 +161,9 @@ private func newMemos (_ tree :AST,_ length :Int) -> [MemoEntry] {
 def newAST = '''
 private let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> AST in
   if(n == 0){
-    let pre = inputs.prefix(epos)
-    return AST(tag,pre.dropFirst(spos).map{$0})
+    return AST(tag,inputs[spos..<epos].map{$0})
   }else{
-    return AST(tag,Array(repeating:AST("",[]), count:n))
+    return AST(tag,Array(repeating:AST(), count:n))
   }
 }
 '''
@@ -183,7 +182,7 @@ libs = '''
 final private class AST{
   var key :String
   var value :[Any]
-  init(_ key :String, _ value :[Any]){
+  init(_ key :String = "", _ value :[Any] = []){
     self.key = key
     self.value = value
   }
