@@ -20,6 +20,9 @@ None              = nil
 Option.get        = %s!
 Option.isNone     = let _ = %s {} else
 
+Byte->Int         = Int(%s)
+String->Byte[]    = [UInt8](%s.utf8)
+
 array             = [
 arrays            = ,
 end array         = ]

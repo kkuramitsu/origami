@@ -100,6 +100,19 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.emitStmt(block, this.emitSetter(name, expr));
 	}
 
+	protected void Setter2(B block, String base, String name, C expr, String name2, C expr2) {
+		this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
+		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
+	}
+
+	// protected final void Setter2(B block, String base, String name, C expr,
+	// String name2, C expr2, String name3,
+	// C expr3) {
+	// this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
+	// this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
+	// this.emitStmt(block, this.emitSetter(this.V(base), name3, expr3));
+	// }
+
 	protected abstract C emitAssign(String name, C expr);
 
 	protected abstract C emitAssign2(C left, C expr);
@@ -208,6 +221,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected final C emitSetter(String name, C expr) {
+		// if (name.endsWith("^")) {
+		// return this.emitBack(name.substring(0, name.length() - 1), expr);
+		// }
 		int loc = name.indexOf('.');
 		if (loc == -1) {
 			return this.emitSetter(this.V("px"), name, expr);
@@ -224,6 +240,12 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 			expr = this.emitFunc(this.s(uFunc), this.V("px"), expr);
 		}
 		return this.emitSetter(this.V("px"), name, expr);
+	}
+
+	protected void emitBack2(B block, String... vars) {
+		for (String name : vars) {
+			this.emitStmt(block, this.emitBack(name, this.V(name)));
+		}
 	}
 
 	protected void declFunc(String ret, String funcName, Supplier<C> block) {
