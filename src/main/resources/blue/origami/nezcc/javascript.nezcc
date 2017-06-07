@@ -108,88 +108,19 @@ function subAST(parent, n, label, child){
 '''
 
 main = '''
+var fs = require('fs');
 
 (function main(){
-    var inputs = createUTF8BytesFromString(process.argv[2]+"\0");
+    var inputs = fs.readFileSync('./xmark10.xml');
+    console.time('timer1');
     var result = parse(inputs,inputs.length-1, newAST, subAST);
-    console.dir(JSON.stringify(result));
+    console.timeEnd('timer1');
+    console.log(result);
+    //以下の関数を使うとObjectの中身まで見れますがxmark10.xmlみたいな大きなファイルの場合にコンソールが凍ります。
+    //console.dir(JSON.stringify(result));
 })();
 
 
-/**
- * createUTF8BytesFromString
- * StringオブジェクトをUTF8コード列に変換しUint8Arrayとして返す
- */
-function createUTF8BytesFromString(str) {
-    var i, j;
-    var strLen = str.length;
-
-    //変換結果を代入するUint8配列
-    var utf8Bytes = new Uint8Array(strLen * 3);
-    var utf8Length = 0;
-
-    //Unicodeポイント
-    var code;
-    //サロゲートペア
-    var high, low;
-    //Unicodeポイントに対応するUTF-8コード列
-    var bytes = null;
-
-    i = 0;
-    while(i < strLen) {
-        code = str.charCodeAt(i++);
-        if( 0xD800 <= code && code <= 0xDFFF ) {
-            high = code;
-            low = str.charCodeAt(i++);
-
-            code = 0x10000 + (high - 0xD800) * 0x400 + (low - 0xDC00);
-        }
-
-        bytes = unicodeToUTF8Bytes(code, bytes);
-
-        for(j = 0; j < bytes.length; j++) {
-            utf8Bytes[utf8Length++] = bytes[j];
-        }
-    }
-
-    return utf8Bytes.subarray(0, utf8Length);
-}
-
-/**
- * UnicodeポイントからUTF8形式のバイト列を返す
- */
-function unicodeToUTF8Bytes(code, result) {
-    if(! result) {
-        result = {};
-    }
-    if(code <= 0x7F) {
-        result.length = 1;
-        result[0] = code;
-    }
-    else if(code <= 0xD77) {
-        result.length = 2;
-        result[0] = 0xC0 | (code >>> 6);
-        result[1] = 0x80 | (code & 0x3F);
-    }
-    else if(code <= 0xFFFF) {
-        result.length = 3;
-        result[0] = 0xE0 | (code >>> 12);
-        result[1] = 0x80 | ((code >>> 6) & 0x3F);
-        result[2] = 0x80 | (code & 0x3F);
-    }
-    else if(code <= 0x10FFFF) {
-        result.length = 4;
-        result[0] = 0xF0 | (code >>> 18);
-        result[1] = 0x80 | ((code >>> 12) & 0x3F);
-        result[2] = 0x80 | ((code >>> 6) & 0x3F);
-        result[3] = 0x80 | (code & 0x3F);
-    }
-    else {
-        result.length = 0;
-    }
-
-    return result;
-}
 '''
 
 man = '''
@@ -199,8 +130,10 @@ man = '''
 
 Just call $|base|.parse() with an input text. You will get
 a key-value tree representation.
+Please edit generated sourcefile in function main
+'var inputs = fs.readFileSync('FILE_NAME');"
 
-   $ node $|base|.js 'input-text'
+   $ node $|base|.js
 
 Customize TreeFunc and TreeSetFunc in the parse() functions.
 See.
