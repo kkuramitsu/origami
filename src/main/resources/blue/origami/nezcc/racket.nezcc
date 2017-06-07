@@ -19,8 +19,8 @@ Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
 #In case of AST2
 # FIXME recT rLog
 #TList               = TList%%
-#List.empty         = null
-#TList.cons          = (TList%% %s %s %s)
+#TList.empty         = empty
+#TList.cons          = (append %s %s)
 #mainparams          = $|base|::newAST
 
 # syntax
@@ -136,12 +136,35 @@ libs = '''
 )
 '''
 
+; TODO
+#def AST = '''
+; Here is the main part. You may remove them if unnecessary.
+(define SimpleTree% (class object% (super-new)
+  (init key value)
+    (field [_key key])
+    (field [_value value])
+
+    (define/public (set n label child)
+      (vector-set! _value n (SimpleTree label child) )
+      ; return this
+    )
+
+) )
+'''
+
 def newAST = '''
 (define (newAST tag inputs pos epos size)
   (if (= size 0)
     (vector tag (vector-drop (vector-take inputs epos) pos) )
     (vector tag empty)
   )
+)
+'''
+
+#def newAST2 = '''
+(define (newAST tag inputs pos epos subs)
+  ; FIXME
+  (SimpleTree% tag  (String inputs pos (- epos pos)))
 )
 '''
 
