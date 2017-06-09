@@ -29,7 +29,7 @@ end array         = ]
 
 Byte->Int         = Int(%s)
 String->Byte[]    = [UInt8](%s.utf8)
-Int64->Int         = Int(%s)
+Int64->Int        = Int(%s)
 Int->Int64        = UInt64(%s)
 
 Tf                = (NezParserContext) -> Bool
@@ -133,11 +133,9 @@ final private class NezParserContext{
   var headpos :Int
   var tree :AST
   var treeLog :Optional<TreeLog>
-  var newFunc :(String,[UInt8],Int,Int,Int) -> AST
-  var setFunc :(AST,Int,String,AST) -> AST
   var state :Optional<State>
   var memos :[MemoEntry]
-  init(_ inputs :[UInt8],_ length :Int,_ pos :Int,_ headpos :Int,_ tree :AST,_ treeLog :Optional<TreeLog>,_ newFunc :@escaping (String,[UInt8],Int,Int,Int) -> AST,_ setFunc :@escaping (AST,Int,String,AST) -> AST,_ state :Optional<State>,_ memos :[MemoEntry]) {
+  init(_ inputs :[UInt8],_ length :Int,_ pos :Int,_ headpos :Int,_ tree :AST,_ treeLog :Optional<TreeLog>,_ state :Optional<State>,_ memos :[MemoEntry]) {
     self.inputs = inputs
     self.length = length
     self.pos = pos
@@ -153,29 +151,92 @@ final private class NezParserContext{
 '''
 
 def newMemos = '''
+''
+
+def useTreeLog = '''
+private func useTreeLog (_ px :NezParserContext) -> Optional<TreeLog> {
+    let tcur: TreeLog = px.treeLog!
+    if let _ = tcur.nextLog {} else {
+        tcur.nextLog = TreeLog(0,0,px.tree,px.treeLog,nil)
+    }
+    return tcur.nextLog
+}
+private func logT (_ px :NezParserContext,_ op :Int,_ log :Int,_ tree :AST) -> Bool {
+    let treeLog: TreeLog = useTreeLog(px)!
+    treeLog.op = op
+    treeLog.log = log
+    treeLog.tree = tree
+    px.treeLog = treeLog
+    return true
+}
+'''
+
+def endT = '''
+private func gettag (_ ntag :Int) -> String {
+    return nezsymbols[ntag]
+}
+private func getlabel (_ nlabel :Int) -> String {
+    return nezsymbols[nlabel]
+}
+private func getvalue (_ nvalue :Int) -> [UInt8] {
+    return nezvalues[nvalue]
+}
+private func getlength (_ nvalue :Int) -> Int {
+    return nezvaluesizes[nvalue]
+}
+private func endT (_ px :NezParserContext,_ shift :Int,_ ntag0 :Int) -> Bool {
+    let epos: Int = px.pos + shift
+    var tcur: TreeLog = px.treeLog!
+    var ntag: Int = ntag0
+    var nvalue: Int = 0
+    var cnt: Int = 0
+    while tcur.op != 0 {
+        if tcur.op == 3 {
+            cnt = cnt + 1
+        }
+        else if ntag == 0 && tcur.op == 1 {
+            ntag = tcur.log
+        }
+        else if nvalue == 0 && tcur.op == 2 {
+            nvalue = tcur.log
+        }
+        tcur = tcur.prevLog!
+    }
+    px.tree = (nvalue == 0) ? (newAST(gettag(ntag),px.inputs,tcur.log,epos,cnt)) : (newAST(gettag(ntag),getvalue(nvalue),0,getlength(nvalue),cnt))
+    tcur = px.treeLog!
+    while tcur.op != 0 {
+        if tcur.op == 3 {
+            cnt = cnt - 1
+            px.tree = subAST(px.tree,cnt,getlabel(tcur.log),tcur.tree)
+        }
+        tcur = tcur.prevLog!
+    }
+    px.treeLog = tcur.prevLog
+    return true
+}
+'''
+
+def parse = '''
 private func newMemos (_ tree :AST,_ length :Int) -> [MemoEntry] {
   return Array(repeating:MemoEntry(UInt64.max,0,0,tree,nil), count:length)
+}
+private func parse (_ inputs :[UInt8],_ length :Int) -> AST {
+    var tree: AST = newAST(gettag(0),inputs,0,length,0)
+    let px: NezParserContext = NezParserContext(inputs,length,0,0,tree,TreeLog(0,0,tree,nil,nil),nil,newMemos(tree,257))
+    tree = (e0(px)) ? (px.tree) : (newAST(gettag(nezerror),inputs,px.headpos,length,0))
+    return tree
+}
+private func parseText (_ text :String) -> AST {
+    let inputs: [UInt8] = [UInt8](text.utf8)
+    let length: Int = inputs.count
+    return parse(inputs,length)
 }
 '''
 
 def newAST = '''
-private let newAST = {(_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> AST in
-  if(n == 0){
-    return AST(tag,inputs[spos..<epos].map{$0})
-  }else{
-    return AST(tag,Array(repeating:AST(), count:n))
-  }
-}
 '''
 
 def subAST = '''
-private let subAST = {(_ parent :AST,_ n :Int,_ label :String,_ child :AST) -> AST in
-  if var childs = parent.value as? [AST] {
-    childs[n] = AST(label, [child])
-    parent.value = childs
-  }
-  return parent
-}
 '''
 
 libs = '''
@@ -208,6 +269,13 @@ final private class AST{
     out += "]"
     return out
   }
+}
+private func newAST (_ tag :String,_ inputs :[UInt8],_ spos :Int,_ epos :Int,_ n :Int) -> AST {
+  return AST(tag, n == 0 ? inputs[spos..<epos].map{$0} : Array(repeating:AST(), count:n) )
+}
+private func subAST (_ parent :AST,_ n :Int,_ label :String,_ child :AST) -> AST {
+  parent.value[n] = AST(label, [child])
+  return parent
 }
 '''
 
