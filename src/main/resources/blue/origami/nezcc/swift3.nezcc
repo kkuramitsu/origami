@@ -142,8 +142,6 @@ final private class NezParserContext{
     self.headpos = headpos
     self.tree = tree
     self.treeLog = treeLog
-    self.newFunc = newFunc
-    self.setFunc = setFunc
     self.state = state
     self.memos = memos
   }
@@ -151,9 +149,9 @@ final private class NezParserContext{
 '''
 
 def newMemos = '''
-''
+'''
 
-def useTreeLog = '''
+def logT = '''
 private func useTreeLog (_ px :NezParserContext) -> Optional<TreeLog> {
     let tcur: TreeLog = px.treeLog!
     if let _ = tcur.nextLog {} else {
@@ -301,7 +299,7 @@ while(arguments.count > 0){
   arguments.removeFirst()
   let inputS :String = inputs(inputString)
   let start :Date = Date()
-  let object = parseText(inputS, newAST, subAST)
+  let object = parseText(inputS)
   let time = Double(Date().timeIntervalSince(start)) * 1000
   print("\(inputString) \(time)[ms]:")
   print(object.print())
