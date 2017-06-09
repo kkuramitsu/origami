@@ -136,35 +136,12 @@ libs = '''
 )
 '''
 
-; TODO
-#def AST = '''
-; Here is the main part. You may remove them if unnecessary.
-(define SimpleTree% (class object% (super-new)
-  (init key value)
-    (field [_key key])
-    (field [_value value])
-
-    (define/public (set n label child)
-      (vector-set! _value n (SimpleTree label child) )
-      ; return this
-    )
-
-) )
-'''
-
 def newAST = '''
 (define (newAST tag inputs pos epos size)
   (if (= size 0)
     (vector tag (vector-drop (vector-take inputs epos) pos) )
     (vector tag empty)
   )
-)
-'''
-
-#def newAST2 = '''
-(define (newAST tag inputs pos epos subs)
-  ; FIXME
-  (SimpleTree% tag  (String inputs pos (- epos pos)))
 )
 '''
 
@@ -182,21 +159,22 @@ main = '''
       (if (eof-object? c)
 	  (begin
 	    (close-input-port p)
-	    (list->string (reverse ls1)))
+	    (list->vector (reverse ls1)))
 	  (loop (cons c ls1) (read-char p))))))
 
 (define (main args)
   (begin
     (define i 0)
     (define buf (read_inputs (vector-ref args i)))
+    (define len (vector-length args))
     (do (
-          (i 1 (+ i 1))
+          (i 0 (+ i 1))
           (buf (read_inputs (vector-ref args i)) (read_inputs (vector-ref args i)))
           (st (current-inexact-milliseconds) (current-inexact-milliseconds))
-          (t (parse buf (- (string-length buf) 1) newAST subAST ) (parse buf (- (string-length buf) 1) newAST subAST ))
+          (t (parse buf (- (vector-length buf) 1) newAST subAST ) (parse buf (- (vector-length buf) 1) newAST subAST ))
           (et (current-inexact-milliseconds) (current-inexact-milliseconds))
         )
-        ((eof-object? (vector-ref args i)))
+        ((> i (- len 1)))
         (print (vector-ref args i))
         (print " ")
         (print (- et st))
@@ -206,7 +184,9 @@ main = '''
         (newline)
     )
   )
+)
 
+(main (current-command-line-arguments)
 '''
 # Match the number of parentheses
 
