@@ -58,8 +58,8 @@ object           = %1$s {%2$s}
 objectparam      = _%1$s=%2$s
 objectparams     = , 
 
-getter           = (#_%2$s %1$s)
-setter           = S.put $ %1$s {_%2$s = %3$s}
+getter           = ((view [l| %2$s|]) %1$s)
+setter           = S.put $ (set [l| $2$s|]) %3$s %1$s
 
 functype         = (%3$s -> S.State (NezParserContext a) %1$s)
 functypeparam    = %1$s
@@ -117,23 +117,16 @@ TList.empty       = []
 TList.cons        = %s:%s
 
 imports = '''
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE DataKinds, TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses #-}
---{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Math(parse) where
 import Prelude hiding (length,log)
-import GHC.OverloadedLabels
 import Data.Word
---import Lens.Labels hiding ((.))
---import Control.Lens (makeLenses)
 import qualified Control.Monad.State as S
 import Data.ByteString hiding (putStrLn,replicate,take,drop,length)
 import Data.Int
---import Data.ByteString.Short
---import Data.IntMap (IntMap)
+import Record
+import Record.Lens
 
 
 '''
@@ -154,89 +147,47 @@ man = '''
 
 #def
 
-setter2          = S.put $ %1$s {_%2$s = %3$s, _%4$s = %5$s}
+setter2          = S.put $ foldl produce %1$s [set [l| %2$s|] %3$s, set [l| %4$s|] %5$s]
 
-setter3          = S.put $ %1$s {_%2$s = %3$s, _%4$s = %5$s, _%6$s = %7$s}
+setter3          = S.put $ foldl produce %1$s [set [l| %2$s|] %3$s, set [l| %4$s|] %5$s, set [l| %6$s|] %7$s]
 
 def storeM = '''
 --storeM :: (NezParserContext a->Int->Int->Bool -> Bool)
 storeM px' memoPoint' pos' matched' = do
   let key' = ((longkey (fromIntegral pos') memoPoint') >>= fst)
   let m' = ((getMemo px' key') >>= fst)
-  S.put $ m' {_key = key'
-            , _result = (if (matched') then (1) else (0))
-            , _pos = if (matched') then (pos px') else (pos')
-            , _tree = get tree px'}
+  S.put $ foldl produce m' [set [l| _key|] key'
+                          , set [l| _result|] if (matched') then (1) else (0)
+                          , set [l| _pos|] if (matched') then (pos px') else (pos')
+                          , set [l| _tree|] (view [l| tree|] px')
+                          ]
   return matched'
 
 '''
 
 
 def newMemos   = '''
-type TreeLog a = TreeLog {_op :: Int
+type TreeLog a = TreeLog [r| {_op :: Int
                         , _log :: Int
                         , _tree :: a
                         , _prevLog :: Maybe (TreeLog a)
                         , _nextLog :: Maybe (TreeLog a)}
-                        deriving(Show)
+                        |]
 
-instance (a ~ Int) => IsLabel "_op" (TreeLog b -> a) where
-  fromLabel _ (TreeLog p q r s t) = p
-
-instance (a ~ Int) => IsLabel "_log" (TreeLog b -> a) where
-  fromLabel _ (TreeLog p q r s t) = q
-
-instance (a ~ b) => IsLabel "_tree" (TreeLog b -> a) where
-  fromLabel _ (TreeLog p q r s t) = r
-
-instance (a ~ Maybe (TreeLog b)) => IsLabel "_prevLog" (TreeLog b -> a) where
-  fromLabel _ (TreeLog p q r s t) = s
-
-instance (a ~ Maybe (TreeLog b)) => IsLabel "_nextLog" (TreeLog b -> a) where
-  fromLabel _ (TreeLog p q r s t) = t
-
-
-type State a = State {_ntag :: Int
+type State a = State [r| {_ntag :: Int
                     , _cnt :: Int
                     , _value :: [Word8]
                     , _prevState :: Maybe (State a)}
-                    deriving(Show)
+                    |]
 
-instance (a ~ Int) => IsLabel "_ntag" (State b -> a) where
-  fromLabel _ (State p q r s) = p
-
-instance (a ~ Int) => IsLabel "_cnt" (State b -> a) where
-  fromLabel _ (State p q r s) = q
-
-instance (a ~ [Word8]) => IsLabel "_value" (State b -> a) where
-  fromLabel _ (State p q r s) = r
-
-instance (a ~ Maybe (State b)) => IsLabel "_prevState" (State b -> a) where
-  fromLabel _ (State p q r s) = s
-
-type MemoEntry a = MemoEntry {_key :: Int64
+type MemoEntry a = MemoEntry [r| {_key :: Int64
                             , _result :: Int
                             , _pos :: Int
                             , _tree :: a
                             , _state :: Maybe (State a)}
-                            deriving(Show)
+                            |]
 
-instance (a ~ Int64) => IsLabel "_key" (MemoEntry b -> a) where
-  fromLabel _ (MemoEntry p q r s t) = p
-
-instance (a ~ Int) => IsLabel "_result" (MemoEntry b -> a) where
-  fromLabel _ (MemoEntry p q r s t) = q
-
-instance (a ~ Int) => IsLabel "_pos" (MemoEntry b -> a) where
-  fromLabel _ (MemoEntry p q r s t) = r
-
-instance (a ~ b) => IsLabel "_tree" (MemoEntry b -> a) where
-  fromLabel _ (MemoEntry p q r s t) = s
-
-instance (a ~ Maybe (State b)) => IsLabel "_state" (MemoEntry b -> a) where
-  fromLabel _ (MemoEntry p q r s t) = t
-
-type NezParserContext a = NezParserContext {_inputs :: [Word8]
+type NezParserContext a = NezParserContext [r| {_inputs :: [Word8]
                                           , _length :: Int
                                           , _pos :: Int
                                           , _headpos :: Int
@@ -245,33 +196,7 @@ type NezParserContext a = NezParserContext {_inputs :: [Word8]
                                           , _newFunc :: String->ByteString->Int->Int->[(String,a)] -> a
                                           , _state :: Maybe (State a)
                                           , _memos :: [MemoEntry a]}
-
-instance (a ~ [Word8]) => IsLabel "_inputs" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = p
-
-instance (a ~ Int) => IsLabel "_length" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = q
-
-instance (a ~ Int) => IsLabel "_pos" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = r
-
-instance (a ~ Int) => IsLabel "_headpos" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = s
-
-instance (a ~ b) => IsLabel "_tree" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = t
-
-instance (a ~ Maybe (TreeLog b)) => IsLabel "_treeLog" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = u
-
-instance (a ~ (String->ByteString->Int->Int->[(String,b)] -> b)) => IsLabel "_newFunc" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = v
-
-instance (a ~ Maybe (State b)) => IsLabel "_state" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = w
-
-instance (a ~ [MemoEntry b]) => IsLabel "_memos" (NezParserContext b -> a) where
-  fromLabel _ (NezParserContext p q r s t u v w x) = x
+                                          |]
 
 newMemos tree' length' = replicate length' tree'
 
@@ -282,27 +207,27 @@ logT px' op' log' tree' = do
   treelog <- useTreeLog px'
   let tcur' = fst treelog
   let pxx' = snd treelog
-  let newpx = tcur' {_op = op', _log = log', _tree = tree'}
-  S.put $ pxx' {_treeLog = newpx}
+  let newpx = foldl produce tcur' [set [l| _op|] op', set [l| _log|] log', set [l| _tree|] tree']
+  S.put $ set [l| _treeLog|] newpx pxx'
   return (True)
 
 useTreeLog px' = do
-  let tcur' = #_treeLog px'
-  if isNothing (#_nextLog tcur') then do
-    S.put $ tcur'{_nextLog = Just TreeLog {_op=0,_log=0,_tree= #_tree px',_prevLog= #_treeLog px',_nextLog=Nothing}}
-    return $ #_nextLog tcur'
+  let tcur' = view [l| _treeLog|] px'
+  if isNothing (view [l| _nextLog|] tcur') then do
+    S.put $ tcur'$ set [l| _nextLog|] Just [r| {_op=0,_log=0, _tree= view [l| _tree|] px',_prevLog= view [l|_treeLog] px',_nextLog=Nothing}|]
+    return $ view [l| _nextLog|] tcur'
   else
-    return $ #_nextLog tcur'
+    return $ view [l| _nextLog|] tcur'
 
 '''
 
 useTreeLog px' = do
-  let tcur' = _treeLog px'
-  if isNothing (#_nextLog tcur') then do
-    S.put $ tcur'{_nextLog = Just TreeLog {_op=0,_log=0,_tree= _tree px',_prevLog= _treeLog px',_nextLog=Nothing}}
-    return $ _nextLog tcur'
+  let tcur' = view [l| _treeLog|] px'
+  if isNothing (view [l| _nextLog|] tcur') then do
+    S.put $ tcur' $ set [l| _nextLog = Just [r| _op=0,_log=0,_tree=view [l| _tree|] px', _prevLog=view [l| _treeLog|] px', _nextLog = Nothing |]|]
+    return $ view [l| _nextLog|] tcur'
   else
-    return $ _nextLog tcur'
+    return $ view [l| _nextLog|] tcur'
 
 
 def AST = '''
