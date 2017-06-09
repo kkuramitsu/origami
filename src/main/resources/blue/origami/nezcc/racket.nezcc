@@ -87,7 +87,7 @@ lambda           = (lambda (%s) %s)
 
 def newMemos = '''
 (define (rMemo memos tree cnt length)
-  (when #t (if ((< cnt length)) (begin (vector-set! (vector-ref memos cnt) (MemoEntry% -1 0 0 tree null))) (begin memos)))
+  (when #t (if ((< cnt length)) (begin (vector-set! (vector-ref memos cnt) (new MemoEntry% [key -1] [result 0] [pos 0] [tree tree] [state null]))) (begin memos)))
 )
 
 (define (newMemos tree length)
@@ -99,7 +99,7 @@ def logT = '''
 (define (useTreeLog px)
   (define tcur (get-field _treeLog px))
   (match (get-field _nextLog tcur)
-    [null (set-field! _nextLog tcur (TreeLog% 0 0 null (get-field _treeLog px) null))]
+    [null (set-field! _nextLog tcur (new TreeLog% [op 0] [log 0] [tree null] [prevLog (get-field _treeLog px)] [nextLog null]))]
   )
   (when #t (get-field _nextLog tcur))
 )
@@ -117,7 +117,7 @@ def logT = '''
 def parse = '''
 (define (parse inputs length newFunc setFunc)
   (define tree (newFunc (gettag 0) inputs 0 length 0))
-  (define px (NezParserContext% inputs length 0 0 tree (TreeLog% 0 0 tree null null) (if ((= newFunc null)) (begin newAST) (begin newFunc)) (if ((= setFunc null)) (begin subAST) (begin setFunc)) null (newMemos tree 257)))
+  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if ((= newFunc null)) (begin newAST) (begin newFunc))] [setFunc (if ((= setFunc null)) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
   (set! tree (if ((e0 px)) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
   (when #t tree)
 )
@@ -155,12 +155,12 @@ def subAST = '''
 main = '''
 (define (read_inputs file-name)
   (let ((p (open-input-file file-name)))
-    (let loop((ls1 '()) (c (read-char p)))
+    (let loop((ls1 '()) (c (read-byte p)))
       (if (eof-object? c)
 	  (begin
 	    (close-input-port p)
 	    (list->vector (reverse ls1)))
-	  (loop (cons c ls1) (read-char p))))))
+	  (loop (cons c ls1) (read-byte p))))))
 
 (define (main args)
   (begin
