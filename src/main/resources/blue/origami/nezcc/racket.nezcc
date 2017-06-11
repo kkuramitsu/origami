@@ -62,7 +62,7 @@ eq               = (= %s %s)
 %                = (modulo %s %s)
 
 
-ifexpr           = (if %1$s (begin %2$s) (begin %3$s))
+ifexpr           = (if (%1$s) (begin %2$s) (begin %3$s))
 # FIXME divide class const
 funccall         = (%s %s)
 args             =
@@ -78,7 +78,7 @@ assign           = (set! %s %s)
 array            = (vector$|space|
 arrays           =$|space|
 end array        = )
-if               = (if %s
+if               = (if (%s)
 switch           = (match %s
 case             = [%s %s]
 #default          = default : %s
@@ -87,13 +87,7 @@ lambda           = (lambda (%s) %s)
 
 def newMemos = '''
 (define (rMemo memos tree cnt length)
-  (if (< cnt length)
-      (begin
-        (vector-set! memos cnt (new MemoEntry% [key -1] [result 0] [pos 0] [tree tree] [state null]))
-        (rMemo memos tree (+ cnt 1) length)
-      )
-      (begin memos)
-      )
+  (when #t (if ((< cnt length)) (begin (vector-set! (vector-ref memos cnt) (new MemoEntry% [key -1] [result 0] [pos 0] [tree tree] [state null]))) (begin memos)))
 )
 
 (define (newMemos tree length)
@@ -123,15 +117,9 @@ def logT = '''
 def parse = '''
 (define (parse inputs length newFunc setFunc)
   (define tree (newFunc (gettag 0) inputs 0 length 0))
-  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if (null? newFunc) (begin newAST) (begin newFunc))] [setFunc (if (null? setFunc) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
-  (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
+  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if ((= newFunc null)) (begin newAST) (begin newFunc))] [setFunc (if ((= setFunc null)) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
+  (set! tree (if ((e0 px)) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
   (when #t tree)
-)
-'''
-
-def beginT = '''
-(define (beginT px shift)
-  (when #t (logT px 0 (+ (get-field _pos px) shift) null))
 )
 '''
 
