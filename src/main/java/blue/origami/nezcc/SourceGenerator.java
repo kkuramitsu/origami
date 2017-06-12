@@ -186,7 +186,6 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("shift", this.s("Int"));
 
 		if (this.isDefined("Int32")) {
-			// this.makeLib("bits32");
 			this.defineVariable("bits", this.format("Array", this.s("Int32")));
 		} else {
 			this.defineVariable("bits", this.format("Array", this.s("Bool")));
@@ -213,7 +212,11 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineSymbol("TList.empty", this.s("null"));
 		this.defineSymbol("TList.cons", "%3$s");
 
-		this.defineVariable("key", this.s("Int64"));
+		if (this.isDefined("Int64")) {
+			this.defineVariable("key", this.s("Int64"));
+		} else {
+			this.defineVariable("key", this.s("Int"));
+		}
 		this.defineVariable("memoPoint", this.s("Int"));
 		this.defineVariable("result", this.s("Int"));
 		this.defineVariable("text", this.s("String"));
