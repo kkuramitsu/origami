@@ -85,6 +85,51 @@ case             = [%s %s]
 
 lambda           = (lambda (%s) %s)
 
+def endT = '''
+(define (gettag ntag)
+  (when #t (vector-ref nezsymbols ntag))
+)
+(define (getlabel nlabel)
+  (when #t (vector-ref nezsymbols nlabel))
+)
+(define (getvalue nvalue)
+  (when #t (vector-ref nezvalues nvalue))
+)
+(define (getlength nvalue)
+  (when #t (vector-ref nezvaluesizes nvalue))
+)
+(define (recT px tcur ntag nvalue epos cnt)
+  (when #t (if (= (get-field _op tcur) 0) (begin
+                                            (set-field! _tree px (if (= nvalue 0) (begin ((get-field _newFunc px)
+                                                                          (gettag ntag)
+                                                                          (get-field _inputs px)
+                                                                          (get-field _log tcur) epos cnt)
+                                                                  )
+                                                                  (begin ((get-field _newFunc px) (gettag ntag) (getvalue nvalue) 0 (getlength nvalue) cnt))))
+                                            (set! tcur (get-field _treeLog px))
+                                            (rLog (get-field _treeLog px) cnt px)
+
+                                          )
+               (begin (recT px (get-field _prevLog tcur) (if (and (= ntag 0) (= (get-field _op tcur) 1)) (begin (get-field _log tcur)) (begin ntag)) (if (and (= nvalue 0) (= (get-field _op tcur) 2)) (begin (get-field _log tcur)) (begin nvalue)) epos (if (= (get-field _op tcur) 3) (begin (+ cnt 1)) (begin cnt))))))
+)
+(define (rLog tcur cnt px)
+  (when #t (if (= (get-field _op tcur) 0) (begin (get-field _prevLog tcur))
+                                          (begin
+                                            (if (= (get-field _op tcur) 3) (begin (set! cnt (- cnt 1)) (set-field! _tree px ((get-field _setFunc px) (get-field _tree px) cnt (getlabel (get-field _log tcur)) (get-field _tree tcur)))) (begin cnt))
+                                            (rLog (get-field _prevLog tcur) cnt px))))
+)
+(define (endT px shift ntag)
+  (set-field! _treeLog px (recT px (get-field _treeLog px) ntag 0 (+ (get-field _pos px) shift) 0))
+  (when #t #t)
+)
+'''
+
+def beginT = '''
+(define (beginT px shift)
+   (when #t (logT px 0 (+ (get-field _pos px) shift) null))
+)
+'''
+
 def newMemos = '''
 (define (rMemo memos tree cnt length)
   (if (< cnt length)
@@ -126,12 +171,6 @@ def parse = '''
   (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if (null? newFunc) (begin newAST) (begin newFunc))] [setFunc (if (null? setFunc) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
   (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
   (when #t tree)
-)
-'''
-
-def beginT = '''
-(define (beginT px shift)
-  (when #t (logT px 0 (+ (get-field _pos px) shift) null))
 )
 '''
 
@@ -192,8 +231,8 @@ main = '''
         (print (- et st))
         (print "[ms]: ")
         (newline)
-        (print t)
-        (newline)
+        ;(print t)
+        ;(newline)
     )
   )
 )
