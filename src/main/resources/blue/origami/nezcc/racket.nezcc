@@ -209,7 +209,7 @@ main = '''
       (if (eof-object? c)
 	  (begin
 	    (close-input-port p)
-	    (list->vector (reverse ls1)))
+	    (list->vector (append (reverse ls1) (list 0))))
 	  (loop (cons c ls1) (read-byte p))))))
 
 (define (main args)
@@ -253,3 +253,5 @@ or
 racket $|base|.rkt <file>
 
 '''
+
+# byte -> byte string
