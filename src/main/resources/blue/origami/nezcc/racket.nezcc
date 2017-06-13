@@ -12,16 +12,8 @@ Byte[].quote     = "%s"
 
 Array.size       = (vector-length %s)
 Array.get        = (vector-ref %s %s)
-;Two dimensions(Pass by Reference) -> (make-vector %2$s (make-vector %2$s))
 Array.new        = (make-vector %2$s)
 Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
-
-#In case of AST2
-# FIXME recT rLog
-#TList               = TList%%
-#TList.empty         = empty
-#TList.cons          = (append %s %s)
-#mainparams          = $|base|::newAST
 
 # syntax
 
@@ -81,7 +73,7 @@ end array        = )
 if               = (if %s
 switch           = (match %s
 case             = [%s %s]
-#default          = default : %s
+default          = [_ %s]
 
 lambda           = (lambda (%s) %s)
 
@@ -123,10 +115,15 @@ def endT = '''
   (when #t #t)
 )
 '''
+def tagT = '''
+(define (tagT px ntag)
+  (when #t (logT px 1 ntag (make-vector 0 null)))
+)
+'''
 
 def beginT = '''
 (define (beginT px shift)
-   (when #t (logT px 0 (+ (get-field _pos px) shift) null))
+   (when #t (logT px 0 (+ (get-field _pos px) shift) (make-vector 0 null)))
 )
 '''
 
@@ -134,7 +131,7 @@ def newMemos = '''
 (define (rMemo memos tree cnt length)
   (if (< cnt length)
       (begin
-        (vector-set! memos cnt (new MemoEntry% [key -1] [result 0] [pos 0] [tree tree] [state null]))
+        (vector-set! memos cnt (new MemoEntry% [key -1] [memoPoint -1] [result 0] [pos 0] [tree tree] [state null]))
         (rMemo memos tree (+ cnt 1) length)
       )
       (begin memos)
@@ -150,7 +147,7 @@ def logT = '''
 (define (useTreeLog px)
   (define tcur (get-field _treeLog px))
   (match (get-field _nextLog tcur)
-    [null (set-field! _nextLog tcur (new TreeLog% [op 0] [log 0] [tree null] [prevLog (get-field _treeLog px)] [nextLog null]))]
+    [null (set-field! _nextLog tcur (new TreeLog% [op 0] [log 0] [tree (make-vector 0 null)] [prevLog (get-field _treeLog px)] [nextLog null]))]
   )
   (when #t (get-field _nextLog tcur))
 )
@@ -190,16 +187,18 @@ libs = '''
 def newAST = '''
 (define (newAST tag inputs pos epos size)
   (if (= size 0)
-    (vector tag (vector-drop (vector-take inputs epos) pos) )
-    (vector tag empty)
+    (vector tag (bytes->string/utf-8 (list->bytes (vector->list (vector-drop (vector-take inputs epos) pos)))) )
+    (vector tag (make-vector 0 null))
   )
 )
 '''
 
 def subAST = '''
 (define (subAST parent n label child)
-  ;FIXME Pass by Reference
+  (define len (vector-length (vector-ref parent 1)))
+  (if (< n len) #t (vector-set! parent 1 (vector-append (vector-ref parent 1) (make-vector (- n (- len 1)) null) )))
   (vector-set! (vector-ref parent 1) n (vector label child))
+  (when #t parent)
 )
 '''
 
@@ -231,8 +230,8 @@ main = '''
         (print (- et st))
         (print "[ms]: ")
         (newline)
-        ;(print t)
-        ;(newline)
+        (print t)
+        (newline)
     )
   )
 )
@@ -246,6 +245,6 @@ man = '''
  QUICK START
 =============
 
-racket $|base|.rkt <file> or <input-text>
+racket $|base|.rkt <file>
 
 '''
