@@ -998,9 +998,9 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				// args.add(pg.emitFunc("check0", pg.V("inputs"),
 				// pg.V("length")));
 				args.add(pg.V("inputs"));
-				args.add(pg.V("length"));
-				args.add(pg.vInt(0));
-				args.add(pg.vInt(0));
+				args.add(pg.emitConv("Array.start", pg.V("length")));
+				args.add(pg.emitConv("Array.start", pg.vInt(0)));
+				args.add(pg.emitConv("Array.start", pg.vInt(0)));
 				args.add(pg.V("tree"));
 				args.add(this.emitNewTreeLog(pg, null, null, pg.V("tree"), null));
 				if (this.isDefined("null") && !this.isDefined("paraminit")) {
@@ -1036,10 +1036,10 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 					B block = pg.beginBlock();
 					if (this.isDefined("String+0")) {
 						pg.emitVarDecl(block, false, "inputs",
-								pg.emitFunc("String->Byte[]", pg.emitFunc("String+0", pg.V("text"))));
+								pg.emitConv("String->Byte[]", pg.emitConv("String+0", pg.V("text"))));
 						pg.emitVarDecl(block, false, "length", pg.emitOp(length, "-", pg.vInt(1)));
 					} else {
-						pg.emitVarDecl(block, false, "inputs", pg.emitFunc("String->Byte[]", pg.V("text")));
+						pg.emitVarDecl(block, false, "inputs", pg.emitConv("String->Byte[]", pg.V("text")));
 						pg.emitVarDecl(block, false, "length", length);
 					}
 					pg.Return(block, pg.emitFunc("parse", pg.V("inputs"), pg.V("length"), pg.V("newFunc")));
@@ -1049,7 +1049,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				this.defFunc(pg, Apublic, this.T("tree"), "parseText", "text", "newFunc", "setFunc", () -> {
 					B block = pg.beginBlock();
 					pg.emitVarDecl(block, false, "inputs",
-							pg.emitFunc("String->Byte[]", pg.emitConv("String+0", pg.V("text"))));
+							pg.emitConv("String->Byte[]", pg.emitConv("String+0", pg.V("text"))));
 					if (this.isDefined("String+0")) {
 						pg.emitVarDecl(block, false, "length", length);
 					} else {

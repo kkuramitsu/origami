@@ -105,14 +105,6 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
 	}
 
-	// protected final void Setter2(B block, String base, String name, C expr,
-	// String name2, C expr2, String name3,
-	// C expr3) {
-	// this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
-	// this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
-	// this.emitStmt(block, this.emitSetter(this.V(base), name3, expr3));
-	// }
-
 	protected abstract C emitAssign(String name, C expr);
 
 	protected abstract C emitAssign2(C left, C expr);
@@ -171,13 +163,9 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C vLabel(Symbol s);
 
-	protected abstract C vThunk(Object s);
+	// protected abstract C vThunk(Object s);
 
 	protected abstract C vByteSet(ByteSet bs);
-
-	protected boolean isFunctional() {
-		return false;
-	}
 
 	protected final boolean usePointerPosition() {
 		return Objects.equals(this.T("pos"), this.T("inputs"));

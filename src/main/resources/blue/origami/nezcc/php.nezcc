@@ -21,9 +21,6 @@ Array.get        = %s[%s]
 Array.new        = array()
 Array.slice      = array_slice(%s,%s,%s)
 
-#Byte[].quote     = b'%s'
-#Byte[].esc       = '\x%02x'
-
 # syntax
 
 comment          = /* %s */

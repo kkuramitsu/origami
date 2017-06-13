@@ -1,0 +1,132 @@
+# lua5.nezcc
+
+extension          = lua
+
+# type
+
+String+0           = %s .. "\0"
+Byte[].get         = string.byte(%s, %s)
+Byte[].slice       = string.strsub(%s,%s,%s)
+
+Array.new      = {}
+Array.get      = %s[%s]
+Array.start    = %s + 1
+
+# syntax
+
+comment            = -- %s
+begin              = 
+end                = end
+;                  =
+delim              = ,
+
+struct           = --
+end struct       = --
+object           = {%2$s}
+objectparam      = %1$s=%2$s
+
+getter           = %s.%s
+setter           = %s.%s = %s
+
+const            = %2$s = %3$s
+array            = {
+end array        = }
+
+function         = function %2$s (%3$s) 
+end function     = end
+param            = %2$s
+val              = local %2$s = %3$s
+return           = return %s
+
+true             = true
+false            = false
+null             = nil
+
+ifexpr           = ((%s) and (%s) or (%s))
+if               = if %s then
+end if           = end
+#else if          = elseif %s then
+while            = while %s do
+end while        = end
+#switch           = switch(%s) {
+#case             = case %s : %s
+#default          = default : %s
+
+funcref          = %s
+ne               = %s ~= %s
+and              = %s and %s
+or               = (%s) or (%s)
+not              = not %s
+
+imports = '''
+#!/usr/bin/lua
+
+'''
+
+def newAST = '''
+function newAST (tag,inputs,pos,epos,size)
+  if size == 0 then
+    return {key=tag, value=string.sub(inputs, pos, epos)};
+  else
+    return {key=tag, value={}}
+  end
+end
+'''
+
+def subAST = '''
+function subAST (parent,n,label,child)
+  parent.value[n] = {label=label, tree=child}
+  return parent
+end
+'''
+
+main = '''
+function readinputs(file)
+  local f = io.open(file, "rb")
+  if f ~= nil then
+    local content = f:read "*a"
+    f:close()
+    return content .. "\0"
+  else
+    return file .. "\0"
+  end
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s..k..'=' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+function main() 
+  local i = 1
+  for i=1, #arg do
+    local a = arg[i]
+    local inputs = readinputs(a)
+    local st = os.clock()
+    local t = parse(inputs, #inputs-1, newAST, subAST)
+    local et = os.clock()
+    print (a, " ", (et-st)*1000, "[ms]: ", dump(t))
+  end
+end
+
+main()
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ lua $|base|.lua <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''

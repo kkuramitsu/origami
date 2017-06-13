@@ -4,12 +4,14 @@ extension          = py
 
 # type
 
-Byte[]->String   = %s.decode('utf-8')
+#Byte[]->String   = %s.decode('utf-8')
 String->Byte[]   = %s.encode('utf-8')
 
 Byte[].get       = ord(%s[%s])
-Byte[].quote     = '%s'
-Byte[].esc       = '\x%02x'
+Byte[].slice      = %s[%s:%s]
+Byte[]''         = '%s'
+Byte[].quote     = '
+Byte[].esc       = \x%02x
 
 Array.size       = len(%s)
 Array.get        = %s[%s]
@@ -49,8 +51,6 @@ ifexpr           = (%2$s if (%1$s) else (%3$s))
 
 funccall         = %s(%s)
 args             = ,
-#apply            = %s.apply
-#funcref          = $|base|::%s
 
 true             = True
 false            = False
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     st = time.time()
     t = parse(s, len(s)-1, newAST, subAST)
     et = time.time()
-    sys.stderr.write(a + " " + str((et-st)*1000.0) + "[ms]: ")
+    sys.stderr.write(a + " " + str((et-st) * 1000.0) + "[ms]: ")
     sys.stderr.flush()
     sys.stdout.write(str(t))
     sys.stdout.flush()
