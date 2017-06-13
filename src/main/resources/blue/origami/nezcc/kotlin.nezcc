@@ -1,0 +1,218 @@
+# nezcc file
+
+extension          = kt
+
+# type
+
+Bool               = Boolean
+Byte               = Byte
+Byte[]             = ByteArray
+Int                = Int
+Int32              = Int
+Int64              = Long
+Array              = Array<%s>
+Symbol             = String
+Tree               = SimpleTree
+String             = String
+
+Byte->Int          = (%s).toInt()
+#String->Byte
+Int64->Int         = (%s).toInt()
+Int->Int64         = (%s).toLong()
+
+TsetFunc           = (SimpleTree, Int, String, SimpleTree) -> SimpleTree
+TnewFunc           = (String, ByteArray, Int, Int, Int) -> SimpleTree
+
+Tf                 = (NezParserContext) -> Boolean
+#Tstate             = State?
+#TtreeLog           = TreeLog?
+
+ifexpr             = if(%s) (%s) else (%s)
+
+array              = arrayOf(
+arrays             = ,
+end array          = )
+
+Option             = %s?
+Some               = %s
+None               = null
+Option.get         = %s!!
+Option.isNone      = (%s==null)
+
+Array.new          = arrayOf()
+
+unsigned           = %s & 0xff
+keyindex           = ($|Int|)(%s)
+Int64->Int         = (%s).toInt()
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                =
+
+struct           = class %s {
+field            = var %2$s:%1$s
+constructor      = constructor(%2$s) {
+param            = %2$s:%1$s
+init             = this.%s = %s
+new              = %s
+
+val              = val %2$s:%1$s = %3$s
+var              = var %2$s:%1$s = %3$s
+assign           = %s = %s
+
+const            = private val %2$s:%1$s = %3$s
+
+function         = private fun %2$s (%3$s):%1$s {
+return           = return %s
+
+alen             = %s.length
+aindex           = %s[%s]
+anew             = arrayOfNulls(%2$s)
+
+funcref           = {%s(px)}
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = when(%s.toInt()) {
+case             = %s -> %s
+
+lambda           = { %s:NezParserContext -> (%s) }
+
+imports = '''
+import java.io.*;
+'''
+
+def bits32 = '''
+     private fun bits32 (bits:Array<Int>,n:Int):Boolean {
+            return (bits[n/32] and (1 shl (n%32))) != 0
+     }
+'''
+def newMemos = '''
+private fun newMemos (tree:SimpleTree,length:Int):Array<MemoEntry> {
+  var memos:Array<MemoEntry> = Array(length,{ MemoEntry(-1,0,0,tree,null) })
+  return memos
+}
+'''
+
+def parseText = '''
+private fun parseText (text:String,newFunc:(String, ByteArray, Int, Int, Int) -> SimpleTree,setFunc:(SimpleTree, Int, String, SimpleTree) -> SimpleTree):SimpleTree {
+    val inputs:ByteArray = text.toByteArray(Charsets.UTF_8)
+    val length:Int = inputs.count()
+    return parse(inputs,length,newFunc,setFunc)
+}
+'''
+
+def AST = '''
+  class SimpleTree {
+    var key:String
+    var value:Any
+
+    constructor(key:String, value:Any) {
+      this.key = key
+      this.value = value
+    }
+
+    @Override
+    override fun toString():String {
+      var sb:StringBuilder = StringBuilder()
+      strOut(sb)
+      return sb.toString()
+    }
+
+    private fun strOut(sb:StringBuilder) {
+      sb.append("[#")
+      sb.append(this.key)
+      if (this.value is Array<*>) {
+        var sub:Array<SimpleTree> = this.value as Array<SimpleTree>
+        for (child:SimpleTree in sub) {
+          sb.append(" ")
+          if (child.key != null) {
+            sb.append("$" + child.key + "=")
+          }
+          if(child.value is SimpleTree){
+              (child.value as SimpleTree).strOut(sb)
+          }
+        }
+      } else {
+        sb.append(" '")
+        sb.append(this.value)
+        sb.append("'")
+      }
+      sb.append("]")
+    }
+  }
+'''
+def newAST = '''
+    var newast = fun(tag:String, inputs:ByteArray, pos:Int, epos:Int, size:Int):SimpleTree {
+        var aaaa:Array<SimpleTree> = Array<SimpleTree>(size, { SimpleTree("",1) })
+        return SimpleTree(tag, if(size == 0) String(inputs, pos, epos - pos) else aaaa)
+    }
+'''
+def subAST = '''
+    var subast = fun(parent:SimpleTree, n:Int, label:String, child:SimpleTree):SimpleTree {
+        var childs:Array<SimpleTree?> = (parent).value as (Array<SimpleTree?>)
+        childs[n] = SimpleTree(label, child)
+        return parent
+    }
+
+'''
+
+main = '''
+  @Throws(IOException::class)
+  fun readInputs(a:String):ByteArray {
+    var file:File = File(a)
+    if(file.exists()) {
+      var buf:ByteArray = byteArrayOf(((file.length())+1).toInt())  // adding '\0' termination
+      var fin:FileInputStream = FileInputStream(file)
+      fin.read(buf, 0, file.length().toInt())
+      return buf
+    }
+    else {
+      return (a + "\u0000").toByteArray(Charsets.UTF_8)
+    }
+  }
+
+  @Throws(IOException::class)
+  fun main(args:Array<String>) {
+    for(a:String in args) {
+      var buf:ByteArray = readInputs(a)
+      var st:Long = System.nanoTime()
+      var t:SimpleTree = parse(buf, buf.count()-1, newast, subast)
+      var et:Long = System.nanoTime()
+      System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0)
+      System.out.print(t.toString())
+      System.out.flush()
+      System.err.printf("\n")
+    }
+  }
+'''
+
+man = '''
+=============
+ INTEGRATION
+=============
+
+Just call $|base|.parse() like below. You will get
+a simple tree representation ($|base|.SimpleTree).
+
+   SimpleTree t = $|base|.parse("sometext");
+   if(t != null) {
+      System.out.println(t);
+   }
+
+=============
+ QUICK START
+=============
+
+ kotlinc-jvm $|base|.kt -include-runtime -d $|base|.jar
+ java -jar $|base|.jar <file> or <input-text>
+
+Read the main function. You will know how to
+integrate the parser into your programs.
+
+'''
+
