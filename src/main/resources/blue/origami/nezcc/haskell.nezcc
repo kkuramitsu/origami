@@ -58,8 +58,8 @@ object           = %1$s {%2$s}
 objectparam      = _%1$s=%2$s
 objectparams     = , 
 
-getter           = ((view [l| %2$s|]) %1$s)
-setter           = S.put $ (set [l| $2$s|]) %3$s %1$s
+getter           = ((view [l| _%2$s|]) %1$s)
+setter           = S.put $ (set [l| _%2$s|]) %3$s %1$s
 
 functype         = (%3$s -> S.State (NezParserContext a) %1$s)
 functypeparam    = %1$s
@@ -72,7 +72,7 @@ const            = '''
 '''
 
 function         = '''
-%2$s :: %4$s
+--%2$s :: %4$s
 %2$s %3$s = do
 '''
 param    = %2$s
@@ -119,20 +119,22 @@ TList.cons        = %s:%s
 imports = '''
 {-# LANGUAGE QuasiQuotes #-}
 
-module Math(parse) where
+module XML(parse) where
 import Prelude hiding (length,log)
 import Data.Word
 import qualified Control.Monad.State as S
 import Data.ByteString hiding (putStrLn,replicate,take,drop,length)
 import Data.Int
 import Record
-import Record.Lens
 
 
 '''
 
 libs = '''
 (%) = mod
+
+produce :: a -> (a -> b) -> b
+produce a f = f a
 
 '''
 
@@ -157,8 +159,8 @@ storeM px' memoPoint' pos' matched' = do
   let key' = ((longkey (fromIntegral pos') memoPoint') >>= fst)
   let m' = ((getMemo px' key') >>= fst)
   S.put $ foldl produce m' [set [l| _key|] key'
-                          , set [l| _result|] if (matched') then (1) else (0)
-                          , set [l| _pos|] if (matched') then (pos px') else (pos')
+                          , set [l| _result|] (if (matched') then (1) else (0))
+                          , set [l| _pos|] (if (matched') then (pos px') else (pos'))
                           , set [l| _tree|] (view [l| tree|] px')
                           ]
   return matched'
@@ -167,36 +169,13 @@ storeM px' memoPoint' pos' matched' = do
 
 
 def newMemos   = '''
-type TreeLog a = TreeLog [r| {_op :: Int
-                        , _log :: Int
-                        , _tree :: a
-                        , _prevLog :: Maybe (TreeLog a)
-                        , _nextLog :: Maybe (TreeLog a)}
-                        |]
+type TreeLog a = [r| {_op :: Int, _log :: Int, _tree :: a, _prevLog :: Maybe (TreeLog a), _nextLog :: Maybe (TreeLog a)} |]
 
-type State a = State [r| {_ntag :: Int
-                    , _cnt :: Int
-                    , _value :: [Word8]
-                    , _prevState :: Maybe (State a)}
-                    |]
+type State a = [r| {_ntag :: Int, _cnt :: Int, _value :: [Word8], _prevState :: Maybe (State a)} |]
 
-type MemoEntry a = MemoEntry [r| {_key :: Int64
-                            , _result :: Int
-                            , _pos :: Int
-                            , _tree :: a
-                            , _state :: Maybe (State a)}
-                            |]
+type MemoEntry a = [r| {_key :: Int64, _result :: Int, _pos :: Int, _tree :: a, _state :: Maybe (State a)} |]
 
-type NezParserContext a = NezParserContext [r| {_inputs :: [Word8]
-                                          , _length :: Int
-                                          , _pos :: Int
-                                          , _headpos :: Int
-                                          , _tree :: a
-                                          , _treeLog :: Maybe (TreeLog a)
-                                          , _newFunc :: String->ByteString->Int->Int->[(String,a)] -> a
-                                          , _state :: Maybe (State a)
-                                          , _memos :: [MemoEntry a]}
-                                          |]
+type NezParserContext a = [r| {_inputs :: [Word8], _length :: Int, _pos :: Int, _headpos :: Int, _tree :: a, _treeLog :: Maybe (TreeLog a), _newFunc :: String->ByteString->Int->Int->[(String,a)] -> a, _state :: Maybe (State a), _memos :: [MemoEntry a]} |]
 
 newMemos tree' length' = replicate length' tree'
 
@@ -214,20 +193,19 @@ logT px' op' log' tree' = do
 useTreeLog px' = do
   let tcur' = view [l| _treeLog|] px'
   if isNothing (view [l| _nextLog|] tcur') then do
-    S.put $ tcur'$ set [l| _nextLog|] Just [r| {_op=0,_log=0, _tree= view [l| _tree|] px',_prevLog= view [l|_treeLog] px',_nextLog=Nothing}|]
+    let tree' = view [l| _tree|] px'
+    let prevLog' = view [l|_treeLog|] px'
+    let nextlog' = Just [r| {_op=0
+                           , _log=0
+                           , _tree= tree'
+                           , _prevLog= prevLog'
+                           , _nextLog=Nothing}|]
+    S.put $ set [l| _nextLog|] nextlog' tcur'
     return $ view [l| _nextLog|] tcur'
   else
     return $ view [l| _nextLog|] tcur'
 
 '''
-
-useTreeLog px' = do
-  let tcur' = view [l| _treeLog|] px'
-  if isNothing (view [l| _nextLog|] tcur') then do
-    S.put $ tcur' $ set [l| _nextLog = Just [r| _op=0,_log=0,_tree=view [l| _tree|] px', _prevLog=view [l| _treeLog|] px', _nextLog = Nothing |]|]
-    return $ view [l| _nextLog|] tcur'
-  else
-    return $ view [l| _nextLog|] tcur'
 
 
 def AST = '''
