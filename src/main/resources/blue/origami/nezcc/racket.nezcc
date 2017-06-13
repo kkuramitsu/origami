@@ -245,6 +245,11 @@ man = '''
  QUICK START
 =============
 
+raco make $|base|.rkt
+racket compiled/$|base|_rkt.zo <file>
+
+or
+
 racket $|base|.rkt <file>
 
 '''
