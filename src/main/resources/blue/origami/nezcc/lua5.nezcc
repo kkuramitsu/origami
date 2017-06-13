@@ -66,7 +66,7 @@ imports = '''
 def newAST = '''
 function newAST (tag,inputs,pos,epos,size)
   if size == 0 then
-    return {key=tag, value=string.sub(inputs, pos, epos)};
+    return {key=tag, value=string.sub(inputs, pos, epos-1)};
   else
     return {key=tag, value={}}
   end
@@ -75,7 +75,11 @@ end
 
 def subAST = '''
 function subAST (parent,n,label,child)
-  parent.value[n] = {label=label, tree=child}
+  if label == '' then
+    parent.value[n] = child
+  else
+    parent.value[label] = child
+  end
   return parent
 end
 '''
@@ -84,7 +88,7 @@ main = '''
 function readinputs(file)
   local f = io.open(file, "rb")
   if f ~= nil then
-    local content = f:read "*a"
+    local content = f:read("*all")
     f:close()
     return content .. "\0"
   else
@@ -94,14 +98,15 @@ end
 
 function dump(o)
    if type(o) == 'table' then
-      local s = '{ '
+      local s = '{'
+      local delim = ''
       for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s..k..'=' .. dump(v) .. ','
+         s = s..delim..k..'=' .. dump(v)
+         delim=','
       end
-      return s .. '} '
+      return s .. '}'
    else
-      return tostring(o)
+      return '\''..tostring(o)..'\''
    end
 end
 

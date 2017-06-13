@@ -225,7 +225,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	protected final C emitBack(String name, C expr) {
 		String uFunc = "back" + name;
 		if (this.isDefined(uFunc)) {
-			expr = this.emitFunc(this.s(uFunc), this.V("px"), expr);
+			expr = this.emitFunc(uFunc, this.V("px"), expr);
+			// System.out.println("back " + expr);
 		}
 		return this.emitSetter(this.V("px"), name, expr);
 	}

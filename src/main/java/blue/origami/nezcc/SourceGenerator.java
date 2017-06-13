@@ -179,6 +179,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineVariable("inputs", this.s("Byte[]"));
 		this.defineVariable("pos", this.s("Int"));
 		this.defineVariable("headpos", this.T("pos"));
+		this.defineSymbol("backpos", "backpos");
 		this.defineVariable("length", this.s("Int"));
 		this.defineVariable("tree", this.s("Tree"));
 		this.defineVariable("tree0", this.T("tree"));
@@ -904,8 +905,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	protected String vFuncMap(List<String> cases) {
-		this.makeLib("fTrue");
-		this.makeLib("fFalse");
+		this.makeLib("ftrue");
+		this.makeLib("ffalse");
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("arrays");
 		if (delim.length() == 0) {
@@ -918,9 +919,9 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				sb.append(delim);
 			}
 			if (code.equals(this.s("false"))) {
-				sb.append(this.emitFuncRef("fFalse"));
+				sb.append(this.emitFuncRef("ffalse"));
 			} else if (code.equals(this.s("true"))) {
-				sb.append(this.emitFuncRef("fTrue"));
+				sb.append(this.emitFuncRef("ftrue"));
 			} else {
 				sb.append(this.emitParserLambda(code));
 			}
@@ -1091,8 +1092,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				return expr;
 			}
 		} else {
-			if (this.check("nextN")) {
-				expr = this.emitFunc("nextN", this.V("px"), this.rawValue(bytes), this.vInt(bytes.length));
+			if (this.check("nextn")) {
+				expr = this.emitFunc("nextn", this.V("px"), this.rawValue(bytes), this.vInt(bytes.length));
 				if (!proceed) {
 					expr = this.emitAnd(expr, this.emitMove(this.vInt(-bytes.length)));
 				}

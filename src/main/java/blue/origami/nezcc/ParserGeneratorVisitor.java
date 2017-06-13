@@ -591,15 +591,15 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	protected void loadCombinator(ParserGenerator<B, C> pg) {
 		pg.defineLib2("back", (Object thunk) -> {
+			if (pg.isDefined("backpos")) {
+				pg.makeLib("backpos");
+			}
 			int stacks = (Integer) thunk;
 			String funcName = "back" + stacks;
 			pg.defineLib(funcName, () -> {
 				String[] args = pg.getStackNames(stacks);
 				pg.declFunc(0, pg.T("matched"), funcName, pg.joins("px", args), () -> {
 					B block = pg.beginBlock();
-					// for (String a : args) {
-					// pg.emitStmt(block, pg.emitBack(a, pg.V(a)));
-					// }
 					pg.emitBack2(block, args);
 					pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
 					return pg.endBlock(block);

@@ -8,7 +8,7 @@ Bool               =
 Byte               = 
 Byte[]             = 
 Int                = 
-Int64              = 
+#Int64              = 
 Array              = 
 Symbol             = 
 Tree               = 
@@ -45,7 +45,7 @@ const            = %2$s = %3$s
 
 function         = def %2$s(%3$s):
 param            = %2$s
-paraminit        = %2$s=%3$s
+#paraminit        = %2$s=%3$s
 params           = ,
 return           = return %s
 
@@ -86,10 +86,8 @@ end array        = ]
 imports = '''
 import sys, time
 
-def fTrue(px): return True
-
-def fFalse(px): return False
-
+def ftrue(px): return True
+def ffalse(px): return False
 '''
 
 def newAST = '''

@@ -226,7 +226,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			});
 		});
 
-		this.defineLib("nextN", () -> {
+		this.defineLib("nextn", () -> {
 			C pos_plen = pg.emitOp(pg.emitGetter("px.pos"), "+", pg.V("length"));
 			C cnt_len = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
 			C cnt_pp = pg.emitOp(pg.V("cnt"), "+", pg.vInt(1));
@@ -236,7 +236,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			C cmpr = pg.emitOp(input, "==", value);
 			C cond = pg.emitAnd(cnt_len, cmpr);
 			if (this.isDefined("while")) {
-				this.defFunc(pg, 0, pg.T("matched"), "nextN", "px", "value", "length", () -> {
+				this.defFunc(pg, 0, pg.T("matched"), "nextn", "px", "value", "length", () -> {
 					B block = pg.beginBlock();
 					pg.emitVarDecl(block, true, "cnt", pg.vInt(0));
 					pg.emitIfStmt(block, pg.emitOp(pos_plen, "<=", pg.emitGetter("px.length")), false, () -> {
@@ -254,24 +254,24 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				});
 			} else {
 				this.makeLib("next1");
-				this.defFunc(pg, 0, pg.T("matched"), "rnextN", "px", "value", "cnt", "length", () -> {
+				this.defFunc(pg, 0, pg.T("matched"), "rnextn", "px", "value", "cnt", "length", () -> {
 					C cond2 = pg.emitFunc("next1", pg.V("px"), pg.emitUnsigned(value));
-					C rec = pg.emitFunc("rnextN", pg.V("px"), pg.V("value"), cnt_pp, pg.V("length"));
+					C rec = pg.emitFunc("rnextn", pg.V("px"), pg.V("value"), cnt_pp, pg.V("length"));
 					return pg.emitIf(cnt_len, pg.emitAnd(cond2, rec), pg.emitSucc());
 				});
-				this.defFunc(pg, 0, pg.T("matched"), "nextN", "px", "value", "length", () -> {
-					return pg.emitFunc("rnextN", pg.V("px"), pg.V("value"), pg.vInt(0), pg.V("length"));
+				this.defFunc(pg, 0, pg.T("matched"), "nextn", "px", "value", "length", () -> {
+					return pg.emitFunc("rnextn", pg.V("px"), pg.V("value"), pg.vInt(0), pg.V("length"));
 				});
 			}
 		});
 
-		this.defineLib("fTrue", () -> {
-			this.defFunc(pg, 0, pg.T("matched"), "fTrue", "px", () -> {
+		this.defineLib("ftrue", () -> {
+			this.defFunc(pg, 0, pg.T("matched"), "ftrue", "px", () -> {
 				return pg.emitSucc();
 			});
 		});
-		this.defineLib("fFalse", () -> {
-			this.defFunc(pg, 0, pg.T("matched"), "fFalse", "px", () -> {
+		this.defineLib("ffalse", () -> {
+			this.defFunc(pg, 0, pg.T("matched"), "ffalse", "px", () -> {
 				return pg.emitFail();
 			});
 		});
@@ -928,10 +928,10 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			});
 		});
 		this.defineLib("matchS", () -> {
-			this.makeLib("nextN");
+			this.makeLib("nextn");
 			this.defFunc(pg, Arec, this.T("matched"), "matchS", "px", scur, "ntag", "pos", () -> {
 				C cond0 = pg.emitOp(pg.emitGetter("scur.ntag"), "==", pg.V("ntag"));
-				C then0 = pg.emitFunc("nextN", pg.V("px"), pg.emitGetter("scur.value"), pg.emitGetter("scur.cnt"));
+				C then0 = pg.emitFunc("nextn", pg.V("px"), pg.emitGetter("scur.value"), pg.emitGetter("scur.cnt"));
 				C else0 = pg.emitFunc("matchS", pg.V("px"), pg.emitGetter("scur.prevState"), pg.V("ntag"), pg.V("pos"));
 				C inner = pg.emitIf(cond0, then0, else0);
 				if (Optional) {
