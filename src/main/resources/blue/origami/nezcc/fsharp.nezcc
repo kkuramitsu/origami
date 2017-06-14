@@ -9,24 +9,20 @@ Byte               = byte
 Int                = int
 String             = string
 Array              = array<%s>
-Int64              = uint64
 Tree               = 't
 
 Byte->Int          = (int %s)
+
+
+Int64              = uint64
 Int64->Int         = (int (%s))
 Int->Int64         = (uint64 %s) 
 String->Byte[]     = System.Text.Encoding.ASCII.GetBytes(%s)
 String.+0          = (%s + "\0")
 Byte''             = %suy
-Int8''             = %suy
 
 # If 32bit-length integer exists, 
 Int32             = int32
-
-#java
-#base64           = B("%s")
-#bools            = B256("%s")
-
 
 Array.size        = %s.Length
 Array.get         = %s.[%s]
@@ -85,7 +81,7 @@ args             =
 
 #cast             = (%s)(%s)
 
-//apply            = %s
+//apply          = %s
 funcref          = %s
 lambda           = (fun %s -> %s)
 

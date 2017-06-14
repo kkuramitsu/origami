@@ -207,6 +207,9 @@ abstract class CodeSection<C> {
 			this.declConst(typeName, constName, arraySize, typeLiteral);
 			this.body = body;
 		}
+		if (this.isDefined("constname")) {
+			return this.format("constname", constName);
+		}
 		return constName;
 	}
 

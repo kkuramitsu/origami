@@ -1,0 +1,22 @@
+# Example Language Profile
+#    replace <...> with target language syntax
+# By Kimio Kuramitsu 
+
+author             = Kimio Kurmaitsu
+extension          = k
+
+# Type 
+
+Bool               = <bool>
+Byte               = <byte>
+Int                = <int>
+Array              = %s[]
+String             = <string>
+Tree               = <tree>
+
+# Uncomment if they exists
+
+#Int32              = <int32>
+#Int64              = <int64>
+#Int64->Int         = (<int>)%s
+

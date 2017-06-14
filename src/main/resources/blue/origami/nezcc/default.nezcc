@@ -6,15 +6,7 @@ varname          = %s
 constname        = %s
 structname       = %s
 
-#Array.new          = %s[%s]
-#Array.size         = %s.length
 Array.get          = %s[%s]
-#Array.slice        = %s[%s:%s]
-
-#List               = ArrayList<%s>
-#List.new           = new ArrayList<>()
-List.get           = %s.get(%s)
-List.add           = %s.add(%s)
 
 getter           = %s.%s
 setter           = %s.%s = %s$|;|
@@ -26,7 +18,7 @@ not              = !(%s)
 ifexpr           = (%s) ? (%s) : (%s)
 
 funccall         = %s(%s)
-args             = ,
+args             = $|delim|
 
 true             = true
 false            = false
@@ -37,7 +29,7 @@ var              = $|val|
 assign           = %s = %s$|;|
 
 array            = {
-arrays           = ,
+arrays           = $|delim|
 end array        = }
 
 
@@ -54,4 +46,6 @@ param            = %s %s
 params           = ,
 functypeparam    = $|param|
 functypeparams   = $|params|
+params           = $|delim|
+objectparams     = $|delim|
 

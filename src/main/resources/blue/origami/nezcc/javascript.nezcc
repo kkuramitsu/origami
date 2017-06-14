@@ -20,10 +20,6 @@ Array.get        = %s[%s]
 Array.new        = new Array(%2$s).fill(null)
 Array.slice      = %s.slice(%s,%s)
 
-
-#Byte[].quote     = %s
-#Byte[].esc       = '\x%02x'
-
 # syntax
 
 comment          = // %s

@@ -12,16 +12,8 @@ Byte[].quote     = "%s"
 
 Array.size       = (vector-length %s)
 Array.get        = (vector-ref %s %s)
-;Two dimensions(Pass by Reference) -> (make-vector %2$s (make-vector %2$s))
 Array.new        = (make-vector %2$s)
 Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
-
-#In case of AST2
-# FIXME recT rLog
-#TList               = ( TList
-#TList.empty         = null
-#TList.cons          = ( TList %s %s %s)
-#mainparams          = $|base|::newAST
 
 # syntax
 
@@ -62,7 +54,7 @@ eq               = (= %s %s)
 %                = (modulo %s %s)
 
 
-ifexpr           = (if (%1$s) (begin %2$s) (begin %3$s))
+ifexpr           = (if %1$s (begin %2$s) (begin %3$s))
 # FIXME divide class const
 funccall         = (%s %s)
 args             =
@@ -78,16 +70,72 @@ assign           = (set! %s %s)
 array            = (vector$|space|
 arrays           =$|space|
 end array        = )
-if               = (if (%s)
+if               = (if %s
 switch           = (match %s
 case             = [%s %s]
-#default          = default : %s
+default          = [_ %s]
 
 lambda           = (lambda (%s) %s)
 
+def endT = '''
+(define (gettag ntag)
+  (when #t (vector-ref nezsymbols ntag))
+)
+(define (getlabel nlabel)
+  (when #t (vector-ref nezsymbols nlabel))
+)
+(define (getvalue nvalue)
+  (when #t (vector-ref nezvalues nvalue))
+)
+(define (getlength nvalue)
+  (when #t (vector-ref nezvaluesizes nvalue))
+)
+(define (recT px tcur ntag nvalue epos cnt)
+  (when #t (if (= (get-field _op tcur) 0) (begin
+                                            (set-field! _tree px (if (= nvalue 0) (begin ((get-field _newFunc px)
+                                                                          (gettag ntag)
+                                                                          (get-field _inputs px)
+                                                                          (get-field _log tcur) epos cnt)
+                                                                  )
+                                                                  (begin ((get-field _newFunc px) (gettag ntag) (getvalue nvalue) 0 (getlength nvalue) cnt))))
+                                            (set! tcur (get-field _treeLog px))
+                                            (rLog (get-field _treeLog px) cnt px)
+
+                                          )
+               (begin (recT px (get-field _prevLog tcur) (if (and (= ntag 0) (= (get-field _op tcur) 1)) (begin (get-field _log tcur)) (begin ntag)) (if (and (= nvalue 0) (= (get-field _op tcur) 2)) (begin (get-field _log tcur)) (begin nvalue)) epos (if (= (get-field _op tcur) 3) (begin (+ cnt 1)) (begin cnt))))))
+)
+(define (rLog tcur cnt px)
+  (when #t (if (= (get-field _op tcur) 0) (begin (get-field _prevLog tcur))
+                                          (begin
+                                            (if (= (get-field _op tcur) 3) (begin (set! cnt (- cnt 1)) (set-field! _tree px ((get-field _setFunc px) (get-field _tree px) cnt (getlabel (get-field _log tcur)) (get-field _tree tcur)))) (begin cnt))
+                                            (rLog (get-field _prevLog tcur) cnt px))))
+)
+(define (endT px shift ntag)
+  (set-field! _treeLog px (recT px (get-field _treeLog px) ntag 0 (+ (get-field _pos px) shift) 0))
+  (when #t #t)
+)
+'''
+def tagT = '''
+(define (tagT px ntag)
+  (when #t (logT px 1 ntag (make-vector 0 null)))
+)
+'''
+
+def beginT = '''
+(define (beginT px shift)
+   (when #t (logT px 0 (+ (get-field _pos px) shift) (make-vector 0 null)))
+)
+'''
+
 def newMemos = '''
 (define (rMemo memos tree cnt length)
-  (when #t (if ((< cnt length)) (begin (vector-set! (vector-ref memos cnt) (MemoEntry% -1 0 0 tree null))) (begin memos)))
+  (if (< cnt length)
+      (begin
+        (vector-set! memos cnt (new MemoEntry% [key -1] [memoPoint -1] [result 0] [pos 0] [tree tree] [state null]))
+        (rMemo memos tree (+ cnt 1) length)
+      )
+      (begin memos)
+      )
 )
 
 (define (newMemos tree length)
@@ -99,7 +147,7 @@ def logT = '''
 (define (useTreeLog px)
   (define tcur (get-field _treeLog px))
   (match (get-field _nextLog tcur)
-    [null (set-field! _nextLog tcur (TreeLog% 0 0 null (get-field _treeLog px) null))]
+    [null (set-field! _nextLog tcur (new TreeLog% [op 0] [log 0] [tree (make-vector 0 null)] [prevLog (get-field _treeLog px)] [nextLog null]))]
   )
   (when #t (get-field _nextLog tcur))
 )
@@ -117,8 +165,8 @@ def logT = '''
 def parse = '''
 (define (parse inputs length newFunc setFunc)
   (define tree (newFunc (gettag 0) inputs 0 length 0))
-  (define px (NezParserContext% inputs length 0 0 tree (TreeLog% 0 0 tree null null) (if ((= newFunc null)) (begin newAST) (begin newFunc)) (if ((= setFunc null)) (begin subAST) (begin setFunc)) null (newMemos tree 257)))
-  (set! tree (if ((e0 px)) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
+  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if (null? newFunc) (begin newAST) (begin newFunc))] [setFunc (if (null? setFunc) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
+  (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
   (when #t tree)
 )
 '''
@@ -127,51 +175,68 @@ imports = '''
 '''
 
 libs = '''
+(define TList% (class object% (super-new)
+    (init label tree next)
+    (field [_label label])
+    (field [_tree tree])
+    (field [_next next])
+  )
+)
 '''
 
 def newAST = '''
 (define (newAST tag inputs pos epos size)
   (if (= size 0)
-    (vector tag (vector-drop (vector-take inputs epos) pos) )
-    (vector tag empty)
+    (vector tag (bytes->string/utf-8 (list->bytes (vector->list (vector-drop (vector-take inputs epos) pos)))) )
+    (vector tag (make-vector 0 null))
   )
 )
 '''
 
 def subAST = '''
 (define (subAST parent n label child)
-  ;FIXME Pass by Reference
+  (define len (vector-length (vector-ref parent 1)))
+  (if (< n len) #t (vector-set! parent 1 (vector-append (vector-ref parent 1) (make-vector (- n (- len 1)) null) )))
   (vector-set! (vector-ref parent 1) n (vector label child))
+  (when #t parent)
 )
 '''
 
 main = '''
 (define (read_inputs file-name)
   (let ((p (open-input-file file-name)))
-    (let loop((ls1 '()) (c (read-char p)))
+    (let loop((ls1 '()) (c (read-byte p)))
       (if (eof-object? c)
 	  (begin
 	    (close-input-port p)
-	    (list->string (reverse ls1)))
-	  (loop (cons c ls1) (read-char p))))))
+	    (list->vector (append (reverse ls1) (list 0))))
+	  (loop (cons c ls1) (read-byte p))))))
 
 (define (main args)
-  (do ((i 0 (+ i 1)))
-      ((eof-object? (vector-ref args i)))
-      ; FIXME can't define var
-      (let buf (read_inputs a))
-      (let st (current-seconds))
-      (let t (parse buf (- (string-length buf) 1) newAST subAST ))
-      (let et (current-seconds))
-      (print (vector-ref args i))
-      (print " ")
-      (print (* (- et st) 1000.0) )
-      (print "[ms]: ")
-      (newline)
-      (print t)
-      (newline)
+  (begin
+    (define i 0)
+    (define buf (read_inputs (vector-ref args i)))
+    (define len (vector-length args))
+    (do (
+          (i 0 (+ i 1))
+          (buf (read_inputs (vector-ref args i)) (read_inputs (vector-ref args i)))
+          (st (current-inexact-milliseconds) (current-inexact-milliseconds))
+          (t (parse buf (- (vector-length buf) 1) newAST subAST ) (parse buf (- (vector-length buf) 1) newAST subAST ))
+          (et (current-inexact-milliseconds) (current-inexact-milliseconds))
+        )
+        ((> i (- len 1)))
+        (print (vector-ref args i))
+        (print " ")
+        (print (- et st))
+        (print "[ms]: ")
+        (newline)
+        (print t)
+        (newline)
+    )
   )
+)
 
+(main (current-command-line-arguments)
 '''
 # Match the number of parentheses
 
@@ -180,6 +245,13 @@ man = '''
  QUICK START
 =============
 
-racket $|base|.rkt <file> or <input-text>
+raco make $|base|.rkt
+racket compiled/$|base|_rkt.zo <file>
+
+or
+
+racket $|base|.rkt <file>
 
 '''
+
+# byte -> byte string

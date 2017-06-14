@@ -1,0 +1,320 @@
+# nezcc file
+
+extension          = php
+
+# type
+
+Bool               =
+Byte               =
+Byte[]             =
+Int                =
+Int64              =
+Array              =
+Symbol             =
+Tree               =
+
+Byte[]->String   = join(array_map(chr, %s));
+String->Byte[]   = array_values(unpack('C*', %s));
+
+Array.size       = count(%s)
+Array.get        = %s[%s]
+Array.new        = array()
+Array.slice      = array_slice(%s,%s,%s)
+
+# syntax
+
+comment          = /* %s */
+begin            = {
+end              = }
+;                = ;
+
+struct           = class %s {
+end struct       = }
+field            = public $%2$s;
+constructor      = function __construct(%2$s){
+end constructor  = }
+init             = $this->%s = %s;
+new              = new %s
+
+getter           = %s->%s
+setter           = %s->%s = %s;
+
+const            = const %2$s = %3$s;
+const_array      = const %2$s = %4$s;
+
+function         = function %2$s(%3$s) {
+param            = %2$s
+paraminit        = %2$s=%3$s
+params           = ,
+return           = return %s;
+
+#cast             = (%s)(%s)
+
+#group            = (%s)
+
+and              = %s and %s
+or               = (%s) or (%s)
+not              = not (%s)
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = switch(%s) {
+end switch       = }
+case             = case %s : %s
+default          = default : %s
+
+funccall        = %s(%s)
+args             = ,
+
+varname          = $%s
+constname        = %s
+
+true             = True
+false            = False
+null             = NULL
+
+val              = %2$s = %3$s;
+var              = %2$s = %3$s;
+assign           = %s = %s;
+
+lambda           = function(%s){return %s;}
+funcref          = %s
+
+array             = array(
+arrays            = ,
+end array         = )
+
+functype         = '''
+interface %2$s{
+  public function apply(%3$s);
+}
+'''
+functypeparam    = $%2$s
+functypeparams   = ,
+apply            = %s
+
+imports = '''
+<?php
+ini_set('memory_limit', '-1');
+'''
+
+def extract = '''
+extract($px, $ppos) {
+  if($px->pos === $ppos) {
+    return array();
+  }
+  return array_slice($px->inputs, $ppos, $px->pos-$ppos);
+}
+'''
+
+def endT = '''
+function endT($px,$shift,$ntag0){
+  $epos = $px->pos + $shift;
+  $tcur = $px->treeLog;
+  $ntag = $ntag0;
+  $nvalue = 0;
+  $cnt = 0;
+  while($tcur->op !== 0) {
+    if($tcur->op === 3) {
+      $cnt = $cnt + 1;
+    }
+    else if($ntag === 0 and $tcur->op === 1) {
+      $ntag = $tcur->log;
+    }
+    else if($nvalue === 0 and $tcur->op === 2) {
+      $nvalue = $tcur->log;
+    }
+    $tcur = $tcur->prevLog;
+  }
+  $px->tree = ($nvalue === 0) ? (call_user_func($px->newFunc,gettag($ntag),$px->inputs,$tcur->log,$epos,$cnt)) : (call_user_func($px->newFunc,gettag($ntag),getvalue($nvalue),0,getlength($nvalue),$cnt));
+  $tcur = $px->treeLog;
+  while($tcur->op !== 0) {
+    if($tcur->op === 3) {
+      $cnt = $cnt - 1;
+      $px->tree = call_user_func($px->setFunc,$px->tree,$cnt,getlabel($tcur->log),$tcur->tree);
+    }
+    $tcur = $tcur->prevLog;
+  }
+  $px->treeLog = $tcur->prevLog;
+  return True;
+}
+'''
+
+#def newAST = '''
+function newAST($tag, $inputs, $pos, $epos, $size){
+    if($size === 0){
+        return array($tag, array_slice($inputs, $pos, $epos-$pos));
+    }else{
+        return array($tag, array_fill(0,$size,NULL));
+    }
+}
+'''
+#def subAST = '''
+function subAST($parent, $n, $label, $child){
+    $parent[1][$n] = array($label, $child);
+    return $parent;
+}
+'''
+
+def AST = '''
+  class SimpleTree {
+    public $key;
+    public $value;
+
+    function __construct($key, $value) {
+      $this->key = $key;
+      $this->value = $value;
+    }
+
+    function set($n, $label, $child) {
+    	$this->value[n] = new SimpleTree($label, $child);
+    	return $this;
+    }
+
+    function toString() {
+      $str = '';
+      $this->strOut($str);
+      return $str;
+    }
+
+    function strOut(&$str) {
+      $str .= '[#';
+      $str .= $this->key;
+
+      if ( is_array($this->value) and $this->value[0] instanceof SimpleTree ){
+        $sub = $this->value;
+        while(list($key,$val) = each($sub)){
+          $str .= ' ';
+          if ($val->key != NULL) {
+            $str .= "$".$val->key.'=';
+          }
+          $val->value->strOut($str);
+        }
+      } else {
+        $str .= " '";
+        $str .= createStringFromUTF8Bytes($this->value);
+        $str .= "'";
+      }
+      $str .= ']';
+    }
+  }
+'''
+
+def newAST = '''
+  function newAST($tag, $inputs, $pos, $epos, $size) {
+    if( $size === 0 ){
+        return new SimpleTree($tag, array_slice($inputs, $pos, $epos-$pos));
+    }else{
+        return new SimpleTree($tag, array_fill(0,$size,NULL));
+    }
+  }
+'''
+
+def subAST = '''
+function subAST($parent, $n, $label, $child){
+  $childs    = $parent->value;
+  $childs[$n] = new SimpleTree($label, $child);
+  $parent->value = $childs;
+  return $parent;
+}
+'''
+
+mainparams = newAST, subAST
+main = '''
+  /*
+  function toString(&$t){
+    $str = '';
+    strOut($t,$str);
+    return $str;
+  }
+  function strOut(&$t, &$str){
+    $str .= '[#';
+    $str .= $t[0];
+
+    if(is_array($t[1])){
+        $sub = $t[1];
+        foreach($sub as $v){
+            $str .= ' ';
+            if(isset($v[0])){
+                $str .= "$".$v[0]."=";
+            }
+            strOut($v[1], $str);
+        }
+    }else{
+        $str .= "'";
+        $str .= createStringFromUTF8Bytes($t[1]);
+        $str .= "'";
+    }
+  }
+*/
+  function createUTF8BytesFromString(&$str){
+  /*
+    $str = mb_convert_encoding($str, 'UTF-8', 'auto');
+
+    $bytes = array();
+    $i = 0;
+    $l = strlen($str);
+
+    while($i<$l){
+        array_push($bytes,hexdec(bin2hex($str[$i])));
+        ++$i;
+    }
+
+    return $bytes;
+    */
+  }
+
+  function createStringFromUTF8Bytes($bytes){
+  /*
+    $str = "";
+    foreach($bytes as $b){
+        $str .= chr($b);
+    }
+    return $str;
+*/
+    return implode(array_map(chr, $bytes));
+  }
+
+  function readInputs($a) {
+    if(file_exists($a)){
+    /*
+      $fp = fopen($a, 'rb');
+      $bytes = array();
+      while(!feof($fp)){
+        $data = fread($fp, 1);
+        array_push($bytes, ord($data));
+      }
+      return $bytes;
+   */
+      return array_values(unpack('C*', file_get_contents($a)));
+    }else{
+      return array_values(unpack('C*', $a));
+    }
+  }
+
+  foreach($argv as $key => $val) {
+    if( $key === 0 ) continue;
+
+    $buf = readInputs($val);
+
+    $st = microtime(True);
+    $t  = parse($buf, count($buf)-1, newAST, subAST);
+    $et = microtime(True);
+    printf("%s %f[ms]:", $val, ($et-$st)*1000);
+    echo $t->toString();
+    //printf($t->toString());
+    printf(PHP_EOL);
+  }
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+
+ php $|base|.php <file> or <input-text>
+
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''

@@ -5,20 +5,21 @@ extension          = pl
 # type
 
 structname         = $
-Array.new          = %s[%s]
+Array.new          = ()
 Array.size         = ${%s}
 Array.get          = %s->[%s]
 Array.slice        = %s[%s:%s]
 
-List               = @
-List.new           = ()
-List.get           = %s->[%s]
-List.add           = push(%s,%s)
+ArrayList          = $
+ArrayList.new      = ()
+ArrayList.get      = %s->[%s]
+ArrayList.add      = push(%s,%s)
 
 #Byte->Int         = %s & 0xff
 #Int64->Int         = (%s)
 String->Byte[]     = unpack('C*', %s)
 Byte[]->String     = pack(%s)
+Byte[].slice       = %s->[%s..%s]
 # syntax
 
 comment            = # %s
@@ -27,13 +28,13 @@ end                = }
 
 struct           = struct %s => {
 end struct       = };
-field            = %2$s => '$';
+field            = %2$s => '$',
 malloc           = %1$s->new()
 
 getter           = %s->%s
 setter           = %s->%s(%s);
 
-const            = my %2$s = %3$s;
+const            = my $%2$s = %3$s;
 array            = [
 end array        = ]
 
@@ -43,14 +44,15 @@ sub %2$s {
 '''
 param            = %2$s
 val              = my %2$s = %3$s;
+return           = return %s;
 
 true             = 1
 false            = 0
-null             = ()
+null             = 0
 
-if               = if(%s) {
-else if          = elif(%s) {
-while            = while(%s) {
+if               = if (%s) {
+else if          = elsif (%s) {
+while            = while (%s) {
 #switch           = switch(%s) {
 #case             = case %s : %s
 #default          = default : %s
@@ -60,7 +62,7 @@ constname        = $%s
 structname       = $
 
 lambda           = sub { my %1$s = $_[0]; %2$s; }
-funcref          = &\%s
+funcref          = \&%s
 apply            = %s->
 
 imports = '''
@@ -70,50 +72,79 @@ use warnings;
 use Class::Struct;
 '''
 
-main = '''
-sub readdata {
-  my ($fname) = @_;
-  if(-f $fname) {
-    my @inputs = ()
-    open my $file,'<',$name or "Cannot open a file: $fname\n";
-    binmode $file; 
-    my $val;
-    while(read($file, $val, 1)){
-      push(@inputs, unpack('C', $val))
-    }
-    close $file;
-    push(@inputs, 0)
-    return \@inputs;
+def newMemos = '''
+sub newMemos {
+  my ($tree,$length) = @_;
+  my @memos = ();
+  my $cnt = 0;
+  while ($cnt < $length) {
+    push(@memos,MemoEntry(-1,-1,0,0,$tree,0));
+    $cnt = $cnt + 1;
   }
-  return \unpack('C*', ($fname . '\0'));
+  return \@memos;
 }
 '''
 
-man1 = '''
-=============
- INTEGRATION
-=============
+def newAST = '''
+sub newAST {
+  my ($tag,$inputs,$pos,$epos,$size) = @_;
+  if ($size == 0) {
+    return ($tag, $inputs->[$pos .. $epos]);
+  } else {
+    return ($tag, ());
+  }
+}
+'''
 
-Just call the following function to parse a tree.
+def subAST = '''
+sub subAST {
+  my ($parent,$n,$label,$child) = @_;
+  unshift (${$parent->[1]}, ($label, $child));
+  return $parent;
+}
+'''
 
-Tree *Nez_parseTree(const char *inputs);
+main = '''
+sub readinputs {
+  my ($fname) = @_;
+  my @inputs = ();
+  if(-f $fname) {
+    open my $file,'<',$fname or die "Cannot open a file: $fname\n";
+    binmode $file; 
+    my $val;
+    while(read($file, $val, 1)){
+      push(@inputs, unpack('C', $val));
+    }
+    close $file;
+    push(@inputs, 0);
+    push(@inputs, 0);
+  }
+  else {
+    @inputs = unpack('C*', ($fname . '\0')); #2
+  }
+  return \@inputs;
+}
 
-Example (in $|base|.c) 
+sub main {
+  my $fname;
+  while($fname = shift(@ARGV)) {
+    print "$fname\n";
+    my $text = readinputs($fname);
+    my $len = scalar(@$text) - 2;
+    my $t = parse($text, $len, \&newAST, \&subAST);
+    print "$t\n";
+  }
+}
 
-   Tree *t = Nez_parseTree("sometext");
-   if(t != NULL) {
-      Tree_dump(t);
-   }
+main()
+'''
 
-NOTE: This parser has no GC support for trees. 
-Add some reference counting for trees.
-
+man = '''
 =============
  QUICK START
 =============
  
- make $|base| CFLAGS='-g -O3'
- ./$|base| <file> or <input-text>
+ perl $|base|.pl <file> or <input-text>
  
 Read the main function. You will know how to
 integrate the parser into your programs.
