@@ -984,11 +984,11 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 
 			final C empty = this.isDefined("TList") ? pg.emitFunc("TList.empty") : pg.vInt(0);
 			final C initTree = pg.emitApply(pg.V("newFunc"), pg.emitFunc("gettag", pg.vInt(0)), pg.V("inputs"),
-					pg.vInt(0), pg.V("length"), empty);
+					pg.emitConv("Array.start", pg.vInt(0)), pg.emitConv("Array.start", pg.V("length")), empty);
 			final C errTree = pg.emitApply(pg.V("newFunc"), pg.emitFunc("gettag", pg.Const("nezerror")), pg.V("inputs"),
-					pg.emitGetter("px.headpos"), pg.V("length"), empty);
+					pg.emitGetter("px.headpos"), pg.emitConv("Array.start", pg.V("length")), empty);
 			final C tokenTree = pg.emitApply(pg.V("newFunc"), pg.emitFunc("gettag", pg.vInt(0)), pg.V("inputs"),
-					pg.vInt(0), pg.emitGetter("px.pos"), empty);
+					pg.emitConv("Array.start", pg.vInt(0)), pg.emitGetter("px.pos"), empty);
 
 			this.defFunc(pg, Apublic, this.T("tree"), "parse", param, () -> {
 				B block = pg.beginBlock();

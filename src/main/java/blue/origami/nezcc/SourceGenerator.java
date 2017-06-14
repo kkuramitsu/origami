@@ -879,7 +879,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			return this.endBlock(block);
 		} else if (this.useLambda() && this.isNotIncludeMemo(cases)) {
 			String funcMap = this.vFuncMap(cases);
-			return this.emitApply(this.emitArrayIndex(funcMap, index), this.V("px"));
+			return this.emitApply(this.emitGroup(this.emitArrayIndex(funcMap, index)), this.V("px"));
 		} else {
 			StringBuilder block = this.beginBlock();
 			this.emitVarDecl(block, false, "result", index);

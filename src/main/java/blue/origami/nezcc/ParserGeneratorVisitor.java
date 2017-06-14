@@ -130,7 +130,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		else if (e instanceof PAnd) {
 			inline = this.emitCombiAnd(POS, e, pg);
 		}
-		if (inline != null) {
+		if (inline != null && pg.isDefined("Oinline")) {
 			return inline;
 		}
 		return this.match(e, pg, !this.isInline(e, pg));

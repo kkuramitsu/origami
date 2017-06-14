@@ -1,5 +1,6 @@
 # lua5.nezcc
 
+language           = inline
 extension          = lua
 
 # type
@@ -10,7 +11,7 @@ Byte[].slice       = string.strsub(%s,%s,%s)
 
 Array.new      = {}
 Array.get      = %s[%s]
-Array.start    = %s + 1
+Array.start    = (%s+1)
 
 # syntax
 
@@ -42,7 +43,7 @@ true             = true
 false            = false
 null             = nil
 
-ifexpr           = ((%s) and (%s) or (%s))
+ifexpr           = ifexpr(function () return %s end, function() return %s end, function() return %s end)
 if               = if %s then
 end if           = end
 #else if          = elseif %s then
@@ -52,6 +53,7 @@ end while        = end
 #case             = case %s : %s
 #default          = default : %s
 
+#lambda           = function (%s) return %s end
 funcref          = %s
 ne               = %s ~= %s
 and              = %s and %s
@@ -60,6 +62,20 @@ not              = not %s
 
 imports = '''
 #!/usr/bin/lua
+
+function ftrue (px)
+  return true
+end
+function ffalse (px)
+  return false
+end
+function ifexpr (cf,tf,ff)
+  if cf() then 
+    return tf()
+  else
+    return ff()
+  end
+end
 
 '''
 
