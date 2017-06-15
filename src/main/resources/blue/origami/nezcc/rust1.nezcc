@@ -24,7 +24,7 @@ Tpx                = *mut NezParserContext<'u>
 TtreeLog           = *mut TreeLog<'u>
 Tstate             = *mut State<'u>
 Tm                 = *mut MemoEntry<'u>
-Tmemos             =*mut Vec<$|Tm|>
+Tmemos             = *mut [$|Tm|]
 Tf                 = fn($|Tpx|) -> bool
 Tbits              = & [isize]
 
@@ -123,20 +123,15 @@ static data158: [u8;0] = [];
 
 
 def newMemos = '''
-fn newMemos<'u> (tree: *mut SimpleTree<'u>,length: isize) -> *mut Vec<*mut MemoEntry<'u>> {
-  let mut memos = Vec::new();
-  let mut cnt = 0;
-  while cnt < length {
-    memos.push( (&mut MemoEntry {key: -1,result: 0,pos: 0,tree: tree,state: ptr::null_mut()}) as *mut MemoEntry<'u> );
-    cnt = cnt + 1;
-  }
+fn newMemos<'u> (tree: *mut SimpleTree<'u>,length: isize) -> $|Tmemos| {
+  let mut memos = [(&mut MemoEntry {key: -1,result: 0,pos: 0,tree: tree,state: ptr::null_mut()}) as *mut MemoEntry<'u>;257];
   return &mut memos;
 }
 '''
 
 def getMemo = '''
 fn getMemo<'u> (px: $|Tpx|,key: isize) -> $|Tm| {
-  return  unsafe { (*px).memos.as_ref().unwrap() }[(key % 257) as usize];
+  return  unsafe { &(*(*px).memos)}[(key % 257) as usize];
 }
 '''
 
@@ -193,6 +188,7 @@ AST = '''
 def newAST = '''
 
 fn newAST<'u> (tag: &'static str, inputs: $|Byte[]|, pos: isize, epos: isize, size: isize) ->$|Tree| {
+	println!("pos:{} epos:{}",pos,epos);
 		if size == 0 {
 			(&mut SimpleTree::Leaf{tag: tag,value: & inputs[(pos as usize)..(epos as usize)]}) as $|Tree|
 		}else{
