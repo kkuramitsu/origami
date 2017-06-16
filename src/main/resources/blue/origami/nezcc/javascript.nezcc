@@ -26,6 +26,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+delim            = ,
 
 struct           =
 #field           = %s %s;

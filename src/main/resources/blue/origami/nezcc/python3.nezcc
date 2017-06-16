@@ -31,7 +31,8 @@ Byte[].esc       = \x%02x
 comment          = # %s
 begin            = :
 end              = 
-;                = 
+;                =
+delim            =, 
 
 struct           = class %s :
 #field            = %s %s;

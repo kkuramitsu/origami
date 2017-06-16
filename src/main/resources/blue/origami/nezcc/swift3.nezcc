@@ -48,6 +48,7 @@ comment           = // %s
 begin             = {
 end               = }
 ;                 =
+delim             = ,
 
 struct            = final private class %s{
 field             = var %2$s :%1$s

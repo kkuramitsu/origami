@@ -38,6 +38,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+delim            = ,
 
 #module           = mod $|base| {
 struct           = struct %s<T> {

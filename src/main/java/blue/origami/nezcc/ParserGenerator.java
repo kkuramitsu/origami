@@ -70,6 +70,8 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitIfStmt(C expr, boolean elseIf, Supplier<C> stmt);
 
+	protected abstract void emitIfElse(B block, C expr, Supplier<C> stmt, Supplier<C> stmt2);
+
 	protected abstract C emitWhileStmt(C expr, Supplier<C> stmt);
 
 	protected final void emitVarDecl(B block, boolean mutable, String name, C expr) {
@@ -145,7 +147,13 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected abstract C emitOr(C pe, C pe2);
 
-	protected abstract C emitIf(C pe, C pe2, C pe3);
+	protected final C emitIfB(C pe, C pe2, C pe3) {
+		return this.emitIf(pe, ""/* Bool */, pe2, pe3);
+	}
+
+	protected abstract C emitIf(C pe, String type, C pe2, C pe3);
+
+	protected abstract void emitAssignIf(B block, String name, C pe, C pe2, C pe3);
 
 	protected abstract C emitDispatch(C index, List<C> cases);
 
@@ -410,7 +418,10 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected C IfNull(C v, C v2) {
-		return this.emitIf(this.emitIsNull(v), v2, v);
+		if (!this.isDefined("ifexpr")) {
+			return v;
+		}
+		return this.emitIf(this.emitIsNull(v), "else", v2, v);
 	}
 
 	protected C emitNonTerminal(String func) {

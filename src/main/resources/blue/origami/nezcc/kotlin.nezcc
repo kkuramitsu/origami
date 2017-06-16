@@ -51,6 +51,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                =
+delim            = ,
 
 struct           = class %s {
 field            = var %2$s:%1$s

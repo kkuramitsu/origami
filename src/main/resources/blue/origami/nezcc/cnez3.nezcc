@@ -31,6 +31,7 @@ Int64->Int         = (size_t)(%s)
 comment            = // %s
 begin              = {
 end                = }
+delim              = ,
 
 struct           = struct %s {
 end struct       = };

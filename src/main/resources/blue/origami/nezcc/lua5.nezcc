@@ -1,7 +1,7 @@
 # lua5.nezcc
 
-language           = inline
 extension          = lua
+options            = inline
 
 # type
 
@@ -53,7 +53,7 @@ end while        = end
 #case             = case %s : %s
 #default          = default : %s
 
-#lambda           = function (%s) return %s end
+lambda           = function (%s) return %s end
 funcref          = %s
 ne               = %s ~= %s
 and              = %s and %s

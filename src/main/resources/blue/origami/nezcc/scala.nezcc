@@ -32,7 +32,6 @@ Array.new         = new Array[%s](%s)
 
 Byte[].slice      = %s.slice(%s, %s)
 
-
 Option             = Option[%s]
 Some               = Some(%s)
 None               = None
@@ -45,6 +44,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = 
+delim            = ,
 
 module           = object $|base| {
 
