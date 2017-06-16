@@ -4,12 +4,9 @@ extension          = rs
 
 # type
 
-move               = mov
-
 Bool               = bool
 Byte               = u8
 Byte[]             = &'u [u8]
-Byte[].quote       = &data158
 Int                = isize
 Int32              = isize
 Int64              = isize
@@ -41,6 +38,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+delim            = ,
 
 #module           = mod $|base| {
 struct           = struct %s<'u> {
@@ -93,7 +91,7 @@ ifexpr           = if %s {%s} else{%s}
 #lambda           = |%s| { %s }
 
 def              = let mut
-val              = let mut %2$s = %3$s;
+val              = let %2$s = %3$s;
 var              = let mut %2$s = %3$s;
 letin            = let mut %2$s = %3$s; %4$s
 assign           = %s = %s;
@@ -118,7 +116,6 @@ use std::fs::File;
 use std::string::String;
 use std::ptr;
 
-static data158: [u8;0] = [];
 '''
 
 
@@ -135,12 +132,6 @@ fn getMemo<'u> (px: $|Tpx|,key: isize) -> $|Tm| {
 }
 '''
 
-def move = '''
-fn mov<'u> (px: $|Tpx|,shift: isize) -> bool { 
-  unsafe { (*px).pos = (*px).pos + shift };
-  return true;
- }
-'''
 
 def bits32 = '''
 fn bits32 (bits: [isize;8],n: isize) -> bool {
@@ -157,7 +148,7 @@ fn parse<'u> (inputs: $|Byte[]|,length: isize,newFunc: $|TreeFunc|,setFunc: $|Tr
   let mut tree = (newFunc)(gettag(0),inputs,0,length,0);
   let mut tree2 = (newFunc)(gettag(0),inputs,0,length,0);
   let mut px = NezParserContext {inputs: inputs,length: length,pos: 0,headpos: 0,tree: tree,treeLog: (&mut TreeLog {op: 0,log: 0,tree: tree2,prevLog: ptr::null_mut(),nextLog: ptr::null_mut()}) ,newFunc: newFunc,setFunc: setFunc,state: ptr::null_mut(),memos: newMemos(tree,257)};
-  tree = if e0(&mut px) {px.tree} else{(newFunc)(gettag(ParseError),inputs,px.headpos,length,0)};
+  tree = if e0(&mut px) {px.tree} else{(newFunc)(gettag(nezerror),inputs,px.headpos,length,0)};
   return tree;
 }
 '''
@@ -166,7 +157,7 @@ def extract = '''
 
 '''
 
-AST = '''
+def AST = '''
   /** Here is the main part. You may remove them if unnecessary. **/
   
    enum SimpleTree<'u> {
@@ -188,7 +179,7 @@ AST = '''
 def newAST = '''
 
 fn newAST<'u> (tag: &'static str, inputs: $|Byte[]|, pos: isize, epos: isize, size: isize) ->$|Tree| {
-	println!("pos:{} epos:{}",pos,epos);
+	println!("pos:{} epos:{}",&pos,&epos);
 		if size == 0 {
 			(&mut SimpleTree::Leaf{tag: tag,value: & inputs[(pos as usize)..(epos as usize)]}) as $|Tree|
 		}else{

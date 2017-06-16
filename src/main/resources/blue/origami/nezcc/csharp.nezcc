@@ -1,0 +1,273 @@
+# nezcc file
+
+extension          = cs
+
+# type
+
+Bool               = bool
+Byte               = byte
+Byte[]             = byte[]
+Int                = int
+Int64              = long
+Array              = %s[]
+Tree               = T
+String             = string
+ParserFunc         =ParserFunc<T>
+longkey            =longkey<T>
+gettag             =gettag<T>
+getlabel           =getlabel<T>
+getvalue           =getvalue<T>
+getlength          =getlength<T>
+
+Byte->Int          = %s & 0xff
+Int64->Int         = (int)(%s)
+String->Byte[]     = Encoding.UTF8.GetBytes(%s)
+
+Array.new          = %s[%s]
+Array.size         = %s.Length
+Array.get          = %s[%s]
+Array.slice        = %s[%s:%s]
+
+ArrayList          = List<%s>
+ArrayList.new      = new List<%s>()
+ArrayList.get      = %s[%s]
+ArrayList.add      = %s.Add(%s)
+
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+delim            = ,
+
+module           = class $|base| {
+
+structname       = %s<T>
+
+struct           = class %s <T> {
+field            = public %s %s;
+constructor      = public %s(%s) {
+init             = this.%s = %s;
+new              = new %s<T>
+
+
+const            = static %1$s %2$s = %3$s;
+
+function         = private static  %1$s %2$s<T>(%3$s) where T : SimpleTree{
+function1        = public static  %1$s %2$s<T>(%3$s) where T : SimpleTree{
+return           = return %s;
+
+#apply            = %s.apply
+#funcref          = $|base|::%s
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = switch(%s) {
+case             = case %s : %s
+#default         = default : %s
+
+lambda           = (%s) => %s
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
+
+class SimpleTree {
+    public string key;
+    public Object value;
+
+    public SimpleTree(string key, Object value) {
+      this.key = key;
+      this.value = value;
+    }
+
+    public SimpleTree set(int n, string label, SimpleTree child) {
+    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
+    	return this;
+    }
+
+    public string toString() {
+      StringBuilder sb = new StringBuilder();
+      this.strOut(sb);
+      return sb.ToString();
+    }
+
+    private void strOut(StringBuilder sb) {
+      sb.Append("[#");
+      sb.Append(this.key);
+      if (this.value is SimpleTree[]) 
+      {
+        SimpleTree[] sub = (SimpleTree[]) this.value;
+        foreach (SimpleTree child in sub) 
+        {
+          sb.Append(" ");
+          if (child.key != null) 
+          {
+            sb.Append("$" + child.key + "=");
+          }
+          ((SimpleTree) child.value).strOut(sb);
+        }
+      }
+       else 
+       {
+        sb.Append(" '");
+        sb.Append(Encoding.UTF8.GetString((byte[])this.value));
+        sb.Append("'");
+      }
+      sb.Append("]");
+    }
+  }
+  
+delegate SimpleTree TreeFunc(string tag, byte[] inputs, int pos, int epos, int size);
+delegate SimpleTree TreeSetFunc(SimpleTree parent, int n, string label, SimpleTree child);
+'''
+
+libs = '''
+delegate bool ParserFunc<T>(NezParserContext<T> px);
+'''
+
+def extract = '''
+
+'''
+
+def endT = '''
+private static  string gettag<T>(int ntag) where T : SimpleTree{
+  return nezsymbols[ntag];
+}
+private static  string getlabel<T>(int nlabel) where T : SimpleTree{
+  return nezsymbols[nlabel];
+}
+private static  byte[] getvalue<T>(int nvalue) where T : SimpleTree{
+  return nezvalues[nvalue];
+}
+private static  int getlength<T>(int nvalue) where T : SimpleTree{
+  return nezvaluesizes[nvalue];
+}
+private static  bool endT<T>(NezParserContext<T> px,int shift,int ntag0) where T : SimpleTree{
+  int epos = px.pos + shift;
+  TreeLog<T> tcur = px.treeLog;
+  int ntag = ntag0;
+  int nvalue = 0;
+  int cnt = 0;
+  while(tcur.op != 0) {
+    if(tcur.op == 3) {
+      cnt = cnt + 1;
+    }
+    else if(ntag == 0 && tcur.op == 1) {
+      ntag = tcur.log;
+    }
+    else if(nvalue == 0 && tcur.op == 2) {
+      nvalue = tcur.log;
+    }
+    tcur = tcur.prevLog;
+  }
+  px.tree = (T)((nvalue == 0) ? (px.newFunc(gettag<T>(ntag),px.inputs,tcur.log,epos,cnt)) : (px.newFunc(gettag<T>(ntag),getvalue<T>(nvalue),0,getlength<T>(nvalue),cnt)));
+  tcur = px.treeLog;
+  while(tcur.op != 0) {
+    if(tcur.op == 3) {
+      cnt = cnt - 1;
+      px.tree = (T)px.setFunc(px.tree,cnt,getlabel<T>(tcur.log),tcur.tree);
+    }
+    tcur = tcur.prevLog;
+  }
+  px.treeLog = tcur.prevLog;
+  return true;
+}
+'''
+
+def parse = '''
+public static T parse<T>(byte[] inputs, int length, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
+	{
+		T tree = (T)newFunc(gettag<T>(0), inputs, 0, length, 0);
+		NezParserContext<T> px = new NezParserContext<T>(inputs, length, 0, 0, tree, new TreeLog<T>(0, 0, tree, null, null), newFunc, setFunc, null, newMemos(tree, 257));
+		tree = (T)((e0(px)) ? (px.tree) : (newFunc(gettag<T>(nezerror), inputs, px.headpos, length, 0)));
+		return tree;
+	}
+	
+'''
+
+def parseText = '''
+public static T parseText<T>(string text, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
+	{
+		byte[] inputs = Encoding.UTF8.GetBytes(text);
+		int length = inputs.Length - 1;
+		return parse<SimpleTree>(inputs, length, newFunc, setFunc);
+	}
+'''
+
+def AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
+  
+'''
+
+def newAST = '''
+  private static SimpleTree newAST(string tag, byte[] inputs, int pos, int epos, int size) {
+  	byte[] buf = new byte[epos-pos];
+  	Array.Copy(inputs, pos, buf, 0, epos-pos);
+    return new SimpleTree(tag, (size == 0) ? (Object)buf : new SimpleTree[size]);
+  }
+'''
+
+def subAST = '''
+  private static SimpleTree subAST(SimpleTree parent, int n, string label, SimpleTree child) {
+    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+    childs[n] = new SimpleTree(label, child);
+    return parent;
+  }
+'''
+
+mainparams = newf, subf
+main = '''
+  static byte[] readInputs(string a) {
+    if(File.Exists(a)) 
+    {
+      System.IO.FileStream fs = new System.IO.FileStream(a,System.IO.FileMode.Open,System.IO.FileAccess.Read);
+      byte[] buf = new byte[(fs.Length)+1];  // adding '\0' termination
+      buf[fs.Length] = (byte)'\0';
+      fs.Read(buf, 0, (int)fs.Length);
+      return buf;
+    }
+    else 
+    {
+      return Encoding.UTF8.GetBytes(a + "\0");
+    }
+  }
+  
+  public static void Main(string[] args) {
+    foreach(String a in args) 
+    {
+      byte[] buf = readInputs(a);
+      System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+      sw.Start();
+      TreeFunc newf = new TreeFunc(newAST);
+      TreeSetFunc subf = new TreeSetFunc(subAST);
+      SimpleTree t = parse<SimpleTree>(buf, buf.Length-1, $|mainparams|);
+      sw.Stop();
+      Console.WriteLine("{0}[ms]",sw.ElapsedMilliseconds);
+      Console.WriteLine(t.toString());
+    }
+  }
+'''
+
+
+man = '''
+
+=============
+ QUICK START
+=============
+ 
+ msc $|base|.cs
+ mono $|base|.exe <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
+ 
+'''
