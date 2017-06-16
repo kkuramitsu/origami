@@ -134,6 +134,11 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined("ne")) {
 			this.defineSymbol("!=", this.s("ne"));
 		}
+		if (this.isDefined("options")) {
+			for (String opt : this.s("options").split(",")) {
+				this.defineSymbol("O" + opt, opt);
+			}
+		}
 
 		if (this.isDefined("Array")) {
 			this.defineSymbol("Byte[]", this.format("Array", this.s("Byte")));
@@ -182,7 +187,6 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineSymbol("backpos", "backpos");
 		this.defineVariable("length", this.s("Int"));
 		this.defineVariable("tree", this.s("Tree"));
-		this.defineVariable("tree0", this.T("tree"));
 		this.defineVariable("c", this.s("Int"));
 		this.defineVariable("n", this.s("Int"));
 		this.defineVariable("cnt", this.s("Int"));
@@ -194,11 +198,13 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("bits", this.format("Array", this.s("Bool")));
 		}
 
-		this.defineVariable("op", this.s("Int"));
-		this.defineVariable("log", this.T("length"));
 		this.defineVariable("label", this.s("Symbol"));
 		this.defineVariable("tag", this.s("Symbol"));
 		this.defineVariable("value", this.T("inputs"));
+
+		this.defineVariable("lop", this.s("Int"));
+		this.defineVariable("lpos", this.T("length"));
+		this.defineVariable("ltree", this.T("tree")); // haskell
 
 		if (!this.isDefined("m")) {
 			String t = this.format("structname", "MemoEntry");
@@ -238,9 +244,14 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
 		this.defineVariable("memoPoint", this.T("cnt"));
 		this.defineVariable("result", this.T("cnt"));
-		this.defineVariable("prevLog", this.T("treeLog"));
-		this.defineVariable("nextLog", this.T("treeLog"));
-		this.defineVariable("prevState", this.T("state"));
+
+		this.defineVariable("mpos", this.T("pos")); // haskell
+		this.defineVariable("mtree", this.T("tree")); // haskell
+		this.defineVariable("mstate", this.T("state")); // haskell
+
+		this.defineVariable("lprev", this.T("treeLog"));
+		this.defineVariable("lnext", this.T("treeLog"));
+		this.defineVariable("sprev", this.T("state"));
 
 		this.defineVariable("epos", this.T("pos"));
 		this.defineVariable("child", this.T("tree"));
@@ -248,8 +259,9 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		this.defineSymbol("Intag", "0");
 		this.defineSymbol("Ikey", "-1");
 		this.defineSymbol("Icnt", "0");
-		this.defineSymbol("Iop", "0");
 		this.defineSymbol("Ipos", "0");
+		this.defineSymbol("Ilop", "0");
+		this.defineSymbol("Ilpos", "0");
 		this.defineSymbol("Iheadpos", "0");
 		this.defineSymbol("Iresult", "0");
 		if (this.isDefined("paraminit")) {
@@ -847,8 +859,21 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
-	protected String emitIf(String expr, String expr2, String expr3) {
-		return this.format("ifexpr", expr, expr2, expr3);
+	protected String emitIf(String expr, String t, String expr2, String expr3) {
+		if (this.isDefined("ifexpr")) {
+			return this.format("ifexpr", expr, expr2, expr3);
+		}
+		if (t.equals("then")) {
+			return expr2;
+		}
+		if (t.equals("else")) {
+			return expr3;
+		}
+		String funcName = "ifexpr";
+		if (this.check("ifexpr" + t)) {
+			funcName = "ifexpr" + t;
+		}
+		return this.emitFunc(funcName, expr, this.format("lambda", "", expr2), this.format("lambda", "", expr3));
 	}
 
 	@Override
@@ -879,7 +904,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			return this.endBlock(block);
 		} else if (this.useLambda() && this.isNotIncludeMemo(cases)) {
 			String funcMap = this.vFuncMap(cases);
-			return this.emitApply(this.emitArrayIndex(funcMap, index), this.V("px"));
+			return this.emitApply(this.emitGroup(this.emitArrayIndex(funcMap, index)), this.V("px"));
 		} else {
 			StringBuilder block = this.beginBlock();
 			this.emitVarDecl(block, false, "result", index);
@@ -1234,6 +1259,40 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	@Override
 	protected String emitUnsigned(String expr) {
 		return this.emitConv("Byte->Int", expr);
+	}
+
+	@Override
+	protected void emitIfElse(StringBuilder block, String expr, Supplier<String> stmt, Supplier<String> stmt2) {
+		StringBuilder sb = this.beginBlock();
+		sb.append(this.format("if", expr));
+		this.incIndent();
+		this.emitStmt(sb, stmt.get());
+		this.decIndent();
+		sb.append(this.format("else"));
+		this.incIndent();
+		this.emitStmt(sb, stmt2.get());
+		this.decIndent();
+		this.emitStmt(sb, this.format("end if"));
+		this.emitStmt(block, this.endBlock(sb));
+	}
+
+	@Override
+	protected void emitAssignIf(StringBuilder block, String name, String pe, String pe2, String pe3) {
+		if (this.isDefined("else")) {
+			StringBuilder sb = this.beginBlock();
+			sb.append(this.format("if", pe));
+			this.incIndent();
+			this.Assign(sb, name, pe2);
+			this.decIndent();
+			sb.append(this.format("else"));
+			this.incIndent();
+			this.Assign(sb, name, pe3);
+			this.decIndent();
+			this.emitStmt(sb, this.format("end if"));
+			this.emitStmt(block, this.endBlock(sb));
+		} else {
+			this.Assign(block, name, this.emitIf(pe, "", pe2, pe3));
+		}
 	}
 
 }

@@ -25,6 +25,7 @@ Byte[].slice       = %s->[%s..%s]
 comment            = # %s
 begin              = {
 end                = }
+delim              = ,
 
 struct           = struct %s => {
 end struct       = };

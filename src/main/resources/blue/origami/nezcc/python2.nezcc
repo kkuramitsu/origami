@@ -23,7 +23,8 @@ Array.slice      = %s[%s:%s]
 comment          = # %s
 begin            = :
 end              = 
-;                = 
+;                =
+delim            = , 
 
 struct           = class %s :
 #field            = %s %s;

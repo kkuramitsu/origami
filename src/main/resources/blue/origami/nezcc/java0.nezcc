@@ -44,6 +44,7 @@ comment          = // %s
 begin            = {
 end              = }
 ;                = ;
+delim            = ,
 
 module           = final class $|base| {
 

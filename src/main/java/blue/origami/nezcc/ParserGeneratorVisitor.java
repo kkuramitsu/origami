@@ -130,7 +130,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		else if (e instanceof PAnd) {
 			inline = this.emitCombiAnd(POS, e, pg);
 		}
-		if (inline != null) {
+		if (inline != null && pg.isDefined("Oinline")) {
 			return inline;
 		}
 		return this.match(e, pg, !this.isInline(e, pg));
@@ -346,7 +346,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			cond = pg.emitAnd(cond, pg.emitCheckNonEmpty());
 		}
 		if (!pg.isDefined("while")) {
-			C main = pg.emitIf(cond, pg.emitFunc(funcName, pg.V("px"), pg.V("f")), back);
+			C main = pg.emitIfB(cond, pg.emitFunc(funcName, pg.V("px"), pg.V("f")), back);
 			return this.emitVarDecl(pg, stacks, false, pg.emitReturn(main));
 		} else {
 			B block = pg.beginBlock();
@@ -415,7 +415,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	}
 
 	private C emitNot(ParserGenerator<B, C> pg, int stacks, C inner) {
-		C main = pg.emitIf(inner, pg.emitFail(), this.emitBacktrack(pg, stacks));
+		C main = pg.emitIfB(inner, pg.emitFail(), this.emitBacktrack(pg, stacks));
 		return this.emitVarDecl(pg, stacks, false, pg.emitReturn(main));
 	}
 

@@ -40,6 +40,7 @@ Array.new        = (struct %1$s *)_malloc(sizeof(struct %1$s) * %2$s)
 comment            = // %s
 begin              = {
 end                = }
+delim              = ,
 
 struct           = struct %s {
 end struct       = };
