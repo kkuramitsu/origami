@@ -21,7 +21,6 @@ Array.get        = %s[%s]
 Array.new        = [None] * %2$s
 Array.slice      = %s[%s:%s]
 
-
 Byte[]''         = b'%s'
 Byte[].quote     = '
 Byte[].esc       = \x%02x

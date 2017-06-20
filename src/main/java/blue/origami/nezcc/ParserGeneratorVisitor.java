@@ -95,7 +95,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			return this.match(e, pg, false);
 		}
 		String funcName = pg.makeLib("memo", Typestate.compute(e) == Typestate.Tree ? TREE : POS);
-		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id), this.getInFunc(e, pg));
+		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id + 1), this.getInFunc(e, pg));
 	}
 
 	public C match(Expression e, ParserGenerator<B, C> px, boolean asFunction) {

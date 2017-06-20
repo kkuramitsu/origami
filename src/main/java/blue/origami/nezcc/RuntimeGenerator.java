@@ -703,11 +703,11 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 					C loopCond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
 					pg.emitWhileStmt(block, loopCond, () -> {
 						B block2 = pg.beginBlock();
-						if (!this.isDefined("ArrayList")) {
+						if (!this.isDefined("MemoList")) {
 							C left = pg.emitArrayIndex(pg.V("memos"), pg.V("cnt"));
 							pg.emitStmt(block2, pg.emitAssign2(left, newMemo));
 						} else {
-							pg.emitStmt(block2, pg.emitFunc("ArrayList.add", pg.V("memos"), newMemo));
+							pg.emitStmt(block2, pg.emitFunc("MemoList.add", pg.V("memos"), newMemo));
 						}
 						pg.emitStmt(block2, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+", pg.vInt(1))));
 						return pg.endBlock(block2);
@@ -718,7 +718,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 			} else {
 				this.defFunc(pg, 0, this.T("memos"), "rMemo", "memos", "tree", "cnt", "length", () -> {
 					C cond = pg.emitOp(pg.V("cnt"), "<", pg.V("length"));
-					C expr1 = (this.isDefined("ArrayList")) ? pg.emitFunc("ArrayList.add", pg.V("memos"), newMemo)
+					C expr1 = (this.isDefined("MemoList")) ? pg.emitFunc("MemoList.add", pg.V("memos"), newMemo)
 							: pg.emitAssign2(pg.emitArrayIndex(pg.V("memos"), pg.V("cnt")), newMemo);
 					C expr2 = pg.emitFunc("rMemo", pg.V("memos"), pg.V("tree"), pg.emitOp(pg.V("cnt"), "+", pg.vInt(1)),
 							pg.V("length"));

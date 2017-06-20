@@ -28,10 +28,10 @@ Array.size         = %s.Length
 Array.get          = %s[%s]
 Array.slice        = %s[%s:%s]
 
-ArrayList          = List<%s>
-ArrayList.new      = new List<%s>()
-ArrayList.get      = %s[%s]
-ArrayList.add      = %s.Add(%s)
+MemoList          = List<%s>
+MemoList.new      = new List<%s>()
+MemoList.get      = %s[%s]
+MemoList.add      = %s.Add(%s)
 
 
 # syntax

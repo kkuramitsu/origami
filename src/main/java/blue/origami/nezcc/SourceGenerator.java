@@ -211,15 +211,15 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("m", t);
 		}
 
-		if (this.isDefined("ArrayList")) {
-			this.defineVariable("memos", this.format("ArrayList", this.T("m")));
+		if (this.isDefined("MemoList")) {
+			this.defineVariable("memos", this.format("MemoList", this.T("m")));
 		} else {
 			this.defineVariable("memos", this.format("Array", this.T("m")));
 		}
 
 		this.defineVariable("subtrees", this.s("TreeList"));
-		this.defineSymbol("TList.empty", this.s("null"));
-		this.defineSymbol("TList.cons", "%3$s");
+		// this.defineSymbol("TreeList.empty", this.s("null"));
+		// this.defineSymbol("TreeList.cons", "%3$s");
 
 		if (this.isDefined("Int64")) {
 			this.defineVariable("key", this.s("Int64"));
@@ -778,16 +778,16 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if ((a.indexOf("inputs") != -1 || a.indexOf("value") != -1) && this.isDefined("Byte[].get")) {
 			return this.format("Byte[].get", a, index);
 		}
-		if (a.indexOf("memos") != -1 && this.isDefined("ArrayList.get")) {
-			return this.format("ArrayList.get", a, this.emitConv("Array.start", index));
+		if (a.indexOf("memos") != -1 && this.isDefined("MemoList.get")) {
+			return this.format("MemoList.get", a, this.emitConv("Array.start", index));
 		}
 		return this.format("Array.get", a, this.emitConv("Array.start", index));
 	}
 
 	@Override
 	protected String emitNewArray(String type, String index) {
-		if (type.startsWith("MemoEntry") && this.isDefined("ArrayList")) {
-			return this.format("ArrayList.new", type, index);
+		if (type.startsWith("MemoEntry") && this.isDefined("MemoList")) {
+			return this.format("MemoList.new", type, index);
 		}
 		return this.format("Array.new", type, index);
 	}

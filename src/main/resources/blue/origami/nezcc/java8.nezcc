@@ -26,10 +26,10 @@ Array.size         = %s.length
 Array.get          = %s[%s]
 Array.slice        = %s[%s:%s]
 
-ArrayList          = ArrayList<%s>
-ArrayList.new      = new ArrayList<>()
-ArrayList.get      = %s.get(%s)
-ArrayList.add      = %s.add(%s)
+MemoList          = ArrayList<%s>
+MemoList.new      = new ArrayList<>()
+MemoList.get      = %s.get(%s)
+MemoList.add      = %s.add(%s)
 
 #In case of AST2
 #TList               = TList<T>
