@@ -31,6 +31,7 @@ Byte[]->String     = unpack %s
 Array.new          = []
 Array.size         = (length %s)
 Array.get          = (%s !! %s)
+Byte[].get         = (%s `index` %s)
 Array.slice        = (drop %s (take %s %s))
 array              = [
 arrays             = ,
@@ -101,7 +102,7 @@ funccall         = (S.evalState (%s %s) px')
 arg              = (%s)
 args             =
 
-lambda           = (\%s -> %s)
+lambda           = (\%s -> return (%s))
 
 #base64           = B("%s")
 #bools            = B256("%s")
@@ -125,6 +126,12 @@ import qualified Control.Monad.State as S
 import Data.ByteString.Char8 hiding (putStrLn,replicate,take,drop,length)
 import Data.Int
 import Data.Maybe
+
+'''
+
+def nezvalues = '''
+nezvalues :: [ByteString]
+nezvalues = [pack data171]
 
 '''
 
