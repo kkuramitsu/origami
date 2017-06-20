@@ -1,0 +1,244 @@
+# Nezcc file
+
+extension          = rs
+
+# type
+
+Bool               = bool
+Byte               = u8
+Byte[]             = &'u [u8]
+Int                = isize
+Int32              = isize
+Int64              = isize
+
+String             = &'static str
+
+Tree               = *mut SimpleTree<'u>
+TreeFunc           = fn(&'static str,$|Byte[]|,isize,isize,isize) ->$|Tree|
+TreeSetFunc        = fn($|Tree|,isize,&'static str,$|Tree|) ->$|Tree|
+typeparam          = %s<%s>
+
+Tpx                = *mut NezParserContext<'u>
+TtreeLog           = *mut TreeLog<'u>
+Tstate             = *mut State<'u>
+Tm                 = *mut MemoEntry<'u>
+Tmemos             = *mut [$|Tm|]
+Tf                 = fn($|Tpx|) -> bool
+Tbits              = & [isize]
+
+
+Byte->Int          = (%s) as isize
+String->Byte[]     = %s.as_bytes()
+Byte[]->String     = str::from_utf8(&%s)
+
+# syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+delim            = ,
+
+#module           = mod $|base| {
+struct           = struct %s<'u> {
+field            = %2$s: %1$s,
+
+object           = %1$s {%2$s} 
+objectparam      = %1$s: %2$s 
+objectparams     = ,
+
+#functype        = 
+
+const            = static %2$s:%1$s = %3$s;
+const_array      = static %2$s:[%1$s;%3$s] = %4$s;
+
+function         = fn %2$s<'u> (%3$s) -> %1$s {
+end function     = }
+param            = %2$s: %1$s
+params           = ,
+return           = return %s;
+apply            = (%s)
+
+getter           = unsafe{ (*%s).%s }
+setter           = unsafe{ (*%s).%s  =  %s };
+
+#cast            = (@@@@%s)(%s)
+
+#null             = ptr::null_mut()
+
+Array.size       = %s.len() as isize
+Array.get        = %s[(%s) as usize]
+Array.new        = []
+Array.slice      = %s.[(%s as usize)..(%s as usize)]
+
+Option             = %s<'u>
+Some               = &mut (%s)
+None               = ptr::null_mut()
+Option.get         = %s
+Option.isNone      = %s.is_null()
+
+funcref          = %s
+
+if               = if %s {
+else if          = else if %s {
+while            = while %s {
+#switch           = match %s {
+#case             = %s => %s
+#default          = _ => %s
+
+ifexpr           = if %s {%s} else{%s} 
+
+#lambda           = |%s| { %s }
+
+def              = let mut
+val              = let %2$s = %3$s;
+var              = let mut %2$s = %3$s;
+letin            = let mut %2$s = %3$s; %4$s
+assign           = %s = %s;
+
+array            = [
+arrays           = ,
+end array        = ]
+
+
+#varprefix        = _
+#funcprefix       = _
+
+imports = '''
+
+'''
+
+libs = '''
+use std::io::{Write, Read};
+use std::env;
+use std::time::Instant;
+use std::fs::File;
+use std::string::String;
+use std::ptr;
+
+'''
+
+
+def newMemos = '''
+fn newMemos<'u> (tree: *mut SimpleTree<'u>,length: isize) -> $|Tmemos| {
+  let mut memos = [(&mut MemoEntry {key: -1,result: 0,pos: 0,tree: tree,state: ptr::null_mut()}) as *mut MemoEntry<'u>;257];
+  return &mut memos;
+}
+'''
+
+def getMemo = '''
+fn getMemo<'u> (px: $|Tpx|,key: isize) -> $|Tm| {
+  return  unsafe { &(*(*px).memos)}[(key % 257) as usize];
+}
+'''
+
+
+def bits32 = '''
+fn bits32 (bits: [isize;8],n: isize) -> bool {
+  return (bits[(n / 32) as usize] & (1 << (n % 32))) != 0;
+}
+'''
+
+#def endT = '''
+
+'''
+
+def parse = '''
+fn parse<'u> (inputs: $|Byte[]|,length: isize,newFunc: $|TreeFunc|,setFunc: $|TreeSetFunc|) -> $|Tree| {
+  let mut tree = (newFunc)(gettag(0),inputs,0,length,0);
+  let mut tree2 = (newFunc)(gettag(0),inputs,0,length,0);
+  let mut px = NezParserContext {inputs: inputs,length: length,pos: 0,headpos: 0,tree: tree,treeLog: (&mut TreeLog {op: 0,log: 0,tree: tree2,prevLog: ptr::null_mut(),nextLog: ptr::null_mut()}) ,newFunc: newFunc,setFunc: setFunc,state: ptr::null_mut(),memos: newMemos(tree,257)};
+  tree = if e0(&mut px) {px.tree} else{(newFunc)(gettag(nezerror),inputs,px.headpos,length,0)};
+  return tree;
+}
+'''
+
+def extract = '''
+
+'''
+
+def AST = '''
+  /** Here is the main part. You may remove them if unnecessary. **/
+  
+   enum SimpleTree<'u> {
+	  Node {label: &'static str,next: *mut Vec<$|Tree|>},
+	  Leaf {tag: &'static str,value: $|Byte[]|},
+  }
+  
+  impl<'u> SimpleTree<'u>{
+  	fn newNode(tag: &'static str) -> $|Tree|{
+  		(&mut SimpleTree::Node{label: tag,next: (Vec :: new()).as_mut_ptr() }) as $|Tree| 
+  	}
+  	fn setNode(tag: &'static str, next: *mut Vec<$|Tree|>)-> $|Tree|{
+  		(&mut SimpleTree::Node{label: tag,next: next })as $|Tree|
+  	}
+  }
+
+'''
+
+def newAST = '''
+
+fn newAST<'u> (tag: &'static str, inputs: $|Byte[]|, pos: isize, epos: isize, size: isize) ->$|Tree| {
+	println!("pos:{} epos:{}",&pos,&epos);
+		if size == 0 {
+			(&mut SimpleTree::Leaf{tag: tag,value: & inputs[(pos as usize)..(epos as usize)]}) as $|Tree|
+		}else{
+			SimpleTree::newNode(tag)
+		}
+	}
+	
+'''
+
+def subAST = '''
+fn subAST<'u> (parent: $|Tree|,n: isize,label: &'static str,child:$|Tree|)->$|Tree|{
+	let buf = unsafe{parent.as_mut().unwrap()};
+	let newNext = match buf{
+		&mut SimpleTree::Node{label: _, next: next} => next,
+		&mut SimpleTree::Leaf{tag: _, value: _} => panic!("This is not Node!"),
+	};
+	unsafe{ newNext.as_mut().unwrap()[n as usize] = child;}
+	SimpleTree::setNode(label,newNext)
+	}
+'''
+
+
+main = '''
+	
+	
+fn readInputs(a: &str) -> Vec<u8>{
+    let mut file = match File::open(a) {
+       	Err(_) => return (a.to_string()+"\0").into_bytes(),
+       	Ok(file) => file,
+   	};
+    file.write_all(b"\0");
+	let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer);
+    buffer
+}
+
+fn main()  {
+  	let args: Vec<String> = env::args().collect();
+
+  	for a in &args[1..]{
+  	  let buf = readInputs(a);
+      let st =  Instant::now();
+      let t = parse(&buf, (buf.len()) as isize, newAST, subAST);
+      let et = st.elapsed();
+      println!("{} {}.{:03}[ms]: ", a, et.as_secs(), et.subsec_nanos()/1000000);
+  	}
+   
+}
+
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ rustc $|base|.rs
+ ./$|base| <file> or <input-text>
+
+'''
+
+
