@@ -217,7 +217,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			this.defineVariable("memos", this.format("Array", this.T("m")));
 		}
 
-		this.defineVariable("subTrees", this.s("TList"));
+		this.defineVariable("subtrees", this.s("TreeList"));
 		this.defineSymbol("TList.empty", this.s("null"));
 		this.defineSymbol("TList.cons", "%3$s");
 
@@ -226,7 +226,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		} else {
 			this.defineVariable("key", this.s("Int"));
 		}
-		this.defineVariable("memoPoint", this.s("Int"));
+		this.defineVariable("mpoint", this.s("Int"));
 		this.defineVariable("result", this.s("Int"));
 		this.defineVariable("text", this.s("String"));
 
@@ -493,7 +493,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (!this.isDefined(f)) {
 			f = "function";
 		}
-		this.writeSection(this.format(f, ret, funcName, this.emitParams(params), funcType));
+		this.writeSection(this.format(f, ret, this.funcName(funcName), this.emitParams(params), funcType));
 		this.incIndent();
 		this.writeSection(this.formatFuncResult(block.get()));
 		this.decIndent();
@@ -602,12 +602,49 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	@Override
+	protected void Setter3(StringBuilder block, String base, String name, String expr, String name2, String expr2,
+			String name3, String expr3) {
+		if (this.isDefined("setter3")) {
+			this.emitStmt(block, this.emitFunc("setter3", base, name, expr, name2, expr2, name3, expr3));
+		} else {
+			super.Setter3(block, base, name, expr, name2, expr2, name3, expr3);
+		}
+	}
+
+	@Override
+	protected void Setter4(StringBuilder block, String base, String name, String expr, String name2, String expr2,
+			String name3, String expr3, String name4, String expr4) {
+		if (this.isDefined("setter4")) {
+			this.emitStmt(block, this.emitFunc("setter4", base, name, expr, name2, expr2, name3, expr3, name4, expr4));
+		} else {
+			super.Setter4(block, base, name, expr, name2, expr2, name3, expr3, name4, expr4);
+		}
+	}
+
+	@Override
+	protected void Setter5(StringBuilder block, String base, String name, String expr, String name2, String expr2,
+			String name3, String expr3, String name4, String expr4, String name5, String expr5) {
+		if (this.isDefined("setter5")) {
+			this.emitStmt(block,
+					this.emitFunc("setter5", base, name, expr, name2, expr2, name3, expr3, name4, expr4, name5, expr5));
+		} else {
+			super.Setter5(block, base, name, expr, name2, expr2, name3, expr3, name4, expr4, name5, expr5);
+		}
+	}
+
+	@Override
 	protected void emitBack2(StringBuilder block, String... vars) {
 		if (vars.length == 2 && this.isDefined("setter2")) {
 			this.emitStmt(block, this.emitFunc("setter2", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1])));
 		} else if (vars.length == 3 && this.isDefined("setter3")) {
 			this.emitStmt(block, this.emitFunc("setter3", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1]),
 					vars[2], this.V(vars[2])));
+		} else if (vars.length == 4 && this.isDefined("setter4")) {
+			this.emitStmt(block, this.emitFunc("setter4", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1]),
+					vars[2], this.V(vars[2]), vars[3], this.V(vars[3])));
+		} else if (vars.length == 5 && this.isDefined("setter5")) {
+			this.emitStmt(block, this.emitFunc("setter5", "px", vars[0], this.V(vars[0]), vars[1], this.V(vars[1]),
+					vars[2], this.V(vars[2]), vars[3], this.V(vars[3]), vars[4], this.V(vars[4])));
 		} else {
 			super.emitBack2(block, vars);
 		}
@@ -686,7 +723,10 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitGroup(String expr) {
-		return this.format("group", expr);
+		if (this.isDefined("group")) {
+			return this.format("group", expr);
+		}
+		return "(" + expr + ")";
 	}
 
 	@Override
@@ -786,6 +826,16 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		return value;
 	}
 
+	protected String funcName(String func) {
+		if (this.isDefined(func)) {
+			return this.s(func);
+		}
+		if (this.isDefined("Osnake")) {
+			return func.toLowerCase();
+		}
+		return func;
+	}
+
 	@Override
 	protected String emitFunc(String func, List<String> params) {
 		if (this.isDefined(func)) {
@@ -811,7 +861,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			c++;
 			sb.append(p);
 		}
-		return this.format("funccall", this.s(func), sb.toString());
+		return this.format("funccall", this.funcName(func), sb.toString());
 	}
 
 	@Override
@@ -819,7 +869,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined("apply")) {
 			func = this.format("apply", func);
 		}
-		return this.emitFunc(func, params);
+		return this.emitFunc(this.funcName(func), params);
 	}
 
 	@Override

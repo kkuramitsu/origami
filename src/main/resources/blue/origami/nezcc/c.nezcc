@@ -117,7 +117,7 @@ static unsigned long long int longkey($|Int64| pos, int memoPoint) {
 
 def getMemo = '''
 static struct MemoEntry* getMemo(struct NezParserContext* px, $|Int64| key) {
-  return px->memos + (($|Int64|)(key % memos));
+  return px->memos + (($|Int64|)(key % memoentries));
 }
 '''
 
