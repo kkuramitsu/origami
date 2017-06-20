@@ -963,6 +963,9 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String vInt(int value) {
+		if (this.isDefined("int")) {
+			return this.format("int", String.valueOf(value));
+		}
 		return String.valueOf(value);
 	}
 
