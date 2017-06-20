@@ -735,10 +735,10 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
 	@Override
 	protected String emitArrayIndex(String a, String index) {
-		if ((a.endsWith("inputs") || a.endsWith("value")) && this.isDefined("Byte[].get")) {
+		if ((a.indexOf("inputs") != -1 || a.indexOf("value") != -1) && this.isDefined("Byte[].get")) {
 			return this.format("Byte[].get", a, index);
 		}
-		if (a.endsWith("memos") && this.isDefined("ArrayList.get")) {
+		if (a.indexOf("memos") != -1 && this.isDefined("ArrayList.get")) {
 			return this.format("ArrayList.get", a, this.emitConv("Array.start", index));
 		}
 		return this.format("Array.get", a, this.emitConv("Array.start", index));
