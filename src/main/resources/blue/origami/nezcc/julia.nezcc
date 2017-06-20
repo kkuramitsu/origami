@@ -18,7 +18,7 @@ Tree               =
 
 Array.size       = length(%s)
 Array.get        = %s[%s]
-Array.new        = Array(Any,%2$s)
+Array.new        = Array{Any}(%2$s)
 Array.slice      = %s[%s:%s]
 Array.start      = %s + 1
 
@@ -96,7 +96,7 @@ function newAST(tag, inputs, pos, epos, size)
   if (size == 0)
     return (tag, inputs[pos:epos-1])
   else
-    return (tag, Array(Any,size))
+    return (tag, Array{Any}(size))
   end
 end
 '''
