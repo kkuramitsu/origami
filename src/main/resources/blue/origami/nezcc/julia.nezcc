@@ -4,21 +4,19 @@ extension          = jl
 
 # type
 
-Bool               = 
-Byte               = 
-Byte[]             = 
-Int                = 
-Int64              = 
-Array              = 
-Symbol             = 
-Tree               = 
+Bool               = Bool
+Byte               = UInt8
+Int                = Int
+Int64              = Int64
+String             = String
+Tree               = Tuple{String,Any}
 
 #Byte[]->String   = %s.decode('utf-8')
 #String->Byte[]   = %s.encode('utf-8')
 
 Array.size       = length(%s)
 Array.get        = %s[%s]
-Array.new        = Array(Any,%2$s)
+Array.new        = Array{Any}(%2$s)
 Array.slice      = %s[%s:%s]
 Array.start      = %s + 1
 
@@ -62,8 +60,8 @@ true             = true
 false            = false
 null             = nothing
 
-val              = %2$s = %3$s
-var              = %2$s = %3$s
+val              = %2$s::%1$s = %3$s
+var              = %2$s::%1$s = %3$s
 assign           = %s = %s
 
 if               = if %s
@@ -96,7 +94,7 @@ function newAST(tag, inputs, pos, epos, size)
   if (size == 0)
     return (tag, inputs[pos:epos-1])
   else
-    return (tag, Array(Any,size))
+    return (tag, Array{Any}(size))
   end
 end
 '''
@@ -111,9 +109,9 @@ end
 main = '''
 function read_inputs(a)
   try
-    f = open(a,"r")
-    lines = readlines(f)
-    str = join(lines)
+    f::IOStream = open(a,"r")
+    lines::Array{String,1} = readlines(f)
+    str::String = join(lines)
     return str * "\0"
   catch e
     return a * "\0"
@@ -122,8 +120,8 @@ end
 
 if !isinteractive()
   for a in ARGS[1:end]
-    s = read_inputs(a)
-    t = @time parse(s, length(s)-1, newAST, subAST)
+    s::String = read_inputs(a)
+    t::Tuple{String,Array{Any,1}} = @time parse(s, length(s)-1, newAST, subAST)
     print(a)
     print(" :")
     println(t)
