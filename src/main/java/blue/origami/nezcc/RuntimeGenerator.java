@@ -256,7 +256,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				this.makeLib("next1");
 				this.defFunc(pg, 0, pg.T("matched"), "rnextn", "px", "value", "cnt", "length", () -> {
 					C cond2 = pg.emitFunc("next1", pg.V("px"), pg.emitUnsigned(value));
-					C rec = pg.emitFunc("rnextn", pg.V("px"), pg.V("value"), cnt_pp, pg.V("length"));
+					C rec = pg.emitFunc("rnextn", pg.V("px"), pg.V("value"), pg.emitGroup(cnt_pp), pg.V("length"));
 					return pg.emitIfB(cnt_len, pg.emitAnd(cond2, rec), pg.emitSucc());
 				});
 				this.defFunc(pg, 0, pg.T("matched"), "nextn", "px", "value", "length", () -> {
