@@ -1064,6 +1064,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			if (this.isDefined("Int8''")) {
 				sb.append(this.format("Int8''", indexMap[i] & 0xff));
+			} else if (this.isDefined("arraypair")) {
+				sb.append(this.format("arraypair", i, indexMap[i] & 0xff));
 			} else {
 				sb.append(indexMap[i] & 0xff);
 			}
@@ -1085,11 +1087,21 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		}
 		if (this.symbolList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
+			int c = 0;
 			sb.append(this.s("array"));
-			sb.append(this.vString(""));
+			if (this.isDefined("arraypair")) {
+				sb.append(this.format("arraypair", c, this.vString("")));
+			} else {
+				sb.append(this.vString(""));
+			}
 			for (Symbol s : this.symbolList) {
+				c++;
 				sb.append(delim);
-				sb.append(this.vString(s.getSymbol()));
+				if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", c, this.vString(s.getSymbol())));
+				} else {
+					sb.append(this.vString(s.getSymbol()));
+				}
 			}
 			sb.append(delim);
 			sb.append(this.vString("error"));
@@ -1099,22 +1111,43 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
+			int c = 0;
 			sb.append(this.s("array"));
+			if (this.isDefined("arraypair")) {
+				sb.append(this.format("arraypair", c, this.rawValue(new byte[0])));
+			} else {
+				sb.append(this.rawValue(new byte[0]));
+			}
 			sb.append(this.rawValue(new byte[0]));
 			for (byte[] s : this.valueList) {
 				sb.append(delim);
-				sb.append(this.rawValue(s));
+				c++;
+				if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", c, this.rawValue(s)));
+				} else {
+					sb.append(this.rawValue(s));
+				}
 			}
 			sb.append(this.s("end array"));
 			this.declConst(this.T("value"), "nezvalues", this.valueList.size() + 1, sb.toString());
 		}
 		if (this.valueList.size() >= 0) {
 			StringBuilder sb = new StringBuilder();
+			int c = 0;
 			sb.append(this.s("array"));
-			sb.append(this.vInt(0));
+			if (this.isDefined("arraypair")) {
+				sb.append(this.format("arraypair", c, this.vInt(0)));
+			} else {
+				sb.append(this.vInt(0));
+			}
 			for (byte[] s : this.valueList) {
 				sb.append(delim);
-				sb.append(this.vInt(s.length));
+				c++;
+				if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", c, this.vInt(s.length)));
+				} else {
+					sb.append(this.vInt(s.length));
+				}
 			}
 			sb.append(this.s("end array"));
 			this.declConst(this.T("length"), "nezvaluesizes", this.valueList.size() + 1, sb.toString());
@@ -1148,6 +1181,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				}
 				if (this.isDefined("Byte''")) {
 					sb.append(this.format("Byte''", b & 0xff));
+				} else if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", c, b & 0xff));
 				} else {
 					sb.append(b & 0xff);
 				}
@@ -1241,11 +1276,16 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined("Int32")) {
 			StringBuilder sb = new StringBuilder();
 			sb.append(this.s("array"));
+
 			for (int i = 0; i < 8; i++) {
 				if (i > 0) {
 					sb.append(delim);
 				}
-				sb.append(bs.bits()[i]);
+				if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", i, bs.bits()[i]));
+				} else {
+					sb.append(bs.bits()[i]);
+				}
 			}
 			sb.append(this.s("end array"));
 			return this.getConstName(this.s("Int32"), "charset", 8, sb.toString());
