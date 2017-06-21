@@ -14,14 +14,16 @@ String             = String
 Tree               = a
 structname         = %s a
 
-TtreeLog           = TreeLog a
-Tstate             = Maybe (State a)
+#TtreeLog          = TreeLog a
+#Tstate            = Maybe (State a)
 #TnewFunc          = @escaping (String,[UInt8],Int,Int,Int) -> Any?
 #TsetFunc          = @escaping (Any?,Int,String,Any?) -> Any?
 
 Some               = Just %s
 None               = Nothing
-None.isEmpty       = (isNothing %s)
+Option.isNone      = (isNothing %s)
+Option             = Maybe (%s)
+Option.get         = fromJust (%s)
 
 Int64->Int         = (fromIntegral %s)
 Int->Int64         = (fromIntegral %s)
@@ -32,7 +34,8 @@ Array.new          = []
 Array.size         = (length %s)
 Array.get          = (%s !! %s)
 Byte[].get         = (%s `index` %s)
-Array.slice        = (drop %s (take %s %s))
+#Array.slice       = (drop %s (take %s %s))
+Array.slice        = %1$s {-Fixme-}
 array              = [
 arrays             = ,
 end array          = ]
@@ -55,7 +58,7 @@ struct           = data %1$s a = %1$s {%2$s}
 record           = %2$s :: %1$s
 records          = ,
 
-object           = %1$s {%2$s} 
+object           = --%1$s {%2$s}
 objectparam      = %1$s=%2$s
 objectparams     = , 
 
@@ -63,7 +66,7 @@ getter           = (%2$s %1$s)
 setter           = S.put $ %1$s {%2$s = %3$s}
 
 functype         = (%3$s -> S.State (NezParserContext a) %1$s)
-functypeparam    = %1$s
+functypeparam    = (%1$s)
 functypeparams   = ->
 return           = return (%s)
 
@@ -76,16 +79,20 @@ function         = '''
 %2$s :: %4$s
 %2$s %3$s = do
 '''
+
 param    = %2$s
 params   =
 
 true             = True
 false            = False
-null             = Nothing
+int              = (%s)
 
 val              = let %2$s = %3$s
+#let (%2$s :: %1$s) = %3$s
 var              = let %2$s = %3$s
-assign           = let %s = %s
+#let (%2$s :: %1$s) = %3$s
+#assign          = let %s = %s
+letin            = let %2$s = %3$s in %4$s
 
 if               = if (%s) then
 else if          = else if (%s) then
@@ -119,17 +126,17 @@ TList.cons        = %s:%s
 
 imports = '''
 {-# LANGUAGE FlexibleContexts #-}
-module XML(parse) where
+module Testcase(parse) where
 import Prelude hiding (length,log)
 import Data.Word
 import qualified Control.Monad.State as S
-import Data.ByteString.Char8 hiding (putStrLn,replicate,take,drop,length)
+import Data.ByteString hiding (length,take,drop,replicate)
 import Data.Int
 import Data.Maybe
 
 '''
 
-def nezvalues = '''
+def2 nezvalues = '''
 nezvalues :: [ByteString]
 nezvalues = [pack data171]
 
@@ -138,9 +145,7 @@ nezvalues = [pack data171]
 libs = '''
 (%) = mod
 
-gettag = (!!) nezsymbols
-
-getlabel = gettag
+--getlabel = gettag
 '''
 
 
@@ -160,54 +165,95 @@ setter3          = S.put $ %1$s' {%2$s = %3$s, %4$s = %5$s, %6$s = %7$s}
 
 
 def newMemos   = '''
+
+data TreeLog a = TreeLog {lop :: Int,lpos :: Int,ltree :: a,lprev :: Maybe (TreeLog a),lnext :: Maybe (TreeLog a)}deriving (Eq)
+
+data State a = State {ntag :: Int,cnt :: Int,value :: ByteString,sprev :: Maybe (State a)}deriving (Eq)
+
+data MemoEntry a = MemoEntry {key :: Int64,result :: Int,mpos :: Int,mtree :: a,mstate :: Maybe (State a)}deriving (Eq)
+
+data NezParserContext a = NezParserContext {inputs :: ByteString,length :: Int,pos :: Int,headpos :: Int,tree :: a,treeLog :: Maybe (TreeLog a),newFunc :: ((String)->(ByteString)->(Int)->(Int)->([(String,a)]) -> S.State (NezParserContext a) a),state :: Maybe (State a),memos :: [MemoEntry a]}
+
+instance Eq (NezParserContext a) where
+  (==) x y = Prelude.foldl (\f p -> (f x == f y) && p ) True [inputs, length, pos, headpos, tree, treeLog, newFunc, state, memos]
+  (/=) x y = not . (==) x y
+
 newMemos tree' length' = replicate length' tree'
 
 '''
 
 def getMemo = '''
-getMemo :: (NezParserContext a->Int64 -> S.State (NezParserContext a) (MemoEntry a))
+getMemo :: ((NezParserContext a)->(Int64) -> S.State (NezParserContext a) (MemoEntry a))
 getMemo px' key' = do
   return (((memos px') !! (fromIntegral key' % (fromIntegral 257))))
 
 '''
 
-def storeM = '''
-storeM :: (NezParserContext a->Int->Int->Bool -> S.State (NezParserContext a) Bool)
-storeM px' memoPoint' pos' matched' = do
-  let key' = S.evalState (longkey (fromIntegral pos') memoPoint') ()
-  let m' = S.evalState (getMemo px' key') ()
-  S.put $ m' {key = key', result = if matched' then 1 else 0, mpos = if matched' then pos px' else pos', mtree = tree px'}
-  return matched'
+def nextByte = '''
+nextbyte :: ((NezParserContext a) -> S.State (NezParserContext a) Int)
+nextbyte px' = do
+  let c' = ((inputs px') `index` (pos px'))
+  S.put $ px' {pos = (pos px') + 1}
+  return $ fromIntegral (toInteger c')
 
 '''
 
-def logT = '''
-useTreeLog :: (NezParserContext a -> S.State (NezParserContext a) (TreeLog a))
+def back7 = '''
+back7 :: ((NezParserContext a)->(Int)->(TreeLog a)->(a)->(Maybe (State a)) -> S.State (NezParserContext a) Bool)
+back7 px' pos' treeLog' tree' state' = do
+  S.put $ px' {pos = (S.evalState (backpos px' pos') px'), treeLog = treeLog', tree = tree', state = state'}
+  return (True)
+
+'''
+
+def many7 = '''
+many7 :: ((NezParserContext a)->(((NezParserContext a) -> S.State (NezParserContext a) Bool)) -> S.State (NezParserContext a) Bool)
+many7 px' f' = do
+  let (pos' :: Int) = (pos px')
+  let (treeLog' :: Maybe (TreeLog a)) = (treeLog px')
+  let (tree' :: a) = (tree px')
+  let (state' :: Maybe (State a)) = (state px')
+  return ((if ((S.evalState (f' px') px')) then ((S.evalState (many7 px' f') px')) else ((S.evalState (back7 px' pos' treeLog' tree' state') px'))))
+
+'''
+
+def storeM = '''
+storeM :: ((NezParserContext a)->(Int)->(Int)->(Bool) -> S.State (NezParserContext a) Bool)
+storeM px' memoPoint' pos' matched' = do
+  let oldmemo = memos px'
+  let key' = (S.evalState (longkey (fromIntegral pos') memoPoint') px')
+  let m' = (S.evalState (getMemo px' key') px')
+  S.put $ px' {memos =  rewiriteList oldmemo key' (m' {key = key', result = if matched' then 1 else 0, mpos = if matched' then pos px' else pos', mtree = tree px', mstate = (state px')})}
+  return (matched')
+  where
+    rewiriteList xs i v = let k = fromIntegral i in (take k xs) `mappend` (v : drop (k+1) xs)
+
+'''
+
+def2 logT = '''
+useTreeLog :: ((NezParserContext a) -> S.State (NezParserContext a) (TreeLog a))
 useTreeLog px' = do
-  tcur' <-treeLog px'
-  if isNothing (lnext tcur') then
-    do
-      let newtl = TreeLog {lop=0,lpos=0,ltree=Nothing,lprev=(treeLog px'),lnext=Nothing}
-      S.put $ px' {treeLog = Just (tcur' {lnext = Just newtl})}
-      return $ Just newtl
-  else S.put px' >> return $ lnext tcur'
+  let tcur' = (treeLog px')
+  if ((lnext tcur') == Nothing) then
+    S.put $ tcur' {lnext = Just TreeLog {lop=0,lpos=0,ltree=Nothing,lprev=(treeLog px'),lnext=Nothing}} >> return ((lnext tcur'))
+    else return ((lnext tcur'))
 
 logT :: (NezParserContext a->Int->Int->a -> S.State (NezParserContext a) Bool)
 logT px' lop' lpos' tree' = do
-  let tcur' = S.evalState (useTreeLog px') ()
+  let tcur' = S.evalState (useTreeLog px') px'
   S.put $ px' {treeLog = (tcur' {lop = lop', lpos = lpos', ltree = tree'})}
   return True
 
 '''
 
-def tagT = '''
-tagT :: (NezParserContext a->Int -> S.State (NezParserContext a) Bool)
+def2 tagT = '''
+tagT :: (NezParserContext a->Int -> (S.State (NezParserContext a) Bool))
 tagT px' ntag' = do
   return (S.evalState (logT px' 1 ntag' (tree px')) px')
 
 '''
 
-def beginT = '''
+def2 beginT = '''
 beginT :: (NezParserContext a->Int -> S.State (NezParserContext a) Bool)
 beginT px' shift' = do
   return (S.evalState (logT px' 0 ((pos px') + shift') (tree px')) px')
@@ -215,17 +261,17 @@ beginT px' shift' = do
 '''
 
 def backpos = '''
-backpos :: (NezParserContext a->Int -> S.State (NezParserContext a) Int)
-backpos px' pos'
-  | (headpos px') < pos' = do
-                           S.put $ px' {headpos = pos'}
-                           return pos'
-  | otherwise = return pos'
+backpos :: ((NezParserContext a)->(Int) -> S.State (NezParserContext a) Int)
+backpos px' pos' = do
+  if ((headpos px') < pos') then
+    S.put (px' {headpos = pos'}) >> return pos'
+    else return (pos')
+
 
 '''
 
 
-def endT = '''
+def2 endT = '''
 endT :: NezParserContext a -> Int -> String -> S.State (NezParserContext a) Bool
 endT px shift ntag0 = do
   let epos = pos px + shift
@@ -252,9 +298,34 @@ endT px shift ntag0 = do
          if lop tcur == 3 then {-S.put px {tree = set(tree px) (cnt'-1) (getlabel (lpos tcur')) (ltree tcur')} >>-} rLog (lprev tcur) (cnt - 1)
                           else rLog (lprev tcur) cnt
 
+
 '''
 
-def parse = '''
+def endT = '''
+recT :: ((NezParserContext a)->(TreeLog a)->(Int)->(Int)->(Int)->([(String,a)]) -> S.State (NezParserContext a) (Maybe (TreeLog a)))
+recT px' tcur' ntag' nvalue' epos' subTrees' = do
+  return ((if ((lop tcur') == 0) then ((if (nvalue' == 0) then ((S.evalState ((newFunc px') (S.evalState (gettag ntag') px') (inputs px') (lpos tcur') epos' subTrees') px')) else ((S.evalState ((newFunc px') (S.evalState (gettag ntag') px') (S.evalState (getvalue nvalue') px') 0 (S.evalState (getlength nvalue') px') subTrees') px')))) else ((S.evalState (recT px' (lprev tcur') (if (ntag' == 0 && (lop tcur') == 1) then ((lpos tcur')) else (ntag')) (if (nvalue' == 0 && (lop tcur') == 2) then ((lpos tcur')) else (nvalue')) epos' (if ((lop tcur') == 3) then ((S.evalState (getlabel (lpos tcur')) px'):(ltree tcur')) else (subTrees'))) px'))))
+
+rLog :: ((TreeLog a) -> S.State (NezParserContext a) (TreeLog a))
+rLog tcur' = do
+  return ((if ((lop tcur') == 0) then ((lprev tcur')) else ((S.evalState (rLog (lprev tcur')) px'))))
+
+endT :: ((NezParserContext a)->(Int)->(Int) -> S.State (NezParserContext a) Bool)
+endT px' shift' ntag' = do
+  S.put $ px' {tree = (S.evalState (recT px' (treeLog px') ntag' 0 (pos px') + shift' []) px'), treeLog = (S.evalState (rLog (treeLog px')) px')}
+  return (True)
+
+
+'''
+
+def recT = '''
+recT :: ((NezParserContext a)->(TreeLog a)->(Int)->(Int)->(Int)->([(String,a)]) -> S.State (NezParserContext a) (Maybe (TreeLog a)))
+recT px' tcur' ntag' nvalue' epos' subTrees' = do
+  return ((if ((lop tcur') == 0) then ((if (nvalue' == 0) then ((S.evalState ((newFunc px') (S.evalState (gettag ntag') px') (inputs px') (lpos tcur') epos' subTrees') px')) else ((S.evalState ((newFunc px') (S.evalState (gettag ntag') px') (S.evalState (getvalue nvalue') px') 0 (S.evalState (getlength nvalue') px') subTrees') px')))) else ((S.evalState (recT px' (lprev tcur') (if (ntag' == 0 && (lop tcur') == 1) then ((lpos tcur')) else (ntag')) (if (nvalue' == 0 && (lop tcur') == 2) then ((lpos tcur')) else (nvalue')) epos' (if ((lop tcur') == 3) then ((S.evalState (getlabel (lpos tcur')) px'):(ltree tcur')) else (subTrees'))) px'))))
+
+'''
+
+def2 parse = '''
 parse :: ([Word8]->Int->(String->[Word8]->Int->Int->[(String,a)] -> S.State (NezParserContext a) a) -> S.State (NezParserContext a) a)
 parse inputs' length' newFunc' = do
   let tree' = (S.evalState (newFunc' (S.evalState (gettag 0) px') inputs' 0 length' []) px')
@@ -265,9 +336,16 @@ parse inputs' length' newFunc' = do
 
 '''
 
-def newAST2 = '''
+def2 newAST2 = '''
 newAST tag inputs pos epos 0 = [(tag, (take pos (drop epos) inputs))]
 newAST tag inputs pos epos _ = [([], [])]--ok???
 
 subAST parent n label child = parent
+'''
+
+def rnextn = '''
+rnextn :: ((NezParserContext a)->(ByteString)->(Int)->(Int) -> S.State (NezParserContext a) Bool)
+rnextn px' value' cnt' length' = do
+  return ((if (cnt' < length') then ((S.evalState (next1 px' (fromIntegral (toInteger (value' `index` cnt')))) px') && (S.evalState (rnextn px' value' (cnt' + (1)) length') px')) else (True)))
+
 '''
