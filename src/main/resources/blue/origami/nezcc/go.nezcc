@@ -1,0 +1,246 @@
+# nezcc file
+
+extension          = go
+
+#Go言語はクラスベースのオブジェクト指向言語では無い、構造体を定義し、その型の変数に作用するメソッドを記述する形式。
+#すなわち、メソッドは構造体の定義外に書く。JSのプロトタイプみたいな感じ
+#また、publicなフィールドにする場合はフィールド名の先頭を大文字にする。これは対応可能か
+
+#3項演算子(bool) : x ? y : z => x and y or z
+
+
+# type
+
+Bool               = bool
+Byte               = rune
+Byte[]             = []rune
+Int                = int64
+Int64              = int64
+Array              = []%s
+String             = string
+Tree               = unsafe.Pointer
+
+TtreeLog           = *TreeLog
+Tstate             = *State
+Tpx                = *NezParserContext
+Tm                 = *MemoEntry
+Tmemos             = []*MemoEntry
+
+Byte[]->String   = string(%s)
+String->Byte[]   = []rune(%s)
+
+Array.size       = int64(len(%s))
+Array.get        = %s[%s]
+Array.new        = make([]%s,%s)
+Array.slice      = %s[%s:%s]
+
+# syntax
+
+comment          = /* %s */
+begin            = {
+end              = }
+;                = ;
+
+struct           = type %s struct {
+end struct       = }
+field            = %2$s %1$s
+constructor      = '''
+}
+func New%1$s(%2$s) *%1$s {
+    obj := new(%1$s)
+'''
+
+end constructor  = return obj
+init             = obj.%s = %s
+new              = New%s
+
+getter           = %s.%s
+setter           = %s.%s = %s
+
+#Go cannot define const array
+const            = const %2$s %1$s = %3$s
+const_array      = var %2$s = []%1$s %4$s
+
+varname          = %s
+constname        = %s
+
+function         = '''
+func %2$s(%3$s) (ret %1$s) {
+    var _ret interface{}
+    defer func() %1$s{
+        ret, _ = _ret.(%1$s)
+        return ret
+    }()
+'''
+
+param            = %2$s %1$s
+#paraminit        = %2$s=%3$s
+params           = ,
+return           = '''
+_ret = %s
+return ret
+'''
+
+cast             = (%s)(%s)
+
+#group            = (%s)
+
+and              = %s && %s
+or               = (%s) || (%s)
+not              = ! (%s)
+
+if               = if %s {
+end if           = }
+else             = else {
+end else         = }
+else if          = else if %s {
+while            = for %s {
+switch           = switch %s {
+end switch       = }
+case             = case %s : %s
+default          = default : %s
+
+funccall         = %s(%s)
+args             = ,
+
+functype         = type %2$s func(%3$s)(%1$s)
+functypeparam    = %2$s %1$s
+functypeparams   = ,
+#apply            = %s.apply
+
+val              = var %2$s %1$s = %3$s
+var              = var %2$s %1$s = %3$s
+assign           = %s = %s
+#assign           = reflect.ValueOf(&%s).Elem().Set(reflect.ValueOf(%s))
+
+true             = true
+false            = false
+null             = nil
+
+#lambda           = func(%s){return %s}
+#funcref          = %s
+
+array             = {
+arrays            = ,
+end array         = }
+
+delim = ,
+options = inline
+
+imports = '''
+package main
+import (
+    "fmt"
+    "unsafe"
+    "os"
+    "reflect"
+)
+/*    aaaaaaaaaaaaaaaa */
+'''
+
+def ifexpr = '''
+func IfExpr(cond bool, a bool, b bool) bool {
+    if cond {
+        return a
+    }
+    return b
+}
+'''
+
+def ifexprTree = '''
+func IfExpr(cond bool, a Tree, b Tree) Tree {
+    if cond {
+        return a
+    }
+    return b
+}
+'''
+
+def ifexprState = '''
+func IfExpr(cond bool, a State, b State) State {
+    if cond {
+        return a
+    }
+    return b
+}
+'''
+
+def AST = '''
+type AST struct {
+    key []rune
+    value unsafe.Pointer
+}
+
+func NewAST(key []rune, value unsafe.Pointer) *AST {
+    ast := new(AST)
+    ast.key = key
+    ast.value = value
+    return &ast
+}
+
+func (ast AST) set(n int, label []rune, child unsafe.Pointer) *AST {
+    ((*[]AST)(ast.value))[n] = NewAST(label, child)
+    return &ast
+}
+'''
+
+def newAST = '''
+func newAST(tag int, inputs []rune, pos int, epos int, size int) *AST{
+    if size == 0 {
+        return NewAST(tag, inputs[pos:epos-pos])
+    } else {
+        return NewAST(tag, unsafe.Pointer(&new([size]AST)))
+    }
+}
+'''
+
+def subAST = '''
+func subAST(parent unsafe.Pointer, n int, lavel []rune, child unsafe.Pointer) {
+    childs := (*[]AST)(parent.value)
+    childs[n] = NewAST(label,child)
+    (*AST)(parent.value) = childs;
+    return unsafe.Pointer(&parent)
+}
+'''
+
+mainparams = newAST, subAST
+main = '''
+func readInputs(name String) *[]rune {
+    var buf []rune;
+    fp, err := os.Open(name)
+    if err != nil {
+        panic(err)
+    }
+    defer fp.Close()
+
+    scanner := bufio.NewScanner(fp)
+    for scanner.Scan() {
+        append(buf, []rune(scanner.Text()))
+    }
+    return &buf
+}
+
+
+func main(){
+    for i,v := range os.Args {
+        if i == 0 {
+            continue
+        }
+
+        buf := readInputs(v)
+        t   := parse(buf, len(buf)-1, newAST, subAST)
+        fmt.Println("%s is parsed", v)
+    }
+}
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+
+ go run $|base|.php <file> or <input-text>
+
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''
