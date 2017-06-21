@@ -34,8 +34,7 @@ Array.new          = []
 Array.size         = (length %s)
 Array.get          = (%s !! %s)
 Byte[].get         = (%s `index` %s)
-#Array.slice       = (drop %s (take %s %s))
-Array.slice        = %1$s {-Fixme-}
+Array.slice        = (Data.ByteString.drop %2$s (Data.ByteString.take %3$s %1$s))
 array              = [
 arrays             = ,
 end array          = ]
@@ -54,11 +53,11 @@ end              =
 
 #module          = module $|base|(parse) where
 #end module      =
-struct           = data %1$s a = %1$s {%2$s}
+struct           = --data %1$s a = %1$s {%2$s}
 record           = %2$s :: %1$s
 records          = ,
 
-object           = --%1$s {%2$s}
+object           = %1$s {%2$s}
 objectparam      = %1$s=%2$s
 objectparams     = , 
 
@@ -129,22 +128,22 @@ imports = '''
 module Testcase(parse) where
 import Prelude hiding (length,log)
 import Data.Word
+import qualified Data.ByteString.Char8 as C
 import qualified Control.Monad.State as S
-import Data.ByteString hiding (length,take,drop,replicate)
+import Data.ByteString hiding (length,replicate)
 import Data.Int
 import Data.Maybe
 
 '''
 
-def2 nezvalues = '''
+＃Not reflected
+def nezvalues = '''
 nezvalues :: [ByteString]
-nezvalues = [pack data171]
-
+nezvalues = fmap pack [data178, data179]
 '''
 
 libs = '''
 (%) = mod
-
 --getlabel = gettag
 '''
 
@@ -165,20 +164,15 @@ setter3          = S.put $ %1$s' {%2$s = %3$s, %4$s = %5$s, %6$s = %7$s}
 
 
 def newMemos   = '''
-
-data TreeLog a = TreeLog {lop :: Int,lpos :: Int,ltree :: a,lprev :: Maybe (TreeLog a),lnext :: Maybe (TreeLog a)}deriving (Eq)
+data TreeLog a = TreeLog {lop :: Int,lpos :: Int,ltree :: a,lprev :: Maybe (TreeLog a),lnext :: Maybe (TreeLog a)}
 
 data State a = State {ntag :: Int,cnt :: Int,value :: ByteString,sprev :: Maybe (State a)}deriving (Eq)
 
-data MemoEntry a = MemoEntry {key :: Int64,result :: Int,mpos :: Int,mtree :: a,mstate :: Maybe (State a)}deriving (Eq)
+data MemoEntry a = MemoEntry {key :: Int64,result :: Int,mpos :: Int,mtree :: a,mstate :: Maybe (State a)}
 
 data NezParserContext a = NezParserContext {inputs :: ByteString,length :: Int,pos :: Int,headpos :: Int,tree :: a,treeLog :: Maybe (TreeLog a),newFunc :: ((String)->(ByteString)->(Int)->(Int)->([(String,a)]) -> S.State (NezParserContext a) a),state :: Maybe (State a),memos :: [MemoEntry a]}
 
-instance Eq (NezParserContext a) where
-  (==) x y = Prelude.foldl (\f p -> (f x == f y) && p ) True [inputs, length, pos, headpos, tree, treeLog, newFunc, state, memos]
-  (/=) x y = not . (==) x y
-
-newMemos tree' length' = replicate length' tree'
+newMemos tree' length' = replicate length' MemoEntry { key = -1, result = 0, mpos = 0, mtree = tree', mstate = Nothing}
 
 '''
 
@@ -189,24 +183,33 @@ getMemo px' key' = do
 
 '''
 
-def nextByte = '''
-nextbyte :: ((NezParserContext a) -> S.State (NezParserContext a) Int)
-nextbyte px' = do
-  let c' = ((inputs px') `index` (pos px'))
-  S.put $ px' {pos = (pos px') + 1}
-  return $ fromIntegral (toInteger c')
+＃Not reflected
+def getByte = '''
+getbyte :: ((NezParserContext a) -> S.State (NezParserContext a) Int)
+getbyte px' = do
+  return $ fromIntegral $ toInteger $ (inputs px') `index` (pos px')
 
 '''
 
+＃Not reflected
+def nextByte = '''
+nextbyte :: ((NezParserContext a) -> S.State (NezParserContext a) Int)
+nextbyte px' = do
+  S.put $ px' {pos = (pos px') + (1)}
+  return $ fromIntegral $ (toInteger::Word8->Integer) $ (inputs px') `index` (pos px')
+
+'''
+
+＃Not reflected
 def back7 = '''
-back7 :: ((NezParserContext a)->(Int)->(TreeLog a)->(a)->(Maybe (State a)) -> S.State (NezParserContext a) Bool)
+back7 :: ((NezParserContext a)->(Int)->(Maybe (TreeLog a))->(a)->(Maybe (State a)) -> S.State (NezParserContext a) Bool)
 back7 px' pos' treeLog' tree' state' = do
   S.put $ px' {pos = (S.evalState (backpos px' pos') px'), treeLog = treeLog', tree = tree', state = state'}
   return (True)
 
 '''
 
-def many7 = '''
+def2 many7 = '''
 many7 :: ((NezParserContext a)->(((NezParserContext a) -> S.State (NezParserContext a) Bool)) -> S.State (NezParserContext a) Bool)
 many7 px' f' = do
   let (pos' :: Int) = (pos px')
@@ -226,23 +229,25 @@ storeM px' memoPoint' pos' matched' = do
   S.put $ px' {memos =  rewiriteList oldmemo key' (m' {key = key', result = if matched' then 1 else 0, mpos = if matched' then pos px' else pos', mtree = tree px', mstate = (state px')})}
   return (matched')
   where
-    rewiriteList xs i v = let k = fromIntegral i in (take k xs) `mappend` (v : drop (k+1) xs)
+    rewiriteList xs i v = let k = fromIntegral i in (Prelude.take k xs) `mappend` (v : Prelude.drop (k+1) xs)
 
 '''
 
-def2 logT = '''
-useTreeLog :: ((NezParserContext a) -> S.State (NezParserContext a) (TreeLog a))
+def logT = '''
+useTreeLog :: ((NezParserContext a) -> S.State (NezParserContext a) (Maybe (TreeLog a)))
 useTreeLog px' = do
-  let tcur' = (treeLog px')
-  if ((lnext tcur') == Nothing) then
-    S.put $ tcur' {lnext = Just TreeLog {lop=0,lpos=0,ltree=Nothing,lprev=(treeLog px'),lnext=Nothing}} >> return ((lnext tcur'))
-    else return ((lnext tcur'))
+  let tcur' = fromJust ((treeLog px'))
+  if ((isNothing (lnext tcur'))) then
+    S.put (px' {treeLog = Just (tcur' {lnext = Just TreeLog {lop=(0),lpos=(0),ltree=(tree px'),lprev=(treeLog px'),lnext=Nothing}})}) >> return ((lnext tcur'))
+  else return ((lnext tcur'))
 
-logT :: (NezParserContext a->Int->Int->a -> S.State (NezParserContext a) Bool)
+logT :: ((NezParserContext a)->(Int)->(Int)->(a) -> S.State (NezParserContext a) Bool)
 logT px' lop' lpos' tree' = do
-  let tcur' = S.evalState (useTreeLog px') px'
-  S.put $ px' {treeLog = (tcur' {lop = lop', lpos = lpos', ltree = tree'})}
-  return True
+  let treeLog' = (S.evalState (useTreeLog px') px')
+  let tcur' = fromJust (treeLog')
+  S.put $ px' {treeLog = Just (tcur' {lop = lop', lpos = lpos', ltree = tree'})}
+  return (True)
+
 
 '''
 
@@ -325,13 +330,26 @@ recT px' tcur' ntag' nvalue' epos' subTrees' = do
 
 '''
 
-def2 parse = '''
-parse :: ([Word8]->Int->(String->[Word8]->Int->Int->[(String,a)] -> S.State (NezParserContext a) a) -> S.State (NezParserContext a) a)
+def parse = '''
+parse :: ((ByteString)->(Int)->(((String)->(ByteString)->(Int)->(Int)->([(String,a)]) -> a)) -> S.State (NezParserContext a) a)
 parse inputs' length' newFunc' = do
-  let tree' = (S.evalState (newFunc' (S.evalState (gettag 0) px') inputs' 0 length' []) px')
-  let px' = NezParserContext {inputs=inputs',length=length',pos=0,headpos=0,tree=tree',treeLog=Just (TreeLog {lop=0,lpos=0,ltree=tree',lprev=Nothing,lnext=Nothing}),newFunc=(if (newFunc' == Nothing) then (newAST) else (newFunc')),state=Nothing,memos=(S.evalState (newMemos tree' 257) px')}
-  let tree' = (if ((S.evalState (e0 px') px')) then ((tree px')) else ((S.evalState (newFunc' (S.evalState (gettag nezerror) px') inputs' (headpos px') length' []) px')))
-  return (tree')
+  let tree' = newFunc' (Prelude.head nezsymbols) inputs' 0 length' []
+  let px' = NezParserContext {inputs=inputs'
+                            , length=length'
+                            , pos=(0),headpos=(0)
+                            , tree=tree'
+                            , treeLog=Just TreeLog {lop=(0),lpos=(0),ltree=tree',lprev=Nothing,lnext=Nothing}
+                            , newFunc = \p q r s t -> return $ newFunc' p q r s t
+                            , state=Nothing
+                            , memos=(newMemos tree' 193)}
+  return (if ((S.evalState (e0 px') px')) then ((tree px')) else newFunc' (S.evalState (gettag nezerror) px') inputs' (headpos px') length' [])
+
+parseText :: ((String)->(((String)->(ByteString)->(Int)->(Int)->([(String,a)]) -> a)) -> S.State (NezParserContext a) a)
+parseText text' newFunc' = do
+    let inputs' = C.pack text'
+    let length' = (C.length inputs')
+    px' <- S.get
+    return $ S.evalState (parse inputs' length' newFunc') px'
 
 
 '''
