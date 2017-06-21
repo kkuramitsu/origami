@@ -1309,7 +1309,11 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				if (i > 0) {
 					sb.append(delim);
 				}
-				sb.append(bs.is(i) ? this.s("true") : this.s("false"));
+				if (this.isDefined("arraypair")) {
+					sb.append(this.format("arraypair", i, bs.is(i) ? this.s("true") : this.s("false")));
+				} else {
+					sb.append(bs.is(i) ? this.s("true") : this.s("false"));
+				}
 			}
 			sb.append(this.s("end array"));
 			String literal = sb.toString();
