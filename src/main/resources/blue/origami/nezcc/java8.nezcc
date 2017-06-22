@@ -1,5 +1,6 @@
 # nezcc file
 
+options            = duallink
 extension          = java
 
 # type

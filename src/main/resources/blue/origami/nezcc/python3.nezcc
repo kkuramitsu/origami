@@ -6,11 +6,8 @@ extension          = py
 
 Bool               = 
 Byte               = 
-Byte[]             = 
 Int                = 
-#Int64              = 
 Array              = 
-Symbol             = 
 Tree               = 
 
 Byte[]->String   = %s.decode('utf-8')

@@ -1104,7 +1104,11 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				}
 			}
 			sb.append(delim);
-			sb.append(this.vString("error"));
+			if (this.isDefined("arraypair")) {
+				sb.append(this.format("arraypair", c, this.vString("err")));
+			} else {
+				sb.append(this.vString("err"));
+			}
 			sb.append(this.s("end array"));
 			this.declConst(this.s("Symbol"), "nezsymbols", this.symbolList.size() + 2, sb.toString());
 			this.declConst(this.s("Int"), "nezerror", -1, "" + (this.symbolList.size() + 1));
@@ -1118,7 +1122,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			} else {
 				sb.append(this.rawValue(new byte[0]));
 			}
-			sb.append(this.rawValue(new byte[0]));
+			// sb.append(this.rawValue(new byte[0]));
 			for (byte[] s : this.valueList) {
 				sb.append(delim);
 				c++;
