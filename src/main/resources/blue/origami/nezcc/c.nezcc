@@ -1,6 +1,7 @@
 # c.nezcc
 # very fast c parser recipe 
 
+options            = duallink
 extension          = c
 
 # type

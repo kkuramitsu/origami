@@ -1,5 +1,6 @@
 # nezcc file
 
+options            = duallink
 extension          = cs
 
 # type
@@ -8,7 +9,7 @@ Bool               = bool
 Byte               = byte
 Byte[]             = byte[]
 Int                = int
-Int64              = long
+Int64              = uint64/*long*/
 Array              = %s[]
 Tree               = T
 String             = string
@@ -33,7 +34,6 @@ MemoList.new      = new List<%s>()
 MemoList.get      = %s[%s]
 MemoList.add      = %s.Add(%s)
 
-
 # syntax
 
 comment          = // %s
@@ -55,8 +55,8 @@ new              = new %s<T>
 
 const            = static %1$s %2$s = %3$s;
 
-function         = private static  %1$s %2$s<T>(%3$s) where T : SimpleTree{
-function1        = public static  %1$s %2$s<T>(%3$s) where T : SimpleTree{
+function         = private static %1$s %2$s<T>(%3$s) where T : SimpleTree {
+function1        = public static %1$s %2$s<T>(%3$s) where T : SimpleTree {
 return           = return %s;
 
 #apply            = %s.apply
@@ -68,6 +68,7 @@ while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
 #default         = default : %s
+ifexpr           = (%s) ? (%s) : (%s)
 
 lambda           = (%s) => %s
 
