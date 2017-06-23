@@ -4,16 +4,21 @@ extension          = rkt
 
 # type
 
-Byte[]->String   = (bytes->string/utf-8 %s)
-String->Byte[]   = (string->bytes/utf-8 %s)
+Byte[]->String   = (make-bytes 1 %s)
+String->Byte[]   = (bytes-ref %s 0)
 
-Byte[].get       = (string->bytes/utf-8 (substring %1$s %2$s (+ %2$s 1)))
-Byte[].quote     = "%s"
+#Byte[].get       = (string->bytes/utf-8 (substring %1$s %2$s (+ %2$s 1)))
+#Byte[].quote     = "%s"
 
 Array.size       = (vector-length %s)
 Array.get        = (vector-ref %s %s)
 Array.new        = (make-vector %2$s)
 Array.slice      = (vector-drop (vector-take %1$s %3$s) %2$s)
+
+#In case of AST2
+TreeList            = TreeList%
+TreeList.empty      = null
+TreeList.cons       = (new TreeList%% [label %s] [tree %s] [next %s])
 
 # syntax
 
@@ -77,6 +82,71 @@ default          = [_ %s]
 
 lambda           = (lambda (%s) %s)
 
+group            = %s
+
+def newtree = '''
+(define TreeList% (class object% (super-new)
+  (init label tree next)
+    (field [_label label])
+    (field [_tree tree])
+    (field [_next next])
+
+    (define/public (strOut sb)
+      (define cur this)
+      (send cur rStrOut cur sb)
+    )
+
+    (define/private (rStrOut cur sb)
+      (if (null? cur)
+        void
+        (begin
+          (set! sb (string-append sb " "))
+          (if (and (not (null? (get-field _label cur))) (> (string-length (get-field _label cur)) 0))
+            (set! sb (string-append (string-append (string-append sb "$") (get-field _label cur)) "="))
+            void
+          )
+          (send (get-field _tree cur) strOut sb)
+          (send cur rStrOut (get-field _next cur) sb)
+        )
+      )
+    )
+  )
+)
+
+(define Tree% (class object% (super-new)
+  (init key value)
+    (field [_key key])
+    (field [_value value])
+
+    (define/public (toString )
+      (define sb "")
+      (send this StrOut sb)
+      sb
+    )
+
+    (define/private (strOut sb)
+      (set! sb (string-append sb "[#"))
+      (set! sb (string-append sb (get-field _key this)))
+      (if (is-a? (get-field _value this) TreeList%)
+        (send (get-field _value this) strOut sb)
+        (begin
+          (set! sb (string-append sb " '"))
+          (set! sb (string-append sb (get-field _value this)))
+          (set! sb (string-append sb "'"))
+        )
+      )
+      (set! sb (string-append sb "]"))
+    )
+
+  )
+)
+
+(define (newtree tag inputs pos epos subs)
+  (new Tree% [key tag] [value (if (null? subs) (vector-drop (vector-take inputs epos) pos) subs)])
+)
+'''
+
+# else
 def backpos = '''
 (define (backpos px pos)
   (if (< (get-field _headpos px) pos)
@@ -86,7 +156,7 @@ def backpos = '''
   pos
 )
 '''
-
+# to return byte
 def nextbyte = '''
 (define (nextbyte px)
   (define c (vector-ref (get-field _inputs px) (get-field _pos px)))
@@ -95,6 +165,7 @@ def nextbyte = '''
 )
 '''
 
+# end 0
 def getbyte = '''
 (define (getbyte px)
  (define b (vector-ref (get-field _inputs px) (get-field _pos px) ))
@@ -102,60 +173,19 @@ def getbyte = '''
 )
 '''
 
-def endT = '''
-(define (gettag ntag)
-  (vector-ref nezsymbols ntag)
-)
-(define (getlabel nlabel)
-  (vector-ref nezsymbols nlabel)
-)
-(define (getvalue nvalue)
-  (vector-ref nezvalues nvalue)
-)
-(define (getlength nvalue)
-  (vector-ref nezvaluesizes nvalue)
-)
-(define (recT px tcur ntag nvalue epos cnt)
-  (if (= (get-field _op tcur) 0) (begin
-                                            (set-field! _tree px (if (= nvalue 0) (begin ((get-field _newFunc px)
-                                                                          (gettag ntag)
-                                                                          (get-field _inputs px)
-                                                                          (get-field _log tcur) epos cnt)
-                                                                  )
-                                                                  (begin ((get-field _newFunc px) (gettag ntag) (getvalue nvalue) 0 (getlength nvalue) cnt))))
-                                            (set! tcur (get-field _treeLog px))
-                                            (rLog (get-field _treeLog px) cnt px)
-                                          )
-               (begin (recT px (get-field _prevLog tcur) (if (and (= ntag 0) (= (get-field _op tcur) 1)) (begin (get-field _log tcur)) (begin ntag)) (if (and (= nvalue 0) (= (get-field _op tcur) 2)) (begin (get-field _log tcur)) (begin nvalue)) epos (if (= (get-field _op tcur) 3) (begin (+ cnt 1)) (begin cnt)))))
-)
-(define (rLog tcur cnt px)
-  (if (= (get-field _op tcur) 0) (begin (get-field _prevLog tcur))
-                                 (begin
-                                      (if (= (get-field _op tcur) 3) (begin (set! cnt (- cnt 1)) (set-field! _tree px ((get-field _setFunc px) (get-field _tree px) cnt (getlabel (get-field _log tcur)) (get-field _tree tcur)))) (begin cnt))
-                                      (rLog (get-field _prevLog tcur) cnt px)))
-)
-(define (endT px shift ntag)
-  (set-field! _treeLog px (recT px (get-field _treeLog px) ntag 0 (+ (get-field _pos px) shift) 0))
+def logT = '''
+(define (logT px lop lpos tree)
+  (define treeLog (new TreeLog% [lop lop] [lpos lpos] [ltree tree] [lprev (get-field _treeLog px)] ))
+  (set-field! _treeLog px treeLog)
   #t
 )
 '''
-def tagT = '''
-(define (tagT px ntag)
-  (logT px 1 ntag (make-vector 0 null))
-)
-'''
 
-def beginT = '''
-(define (beginT px shift)
-   (logT px 0 (+ (get-field _pos px) shift) (make-vector 0 null))
-)
-'''
-
-def newMemos = '''
+def parse = '''
 (define (rMemo memos tree cnt length)
   (if (< cnt length)
       (begin
-        (vector-set! memos cnt (new MemoEntry% [key -1] [memoPoint -1] [result 0] [pos 0] [tree tree] [state null]))
+        (vector-set! memos cnt (new MemoEntry% [key -1] [mpoint -1] [result 0] [mpos 0] [mtree tree] [mstate null]))
         (rMemo memos tree (+ cnt 1) length)
       )
       (begin memos)
@@ -165,32 +195,11 @@ def newMemos = '''
 (define (newMemos tree length)
   (rMemo (make-vector length) tree 0 length)
 )
-'''
 
-def logT = '''
-(define (useTreeLog px)
-  (define tcur (get-field _treeLog px))
-  (match (get-field _nextLog tcur)
-    [null (set-field! _nextLog tcur (new TreeLog% [op 0] [log 0] [tree (make-vector 0 null)] [prevLog (get-field _treeLog px)] [nextLog null]))]
-  )
-  (get-field _nextLog tcur)
-)
-
-(define (logT px op log tree)
-  (define tcur (useTreeLog px))
-  (set-field! _op tcur op)
-  (set-field! _log tcur log)
-  (set-field! _tree tcur tree)
-  (set-field! _treeLog px tcur)
-  #t
-)
-'''
-
-def parse = '''
-(define (parse inputs length newFunc setFunc)
-  (define tree (newFunc (gettag 0) inputs 0 length 0))
-  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [op 0] [log 0] [tree tree] [prevLog null] [nextLog null])] [newFunc (if (null? newFunc) (begin newAST) (begin newFunc))] [setFunc (if (null? setFunc) (begin subAST) (begin setFunc))] [state null] [memos (newMemos tree 257)]))
-  (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newFunc (gettag nezerror) inputs (get-field _headpos px) length 0))))
+(define (parse inputs length)
+  (define tree (newtree (gettag 0) inputs 0 length null))
+  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [lop 0] [lpos 0] [ltree tree] [lprev null])] [state null] [memos (newMemos tree 257)]))
+  (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newtree (gettag nezerror) inputs (get-field _headpos px) length null))))
   tree
 )
 '''
@@ -202,24 +211,29 @@ libs = '''
 '''
 
 def newAST = '''
-(define (newAST tag inputs pos epos size)
-  (if (= size 0)
-    (vector tag (string-append* (vector->list (vector-map bytes->string/utf-8 (vector-drop (vector-take inputs epos) pos) ))) )
-    (vector tag (make-vector 0 null))
-  )
-)
 '''
 
 def subAST = '''
-(define (subAST parent n label child)
-  (define len (vector-length (vector-ref parent 1)))
-  (if (< n len) #t (vector-set! parent 1 (vector-append (vector-ref parent 1) (make-vector (- n (- len 1)) null) )))
-  (vector-set! (vector-ref parent 1) n (vector label child))
-  parent
-)
 '''
 
 main = '''
+(define (print_tlist t)
+  (print (string-append* (list " $" (get-field _label t) "=")))
+  (print_tree (get-field _tree t))
+  (define next (get-field _next t))
+  (if (null? next) null (print_tlist next))
+)
+
+(define (print_tree tree)
+  (print (string-append* (list "[" (get-field _key tree))))
+  (define t (get-field _value tree))
+  (if (vector? t)
+      (print (bytes-append* (vector->list t)))
+      (print_tlist t)
+  )
+  (print "]")
+)
+
 (define (read_inputs file-name)
   (let ((p (open-input-file file-name)))
     (let loop((ls1 (make-vector 0 null)) (c (read-byte p)))
@@ -229,28 +243,29 @@ main = '''
 	    (vector-append ls1 (vector 0)))
 	  (loop (vector-append ls1 (vector (list->bytes (cons c '())))) (read-byte p))))))
 
-(define (main args)
-  (begin
-    (define i 0)
-    (define buf (read_inputs (vector-ref args i)))
-    (define len (vector-length args))
-    (do (
-          (i 0 (+ i 1))
-          (buf (read_inputs (vector-ref args i)) (read_inputs (vector-ref args i)))
-          (st (current-inexact-milliseconds) (current-inexact-milliseconds))
-          (t (parse buf (- (vector-length buf) 1) newAST subAST ) (parse buf (- (vector-length buf) 1) newAST subAST ))
-          (et (current-inexact-milliseconds) (current-inexact-milliseconds))
-        )
-        ((> i (- len 1)))
-        (print (vector-ref args i))
-        (print " ")
-        (print (- et st))
-        (print "[ms]: ")
-        (newline)
-        (print t)
-        (newline)
-    )
+(define (parse_inputs i len args)
+  (define buf (read_inputs (vector-ref args i)))
+  (define st (current-inexact-milliseconds))
+  (define t (parse buf (- (vector-length buf) 1)))
+  (define et (current-inexact-milliseconds))
+  (print (vector-ref args i))
+  (print " ")
+  (print (- et st))
+  (print "[ms]: ")
+  (newline)
+  (print_tree t)
+  (newline)
+  (set! i(+ i 1))
+  (if (> i (- len 1))
+      "finish"
+      (parse_inputs i len args)
   )
+)
+
+(define (main args)
+  (define i 0)
+  (define len (vector-length args))
+  (parse_inputs i len args)
 )
 
 (main (current-command-line-arguments)
@@ -270,5 +285,3 @@ or
 racket $|base|.rkt <file>
 
 '''
-
-# byte -> byte string
