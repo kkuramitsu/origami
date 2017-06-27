@@ -139,30 +139,30 @@ import (
 '''
 
 def ifexpr = '''
-func IfExpr(cond bool, a bool, b bool) bool {
-    if cond {
+func(f bool, a bool, b bool) bool{
+    if f{
         return a
     }
     return b
-}
+}(%s,%s,%s)
 '''
 
 def ifexprTree = '''
-func IfExpr(cond bool, a Tree, b Tree) Tree {
-    if cond {
+func(f bool, a Tree, b Tree) Tree{
+    if f{
         return a
     }
     return b
-}
+}(%s,%s,%s)
 '''
 
 def ifexprState = '''
-func IfExpr(cond bool, a State, b State) State {
-    if cond {
+func(f bool, a State, b State) State{
+    if f{
         return a
     }
     return b
-}
+}(%s,%s,%s)
 '''
 
 def AST = '''
