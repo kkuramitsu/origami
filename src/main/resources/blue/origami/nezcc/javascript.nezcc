@@ -108,13 +108,15 @@ main = '''
 var fs = require('fs');
 
 (function main(){
-    var inputs = fs.readFileSync('./xmark10.xml');
-    console.time('timer1');
-    var result = parse(inputs,inputs.length-1, newAST, subAST);
-    console.timeEnd('timer1');
-    console.log(result);
-    //以下の関数を使うとObjectの中身まで見れますがxmark10.xmlみたいな大きなファイルの場合にコンソールが凍ります。
-    //console.dir(JSON.stringify(result));
+    for(var i = 2;i < process.argv.length;i++){
+      var inputs = fs.readFileSync('./' + process.argv[i]);
+      console.time('timer1');
+      var result = parse(inputs,inputs.length-1, newAST, subAST);
+      console.timeEnd('timer1');
+      console.log(result);
+      //以下の関数を使うとObjectの中身まで見れますがxmark10.xmlみたいな大きなファイルの場合にコンソールが凍ります。
+      //console.dir(JSON.stringify(result));
+    }
 })();
 
 
