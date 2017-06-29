@@ -1,0 +1,142 @@
+# nezcc file
+
+extension          = jl
+
+# type
+
+Bool               = Bool
+Byte               = UInt8
+Int                = Int
+Int64              = Int64
+String             = String
+Tree               = Tuple{String,Any}
+
+#Byte[]->String   = %s.decode('utf-8')
+#String->Byte[]   = %s.encode('utf-8')
+
+Array.size       = length(%s)
+Array.get        = %s[%s]
+Array.new        = Array{Any}(%2$s)
+Array.slice      = %s[%s:%s]
+Array.start      = %s + 1
+
+Byte[].quote     = b'%s'
+Byte[].esc       = '\x%02x'
+Byte[].get       = Int(%s[%s])
+
+# syntax
+
+comment          = # %s
+begin            = 
+end              = end
+;                = 
+
+struct           = type %s
+field            = %2$s
+
+getter           = %s.%s
+setter           = %s.%s = %s
+
+const            = %2$s = %3$s
+
+function         = function %2$s(%3$s)
+param            = %2$s
+params           = ,
+return           = return %s
+
+group            = (%s)
+
+and              = %s && %s
+or               = (%s) || (%s)
+not              = ! (%s)
+ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
+
+funccall         = %s(%s)
+args             = ,
+#apply            = %s.apply
+#funcref          = $|base|::%s
+
+true             = true
+false            = false
+null             = nothing
+
+val              = %2$s::%1$s = %3$s
+var              = %2$s::%1$s = %3$s
+assign           = %s = %s
+
+if               = if %s
+while            = while %s
+
+#switch           = switch(%s) {
+#case             = case %s : %s
+#default          = default : %s
+#end switch       = }
+
+lambda           = (%s) -> %s
+
+array            = [
+arrays           = ,
+end array        = ]
+
+
+imports = '''
+function ftrue(px)
+ return true
+end
+
+function ffalse(px)
+ return false
+end
+'''
+
+def newAST = '''
+function newAST(tag, inputs, pos, epos, size)
+  if (size == 0)
+    return (tag, inputs[pos:epos-1])
+  else
+    return (tag, Array{Any}(size))
+  end
+end
+'''
+
+def subAST = '''
+function subAST(parent, n, label, child)
+  parent[2][n+1] = (label, child)
+  return parent
+end
+'''
+
+main = '''
+function read_inputs(a)
+  try
+    f::IOStream = open(a,"r")
+    lines::Array{String,1} = readlines(f)
+    str::String = join(lines)
+    return str * "\0"
+  catch e
+    return a * "\0"
+  end
+end
+
+if !isinteractive()
+  for a in ARGS[1:end]
+    s::String = read_inputs(a)
+    t::Tuple{String,Array{Any,1}} = @time parse(s, length(s)-1, newAST, subAST)
+    print(a)
+    print(" :")
+    println(t)
+  end
+end
+
+'''
+
+man = '''
+=============
+ QUICK START
+=============
+ 
+ julia $|base|.jl <file> or <input-text>
+ 
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''

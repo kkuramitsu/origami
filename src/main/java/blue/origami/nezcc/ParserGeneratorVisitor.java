@@ -61,7 +61,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 	public void start(ParserGrammar g, ParserGenerator<B, C> pg) {
 		Production p = g.getStartProduction();
 		pg.declConst(pg.T("length"), "memosize", -1, "" + g.getMemoPointSize());
-		pg.declConst(pg.T("length"), "memos", -1, "" + (g.getMemoPointSize() * 64 + 1));
+		pg.declConst(pg.T("length"), "memoentries", -1, "" + (g.getMemoPointSize() * 64 + 1));
 		pg.log("memosize: %d", g.getMemoPointSize());
 		int c = 0;
 		this.waitingList.add(p.getExpression());
@@ -95,7 +95,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			return this.match(e, pg, false);
 		}
 		String funcName = pg.makeLib("memo", Typestate.compute(e) == Typestate.Tree ? TREE : POS);
-		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id), this.getInFunc(e, pg));
+		return pg.emitFunc(funcName, pg.V("px"), pg.vInt(m.id + 1), this.getInFunc(e, pg));
 	}
 
 	public C match(Expression e, ParserGenerator<B, C> px, boolean asFunction) {

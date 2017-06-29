@@ -10,10 +10,10 @@ Array.size         = ${%s}
 Array.get          = %s->[%s]
 Array.slice        = %s[%s:%s]
 
-ArrayList          = $
-ArrayList.new      = ()
-ArrayList.get      = %s->[%s]
-ArrayList.add      = push(%s,%s)
+MemoList          = $
+MemoList.new      = ()
+MemoList.get      = %s->[%s]
+MemoList.add      = push(%s,%s)
 
 #Byte->Int         = %s & 0xff
 #Int64->Int         = (%s)

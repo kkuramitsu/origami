@@ -1,6 +1,7 @@
 # c.nezcc
 # very fast c parser recipe 
 
+options            = duallink
 extension          = c
 
 # type
@@ -67,6 +68,7 @@ while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
 #default          = default : %s
+ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
 
 true             = 1
 false            = 0
@@ -111,13 +113,13 @@ static struct MemoEntry * newMemos($|Tree| t, int size) {
 
 def longkey = '''
 static unsigned long long int longkey($|Int64| pos, int memoPoint) {
-  return pos * MEMOSIZE + memoPoint;
+  return pos * memosize + memoPoint;
 }
 '''
 
 def getMemo = '''
 static struct MemoEntry* getMemo(struct NezParserContext* px, $|Int64| key) {
-  return px->memos + (($|Int64|)(key % MEMOS));
+  return px->memos + (($|Int64|)(key % memoentries));
 }
 '''
 
@@ -224,7 +226,7 @@ def freeContext = '''
 static void TreeLog_free(struct TreeLog *t)
 {
   while(t != NULL) {
-    struct TreeLog *next = t->nextLog;
+    struct TreeLog *next = t->lnext;
     _free(t);
     t = next;    
   }

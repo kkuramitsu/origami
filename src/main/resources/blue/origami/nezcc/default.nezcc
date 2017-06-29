@@ -15,7 +15,7 @@ group            = (%s)
 and              = %s && %s
 or               = (%s) || (%s)
 not              = !(%s)
-ifexpr           = (%s) ? (%s) : (%s)
+#ifexpr           = (%s) ? (%s) : (%s)
 
 funccall         = %s(%s)
 args             = $|delim|

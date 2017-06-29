@@ -6,11 +6,8 @@ extension          = py
 
 Bool               = 
 Byte               = 
-Byte[]             = 
 Int                = 
-#Int64              = 
 Array              = 
-Symbol             = 
 Tree               = 
 
 Byte[]->String   = %s.decode('utf-8')
@@ -20,7 +17,6 @@ Array.size       = len(%s)
 Array.get        = %s[%s]
 Array.new        = [None] * %2$s
 Array.slice      = %s[%s:%s]
-
 
 Byte[]''         = b'%s'
 Byte[].quote     = '

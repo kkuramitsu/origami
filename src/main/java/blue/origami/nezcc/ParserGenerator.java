@@ -107,6 +107,29 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
 	}
 
+	protected void Setter3(B block, String base, String name, C expr, String name2, C expr2, String name3, C expr3) {
+		this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
+		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
+		this.emitStmt(block, this.emitSetter(this.V(base), name3, expr3));
+	}
+
+	protected void Setter4(B block, String base, String name, C expr, String name2, C expr2, String name3, C expr3,
+			String name4, C expr4) {
+		this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
+		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
+		this.emitStmt(block, this.emitSetter(this.V(base), name3, expr3));
+		this.emitStmt(block, this.emitSetter(this.V(base), name4, expr4));
+	}
+
+	protected void Setter5(B block, String base, String name, C expr, String name2, C expr2, String name3, C expr3,
+			String name4, C expr4, String name5, C expr5) {
+		this.emitStmt(block, this.emitSetter(this.V(base), name, expr));
+		this.emitStmt(block, this.emitSetter(this.V(base), name2, expr2));
+		this.emitStmt(block, this.emitSetter(this.V(base), name3, expr3));
+		this.emitStmt(block, this.emitSetter(this.V(base), name4, expr4));
+		this.emitStmt(block, this.emitSetter(this.V(base), name5, expr5));
+	}
+
 	protected abstract C emitAssign(String name, C expr);
 
 	protected abstract C emitAssign2(C left, C expr);
@@ -352,6 +375,36 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		l.add(a4);
 		l.add(a5);
 		l.add(a6);
+		return this.emitFunc(func, l);
+	}
+
+	protected C emitFunc(String func, C a0, C a1, C a2, C a3, C a4, C a5, C a6, C a7, C a8) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		l.add(a4);
+		l.add(a5);
+		l.add(a6);
+		l.add(a7);
+		l.add(a8);
+		return this.emitFunc(func, l);
+	}
+
+	protected C emitFunc(String func, C a0, C a1, C a2, C a3, C a4, C a5, C a6, C a7, C a8, C a9, C a10) {
+		List<C> l = new ArrayList<>();
+		l.add(a0);
+		l.add(a1);
+		l.add(a2);
+		l.add(a3);
+		l.add(a4);
+		l.add(a5);
+		l.add(a6);
+		l.add(a7);
+		l.add(a8);
+		l.add(a9);
+		l.add(a10);
 		return this.emitFunc(func, l);
 	}
 

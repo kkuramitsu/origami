@@ -1,6 +1,6 @@
 # nezcc file
 
-style              = java8
+#options            = snake
 extension          = java
 
 # type
@@ -8,9 +8,9 @@ extension          = java
 Bool               = boolean
 Byte               = byte
 Int                = int
-Int64              = long
+#Int64              = long
 Array              = %s[]
-Tree               = T
+Tree               = Tree
 String             = String
 
 Byte->Int          = %s & 0xff
@@ -27,16 +27,15 @@ Array.size         = %s.length
 Array.get          = %s[%s]
 Array.slice        = %s[%s:%s]
 
-ArrayList          = ArrayList<%s>
-ArrayList.new      = new ArrayList<>()
-ArrayList.get      = %s.get(%s)
-ArrayList.add      = %s.add(%s)
+MemoList          = ArrayList<%s>
+MemoList.new      = new ArrayList<>()
+MemoList.get      = %s.get(%s)
+MemoList.add      = %s.add(%s)
 
 #In case of AST2
-TList               = TList<T>
-TList.empty         = null
-TList.cons          = new TList<>(%s,%s,%s)
-mainparams          = $|base|::newAST
+TreeList            = TreeList
+TreeList.empty      = null
+TreeList.cons       = new TreeList(%s,%s,%s)
 
 # syntax
 
@@ -48,27 +47,29 @@ delim            = ,
 
 module           = final class $|base| {
 
-structname       = %s<T>
+#structname       = %s<T>
 
-struct           = static class %s <T> {
+struct           = static class %s {
 field            = %s %s;
 constructor      = %s(%s) {
 init             = this.%s = %s;
-new              = new %s<>
+new              = new %s
 
-setter2          = /*foldr*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s;
-setter3          = /*foldr*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s; %1$s.%6$s = %7$s;
+setter2          = /*foldr2*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s;
+setter3          = /*foldr3*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s; %1$s.%6$s = %7$s;
+setter4          = /*foldr4*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s; %1$s.%6$s = %7$s; %1$s.%8$s = %9$s;
+setter5          = /*foldr5*/ %1$s.%2$s = %3$s; %1$s.%4$s = %5$s; %1$s.%6$s = %7$s; %1$s.%8$s = %9$s; %1$s.%10$s = %11$s;
 
 functype         = '''
-public interface %2$s <T> {
+public interface %2$s {
   public %1$s apply(%3$s);
 }
 '''
 
 const            = private static final %1$s %2$s = %3$s;
 
-function         = private static final <T> %1$s %2$s(%3$s) {
-function1        = public static final <T> %1$s %2$s(%3$s) {
+function         = private static final %1$s %2$s(%3$s) {
+function1        = public static final %1$s %2$s(%3$s) {
 return           = return %s;
 
 apply            = %s.apply
@@ -112,22 +113,12 @@ libs = '''
     }
     return b;
   }
-  public static class TList<T> {
-    String label;
-    T tree;
-    TList<T> next;
-    TList(String label, T tree, TList<T> next) {
-      this.label = label;
-      this.tree = tree;
-      this.next = next;
-    }
-  }
 '''
 
 def extract = '''
 private static final byte[] emptyValue = new byte[0];
 
-private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
+private static byte[] extract(NezParserContext px, int ppos) {
   if(px.pos == ppos) {
     return emptyValue;
   }
@@ -137,20 +128,36 @@ private static <T> byte[] extract(NezParserContext<T> px, int ppos) {
 }
 '''
 
-def AST = '''
-  /** Here is the main part. You may remove them if unnecessary. **/
-  public static class SimpleTree {
+def newtree = '''
+  public static class TreeList {
+    String label;
+    Tree tree;
+    TreeList next;
+    TreeList(String label, Tree tree, TreeList next) {
+      this.label = label;
+      this.tree = tree;
+      this.next = next;
+    }
+    private void strOut(StringBuilder sb) {
+      TreeList cur = this;
+      while(cur != null) {
+        sb.append(" ");
+        if (cur.label != null && cur.label.length() > 0) {
+          sb.append("$" + cur.label + "=");
+        }
+        cur.tree.strOut(sb);
+        cur = cur.next;
+      }
+    }   
+  }
+
+  public static class Tree {
     public String key;
     public Object value;
 
-    SimpleTree(String key, Object value) {
+    Tree(String key, Object value) {
       this.key = key;
       this.value = value;
-    }
-
-    SimpleTree set(int n, String label, SimpleTree child) {
-    	((SimpleTree[])this.value)[n] = new SimpleTree(label, child);
-    	return this;
     }
 
     @Override
@@ -163,15 +170,8 @@ def AST = '''
     private void strOut(StringBuilder sb) {
       sb.append("[#");
       sb.append(this.key);
-      if (this.value instanceof SimpleTree[]) {
-        SimpleTree[] sub = (SimpleTree[]) this.value;
-        for (SimpleTree child : sub) {
-          sb.append(" ");
-          if (child.key != null) {
-            sb.append("$" + child.key + "=");
-          }
-          ((SimpleTree) child.value).strOut(sb);
-        }
+      if (this.value instanceof TreeList) {
+        ((TreeList)this.value).strOut(sb);
       } else {
         sb.append(" '");
         sb.append(this.value);
@@ -180,25 +180,29 @@ def AST = '''
       sb.append("]");
     }
   }
+
+  private static Tree newtree(String tag, byte[] inputs, int pos, int epos, TreeList subs) {
+    return new Tree(tag, (subs == null) ? new String(inputs, pos, epos - pos) : subs);
+  }
+
 '''
 
 def newAST = '''
-  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
-    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
-    //return new SimpleTree(tag, new SimpleTree[size]);
-    //return null;
-  }
+//  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, int size) {
+//    return new SimpleTree(tag, (size == 0) ? new String(inputs, pos, epos - pos) : new SimpleTree[size]);
+//    //return new SimpleTree(tag, new SimpleTree[size]);
+//    //return null;
+//  }
 '''
 
 def subAST = '''
-  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
-    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
-    childs[n] = new SimpleTree(label, child);
-    return parent;
-  }
+//  private static SimpleTree subAST(SimpleTree parent, int n, String label, SimpleTree child) {
+//    SimpleTree[] childs = (SimpleTree[]) ((SimpleTree)parent).value;
+//    childs[n] = new SimpleTree(label, child);
+//    return parent;
+//  }
 '''
 
-mainparams = $|base|::newAST, $|base|::subAST
 main = '''
   static byte[] readInputs(String a) throws IOException {
     File file = new File(a);
@@ -217,7 +221,7 @@ main = '''
     for(String a: args) {
       byte[] buf = readInputs(a);
       long st = System.nanoTime();
-      SimpleTree t = parse(buf, buf.length-1, $|mainparams|);
+      Tree t = parse(buf, buf.length-1);
       long et = System.nanoTime();
       System.err.printf("%s %f[ms]: ", a, (et-st)/1000000.0);
       System.out.print(t);
@@ -228,9 +232,9 @@ main = '''
 '''
 
 def newAST2 = '''
-  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
-    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
-  }
+//  private static SimpleTree newAST(String tag, byte[] inputs, int pos, int epos, TList<SimpleTree> subs) {
+//    return new SimpleTree(tag, new String(inputs, pos, epos - pos));
+//  }
 '''
 
 man = '''

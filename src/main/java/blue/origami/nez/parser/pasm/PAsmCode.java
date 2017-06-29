@@ -81,7 +81,7 @@ public class PAsmCode implements ParserCode {
 		PAsmInst code = this.getStartInstruction();
 		boolean result = this.exec(px, code);
 		if (px.tree == null && result) {
-			px.tree = newTree.apply(null, s, pos, ppos, 0, null);
+			px.tree = newTree.apply(null, s, ppos, px.pos, 0, null);
 		}
 		if (px.tree == null) {
 			this.perror(this.options, SourcePosition.newInstance(s, px.getMaximumPosition()), NezFmt.syntax_error);
