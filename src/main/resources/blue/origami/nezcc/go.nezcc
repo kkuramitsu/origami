@@ -2,18 +2,11 @@
 
 extension          = go
 
-#Go言語はクラスベースのオブジェクト指向言語では無い、構造体を定義し、その型の変数に作用するメソッドを記述する形式。
-#すなわち、メソッドは構造体の定義外に書く。JSのプロトタイプみたいな感じ
-#また、publicなフィールドにする場合はフィールド名の先頭を大文字にする。これは対応可能か
-
-#3項演算子(bool) : x ? y : z => x and y or z
-
-
 # type
 
 Bool               = bool
-Byte               = rune
-Byte[]             = []rune
+Byte               = int64
+Byte[]             = []int64
 Int                = int64
 Int64              = int64
 Array              = []%s
@@ -49,8 +42,9 @@ constructor      = '''
 func New%1$s(%2$s) *%1$s {
     obj := new(%1$s)
 '''
-
 end constructor  = return obj
+
+
 init             = obj.%s = %s
 new              = New%s
 
@@ -83,17 +77,15 @@ return ret
 
 cast             = (%s)(%s)
 
-#group            = (%s)
-
 and              = %s && %s
 or               = (%s) || (%s)
 not              = ! (%s)
 
 if               = if %s {
 end if           = }
-else             = else {
+else             = }else {
 end else         = }
-else if          = else if %s {
+else if          = }else if %s {
 while            = for %s {
 switch           = switch %s {
 end switch       = }
@@ -117,15 +109,12 @@ true             = true
 false            = false
 null             = nil
 
-#lambda           = func(%s){return %s}
+lambda           = func(%s NezParserContext)bool{return %s}
 #funcref          = %s
 
 array             = {
 arrays            = ,
 end array         = }
-
-delim = ,
-options = inline
 
 imports = '''
 package main
@@ -133,36 +122,33 @@ import (
     "fmt"
     "unsafe"
     "os"
-    "reflect"
 )
-/*    aaaaaaaaaaaaaaaa */
 '''
-
-def ifexpr = '''
-func IfExpr(cond bool, a bool, b bool) bool {
-    if cond {
+ifexpr = '''
+func(f bool, a int64, b int64) int64{
+    if f{
         return a
     }
     return b
-}
+}(%1$s,%2$s,%3$s)
 '''
 
-def ifexprTree = '''
-func IfExpr(cond bool, a Tree, b Tree) Tree {
-    if cond {
+ifexprTree = '''
+func(f bool, a Tree, b Tree) Tree{
+    if f{
         return a
     }
     return b
-}
+}(%1$s,%2$s,%3$s)
 '''
 
-def ifexprState = '''
-func IfExpr(cond bool, a State, b State) State {
-    if cond {
+ifexprState = '''
+func(f bool, a State, b State) State{
+    if f{
         return a
     }
     return b
-}
+}(%1$s,%2$s,%3$s)
 '''
 
 def AST = '''
@@ -217,7 +203,7 @@ func readInputs(name String) *[]rune {
     for scanner.Scan() {
         append(buf, []rune(scanner.Text()))
     }
-    return &buf
+    return buf
 }
 
 
@@ -239,7 +225,7 @@ man = '''
  QUICK START
 =============
 
- go run $|base|.php <file> or <input-text>
+ go run $|base|.go <file> or <input-text>
 
 Read the main function. You will know how to
 integrate the parser into your programs.

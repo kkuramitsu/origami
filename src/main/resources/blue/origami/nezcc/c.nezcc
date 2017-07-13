@@ -68,6 +68,7 @@ while            = while(%s) {
 switch           = switch(%s) {
 case             = case %s : %s
 #default          = default : %s
+ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
 
 ifexpr           = (%s) ? (%s) : (%s)
 true             = 1
