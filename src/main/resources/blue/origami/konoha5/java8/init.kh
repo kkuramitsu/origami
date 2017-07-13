@@ -1,0 +1,14 @@
+# java8/init.kh
+
+Bool       = boolean
+Int        = int
+String     = String
+
+null       = null
+true:Bool  = true
+false:Bool = false
+
+()            = (%s)
+0:Int         = %s
++:Int:Int:Int = %s+%s
+
