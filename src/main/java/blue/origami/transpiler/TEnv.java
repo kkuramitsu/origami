@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import blue.origami.ffi.OCast;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OFmt;
+import blue.origami.transpiler.code.TCastCode;
+import blue.origami.transpiler.code.TCastCode.TMapTemplate;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TParamCode;
@@ -245,15 +246,46 @@ interface TEnvApi {
 		int loc = key.indexOf(':');
 		if (loc == -1) {
 			String name = key;
+			if (key.indexOf('>') > 0) {
+				if ((loc = key.indexOf("-->>")) > 0) {
+					TType f = this.checkType(key.substring(0, loc));
+					TType t = this.checkType(key.substring(loc + 4));
+					name = f + "->" + t;
+					env().add(name, new TMapTemplate(name, f, t, TCastCode.CONV, value));
+					return;
+				}
+				if ((loc = key.indexOf("-->")) > 0) {
+					TType f = this.checkType(key.substring(0, loc));
+					TType t = this.checkType(key.substring(loc + 3));
+					name = f + "->" + t;
+					env().add(name, new TMapTemplate(name, f, t, TCastCode.CAST, value));
+					return;
+				}
+				if ((loc = key.indexOf("->>")) > 0) {
+					TType f = this.checkType(key.substring(0, loc));
+					TType t = this.checkType(key.substring(loc + 3));
+					name = f + "->" + t;
+					env().add(name, new TMapTemplate(name, f, t, TCastCode.BESTCONV, value));
+					return;
+				}
+				if ((loc = key.indexOf("->")) > 0) {
+					TType f = this.checkType(key.substring(0, loc));
+					TType t = this.checkType(key.substring(loc + 2));
+					name = f + "->" + t;
+					env().add(name, new TMapTemplate(name, f, t, TCastCode.BESTCAST, value));
+					return;
+				}
+				System.out.println("FIXME: " + key);
+			}
 			env().add(name, new TCodeTemplate(name, TType.tUntyped, TConsts.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
-			TType ret = this.getType(tsigs[tsigs.length - 1]);
+			TType ret = this.checkType(tsigs[tsigs.length - 1]);
 			if (tsigs.length > 1) {
 				TType[] p = new TType[tsigs.length - 1];
 				for (int i = 0; i < p.length; i++) {
-					p[i] = this.getType(tsigs[i]);
+					p[i] = this.checkType(tsigs[i]);
 				}
 				env().add(name, new TCodeTemplate(name, ret, p, value));
 			} else {
@@ -266,6 +298,12 @@ interface TEnvApi {
 
 	public default TType getType(String tsig) {
 		return env().get(tsig, TType.class);
+	}
+
+	default TType checkType(String tsig) {
+		TType t = this.getType(tsig);
+		assert (t != null) : tsig;
+		return t;
 	}
 
 	public default TCode typeTree(TEnv env, Tree<?> t) {
@@ -301,6 +339,13 @@ interface TEnvApi {
 		return typeTree(env, t);
 	}
 
+	public default TMapTemplate findTypeMap(TEnv env, TType f, TType t) {
+		String key = f + "->" + t;
+		TMapTemplate tp = env.get(key, TMapTemplate.class);
+		// System.out.printf("FIXME: finding %s %s\n", key, tp);
+		return tp == null ? TMapTemplate.Stupid : tp;
+	}
+
 	public default TCode findParamCode(TEnv env, String name, TCode... params) {
 		// for (TCode p : params) {
 		// if (p.isUntyped()) {
@@ -311,21 +356,37 @@ interface TEnvApi {
 		env.findList(name, TTemplate.class, l, (tt) -> tt.getParamSize() == params.length);
 		// ODebug.trace("l = %s", l);
 		if (l.size() == 0) {
-			throw new TErrorCode("undefined %s %s", name, params);
+			throw new TErrorCode("undefined %s%s", name, types(params));
 		}
 		TParamCode start = new TParamCode(l.get(0), params);
+		int mapCost = start.checkParam(env);
+		// System.out.println("cost=" + mapCost + ", " + l.get(0));
 		for (int i = 1; i < l.size(); i++) {
-			if (start.getMatchCost() <= 0) {
+			if (mapCost <= 0) {
 				return start;
 			}
 			TParamCode next = new TParamCode(l.get(i), params);
-			start = (next.getMatchCost() < start.getMatchCost()) ? next : start;
+			int nextCost = next.checkParam(env);
+			// System.out.println("nextcost=" + nextCost + ", " + l.get(i));
+			if (nextCost < mapCost) {
+				start = next;
+				mapCost = nextCost;
+			}
 		}
-		if (start.getMatchCost() >= OCast.STUPID) {
+		if (mapCost >= TCastCode.STUPID) {
 			// ODebug.trace("miss cost=%d %s", start.getMatchCost(), start);
-			throw new TErrorCode("mismatched %s(%s)", name, params);
+			throw new TErrorCode("mismatched %s%s", name, types(params));
 		}
 		return start;
+	}
+
+	default String types(TCode... params) {
+		StringBuilder sb = new StringBuilder();
+		for (TCode t : params) {
+			sb.append(" ");
+			sb.append(t.getType());
+		}
+		return sb.toString();
 	}
 
 }

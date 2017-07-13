@@ -2,6 +2,7 @@
 
 Bool       = boolean
 Int        = int
+Float      = double
 String     = String
 
 null       = null
@@ -9,6 +10,11 @@ true:Bool  = true
 false:Bool = false
 
 ()            = (%s)
-0:Int         = %s
-+:Int:Int:Int = %s+%s
+Int->Float        = %s
+Float->>Int         = (int)(%s)
 
+0:Int         = %d
+0:Float       = %f
+
++:Int:Int:Int       = %s+%s
++:Float:Float:Float = %s+%s

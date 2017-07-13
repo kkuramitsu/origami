@@ -33,6 +33,11 @@ public class TErrorCode extends RuntimeException implements TCode {
 		this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
 	}
 
+	@Override
+	public TCode self() {
+		return this;
+	}
+
 	public OLog getLog() {
 		return this.log;
 	}

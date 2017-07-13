@@ -10,4 +10,7 @@ false:Bool = #f
 
 0:Int         = %s
 +:Int:Int:Int = (+ %s %s)
+-:Int:Int:Int = (- %s %s)
+*:Int:Int:Int = (* %s %s)
+/:Int:Int:Int = (/ %s %s)
 

@@ -49,6 +49,9 @@ public class Transpiler extends TEnv {
 		this.add("?", TType.tUntyped);
 		this.add("Bool", TType.tBool);
 		this.add("Int", TType.tInt);
+		this.add("Float", TType.tFloat);
+		this.add("String", TType.tString);
+		this.add("Data", TType.tString);
 	}
 
 	private void loadLibrary(String file) {

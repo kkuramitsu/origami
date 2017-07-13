@@ -6,8 +6,9 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TInst;
 import blue.origami.transpiler.TTemplate;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.code.TCastCode.TMapTemplate;
 
-public interface TCode {
+public interface TCode extends TCodeAPI {
 	public TType getType();
 
 	public TCode setSourcePosition(Tree<?> t);
@@ -19,11 +20,34 @@ public interface TCode {
 	public void emitCode(TEnv env, TCodeSection sec);
 }
 
+interface TCodeAPI {
+	TCode self();
+
+	public default TType refineType(TEnv env, TType t) {
+		return self().getType();
+	}
+
+	public default TCode asType(TEnv env, TType t) {
+		TCode self = self();
+		TType f = this.refineType(env, t);
+		if (t.equals(f)) {
+			return self;
+		}
+		TMapTemplate tt = env.findTypeMap(env, f, t);
+		return new TCastCode(t, tt, self);
+	}
+}
+
 abstract class TTypedCode implements TCode {
 	private TType typed;
 
 	TTypedCode(TType typed) {
 		this.setType(typed);
+	}
+
+	@Override
+	public TCode self() {
+		return this;
 	}
 
 	@Override
