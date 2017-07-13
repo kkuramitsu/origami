@@ -16,6 +16,7 @@ import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.rule.AddExpr;
+import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.IntExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.util.OConsole;
@@ -43,6 +44,7 @@ public class Transpiler extends TEnv {
 		this.add("Source", new SourceUnit());
 		this.add("IntExpr", new IntExpr());
 		this.add("AddExpr", new AddExpr());
+		this.add("MulExpr", new BinaryExpr("*"));
 		// type
 		this.add("?", TType.tUntyped);
 		this.add("Bool", TType.tBool);

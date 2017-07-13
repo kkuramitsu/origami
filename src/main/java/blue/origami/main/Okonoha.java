@@ -17,19 +17,20 @@ public class Okonoha extends OCommand {
 				options.set(ParserOption.GrammarFile, ext + ".opeg");
 			}
 		}
+		String target = options.stringValue(ParserOption.Target, "racket");
 		Grammar g = this.getGrammar(options, "iroha.opeg");
-		Transpiler env = new Transpiler(g, "java8", options);
+		Transpiler env = new Transpiler(g, target, options);
 
 		for (String file : files) {
 			env.loadScriptFile(file);
 		}
 		if (files.length == 0 || this.isDebug()) {
-			displayVersion(g.getName());
+			displayVersion("Konoha5->" + target);
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
-			p("");
+			// p("");
 
 			int startline = this.linenum;
-			String prompt = bold(">>> ");
+			String prompt = bold("\n>>> ");
 			String input = null;
 			while ((input = this.readMulti(prompt)) != null) {
 				if (checkEmptyInput(input)) {

@@ -1,0 +1,13 @@
+# racket/init.kh
+
+Bool       = boolean
+Int        = int
+String     = String
+
+null       = nil
+true:Bool  = #t
+false:Bool = #f
+
+0:Int         = %s
++:Int:Int:Int = (+ %s %s)
+

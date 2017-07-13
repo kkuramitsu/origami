@@ -43,8 +43,9 @@ public class TEnv implements TEnvTraits, TEnvApi {
 		TEnvEntry prev = this.definedMap.get(name);
 		defined.push(prev);
 		this.definedMap.put(name, defined);
-		System.out.printf("adding symbol %s %s on %s at env %s\n", name, defined.getHandled(), defined.pop(),
-				this.getClass().getSimpleName());
+		// System.out.printf("adding symbol %s %s on %s at env %s\n", name,
+		// defined.getHandled(), defined.pop(),
+		// this.getClass().getSimpleName());
 		// this.hookEntry(name, defined);
 	}
 

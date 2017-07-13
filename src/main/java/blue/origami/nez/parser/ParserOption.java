@@ -5,7 +5,7 @@ import blue.origami.util.OOption.OOptionKey;
 public enum ParserOption implements OOptionKey {
 	Verbose, WindowSize, Pass, Optimized, PassPath, StrictChecker, TrapActions, //
 	TreeConstruction, PackratParsing, Coverage, GrammarFile, GrammarPath, Start, //
-	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles;
+	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles, Target;
 
 	@Override
 	public String toString() {
