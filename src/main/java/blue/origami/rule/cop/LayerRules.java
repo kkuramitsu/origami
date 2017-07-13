@@ -35,6 +35,7 @@ import blue.origami.lang.OMethodWrapper;
 import blue.origami.lang.OVariable;
 import blue.origami.lang.OEnv.OBaseEnv;
 import blue.origami.lang.OEnv.OListMatcher;
+import blue.origami.lang.OEnvEntry;
 import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.Tree;
@@ -195,12 +196,12 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 
 		@Override
-		public OEnvEntry getDefined(String name, boolean isRuntime) {
+		public OEnvEntry getEntry(String name, boolean isRuntime) {
 			// ODebug.trace("%s isRuntime=%s", this.getName(), isRuntime);
 			if (isRuntime) {
-				return this.chosen.getDefined(name, isRuntime);
+				return this.chosen.getEntry(name, isRuntime);
 			}
-			return super.getDefined(name, isRuntime);
+			return super.getEntry(name, isRuntime);
 		}
 
 		ArrayList<ContextChangeListener> listenerList = new ArrayList<>();
@@ -234,7 +235,7 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 
 		@Override
-		public void hookDefined(String name, OEnvEntry d) {
+		public void hookEntry(String name, OEnvEntry d) {
 			Object v = d.getHandled();
 			ODebug.trace("hooked %s handle=%s %s", this.getName(), v, v.getClass().getSimpleName());
 			if (v instanceof OGlobalVariable) {
@@ -289,17 +290,17 @@ public class LayerRules implements OImportable, SyntaxAnalysis {
 		}
 
 		@Override
-		public void addDefined(String name, OEnvEntry d) {
+		public void addEntry(String name, OEnvEntry d) {
 			ODebug.NotAvailable(this);
 		}
 
 		@Override
-		public OEnvEntry getDefined(String name, boolean isRuntime) {
+		public OEnvEntry getEntry(String name, boolean isRuntime) {
 			if (enabled) {
 				// ODebug.trace("finding %s isRuntime=%s %s on %s", name,
 				// isRuntime, imported.getDefined(name, isRuntime),
 				// this.getName());
-				return imported.getDefined(name, isRuntime);
+				return imported.getEntry(name, isRuntime);
 			}
 			return null;
 		}

@@ -24,45 +24,9 @@ import blue.origami.lang.type.OType;
 import blue.origami.lang.type.OTypeSystem;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.ocode.OCode;
-import blue.origami.util.Handled;
-import blue.origami.util.OStackable;
 import blue.origami.util.OTypeUtils;
 
 public interface OEnv {
-
-	// public default void dump() {
-	// for (OEnv e = this; e != null; e = e.getParent()) {
-	// System.out.print(e.getName());
-	// }
-	// System.out.println();
-	// }
-
-	public default OEnv env() {
-		return this;
-	}
-
-	public String getName();
-
-	public default boolean isRuntime() {
-		return false;
-	}
-
-	public Class<?> getSingletonClass();
-
-	public default OEnv findExportableEnv() {
-		for (OEnv cur = this; cur != null; cur = cur.getParent()) {
-			if (cur.getSingletonClass() != null) {
-				return cur;
-			}
-		}
-		return null; // this does not happen
-	}
-
-	public static OEnv resolveEnv(Class<?> entry) {
-		OEnv env = (OEnv) OTypeUtils.loadFieldValue(entry, "entry");
-		assert (env != null);
-		return env;
-	}
 
 	public default OEnv newEnv() {
 		return new OLocalEnv(this);
@@ -84,30 +48,34 @@ public interface OEnv {
 		return getTypeSystem().newValueCode(value);
 	}
 
-	public void addDefined(String name, OEnvEntry d);
-
-	public default void hookDefined(String name, OEnvEntry d) {
-
-	}
-
 	public default void add(SourcePosition s, String name, Object value) {
-		addDefined(name, new OEnvEntry(s, value));
+		addEntry(name, new OEnvEntry(s, value));
 	}
 
 	public default void add(String name, Object value) {
 		add(SourcePosition.UnknownPosition, name, value);
 	}
 
-	default String key(Class<?> c) {
-		return c.getName();
-	}
-
 	public default void add(Class<?> cname, Object value) {
 		add(key(cname), value);
 	}
 
+	default String key(Class<?> c) {
+		return c.getName();
+	}
+
+	public OEnv getParent();
+
+	public void addEntry(String name, OEnvEntry d);
+
+	public OEnvEntry getEntry(String name, boolean isRuntime);
+
+	public default void hookEntry(String name, OEnvEntry d) {
+
+	}
+
 	public default <X> void set(String name, Class<X> c, X value) {
-		for (OEnvEntry d = this.getDefined(name, this.isRuntime()); d != null; d = d.pop()) {
+		for (OEnvEntry d = this.getEntry(name, this.isRuntime()); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				d.setHandled(value);
@@ -117,10 +85,8 @@ public interface OEnv {
 		add(name, value);
 	}
 
-	public OEnvEntry getDefined(String name, boolean isRuntime);
-
 	public default <X, Y> Y getLocal(String name, boolean isRuntime, Class<X> c, OEnvMatcher<X, Y> f) {
-		for (OEnvEntry d = this.getDefined(name, isRuntime); d != null; d = d.pop()) {
+		for (OEnvEntry d = this.getEntry(name, isRuntime); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				return f.match(x, c);
@@ -132,8 +98,6 @@ public interface OEnv {
 	public default <X> X getLocal(String name, boolean isRuntime, Class<X> c) {
 		return this.getLocal(name, isRuntime, c, (d, c2) -> d);
 	}
-
-	public OEnv getParent();
 
 	public default <X, Y> Y get(String name, Class<X> c, OEnvMatcher<X, Y> f) {
 		for (OEnv env = this; env != null; env = env.getParent()) {
@@ -160,7 +124,7 @@ public interface OEnv {
 	public default <X, Y> Y find(String name, Class<X> c, OEnvMatcher<X, Y> f, OEnvChoicer<Y> g, Y start) {
 		Y y = start;
 		for (OEnv env = this; env != null; env = env.getParent()) {
-			for (OEnvEntry d = env.getDefined(name, this.isRuntime()); d != null; d = d.pop()) {
+			for (OEnvEntry d = env.getEntry(name, this.isRuntime()); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null) {
 					Y updated = f.match(x, c);
@@ -179,7 +143,7 @@ public interface OEnv {
 			OEnvBreaker<Y> h) {
 		Y y = start;
 		for (OEnv env = this; env != null; env = env.getParent()) {
-			for (OEnvEntry d = env.getDefined(name, this.isRuntime()); d != null; d = d.pop()) {
+			for (OEnvEntry d = env.getEntry(name, this.isRuntime()); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null) {
 					y = g.choice(y, f.match(x, c));
@@ -198,7 +162,7 @@ public interface OEnv {
 
 	public default <X> void findList(String name, Class<X> c, List<X> l, OListMatcher<X> f) {
 		for (OEnv env = this; env != null; env = env.getParent()) {
-			for (OEnvEntry d = env.getDefined(name, this.isRuntime()); d != null; d = d.pop()) {
+			for (OEnvEntry d = env.getEntry(name, this.isRuntime()); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null && f.isMatched(x)) {
 					l.add(x);
@@ -211,9 +175,33 @@ public interface OEnv {
 		findList(key(cname), c, l, f);
 	}
 
-	@FunctionalInterface
-	public static interface OEnvMatcher<X, Y> {
-		public Y match(X x, Class<X> c);
+	/* EntryPoint */
+
+	public default OEnv env() {
+		return this;
+	}
+
+	public String getName();
+
+	public default boolean isRuntime() {
+		return false;
+	}
+
+	public Class<?> getSingletonClass();
+
+	public default OEnv findExportableEnv() {
+		for (OEnv cur = this; cur != null; cur = cur.getParent()) {
+			if (cur.getSingletonClass() != null) {
+				return cur;
+			}
+		}
+		return null; // this does not happen
+	}
+
+	public static OEnv resolveEnv(Class<?> entry) {
+		OEnv env = (OEnv) OTypeUtils.loadFieldValue(entry, "entry");
+		assert (env != null);
+		return env;
 	}
 
 	/* Class */
@@ -313,37 +301,6 @@ public interface OEnv {
 
 	}
 
-	public static class OEnvEntry implements OStackable<OEnvEntry>, Handled<Object> {
-		private Object value;
-		private OEnvEntry onstack = null;
-
-		OEnvEntry(SourcePosition s, Object value) {
-			this.value = value;
-		}
-
-		@Override
-		public OEnvEntry push(OEnvEntry onstack) {
-			this.onstack = onstack;
-			return this;
-		}
-
-		@Override
-		public OEnvEntry pop() {
-			return this.onstack;
-		}
-
-		@Override
-		public Object getHandled() {
-			return this.value;
-		}
-
-		public Object setHandled(Object value) {
-			Object v = this.value;
-			this.value = value;
-			return v;
-		}
-	}
-
 }
 
 abstract class OMapEnv implements OEnv {
@@ -357,7 +314,7 @@ abstract class OMapEnv implements OEnv {
 	// }
 
 	@Override
-	public OEnvEntry getDefined(String name, boolean isRuntime) {
+	public OEnvEntry getEntry(String name, boolean isRuntime) {
 		if (this.definedMap != null) {
 			return this.definedMap.get(name);
 		}
@@ -365,7 +322,7 @@ abstract class OMapEnv implements OEnv {
 	}
 
 	@Override
-	public void addDefined(String name, OEnvEntry defined) {
+	public void addEntry(String name, OEnvEntry defined) {
 		if (this.definedMap == null) {
 			this.definedMap = new HashMap<>();
 		}
@@ -375,7 +332,7 @@ abstract class OMapEnv implements OEnv {
 		// ODebug.trace("adding symbol %s %s on %s at env %s", name,
 		// defined.getHandled(), defined.pop(),
 		// this.getClass().getSimpleName());
-		this.hookDefined(name, defined);
+		this.hookEntry(name, defined);
 	}
 
 	@Override

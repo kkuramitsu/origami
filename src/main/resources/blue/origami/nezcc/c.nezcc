@@ -69,6 +69,7 @@ switch           = switch(%s) {
 case             = case %s : %s
 #default          = default : %s
 
+ifexpr           = (%s) ? (%s) : (%s)
 true             = 1
 false            = 0
 null             = NULL

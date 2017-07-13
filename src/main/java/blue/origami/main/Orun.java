@@ -23,7 +23,7 @@ import blue.origami.nez.peg.Grammar;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
-public class Orun extends blue.origami.main.OCommand {
+public class Orun extends OCommand {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
