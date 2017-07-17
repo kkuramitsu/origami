@@ -8,7 +8,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.util.OLog;
 
-public abstract class NumberExpr extends LoggerTypeRule implements TTypeRule {
+public abstract class NumberExpr extends LoggerRule implements TTypeRule {
 	public final Class<?> baseType;
 
 	public NumberExpr() {

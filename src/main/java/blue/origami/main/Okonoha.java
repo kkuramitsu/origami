@@ -4,6 +4,7 @@ import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
+import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
 public class Okonoha extends OCommand {
@@ -20,7 +21,7 @@ public class Okonoha extends OCommand {
 		String target = options.stringValue(ParserOption.Target, "racket");
 		Grammar g = this.getGrammar(options, "iroha.opeg");
 		Transpiler env = new Transpiler(g, target, options);
-
+		ODebug.setDebug(true);
 		for (String file : files) {
 			env.loadScriptFile(file);
 		}

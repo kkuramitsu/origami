@@ -1,5 +1,8 @@
 package blue.origami.transpiler;
 
+import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TParamCode;
+
 public abstract class TTemplate {
 	public final static TTemplate Null = null;
 
@@ -30,10 +33,29 @@ public abstract class TTemplate {
 		return this.paramTypes;
 	}
 
+	public boolean isEnabled() {
+		return true;
+	}
+
+	public abstract TParamCode newParamCode(TEnv env, String name, TCode[] params);
+
 	public abstract String format(Object... args);
 
 	public TInst[] getInsts() {
 		return TConsts.emptyInsts;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getName());
+		for (TType t : this.getParamTypes()) {
+			sb.append(":");
+			sb.append(t);
+		}
+		sb.append(":");
+		sb.append(this.getReturnType());
+		return sb.toString();
 	}
 
 }

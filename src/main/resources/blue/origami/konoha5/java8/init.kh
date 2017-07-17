@@ -11,10 +11,52 @@ false:Bool = false
 
 ()            = (%s)
 Int->Float        = %s
-Float->>Int         = (int)(%s)
+Float->>Int       = (int)(%s)
 
 0:Int         = %d
 0:Float       = %f
 
 +:Int:Int:Int       = %s+%s
 +:Float:Float:Float = %s+%s
+
+
+comment          = // %s
+begin            = {
+end              = }
+;                = ;
+delim            = ,
+
+module           = final class $|base| {
+
+structname       = %s<T>
+
+struct           = static class %s <T> {
+field            = %s %s;
+constructor      = %s(%s) {
+init             = this.%s = %s;
+new              = new %s<>
+
+functype         = '''
+public interface %2$s <T> {
+  public %1$s apply(%3$s);
+}
+'''
+
+const            = private static final %1$s %2$s = %3$s;
+
+function         = private static final %1$s %2$s(%3$s) {
+function1        = public static final <T> %1$s %2$s(%3$s) {
+return           = return %s;
+
+apply            = %s.apply
+funcref          = $|base|::%s
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = switch(%s) {
+case             = case %s : %s
+#default         = default : %s
+ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
+
+lambda           = (%s) -> %s

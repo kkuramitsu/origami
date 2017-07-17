@@ -36,6 +36,15 @@ interface TCodeAPI {
 		TMapTemplate tt = env.findTypeMap(env, f, t);
 		return new TCastCode(t, tt, self);
 	}
+
+	public default TCode applyCode(TEnv env, TCode... params) {
+		return self();
+	}
+
+	public default TCode op(TEnv env, String op, TCode right) {
+		return self();
+	}
+
 }
 
 abstract class TTypedCode implements TCode {

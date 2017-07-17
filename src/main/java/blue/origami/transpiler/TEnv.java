@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OFmt;
 import blue.origami.transpiler.code.TCastCode;
@@ -12,8 +13,10 @@ import blue.origami.transpiler.code.TCastCode.TMapTemplate;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TParamCode;
+import blue.origami.transpiler.code.TTypeCode;
 import blue.origami.transpiler.rule.TTypeRule;
 import blue.origami.util.Handled;
+import blue.origami.util.ODebug;
 
 public class TEnv implements TEnvTraits, TEnvApi {
 	private TEnv parent;
@@ -93,6 +96,13 @@ interface TEnvTraits {
 	TEnvEntry getEntry(String name);
 
 	TEnvTraits getParent();
+
+	public default Transpiler getTranspiler() {
+		if (this instanceof Transpiler) {
+			return (Transpiler) this;
+		}
+		return this.getParent().getTranspiler();
+	}
 
 	public default TEnv newEnv() {
 		return new TEnv((TEnv) this);
@@ -296,6 +306,36 @@ interface TEnvApi {
 		}
 	}
 
+	public default String getSymbolOrElse(String key, String def) {
+		TCodeTemplate tp = env().get(key, TCodeTemplate.class);
+		return tp == null ? def : tp.template;
+	}
+
+	public default String getSymbol(String... keys) {
+		for (int i = 0; i < keys.length - 1; i++) {
+			String s = this.getSymbolOrElse(keys[i], null);
+			if (s != null) {
+				return s;
+			}
+		}
+		return keys[keys.length - 1];
+	}
+
+	public default TTemplate getTemplate(String... keys) {
+		for (int i = 0; i < keys.length - 1; i++) {
+			TTemplate tp = env().get(keys[i], TTemplate.class);
+			if (tp != null) {
+				return tp;
+			}
+		}
+		String last = keys[keys.length - 1];
+		return last == null ? null : new TCodeTemplate(last);
+	}
+
+	public default String format(String key, String def, Object... args) {
+		return String.format(this.getSymbolOrElse(key, def), args);
+	}
+
 	public default TType getType(String tsig) {
 		return env().get(tsig, TType.class);
 	}
@@ -304,6 +344,17 @@ interface TEnvApi {
 		TType t = this.getType(tsig);
 		assert (t != null) : tsig;
 		return t;
+	}
+
+	public default void addTypeHint(TEnv env, String names, TType t) {
+		TTypeHint hint = TTypeHint.newTypeHint(t);
+		for (String n : names.split(",")) {
+			env().add(n, hint);
+		}
+	}
+
+	public default TType lookupTypeHint(TEnv env, String name) {
+		return TTypeHint.lookupTypeName(env, name);
 	}
 
 	public default TCode typeTree(TEnv env, Tree<?> t) {
@@ -315,18 +366,20 @@ interface TEnvApi {
 			e.setSourcePosition(t);
 			throw e;
 		}
-		if (node == null) {
+		if (node == null && env.get(name, TTypeRule.class) == null) {
 			try {
 				Class<?> c = Class.forName("blue.origami.transpiler.rule." + name);
 				TTypeRule rule = (TTypeRule) c.newInstance();
-				env.add(name, rule);
-				return env.typeTree(env, t);
+				env.getTranspiler().add(name, rule);
+				return typeTree(env, t);
 			} catch (TErrorCode e) {
 				throw e;
 			} catch (Exception e) {
-				System.out.println("DEBUG: " + e);
-				throw new TErrorCode(t, OFmt.undefined_syntax__YY0, name);
+				ODebug.traceException(e);
 			}
+		}
+		if (node == null) {
+			throw new TErrorCode(t, OFmt.undefined_syntax__YY0, name);
 		}
 		node.setSourcePosition(t);
 		return node;
@@ -337,6 +390,33 @@ interface TEnvApi {
 		// return new EmptyCode(env);
 		// }
 		return typeTree(env, t);
+	}
+
+	// public default TCode[] typeParams(TEnv env, Tree<?> t) {
+	// return typeParams(env, t, OSymbols._param);
+	// }
+
+	public default TCode[] typeParams(TEnv env, Tree<?> t, Symbol param) {
+		Tree<?> p = t.get(param, null);
+		TCode[] params = new TCode[p.size()];
+		for (int i = 0; i < p.size(); i++) {
+			params[i] = typeExpr(env, p.get(i));
+		}
+		return params;
+	}
+
+	public default TType parseType(TEnv env, Tree<?> t, TType defty) {
+		if (t != null) {
+			try {
+				TCode node = typeTree(env, t);
+				if (node instanceof TTypeCode) {
+					return ((TTypeCode) node).getTypeValue();
+				}
+				return node.getType();
+			} catch (TErrorCode e) {
+			}
+		}
+		return defty;
 	}
 
 	public default TMapTemplate findTypeMap(TEnv env, TType f, TType t) {
@@ -353,19 +433,19 @@ interface TEnvApi {
 		// }
 		// }
 		List<TTemplate> l = new ArrayList<>(8);
-		env.findList(name, TTemplate.class, l, (tt) -> tt.getParamSize() == params.length);
+		env.findList(name, TTemplate.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
 		// ODebug.trace("l = %s", l);
 		if (l.size() == 0) {
 			throw new TErrorCode("undefined %s%s", name, types(params));
 		}
-		TParamCode start = new TParamCode(l.get(0), params);
+		TParamCode start = l.get(0).newParamCode(env, name, params);
 		int mapCost = start.checkParam(env);
 		// System.out.println("cost=" + mapCost + ", " + l.get(0));
 		for (int i = 1; i < l.size(); i++) {
 			if (mapCost <= 0) {
 				return start;
 			}
-			TParamCode next = new TParamCode(l.get(i), params);
+			TParamCode next = l.get(i).newParamCode(env, name, params);
 			int nextCost = next.checkParam(env);
 			// System.out.println("nextcost=" + nextCost + ", " + l.get(i));
 			if (nextCost < mapCost) {

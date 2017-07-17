@@ -18,8 +18,10 @@ import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.rule.AddExpr;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.IntExpr;
+import blue.origami.transpiler.rule.NameExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.util.OConsole;
+import blue.origami.util.ODebug;
 import blue.origami.util.OLog;
 import blue.origami.util.OOption;
 import blue.origami.util.OTree;
@@ -45,13 +47,17 @@ public class Transpiler extends TEnv {
 		this.add("IntExpr", new IntExpr());
 		this.add("AddExpr", new AddExpr());
 		this.add("MulExpr", new BinaryExpr("*"));
+		this.add("NameExpr", new NameExpr());
 		// type
 		this.add("?", TType.tUntyped);
 		this.add("Bool", TType.tBool);
 		this.add("Int", TType.tInt);
 		this.add("Float", TType.tFloat);
 		this.add("String", TType.tString);
-		this.add("Data", TType.tString);
+		this.add("Data", TType.tData);
+		this.addTypeHint(this, "i,j,m,n", TType.tInt);
+		this.addTypeHint(this, "x,y,z,w", TType.tFloat);
+		this.addTypeHint(this, "s,t,u", TType.tString);
 	}
 
 	private void loadLibrary(String file) {
@@ -150,7 +156,58 @@ public class Transpiler extends TEnv {
 		OConsole.println(t);
 		OConsole.endColor();
 		TCode code = env.typeTree(env, t);
-		code.emitCode(env, new SourceSection());
+		SourceSection topLevel = new SourceSection();
+		code.emitCode(env, topLevel);
+		if (code.getType() != TType.tUnit) {
+			OConsole.println("(%s) %s", code.getType(), OConsole.bold(topLevel.toString()));
+		}
+	}
+
+	public TTemplate defineFunction(String name, String[] paramNames, TType[] paramTypes, TType returnType,
+			Tree<?> body) {
+		TEnv env = this.newEnv();
+		String lname = this.getLocalName(name);
+		TCodeTemplate tp = this.newCodeTemplate(env, lname, returnType, paramTypes);
+		this.add(name, tp);
+
+		TFunctionContext fcx = new TFunctionContext();
+		env.add(TFunctionContext.class, fcx);
+		for (int i = 0; i < paramNames.length; i++) {
+			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
+		}
+		TCode code = env.typeTree(env, body);
+		if (returnType.isUntyped()) {
+			returnType = code.getType();
+		} else {
+			code = code.asType(env, returnType);
+		}
+		SourceSection s = new SourceSection();
+		s.defineFunction(this, lname, paramNames, paramTypes, returnType, code);
+		ODebug.println("generating ... " + s);
+		return tp;
+	}
+
+	int count = 0;
+
+	private String getLocalName(String name) {
+		String prefix = "f" + (this.count++); // this.getSymbol(name);
+		return prefix + name;
+	}
+
+	private TCodeTemplate newCodeTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
+		String param = "";
+		if (paramTypes.length > 0) {
+			String delim = env.getSymbolOrElse(",", ",");
+			StringBuilder sb = new StringBuilder();
+			sb.append("%s");
+			for (int i = 1; i < paramTypes.length; i++) {
+				sb.append(delim);
+				sb.append("%s");
+			}
+			param = sb.toString();
+		}
+		String template = env.format("funccall", "%s(%s)", lname, param);
+		return new TCodeTemplate(lname, returnType, paramTypes, template);
 	}
 
 }
@@ -162,6 +219,26 @@ class SourceSection implements TCodeSection {
 
 	public void incIndent() {
 		this.indent++;
+	}
+
+	public void defineFunction(Transpiler env, String name, String[] paramNames, TType[] paramTypes, TType returnType,
+			TCode code) {
+		String params = "";
+		if (paramTypes.length > 0) {
+			String delim = env.getSymbolOrElse(",", ",");
+			StringBuilder sb = new StringBuilder();
+			sb.append(env.format("param", "%1$s %2$s", paramTypes[0].strOut(env), paramNames[0] + 0));
+			for (int i = 1; i < paramTypes.length; i++) {
+				sb.append(delim);
+				sb.append(env.format("param", "%1$s %2$s", paramTypes[i].strOut(env), paramNames[i] + i));
+			}
+			params = sb.toString();
+		}
+		this.pushLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
+		this.incIndent();
+		this.pushLine(env.format("return", "%s", code.strOut(env)));
+		this.decIndent();
+		this.pushLine(env.getSymbol("end function", "end", "}"));
 	}
 
 	public void decIndent() {
@@ -178,9 +255,12 @@ class SourceSection implements TCodeSection {
 		return sb.toString();
 	}
 
+	public void pushLine(String line) {
+		this.sb.append(this.Indent("  ", line + "\n"));
+	}
+
 	@Override
 	public void push(String t) {
-		System.out.print(t);
 		this.sb.append(t);
 	}
 

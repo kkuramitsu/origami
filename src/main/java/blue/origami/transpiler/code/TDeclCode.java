@@ -5,16 +5,24 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TTemplate;
 import blue.origami.transpiler.TType;
 
-public class TSourceCode extends TArgCode {
+public class TDeclCode extends TTypedCode {
 
-	public TSourceCode(TCode... args) {
-		super(args.length == 0 ? TType.tUnit : args[args.length - 1].getType(), TTemplate.Null, args);
+	public TDeclCode() {
+		super(TType.tUnit);
+	}
+
+	@Override
+	public TTemplate getTemplate(TEnv env) {
+		return TTemplate.Null;
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		return "";
 	}
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		for (TCode a : this.args) {
-			a.emitCode(env, sec);
-		}
 	}
+
 }

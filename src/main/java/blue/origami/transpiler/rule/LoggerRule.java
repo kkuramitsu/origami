@@ -4,7 +4,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.util.OLog;
 
-public class LoggerTypeRule {
+public class LoggerRule {
 	private OLog addMessage(OLog head, Tree<?> s, int level, String format, Object[] args) {
 		OLog m = new OLog(s, level, format, args);
 		if (head == null) {
