@@ -42,6 +42,7 @@ public interface %2$s <T> {
 '''
 
 const            = private static final %1$s %2$s = %3$s;
+let              = final %1$s %2$s = %3$s;
 
 function         = private static final %1$s %2$s(%3$s) {
 function1        = public static final <T> %1$s %2$s(%3$s) {

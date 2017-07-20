@@ -6,8 +6,8 @@ import blue.origami.transpiler.code.TNameCode.TFuncRefCode;
 import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
-public class TFunction extends TTemplate implements TNameRef {
-
+public class TFunction extends TSkeleton implements TNameRef {
+	protected boolean isPublic = false;
 	protected String[] paramNames;
 	protected Tree<?> body;
 
@@ -44,16 +44,17 @@ public class TFunction extends TTemplate implements TNameRef {
 				}
 			}
 			String sig = getSignature(name, p);
-			TTemplate tp = env.get(sig, TTemplate.class);
+			TSkeleton tp = env.get(sig, TSkeleton.class);
 			if (tp == null) {
 				Transpiler tr = env.getTranspiler();
-				tp = tr.defineFunction(name, this.paramNames, p, this.getReturnType(), this.body);
+				tp = tr.defineFunction(this.isPublic, name, this.paramNames, p, this.getReturnType(), this.body);
 				env.add(sig, tp);
 			}
 			return new TParamCode(tp, params);
 		} else {
 			Transpiler tr = env.getTranspiler();
-			TTemplate tp = tr.defineFunction(name, this.paramNames, this.paramTypes, this.returnType, this.body);
+			TSkeleton tp = tr.defineFunction(this.isPublic, name, this.paramNames, this.paramTypes, this.returnType,
+					this.body);
 			this.setDisabled();
 			return new TParamCode(tp, params);
 		}

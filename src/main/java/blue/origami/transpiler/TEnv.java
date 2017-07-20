@@ -9,7 +9,7 @@ import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OFmt;
 import blue.origami.transpiler.code.TCastCode;
-import blue.origami.transpiler.code.TCastCode.TMapTemplate;
+import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TParamCode;
@@ -261,28 +261,28 @@ interface TEnvApi {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 4));
 					name = f + "->" + t;
-					env().add(name, new TMapTemplate(name, f, t, TCastCode.CONV, value));
+					env().add(name, new TConvTemplate(name, f, t, TCastCode.CONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("-->")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
-					env().add(name, new TMapTemplate(name, f, t, TCastCode.CAST, value));
+					env().add(name, new TConvTemplate(name, f, t, TCastCode.CAST, value));
 					return;
 				}
 				if ((loc = key.indexOf("->>")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
-					env().add(name, new TMapTemplate(name, f, t, TCastCode.BESTCONV, value));
+					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("->")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
-					env().add(name, new TMapTemplate(name, f, t, TCastCode.BESTCAST, value));
+					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCAST, value));
 					return;
 				}
 				System.out.println("FIXME: " + key);
@@ -299,7 +299,7 @@ interface TEnvApi {
 				}
 				env().add(name, new TCodeTemplate(name, ret, p, value));
 			} else {
-				TTemplate t = new TCodeTemplate(name, ret, TConsts.emptyTypes, value);
+				TSkeleton t = new TCodeTemplate(name, ret, TConsts.emptyTypes, value);
 				env().add(name, t);
 				env().add(key, t);
 			}
@@ -321,9 +321,9 @@ interface TEnvApi {
 		return keys[keys.length - 1];
 	}
 
-	public default TTemplate getTemplate(String... keys) {
+	public default TSkeleton getTemplate(String... keys) {
 		for (int i = 0; i < keys.length - 1; i++) {
-			TTemplate tp = env().get(keys[i], TTemplate.class);
+			TSkeleton tp = env().get(keys[i], TSkeleton.class);
 			if (tp != null) {
 				return tp;
 			}
@@ -419,11 +419,11 @@ interface TEnvApi {
 		return defty;
 	}
 
-	public default TMapTemplate findTypeMap(TEnv env, TType f, TType t) {
+	public default TConvTemplate findTypeMap(TEnv env, TType f, TType t) {
 		String key = f + "->" + t;
-		TMapTemplate tp = env.get(key, TMapTemplate.class);
+		TConvTemplate tp = env.get(key, TConvTemplate.class);
 		// System.out.printf("FIXME: finding %s %s\n", key, tp);
-		return tp == null ? TMapTemplate.Stupid : tp;
+		return tp == null ? TConvTemplate.Stupid : tp;
 	}
 
 	public default TCode findParamCode(TEnv env, String name, TCode... params) {
@@ -432,8 +432,8 @@ interface TEnvApi {
 		// return new TUntypedParamCode(name, params);
 		// }
 		// }
-		List<TTemplate> l = new ArrayList<>(8);
-		env.findList(name, TTemplate.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
+		List<TSkeleton> l = new ArrayList<>(8);
+		env.findList(name, TSkeleton.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
 		// ODebug.trace("l = %s", l);
 		if (l.size() == 0) {
 			throw new TErrorCode("undefined %s%s", name, types(params));

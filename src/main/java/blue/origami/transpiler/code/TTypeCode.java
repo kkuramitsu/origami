@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
 public class TTypeCode extends TTypedCode {
@@ -17,8 +17,8 @@ public class TTypeCode extends TTypedCode {
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
-		return env.get(this.value.toString(), TTemplate.class);
+	public TSkeleton getTemplate(TEnv env) {
+		return env.get(this.value.toString(), TSkeleton.class);
 	}
 
 	@Override

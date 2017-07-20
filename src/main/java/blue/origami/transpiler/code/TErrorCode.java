@@ -5,7 +5,7 @@ import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 import blue.origami.util.OLog;
 
@@ -58,8 +58,8 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
-		return TTemplate.Null;
+	public TSkeleton getTemplate(TEnv env) {
+		return TSkeleton.Null;
 	}
 
 	@Override

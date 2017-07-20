@@ -1,7 +1,8 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
 public class TNameCode extends TTypedCode {
@@ -19,13 +20,18 @@ public class TNameCode extends TTypedCode {
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
+	public TSkeleton getTemplate(TEnv env) {
 		return env.getTemplate("varname", "name", "%s");
 	}
 
 	@Override
 	public String strOut(TEnv env) {
 		return this.getTemplate(env).format(this.lname);
+	}
+
+	@Override
+	public void emitCode(TEnv env, TCodeSection sec) {
+		sec.pushName(this);
 	}
 
 	// @Override
@@ -39,16 +45,16 @@ public class TNameCode extends TTypedCode {
 
 	public final static class TFuncRefCode extends TTypedCode {
 		String name;
-		TTemplate template;
+		TSkeleton template;
 
-		public TFuncRefCode(String name, TTemplate tp) {
+		public TFuncRefCode(String name, TSkeleton tp) {
 			super(TType.tFunc(tp.getReturnType(), tp.getParamTypes()));
 			this.name = name;
 			this.template = tp;
 		}
 
 		@Override
-		public TTemplate getTemplate(TEnv env) {
+		public TSkeleton getTemplate(TEnv env) {
 			return env.getTemplate("funcref", "%s");
 		}
 

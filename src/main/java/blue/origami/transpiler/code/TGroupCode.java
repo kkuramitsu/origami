@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
 public class TGroupCode implements TCode {
@@ -29,14 +29,14 @@ public class TGroupCode implements TCode {
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
-		TTemplate t = env.get("()", TTemplate.class);
-		return (t == null) ? TTemplate.Null : t;
+	public TSkeleton getTemplate(TEnv env) {
+		TSkeleton t = env.get("()", TSkeleton.class);
+		return (t == null) ? TSkeleton.Null : t;
 	}
 
 	@Override
 	public String strOut(TEnv env) {
-		TTemplate t = env.get("()", TTemplate.class);
+		TSkeleton t = env.get("()", TSkeleton.class);
 		if (t == null) {
 			return this.inner.strOut(env);
 		}

@@ -4,16 +4,16 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TInst;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
-import blue.origami.transpiler.code.TCastCode.TMapTemplate;
+import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 
 public interface TCode extends TCodeAPI {
 	public TType getType();
 
 	public TCode setSourcePosition(Tree<?> t);
 
-	public TTemplate getTemplate(TEnv env);
+	public TSkeleton getTemplate(TEnv env);
 
 	public String strOut(TEnv env);
 
@@ -33,7 +33,7 @@ interface TCodeAPI {
 		if (t.equals(f)) {
 			return self;
 		}
-		TMapTemplate tt = env.findTypeMap(env, f, t);
+		TConvTemplate tt = env.findTypeMap(env, f, t);
 		return new TCastCode(t, tt, self);
 	}
 
@@ -70,7 +70,7 @@ abstract class TTypedCode implements TCode {
 	}
 
 	@Override
-	public abstract TTemplate getTemplate(TEnv env);
+	public abstract TSkeleton getTemplate(TEnv env);
 
 	@Override
 	public abstract String strOut(TEnv env);
@@ -93,37 +93,18 @@ abstract class TTypedCode implements TCode {
 	}
 }
 
-// class TStringCode extends TCode {
-// private int value;
-//
-// TStringCode(int value) {
-// super(TType.tString);
-// this.value = value;
-// }
-//
-// @Override
-// public TTemplate getTemplate(TEnv env) {
-// return env.get("literal:Int", TTemplate.class);
-// }
-//
-// @Override
-// public void emitCode(TEnv env, TCodeSection sec) {
-// sec.push(this.getTemplate(env).format(this.value));
-// }
-// }
-
 class TArgCode extends TTypedCode {
-	protected TTemplate template;
+	protected TSkeleton template;
 	protected TCode[] args;
 
-	TArgCode(TType t, TTemplate template, TCode... args) {
+	TArgCode(TType t, TSkeleton template, TCode... args) {
 		super(t);
 		this.template = template;
 		this.args = args;
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
+	public TSkeleton getTemplate(TEnv env) {
 		return this.template;
 	}
 

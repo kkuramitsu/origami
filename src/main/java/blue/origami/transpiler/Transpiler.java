@@ -21,21 +21,22 @@ import blue.origami.transpiler.rule.IntExpr;
 import blue.origami.transpiler.rule.NameExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OLog;
 import blue.origami.util.OOption;
 import blue.origami.util.OTree;
 
 public class Transpiler extends TEnv {
 	private final OOption options;
 	private final String target;
+	private final TGenerator generator;
 
 	public Transpiler(Grammar grammar, String target, OOption options) {
 		super(null);
 		this.target = "/blue/origami/konoha5/" + target + "/";
 		this.options = options;
+		this.generator = new TGenerator();
 		this.initEnv(grammar);
 		this.loadLibrary("init.kh");
+
 	}
 
 	private void initEnv(Grammar grammar) {
@@ -155,18 +156,28 @@ public class Transpiler extends TEnv {
 		OConsole.beginColor(OConsole.Blue);
 		OConsole.println(t);
 		OConsole.endColor();
-		TCode code = env.typeTree(env, t);
-		SourceSection topLevel = new SourceSection();
-		code.emitCode(env, topLevel);
-		if (code.getType() != TType.tUnit) {
-			OConsole.println("(%s) %s", code.getType(), OConsole.bold(topLevel.toString()));
-		}
+		this.generator.generateExpression(env, t);
 	}
 
-	public TTemplate defineFunction(String name, String[] paramNames, TType[] paramTypes, TType returnType,
-			Tree<?> body) {
+	// ConstDecl
+
+	int functionId = 0;
+
+	public TSkeleton defineConst(boolean isPublic, String name, TType type, TCode expr) {
 		TEnv env = this.newEnv();
-		String lname = this.getLocalName(name);
+		String lname = isPublic ? name : this.getLocalName(name);
+		TCodeTemplate tp = this.newCodeTemplate(env, lname, type, TConsts.emptyTypes);
+		this.add(name, tp);
+		this.generator.defineConst(this, isPublic, lname, type, expr);
+		return tp;
+	}
+
+	// FuncDecl
+
+	public TSkeleton defineFunction(boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
+			TType returnType, Tree<?> body) {
+		TEnv env = this.newEnv();
+		String lname = isPublic ? name : this.getLocalName(name);
 		TCodeTemplate tp = this.newCodeTemplate(env, lname, returnType, paramTypes);
 		this.add(name, tp);
 
@@ -181,16 +192,12 @@ public class Transpiler extends TEnv {
 		} else {
 			code = code.asType(env, returnType);
 		}
-		SourceSection s = new SourceSection();
-		s.defineFunction(this, lname, paramNames, paramTypes, returnType, code);
-		ODebug.println("generating ... " + s);
+		this.generator.defineFunction(this, isPublic, lname, paramNames, paramTypes, returnType, code);
 		return tp;
 	}
 
-	int count = 0;
-
 	private String getLocalName(String name) {
-		String prefix = "f" + (this.count++); // this.getSymbol(name);
+		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + name;
 	}
 
@@ -208,75 +215,6 @@ public class Transpiler extends TEnv {
 		}
 		String template = env.format("funccall", "%s(%s)", lname, param);
 		return new TCodeTemplate(lname, returnType, paramTypes, template);
-	}
-
-}
-
-class SourceSection implements TCodeSection {
-
-	StringBuilder sb = new StringBuilder();
-	int indent = 0;
-
-	public void incIndent() {
-		this.indent++;
-	}
-
-	public void defineFunction(Transpiler env, String name, String[] paramNames, TType[] paramTypes, TType returnType,
-			TCode code) {
-		String params = "";
-		if (paramTypes.length > 0) {
-			String delim = env.getSymbolOrElse(",", ",");
-			StringBuilder sb = new StringBuilder();
-			sb.append(env.format("param", "%1$s %2$s", paramTypes[0].strOut(env), paramNames[0] + 0));
-			for (int i = 1; i < paramTypes.length; i++) {
-				sb.append(delim);
-				sb.append(env.format("param", "%1$s %2$s", paramTypes[i].strOut(env), paramNames[i] + i));
-			}
-			params = sb.toString();
-		}
-		this.pushLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
-		this.incIndent();
-		this.pushLine(env.format("return", "%s", code.strOut(env)));
-		this.decIndent();
-		this.pushLine(env.getSymbol("end function", "end", "}"));
-	}
-
-	public void decIndent() {
-		assert (this.indent > 0);
-		this.indent--;
-	}
-
-	public String Indent(String tab, String stmt) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < this.indent; i++) {
-			sb.append(tab);
-		}
-		sb.append(stmt);
-		return sb.toString();
-	}
-
-	public void pushLine(String line) {
-		this.sb.append(this.Indent("  ", line + "\n"));
-	}
-
-	@Override
-	public void push(String t) {
-		this.sb.append(t);
-	}
-
-	@Override
-	public void push(TCode t) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public String toString() {
-		return this.sb.toString();
-	}
-
-	@Override
-	public void pushLog(OLog log) {
-		System.out.println(log);
 	}
 
 }

@@ -1,12 +1,13 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
 public class TParamCode extends TArgCode {
 
-	public TParamCode(TTemplate template, TCode... args) {
+	public TParamCode(TSkeleton template, TCode... args) {
 		super(template.getReturnType(), template, args.clone());
 	}
 
@@ -25,6 +26,11 @@ public class TParamCode extends TArgCode {
 			}
 		}
 		return mapCost;
+	}
+
+	@Override
+	public void emitCode(TEnv env, TCodeSection sec) {
+		sec.pushCall(this);
 	}
 
 }

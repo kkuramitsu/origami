@@ -1,21 +1,21 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TUnaryCode extends TTypedCode {
-	protected TTemplate template;
+public abstract class TUnaryCode extends TTypedCode {
+	protected TSkeleton template;
 	protected TCode inner;
 
-	public TUnaryCode(TType ret, TTemplate template, TCode inner) {
+	public TUnaryCode(TType ret, TSkeleton template, TCode inner) {
 		super(ret);
 		this.template = template;
 		this.inner = inner;
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
+	public TSkeleton getTemplate(TEnv env) {
 		return this.template;
 	}
 
@@ -23,4 +23,5 @@ public class TUnaryCode extends TTypedCode {
 	public String strOut(TEnv env) {
 		return this.getTemplate(env).format(this.inner.strOut(env));
 	}
+
 }

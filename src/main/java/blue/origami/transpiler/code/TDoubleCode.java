@@ -1,10 +1,11 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TTemplate;
+import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TDoubleCode extends TTypedCode {
+public class TDoubleCode extends TTypedCode implements TValueCode {
 	private double value;
 
 	public TDoubleCode(double value) {
@@ -13,13 +14,23 @@ public class TDoubleCode extends TTypedCode {
 	}
 
 	@Override
-	public TTemplate getTemplate(TEnv env) {
-		return env.get("0:Float", TTemplate.class);
+	public Object getValue() {
+		return this.value;
+	}
+
+	@Override
+	public TSkeleton getTemplate(TEnv env) {
+		return env.getTemplate("0:Float", "%f");
 	}
 
 	@Override
 	public String strOut(TEnv env) {
 		return this.getTemplate(env).format(this.value);
+	}
+
+	@Override
+	public void emitCode(TEnv env, TCodeSection sec) {
+		sec.pushDouble(this);
 	}
 
 }

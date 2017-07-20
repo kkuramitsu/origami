@@ -5,7 +5,7 @@ import blue.origami.transpiler.code.TNameCode;
 import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
-public class TCodeTemplate extends TTemplate implements TNameRef {
+public class TCodeTemplate extends TSkeleton implements TNameRef {
 
 	protected String template = null;
 

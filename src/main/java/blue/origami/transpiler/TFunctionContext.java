@@ -23,6 +23,10 @@ public class TFunctionContext {
 			this.type = type;
 		}
 
+		public String getName() {
+			return this.name + this.index;
+		}
+
 		@Override
 		public boolean isNameRef(TEnv env) {
 			return true;
@@ -30,7 +34,7 @@ public class TFunctionContext {
 
 		@Override
 		public TCode nameCode(TEnv env, String name) {
-			return new TNameCode(this.name + this.index, this.type);
+			return new TNameCode(this.getName(), this.type);
 		}
 	}
 }
