@@ -19,12 +19,11 @@ Float->>Int       = (int)(%s)
 +:Int:Int:Int       = %s+%s
 +:Float:Float:Float = %s+%s
 
-
 comment          = // %s
 begin            = {
 end              = }
 ;                = ;
-delim            = ,
+,                = ,
 
 module           = final class $|base| {
 
@@ -60,3 +59,5 @@ case             = case %s : %s
 ifexpr           = ((%1$s) ? (%2$s) : (%3$s))
 
 lambda           = (%s) -> %s
+
+
