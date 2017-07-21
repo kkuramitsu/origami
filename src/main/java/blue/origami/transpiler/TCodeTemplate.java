@@ -7,7 +7,7 @@ import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TCodeTemplate extends TSkeleton implements TNameRef {
 
-	protected String template = null;
+	protected final String template;
 
 	public TCodeTemplate(String name, TType returnType, TType[] paramTypes, String template) {
 		super(name, returnType, paramTypes);
@@ -16,6 +16,11 @@ public class TCodeTemplate extends TSkeleton implements TNameRef {
 
 	public TCodeTemplate(String template) {
 		this(template, TType.tUntyped, TConsts.emptyTypes, template);
+	}
+
+	@Override
+	public String getDefined() {
+		return this.template;
 	}
 
 	@Override

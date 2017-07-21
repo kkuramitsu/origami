@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TSourceCode extends TArgCode {
+public class TSourceCode extends TStaticMultiCode {
 
 	public TSourceCode(TCode... args) {
-		super(args.length == 0 ? TType.tUnit : args[args.length - 1].getType(), TSkeleton.Null, args);
+		super(args.length == 0 ? TType.tVoid : args[args.length - 1].getType(), TSkeleton.Null, args);
 	}
 
 	@Override

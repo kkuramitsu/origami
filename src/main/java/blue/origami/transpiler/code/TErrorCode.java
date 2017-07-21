@@ -1,5 +1,7 @@
 package blue.origami.transpiler.code;
 
+import java.util.Iterator;
+
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Tree;
@@ -18,7 +20,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 	public TErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
 		this.log = new OLog(s, OLog.Error, fmt, args);
-		this.ret = TType.tUnit;
+		this.ret = TType.tVoid;
 	}
 
 	public TErrorCode(LocaleFormat fmt, Object... args) {
@@ -36,6 +38,11 @@ public class TErrorCode extends RuntimeException implements TCode {
 	@Override
 	public TCode self() {
 		return this;
+	}
+
+	@Override
+	public Iterator<TCode> iterator() {
+		return new AtomCodeIterator();
 	}
 
 	public OLog getLog() {

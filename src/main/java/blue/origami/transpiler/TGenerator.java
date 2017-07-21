@@ -11,10 +11,12 @@ import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDoubleCode;
+import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
+import blue.origami.transpiler.code.TMultiCode;
 import blue.origami.transpiler.code.TNameCode;
-import blue.origami.transpiler.code.TParamCode;
+import blue.origami.transpiler.code.TReturnCode;
 import blue.origami.util.OConsole;
 import blue.origami.util.OLog;
 
@@ -22,6 +24,14 @@ public class TGenerator {
 	protected SourceSection head = new SourceSection();
 	protected SourceSection lib = new SourceSection();
 	// private SourceSection body = this.head;
+
+	protected void setup() {
+
+	}
+
+	protected void wrapUp() {
+
+	}
 
 	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
 		this.head.pushLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
@@ -132,7 +142,7 @@ public class TGenerator {
 		TCode code = env.typeTree(env, t);
 		SourceSection topLevel = new SourceSection();
 		code.emitCode(env, topLevel);
-		if (code.getType() != TType.tUnit) {
+		if (code.getType() != TType.tVoid) {
 			OConsole.println("(%s) %s", code.getType(), OConsole.bold(topLevel.toString()));
 		}
 	}
@@ -187,46 +197,61 @@ class SourceSection implements TCodeSection {
 
 	// Asm compatible
 
-	private TEnv env;
-
 	@Override
 	public void push(String t) {
 		this.sb.append(t);
 	}
 
 	@Override
-	public void pushBool(TBoolCode code) {
-		this.push(code.strOut(this.env));
+	public void pushBool(TEnv env, TBoolCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushInt(TIntCode code) {
-		this.push(code.strOut(this.env));
+	public void pushInt(TEnv env, TIntCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushDouble(TDoubleCode code) {
-		this.push(code.strOut(this.env));
+	public void pushDouble(TEnv env, TDoubleCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushCast(TCastCode code) {
-		this.push(code.strOut(this.env));
+	public void pushCast(TEnv env, TCastCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushName(TNameCode code) {
-		this.push(code.strOut(this.env));
+	public void pushName(TEnv env, TNameCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushLet(TLetCode code) {
-		this.push(code.strOut(this.env));
+	public void pushLet(TEnv env, TLetCode code) {
+		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushCall(TParamCode code) {
-		this.push(code.strOut(this.env));
+	public void pushCall(TEnv env, TCode code) {
+		this.push(code.strOut(env));
+	}
+
+	@Override
+	public void pushIf(TEnv env, TIfCode code) {
+		this.push(code.strOut(env));
+	}
+
+	@Override
+	public void pushMulti(TEnv env, TMultiCode tMultiCode) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushReturn(TEnv env, TReturnCode code) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

@@ -19,7 +19,7 @@ public class TCastCode extends TUnaryCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushCast(this);
+		sec.pushCast(env, this);
 	}
 
 	// constants

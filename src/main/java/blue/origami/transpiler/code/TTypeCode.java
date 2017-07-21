@@ -1,14 +1,16 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
+import blue.origami.util.ODebug;
 
-public class TTypeCode extends TTypedCode {
+public class TTypeCode extends TStaticAtomCode {
 	private TType value;
 
 	public TTypeCode(TType value) {
-		super(TType.tUnit);
+		super(TType.tVoid);
 		this.value = value;
 	}
 
@@ -24,6 +26,11 @@ public class TTypeCode extends TTypedCode {
 	@Override
 	public String strOut(TEnv env) {
 		return this.getTemplate(env).format(this.value);
+	}
+
+	@Override
+	public void emitCode(TEnv env, TCodeSection sec) {
+		ODebug.TODO(this);
 	}
 
 }

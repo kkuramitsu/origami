@@ -1,35 +1,40 @@
 package blue.origami.transpiler.code;
 
+import java.util.Iterator;
+
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TInst;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 
-public interface TCode extends TCodeAPI {
+public interface TCode extends TCodeAPI, Iterable<TCode> {
 	public TType getType();
-
-	public TCode setSourcePosition(Tree<?> t);
 
 	public TSkeleton getTemplate(TEnv env);
 
 	public String strOut(TEnv env);
 
 	public void emitCode(TEnv env, TCodeSection sec);
+
+	public default TCode setSourcePosition(Tree<?> t) {
+		return this;
+	}
+
+	@Override
+	public default TCode self() {
+		return this;
+	}
+
 }
 
 interface TCodeAPI {
 	TCode self();
 
-	public default TType refineType(TEnv env, TType t) {
-		return self().getType();
-	}
-
 	public default TCode asType(TEnv env, TType t) {
 		TCode self = self();
-		TType f = this.refineType(env, t);
+		TType f = self.getType();
 		if (t.equals(f)) {
 			return self;
 		}
@@ -44,68 +49,72 @@ interface TCodeAPI {
 	public default TCode op(TEnv env, String op, TCode right) {
 		return self();
 	}
-
 }
 
-abstract class TTypedCode implements TCode {
-	private TType typed;
+abstract interface AtomCode extends TCode {
+	@Override
+	public default Iterator<TCode> iterator() {
+		return new AtomCodeIterator();
+	}
+}
 
-	TTypedCode(TType typed) {
-		this.setType(typed);
+class AtomCodeIterator implements Iterator<TCode> {
+
+	@Override
+	public boolean hasNext() {
+		return false;
 	}
 
 	@Override
-	public TCode self() {
-		return this;
+	public TCode next() {
+		return null;
+	}
+}
+
+abstract class SingleCode implements TCode {
+	protected TCode inner;
+
+	SingleCode(TCode inner) {
+		this.inner = inner;
+	}
+
+	public TCode getInner() {
+		return this.inner;
 	}
 
 	@Override
 	public TType getType() {
-		return this.typed;
-	}
-
-	public void setType(TType typed) {
-		assert (typed != null);
-		this.typed = typed;
+		return this.inner.getType();
 	}
 
 	@Override
-	public abstract TSkeleton getTemplate(TEnv env);
-
-	@Override
-	public abstract String strOut(TEnv env);
-
-	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
-		TInst[] insts = this.getTemplate(env).getInsts();
-		if (insts.length > 0) {
-			for (TInst inst : insts) {
-				inst.emit(env, this, sec);
-			}
-		} else {
-			sec.push(this.strOut(env));
-		}
-	}
-
-	@Override
-	public TCode setSourcePosition(Tree<?> t) {
+	public TCode asType(TEnv env, TType t) {
+		this.inner = this.inner.asType(env, t);
 		return this;
 	}
+
+	@Override
+	public Iterator<TCode> iterator() {
+		return new TMultiCodeIterator(this.inner);
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		return this.getTemplate(env).format(this.inner.strOut(env));
+	}
+
 }
 
-class TArgCode extends TTypedCode {
-	protected TSkeleton template;
+abstract class MultiCode implements TCode {
 	protected TCode[] args;
 
-	TArgCode(TType t, TSkeleton template, TCode... args) {
-		super(t);
-		this.template = template;
+	public MultiCode(TCode... args) {
 		this.args = args;
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		return this.template;
+	public Iterator<TCode> iterator() {
+		return new TMultiCodeIterator(this.args);
 	}
 
 	@Override
@@ -125,10 +134,70 @@ class TArgCode extends TTypedCode {
 			return this.getTemplate(env).format(p);
 		}
 	}
+}
+
+class TMultiCodeIterator implements Iterator<TCode> {
+	int loc;
+	protected TCode[] args;
+
+	TMultiCodeIterator(TCode... args) {
+		this.args = args;
+		this.loc = 0;
+	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.push(this.strOut(env));
+	public boolean hasNext() {
+		return this.loc < this.args.length;
+	}
+
+	@Override
+	public TCode next() {
+		return this.args[this.loc++];
+	}
+}
+
+abstract class TStaticAtomCode implements AtomCode {
+	private TType typed;
+
+	TStaticAtomCode(TType typed) {
+		this.setType(typed);
+	}
+
+	@Override
+	public TType getType() {
+		return this.typed;
+	}
+
+	public void setType(TType typed) {
+		assert (typed != null);
+		this.typed = typed;
+	}
+
+}
+
+abstract class TStaticMultiCode extends MultiCode {
+	private TType typed;
+	protected TSkeleton template;
+	protected TCode[] args;
+
+	TStaticMultiCode(TType t, TSkeleton template, TCode... args) {
+		this.template = template;
+		this.args = args;
+	}
+
+	@Override
+	public TType getType() {
+		return this.typed;
+	}
+
+	public void setType(TType typed) {
+		assert (typed != null);
+		this.typed = typed;
+	}
+
+	@Override
+	public TSkeleton getTemplate(TEnv env) {
+		return this.template;
 	}
 
 }

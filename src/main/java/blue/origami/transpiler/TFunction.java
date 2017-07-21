@@ -28,6 +28,12 @@ public class TFunction extends TSkeleton implements TNameRef {
 	}
 
 	@Override
+	public String getDefined() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public String format(Object... args) {
 		return null;
 		// return String.format(this.template, args);

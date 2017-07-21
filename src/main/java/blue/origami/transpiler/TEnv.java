@@ -423,6 +423,11 @@ interface TEnvApi {
 		String key = f + "->" + t;
 		TConvTemplate tp = env.get(key, TConvTemplate.class);
 		// System.out.printf("FIXME: finding %s %s\n", key, tp);
+		if (tp == null && t == TType.tVoid) {
+			String format = env.getSymbol("(Void)", "(void)%s");
+			tp = new TConvTemplate("", TType.tUntyped, TType.tVoid, TCastCode.SAME, format);
+			env.getTranspiler().add(key, tp);
+		}
 		return tp == null ? TConvTemplate.Stupid : tp;
 	}
 

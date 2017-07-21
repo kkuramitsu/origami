@@ -4,8 +4,9 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
+import blue.origami.util.ODebug;
 
-public class TNameCode extends TTypedCode {
+public class TNameCode extends TStaticAtomCode {
 	private final String lname;
 	// private final boolean readOnly;
 
@@ -31,7 +32,7 @@ public class TNameCode extends TTypedCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushName(this);
+		sec.pushName(env, this);
 	}
 
 	// @Override
@@ -43,7 +44,7 @@ public class TNameCode extends TTypedCode {
 	// return new AssignCode(ty, false, this.getName(), right.asType(env, ty));
 	// }
 
-	public final static class TFuncRefCode extends TTypedCode {
+	public final static class TFuncRefCode extends TStaticAtomCode {
 		String name;
 		TSkeleton template;
 
@@ -61,6 +62,11 @@ public class TNameCode extends TTypedCode {
 		@Override
 		public String strOut(TEnv env) {
 			return this.getTemplate(env).format(this.template.getName());
+		}
+
+		@Override
+		public void emitCode(TEnv env, TCodeSection sec) {
+			ODebug.TODO(this);
 		}
 
 		@Override

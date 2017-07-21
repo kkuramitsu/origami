@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public abstract class TType {
 	public static final TType tUntyped = new TSimpleType("?");
-	public static final TType tUnit = new TSimpleType("Unit");
+	public static final TType tVoid = new TSimpleType("Void");
 	public static final TType tBool = new TSimpleType("Bool");
 	public static final TType tInt = new TSimpleType("Int");
 	public static final TType tFloat = new TSimpleType("Float");

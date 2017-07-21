@@ -1,5 +1,7 @@
 package blue.origami.transpiler.code;
 
+import java.util.Iterator;
+
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -16,6 +18,11 @@ public class TGroupCode implements TCode {
 	@Override
 	public TCode self() {
 		return this;
+	}
+
+	@Override
+	public Iterator<TCode> iterator() {
+		return new AtomCodeIterator();
 	}
 
 	@Override
@@ -47,4 +54,5 @@ public class TGroupCode implements TCode {
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.push(this.strOut(env));
 	}
+
 }

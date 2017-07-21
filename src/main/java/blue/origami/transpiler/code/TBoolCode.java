@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TBoolCode extends TTypedCode implements TValueCode {
+public class TBoolCode extends TStaticAtomCode implements TValueCode {
 	private boolean value;
 
 	TBoolCode(boolean value) {
@@ -30,7 +30,7 @@ public class TBoolCode extends TTypedCode implements TValueCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushBool(this);
+		sec.pushBool(env, this);
 	}
 
 }

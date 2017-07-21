@@ -4,7 +4,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public abstract class TUnaryCode extends TTypedCode {
+public abstract class TUnaryCode extends TStaticAtomCode {
 	protected TSkeleton template;
 	protected TCode inner;
 

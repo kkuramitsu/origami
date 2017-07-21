@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TDoubleCode extends TTypedCode implements TValueCode {
+public class TDoubleCode extends TStaticAtomCode implements TValueCode {
 	private double value;
 
 	public TDoubleCode(double value) {
@@ -30,7 +30,7 @@ public class TDoubleCode extends TTypedCode implements TValueCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushDouble(this);
+		sec.pushDouble(env, this);
 	}
 
 }

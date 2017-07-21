@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TParamCode extends TArgCode {
+public class TParamCode extends TStaticMultiCode {
 
 	public TParamCode(TSkeleton template, TCode... args) {
 		super(template.getReturnType(), template, args.clone());
@@ -30,7 +30,7 @@ public class TParamCode extends TArgCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushCall(this);
+		sec.pushCall(env, this);
 	}
 
 }

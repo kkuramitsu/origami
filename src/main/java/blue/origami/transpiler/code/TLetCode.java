@@ -5,16 +5,28 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TLetCode extends TTypedCode {
+public class TLetCode extends TStaticAtomCode {
 	private TType decltype;
 	private String name;
 	private TCode expr;
 
 	public TLetCode(String name, TType type, TCode expr) {
-		super(TType.tUnit);
+		super(TType.tVoid);
 		this.name = name;
 		this.decltype = type;
 		this.expr = expr;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public TType getDeclType() {
+		return this.decltype;
+	}
+
+	public TCode getInner() {
+		return this.expr;
 	}
 
 	@Override
@@ -29,7 +41,7 @@ public class TLetCode extends TTypedCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushLet(this);
+		sec.pushLet(env, this);
 	}
 
 }

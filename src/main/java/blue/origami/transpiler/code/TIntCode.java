@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
 
-public class TIntCode extends TTypedCode implements TValueCode {
+public class TIntCode extends TStaticAtomCode implements TValueCode {
 	private int value;
 
 	public TIntCode(int value) {
@@ -30,7 +30,7 @@ public class TIntCode extends TTypedCode implements TValueCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushInt(this);
+		sec.pushInt(env, this);
 	}
 
 }

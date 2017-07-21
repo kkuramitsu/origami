@@ -33,6 +33,8 @@ public abstract class TSkeleton {
 		return this.paramTypes;
 	}
 
+	public abstract String getDefined();
+
 	public boolean isEnabled() {
 		return true;
 	}
