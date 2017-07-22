@@ -3,15 +3,15 @@ package blue.origami.transpiler;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TParamCode;
 
-public abstract class TSkeleton {
-	public final static TSkeleton Null = null;
+public abstract class Template {
+	public final static Template Null = null;
 	// Skeleton
 	protected final String name;
 	protected final TType[] paramTypes;
 	protected final TType returnType;
 	// private final String template;
 
-	public TSkeleton(String name, TType returnType, TType... paramTypes) {
+	public Template(String name, TType returnType, TType... paramTypes) {
 		this.name = name;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;

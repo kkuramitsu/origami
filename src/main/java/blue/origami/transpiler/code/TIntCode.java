@@ -2,10 +2,10 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TIntCode extends TStaticAtomCode implements TValueCode {
+public class TIntCode extends EmptyTypedCode implements TValueCode {
 	private int value;
 
 	public TIntCode(int value) {
@@ -19,7 +19,7 @@ public class TIntCode extends TStaticAtomCode implements TValueCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
+	public Template getTemplate(TEnv env) {
 		return env.getTemplate("0:Int", "%d");
 	}
 

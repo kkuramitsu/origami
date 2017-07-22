@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 import blue.origami.util.ODebug;
 
-public class TNameCode extends TStaticAtomCode {
+public class TNameCode extends EmptyTypedCode {
 	private final String lname;
 	// private final boolean readOnly;
 
@@ -21,7 +21,7 @@ public class TNameCode extends TStaticAtomCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
+	public Template getTemplate(TEnv env) {
 		return env.getTemplate("varname", "name", "%s");
 	}
 
@@ -44,18 +44,18 @@ public class TNameCode extends TStaticAtomCode {
 	// return new AssignCode(ty, false, this.getName(), right.asType(env, ty));
 	// }
 
-	public final static class TFuncRefCode extends TStaticAtomCode {
+	public final static class TFuncRefCode extends EmptyTypedCode {
 		String name;
-		TSkeleton template;
+		Template template;
 
-		public TFuncRefCode(String name, TSkeleton tp) {
+		public TFuncRefCode(String name, Template tp) {
 			super(TType.tFunc(tp.getReturnType(), tp.getParamTypes()));
 			this.name = name;
 			this.template = tp;
 		}
 
 		@Override
-		public TSkeleton getTemplate(TEnv env) {
+		public Template getTemplate(TEnv env) {
 			return env.getTemplate("funcref", "%s");
 		}
 

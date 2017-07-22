@@ -2,10 +2,10 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TBoolCode extends TStaticAtomCode implements TValueCode {
+public class TBoolCode extends EmptyTypedCode implements TValueCode {
 	private boolean value;
 
 	TBoolCode(boolean value) {
@@ -19,8 +19,8 @@ public class TBoolCode extends TStaticAtomCode implements TValueCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		return env.get(this.value ? "true:Bool" : "false:Bool", TSkeleton.class);
+	public Template getTemplate(TEnv env) {
+		return env.get(this.value ? "true:Bool" : "false:Bool", Template.class);
 	}
 
 	@Override

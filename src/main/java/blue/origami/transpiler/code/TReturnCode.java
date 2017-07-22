@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 
 public class TReturnCode extends SingleCode {
 
@@ -11,7 +11,7 @@ public class TReturnCode extends SingleCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
+	public Template getTemplate(TEnv env) {
 		return env.getTemplate("return", "%s");
 	}
 

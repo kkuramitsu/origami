@@ -1,18 +1,15 @@
 package blue.origami.transpiler.code;
 
-import java.util.Iterator;
-
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 import blue.origami.util.OLog;
 
 @SuppressWarnings("serial")
-public class TErrorCode extends RuntimeException implements TCode {
+public class TErrorCode extends RuntimeException implements EmptyCode {
 
 	private final OLog log;
 	private TType ret;
@@ -40,11 +37,6 @@ public class TErrorCode extends RuntimeException implements TCode {
 		return this;
 	}
 
-	@Override
-	public Iterator<TCode> iterator() {
-		return new AtomCodeIterator();
-	}
-
 	public OLog getLog() {
 		return this.log;
 	}
@@ -59,14 +51,8 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TCode setSourcePosition(Tree<?> t) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		return TSkeleton.Null;
+	public Template getTemplate(TEnv env) {
+		return Template.Null;
 	}
 
 	@Override

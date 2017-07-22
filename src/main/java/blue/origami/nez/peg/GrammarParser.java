@@ -506,6 +506,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			return new PSymbolAction(new SymbolDefFunc(), param, pat);
 		}
 	}
@@ -515,6 +516,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			return new PSymbolPredicate(new SymbolEqualsFunc(), true, param, pat);
 		}
 	}
@@ -524,6 +526,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			return new PSymbolPredicate(new SymbolContainsFunc(), true, param, pat);
 		}
 	}
@@ -533,6 +536,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			return new PSymbolPredicate(new SymbolMatchFunc(), false, param, pat);
 		}
 	}
@@ -542,6 +546,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			String symbol = node.getStringAt(_symbol, null);
 			if (symbol != null) {
 				return new PSymbolPredicate(new SymbolExistString(symbol), false, param, pat);
@@ -555,6 +560,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Expression accept(Gamma gamma, Tree<?> node) throws IOException {
 			String param = node.getStringAt(_name, "");
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			String mask = node.getStringAt(_mask, null);
 			if (mask != null) {
 				long bits = Long.parseUnsignedLong(mask, 2);
@@ -579,6 +585,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 				return new PMany(e, 0);
 			}
 			PNonTerminal pat = new PNonTerminal(gamma.grammar, param);
+			pat.setSourcePosition(node.get(_name));
 			e = e.cat(new PSymbolPredicate(new SymbolDecFunc(), false, param, pat));
 			e = new PMany(e, 0).cat(new PSymbolPredicate(new SymbolZeroFunc(), false, param, pat));
 			return e;

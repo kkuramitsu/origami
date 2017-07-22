@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
 public class TIfCode extends MultiCode {
@@ -47,7 +47,7 @@ public class TIfCode extends MultiCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
+	public Template getTemplate(TEnv env) {
 		return env.getTemplate("ifexpr", "%1$s?%2$s:%3$");
 	}
 

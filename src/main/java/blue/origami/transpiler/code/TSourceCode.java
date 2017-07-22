@@ -2,13 +2,13 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TSourceCode extends TStaticMultiCode {
+public class TSourceCode extends MultiTypedCode {
 
 	public TSourceCode(TCode... args) {
-		super(args.length == 0 ? TType.tVoid : args[args.length - 1].getType(), TSkeleton.Null, args);
+		super(args.length == 0 ? TType.tVoid : args[args.length - 1].getType(), Template.Null, args);
 	}
 
 	@Override

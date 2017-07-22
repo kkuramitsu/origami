@@ -163,7 +163,7 @@ public class Transpiler extends TEnv {
 
 	int functionId = 0;
 
-	public TSkeleton defineConst(boolean isPublic, String name, TType type, TCode expr) {
+	public Template defineConst(boolean isPublic, String name, TType type, TCode expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
 		TCodeTemplate tp = this.newCodeTemplate(env, lname, type, TConsts.emptyTypes);
@@ -174,7 +174,7 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
-	public TSkeleton defineFunction(boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
+	public Template defineFunction(boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
 			TType returnType, Tree<?> body) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);

@@ -2,17 +2,16 @@ package blue.origami.transpiler.code;
 
 import java.util.Iterator;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
+import blue.origami.transpiler.code.EmptyCode.EmptyCodeIterator;
 
-public class TGroupCode implements TCode {
+public class TGroupCode extends SingleCode {
 	protected TCode inner;
 
 	TGroupCode(TCode inner) {
-		this.inner = inner;
+		super(inner);
 	}
 
 	@Override
@@ -22,28 +21,18 @@ public class TGroupCode implements TCode {
 
 	@Override
 	public Iterator<TCode> iterator() {
-		return new AtomCodeIterator();
+		return new EmptyCodeIterator();
 	}
 
 	@Override
-	public TType getType() {
-		return this.inner.getType();
-	}
-
-	@Override
-	public TCode setSourcePosition(Tree<?> t) {
-		return this.inner.setSourcePosition(t);
-	}
-
-	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		TSkeleton t = env.get("()", TSkeleton.class);
-		return (t == null) ? TSkeleton.Null : t;
+	public Template getTemplate(TEnv env) {
+		Template t = env.get("()", Template.class);
+		return (t == null) ? Template.Null : t;
 	}
 
 	@Override
 	public String strOut(TEnv env) {
-		TSkeleton t = env.get("()", TSkeleton.class);
+		Template t = env.get("()", Template.class);
 		if (t == null) {
 			return this.inner.strOut(env);
 		}

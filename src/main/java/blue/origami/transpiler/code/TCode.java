@@ -5,14 +5,14 @@ import java.util.Iterator;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 
 public interface TCode extends TCodeAPI, Iterable<TCode> {
 	public TType getType();
 
-	public TSkeleton getTemplate(TEnv env);
+	public Template getTemplate(TEnv env);
 
 	public String strOut(TEnv env);
 
@@ -51,23 +51,22 @@ interface TCodeAPI {
 	}
 }
 
-abstract interface AtomCode extends TCode {
+abstract interface EmptyCode extends TCode {
 	@Override
 	public default Iterator<TCode> iterator() {
-		return new AtomCodeIterator();
-	}
-}
-
-class AtomCodeIterator implements Iterator<TCode> {
-
-	@Override
-	public boolean hasNext() {
-		return false;
+		return new EmptyCodeIterator();
 	}
 
-	@Override
-	public TCode next() {
-		return null;
+	static class EmptyCodeIterator implements Iterator<TCode> {
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
+		public TCode next() {
+			return null;
+		}
 	}
 }
 
@@ -88,6 +87,12 @@ abstract class SingleCode implements TCode {
 	}
 
 	@Override
+	public TCode setSourcePosition(Tree<?> t) {
+		this.inner.setSourcePosition(t);
+		return this;
+	}
+
+	@Override
 	public TCode asType(TEnv env, TType t) {
 		this.inner = this.inner.asType(env, t);
 		return this;
@@ -95,7 +100,7 @@ abstract class SingleCode implements TCode {
 
 	@Override
 	public Iterator<TCode> iterator() {
-		return new TMultiCodeIterator(this.inner);
+		return new MultiCodeIterator(this.inner);
 	}
 
 	@Override
@@ -114,7 +119,7 @@ abstract class MultiCode implements TCode {
 
 	@Override
 	public Iterator<TCode> iterator() {
-		return new TMultiCodeIterator(this.args);
+		return new MultiCodeIterator(this.args);
 	}
 
 	@Override
@@ -136,11 +141,11 @@ abstract class MultiCode implements TCode {
 	}
 }
 
-class TMultiCodeIterator implements Iterator<TCode> {
+class MultiCodeIterator implements Iterator<TCode> {
 	int loc;
 	protected TCode[] args;
 
-	TMultiCodeIterator(TCode... args) {
+	MultiCodeIterator(TCode... args) {
 		this.args = args;
 		this.loc = 0;
 	}
@@ -156,10 +161,10 @@ class TMultiCodeIterator implements Iterator<TCode> {
 	}
 }
 
-abstract class TStaticAtomCode implements AtomCode {
+abstract class EmptyTypedCode implements EmptyCode {
 	private TType typed;
 
-	TStaticAtomCode(TType typed) {
+	EmptyTypedCode(TType typed) {
 		this.setType(typed);
 	}
 
@@ -175,12 +180,45 @@ abstract class TStaticAtomCode implements AtomCode {
 
 }
 
-abstract class TStaticMultiCode extends MultiCode {
+abstract class SingleTypedCode extends SingleCode {
 	private TType typed;
-	protected TSkeleton template;
+	protected Template template;
+	protected TCode inner;
+
+	public SingleTypedCode(TType ret, Template template, TCode inner) {
+		super(inner);
+		this.setType(ret);
+		this.template = template;
+		this.inner = inner;
+	}
+
+	@Override
+	public TType getType() {
+		return this.typed;
+	}
+
+	public void setType(TType typed) {
+		assert (typed != null);
+		this.typed = typed;
+	}
+
+	@Override
+	public Template getTemplate(TEnv env) {
+		return this.template;
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		return this.getTemplate(env).format(this.inner.strOut(env));
+	}
+}
+
+abstract class MultiTypedCode extends MultiCode {
+	private TType typed;
+	protected Template template;
 	protected TCode[] args;
 
-	TStaticMultiCode(TType t, TSkeleton template, TCode... args) {
+	MultiTypedCode(TType t, Template template, TCode... args) {
 		this.template = template;
 		this.args = args;
 	}
@@ -196,7 +234,7 @@ abstract class TStaticMultiCode extends MultiCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
+	public Template getTemplate(TEnv env) {
 		return this.template;
 	}
 

@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 import blue.origami.util.ODebug;
 
-public class TTypeCode extends TStaticAtomCode {
+public class TTypeCode extends EmptyTypedCode {
 	private TType value;
 
 	public TTypeCode(TType value) {
@@ -19,8 +19,8 @@ public class TTypeCode extends TStaticAtomCode {
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		return env.get(this.value.toString(), TSkeleton.class);
+	public Template getTemplate(TEnv env) {
+		return env.get(this.value.toString(), Template.class);
 	}
 
 	@Override

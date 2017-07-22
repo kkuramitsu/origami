@@ -4,7 +4,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunctionContext;
 import blue.origami.transpiler.TFunctionContext.TVariable;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.TCode;
@@ -27,7 +27,7 @@ public class LetDecl extends SyntaxRule implements TTypeRule {
 		TFunctionContext fcx = env.get(TFunctionContext.class);
 		if (fcx == null) {
 			Transpiler tp = env.getTranspiler();
-			TSkeleton defined = tp.defineConst(isPublic, name, type, right);
+			Template defined = tp.defineConst(isPublic, name, type, right);
 			env.add(name, defined);
 			return new TDeclCode();
 		} else {

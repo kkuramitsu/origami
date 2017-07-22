@@ -299,7 +299,7 @@ interface TEnvApi {
 				}
 				env().add(name, new TCodeTemplate(name, ret, p, value));
 			} else {
-				TSkeleton t = new TCodeTemplate(name, ret, TConsts.emptyTypes, value);
+				Template t = new TCodeTemplate(name, ret, TConsts.emptyTypes, value);
 				env().add(name, t);
 				env().add(key, t);
 			}
@@ -321,9 +321,9 @@ interface TEnvApi {
 		return keys[keys.length - 1];
 	}
 
-	public default TSkeleton getTemplate(String... keys) {
+	public default Template getTemplate(String... keys) {
 		for (int i = 0; i < keys.length - 1; i++) {
-			TSkeleton tp = env().get(keys[i], TSkeleton.class);
+			Template tp = env().get(keys[i], Template.class);
 			if (tp != null) {
 				return tp;
 			}
@@ -437,8 +437,8 @@ interface TEnvApi {
 		// return new TUntypedParamCode(name, params);
 		// }
 		// }
-		List<TSkeleton> l = new ArrayList<>(8);
-		env.findList(name, TSkeleton.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
+		List<Template> l = new ArrayList<>(8);
+		env.findList(name, Template.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
 		// ODebug.trace("l = %s", l);
 		if (l.size() == 0) {
 			throw new TErrorCode("undefined %s%s", name, types(params));

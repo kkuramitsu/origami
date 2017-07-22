@@ -5,7 +5,7 @@ import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 
-public class TCastCode extends TUnaryCode {
+public class TCastCode extends SingleTypedCode {
 	private final int mapCost;
 
 	public TCastCode(TType ret, TConvTemplate tt, TCode inner) {

@@ -2,12 +2,12 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TParamCode extends TStaticMultiCode {
+public class TParamCode extends MultiTypedCode {
 
-	public TParamCode(TSkeleton template, TCode... args) {
+	public TParamCode(Template template, TCode... args) {
 		super(template.getReturnType(), template, args.clone());
 	}
 

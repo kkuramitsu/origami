@@ -2,18 +2,18 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TSkeleton;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TDeclCode extends TStaticAtomCode {
+public class TDeclCode extends EmptyTypedCode {
 
 	public TDeclCode() {
 		super(TType.tVoid);
 	}
 
 	@Override
-	public TSkeleton getTemplate(TEnv env) {
-		return TSkeleton.Null;
+	public Template getTemplate(TEnv env) {
+		return Template.Null;
 	}
 
 	@Override
