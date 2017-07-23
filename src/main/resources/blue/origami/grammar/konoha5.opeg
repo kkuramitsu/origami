@@ -20,6 +20,7 @@ _            = ( S / BLOCKCOMMENT / LINECOMMENT )*
 S            = [ \t]
 EOF          = !.
 BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
+             / '(*' ( !'*)' . )* '*)'
 LINECOMMENT  = '//' ( !EOL . )* EOS
 EOL          = ('\r'? '\n') / EOF
 __           = (EOL _)?
@@ -33,6 +34,8 @@ INDENT      = S*
 
 TopLevel =
 	FuncDecl
+	/ ConstDecl
+	/ ExampleDecl
 	/ Expression
 
 /* Common */
@@ -80,22 +83,31 @@ TopLevel =
 
 /* FuncDecl */
 
-example FuncDecl '''
+example FuncDecl&Statement '''
 def f(a) {
 	a
 	b
 }
 '''
 
-example FuncDecl '''
+example FuncDecl&Statement '''
 public def f(a) :
 	a
 	b
 '''
 
-example FuncDecl '''
+example FuncDecl&Statement '''
 let f a = a + 1 /*hoge*/
 '''
+
+example ConstDecl&Statement '''
+public let f = 1
+'''
+
+example ConstDecl&Statement '''
+f = 1
+'''
+
 
 "public" = (('public' EOT) / ('pub' EOT)) __
 
@@ -106,7 +118,7 @@ let f a = a + 1 /*hoge*/
 	/ ('def' EOT)
 	
 FuncDecl = LetFuncDecl / {
-	("public" "function" #PFuncDecl ) / ("function" #FuncDecl )
+	("public" "function" #PubFuncDecl ) / ("function" #FuncDecl )
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(":" Type)? 
@@ -131,12 +143,11 @@ CParam = {
 }
 
 LetFuncDecl = {
-	('let' EOT)?
+	("public" ('let' EOT)? #PubFuncDecl ) / ( ('let' EOT)? #FuncDecl )
 	$name(Identifier) 
 	("(" $param(Params) ")" / $param(LetParams)) 
 	$type(":" Type)? 
 	( "=" __ / &'{') $body(Expression)
-	#FuncDecl
 }
 
 LetParams = { 
@@ -151,6 +162,33 @@ LetParam = {
 	#LetDecl
 }
 
+"const" = 
+	('let' EOT)
+	/ ('val' EOT)
+	/ ('const' EOT)
+	/ ('def' EOT)
+	/ ''
+
+ConstDecl = {
+	("public" "const" #PubConstDecl ) / ("const" #ConstDecl )
+	$name(Identifier) 
+	$suffix(Quantity)?
+	(":" $type(Type))? 
+	"=" $expr(Expression) 
+	#ConstDecl 
+}
+
+example ExampleDecl '''
+example A :
+	a == 0
+'''
+
+ExampleDecl = {
+	'example' EOT 
+	$name(Identifier)
+	$body(Block)
+	#ExampleDecl
+}
 
 /* Block */
 
@@ -187,6 +225,7 @@ d = 1
 
 example IfStmt&Statement '''
 if (a < b) {
+	assert a < b
 	a
 	return b
 }
@@ -203,6 +242,7 @@ Statement =
 	LetDecl
 	/ IfStmt
 	/ ReturnStmt
+	/ AssertStmt
 	/ AssignStmt
 	/ Expression
 
@@ -227,6 +267,13 @@ ReturnStmt = {
 	$expr(Expression)?
 	#ReturnStmt
 }
+
+AssertStmt = {
+	'assert' EOT 
+	$expr(Expression)
+	#AssertStmt
+}
+
 
 /* Expression */
 
@@ -278,7 +325,7 @@ match x
 example MatchExpr&Expression '''
 match x 
   case 1 | 2 if x => "small"
-  case 4 | 5 => "big"
+  case (4 to 5) => "big"
   case _ => "unknown"
 '''
 
@@ -432,8 +479,8 @@ CastExpr =
 UnaryExpr 
 	= PostExpr
     / { "-"  $expr(CastExpr) #MinusExpr }
-    / { ("!" / 'not' EOT)  $expr(CastExpr) #NotExpr }
-    / { "~"  $expr(CastExpr)    #ComplExpr }
+    / { ('!' _ / 'not' EOT)  $expr(CastExpr) #NotExpr }
+    / { '~' _  $expr(CastExpr)    #ComplExpr }
     / { "+"  $expr(CastExpr)    #PlusExpr }
     / { "|"  $expr(Expression) "|"    #SizeOfExpr }
 //    / { "#"  $expr(CastExpr)    #TweetExpr }
@@ -473,15 +520,24 @@ Arguments = {
 
 /* Primary */
 
+example PrimaryExpression&Expression (1)
+example PrimaryExpression&Expression () //
+example PrimaryExpression&Expression [1,2,3]
+example PrimaryExpression&Expression {(e.g. 1)}
+example PrimaryExpression&Expression {name: 'naruto', age: 17}
+example PrimaryExpression&Expression Person {name: 'naruto', age: 17}
+
 PrimaryExpression = 
 	GroupExpr 
   / EmptyExpr
+  / ListExpr
+  / SetExpr
+  / DataExpr
   / Constant
   / Identifier
 
 GroupExpr = "(" Expression ")"
 EmptyExpr = { '()' #EmptyExpr } _
-
 
 Constant =
     / TripleExpr
@@ -491,8 +547,39 @@ Constant =
 	/ IntExpr
 	/ TrueExpr
 	/ FalseExpr
-	/ Identifier
 
+/* Data */
+
+ListExpr = {
+	"[" SET #ListExpr "]"
+}
+
+SetExpr = {
+	"{" SET #SetExpr "}"
+}
+
+SET = $(EgExpr) ("," $(EgExpr))* 
+
+DataExpr = TypedDataExpr / {
+	"{" DATA #DataExpr "}"
+}
+
+TypedDataExpr = {
+	$name(Identifier) $value(DataExpr) #TypedExpr
+}
+
+DATA = $(KeyValue) ("," $(KeyValue))*
+
+KeyValue = {
+	$name(Identifier)
+	(":" / "=")
+	$value(EgExpr)
+	#KeyValue
+}
+
+EgExpr =
+	{ '(e.g.' _ $(Expression) ")" #ForExampleExpr }
+	/ Expression
 
 /* Literal */
 

@@ -19,7 +19,7 @@ public class Okonoha extends OCommand {
 			}
 		}
 		String target = options.stringValue(ParserOption.Target, "racket");
-		Grammar g = this.getGrammar(options, "iroha.opeg");
+		Grammar g = this.getGrammar(options, "konoha5.opeg");
 		Transpiler env = new Transpiler(g, target, options);
 		ODebug.setDebug(true);
 		for (String file : files) {
