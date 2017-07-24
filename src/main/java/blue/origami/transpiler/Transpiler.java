@@ -15,12 +15,11 @@ import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.rule.AddExpr;
 import blue.origami.transpiler.rule.BinaryExpr;
-import blue.origami.transpiler.rule.IntExpr;
-import blue.origami.transpiler.rule.NameExpr;
 import blue.origami.transpiler.rule.SourceUnit;
+import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.util.OConsole;
+import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OTree;
 
@@ -45,10 +44,27 @@ public class Transpiler extends TEnv {
 		this.add(Grammar.class, grammar);
 		// rule
 		this.add("Source", new SourceUnit());
-		this.add("IntExpr", new IntExpr());
-		this.add("AddExpr", new AddExpr());
+		this.add("AddExpr", new BinaryExpr("+"));
+		this.add("SubExpr", new BinaryExpr("-"));
 		this.add("MulExpr", new BinaryExpr("*"));
-		this.add("NameExpr", new NameExpr());
+		this.add("DivExpr", new BinaryExpr("/"));
+		this.add("ModExpr", new BinaryExpr("%"));
+		this.add("EqExpr", new BinaryExpr("=="));
+		this.add("NeExpr", new BinaryExpr("!="));
+		this.add("LtExpr", new BinaryExpr("<"));
+		this.add("LteExpr", new BinaryExpr("<="));
+		this.add("GtExpr", new BinaryExpr(">"));
+		this.add("GteExpr", new BinaryExpr(">="));
+		this.add("AndExpr", new BinaryExpr("&"));
+		this.add("OrExpr", new BinaryExpr("|"));
+		this.add("XorExpr", new BinaryExpr("^"));
+		this.add("LShiftExpr", new BinaryExpr("<<"));
+		this.add("RShiftExpr", new BinaryExpr(">>"));
+
+		this.add("NotExpr", new UnaryExpr("!"));
+		this.add("MinusExpr", new UnaryExpr("-"));
+		this.add("PlusExpr", new UnaryExpr("+"));
+
 		// type
 		this.add("?", TType.tUntyped);
 		this.add("Bool", TType.tBool);
@@ -79,12 +95,12 @@ public class Transpiler extends TEnv {
 					if (line.startsWith("#")) {
 						continue;
 					}
-					int loc = line.indexOf('=');
+					int loc = line.indexOf(" =");
 					if (loc <= 0) {
 						continue;
 					}
-					name = line.substring(0, loc - 1).trim();
-					String value = line.substring(loc + 1).trim();
+					name = line.substring(0, loc).trim();
+					String value = line.substring(loc + 2).trim();
 					// System.out.printf("%2$s : %1$s\n", value, name);
 					if (value == null) {
 						continue;
@@ -156,7 +172,9 @@ public class Transpiler extends TEnv {
 		OConsole.beginColor(OConsole.Blue);
 		OConsole.println(t);
 		OConsole.endColor();
+		this.generator.setup();
 		this.generator.generateExpression(env, t);
+		this.generator.wrapUp();
 	}
 
 	// ConstDecl
@@ -166,7 +184,7 @@ public class Transpiler extends TEnv {
 	public Template defineConst(boolean isPublic, String name, TType type, TCode expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
-		TCodeTemplate tp = this.newCodeTemplate(env, lname, type, TConsts.emptyTypes);
+		TCodeTemplate tp = this.newTemplate(env, lname, type);
 		this.add(name, tp);
 		this.generator.defineConst(this, isPublic, lname, type, expr);
 		return tp;
@@ -176,9 +194,10 @@ public class Transpiler extends TEnv {
 
 	public Template defineFunction(boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
 			TType returnType, Tree<?> body) {
-		TEnv env = this.newEnv();
-		String lname = isPublic ? name : this.getLocalName(name);
-		TCodeTemplate tp = this.newCodeTemplate(env, lname, returnType, paramTypes);
+		final TEnv env = this.newEnv();
+		final String lname = isPublic ? name : this.getLocalName(name);
+		final boolean isUntyped = returnType.isUntyped();
+		final TCodeTemplate tp = this.newTemplate(env, lname, returnType, paramTypes);
 		this.add(name, tp);
 
 		TFunctionContext fcx = new TFunctionContext();
@@ -187,8 +206,13 @@ public class Transpiler extends TEnv {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
 		}
 		TCode code = env.typeTree(env, body);
-		if (returnType.isUntyped()) {
-			returnType = code.getType();
+		if (isUntyped) {
+			TType ret = code.getType();
+			if (ret.isUntyped()) {
+				ODebug.trace("ERROR still untyped %s", tp);
+			}
+			returnType.accept(code);
+			// ODebug.trace("typed %s", tp);
 		} else {
 			code = code.asType(env, returnType);
 		}
@@ -201,7 +225,12 @@ public class Transpiler extends TEnv {
 		return prefix + name;
 	}
 
-	private TCodeTemplate newCodeTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
+	private TCodeTemplate newTemplate(TEnv env, String lname, TType returnType) {
+		String template = env.format("constname", "name", "%s", lname);
+		return new TConstTemplate(lname, returnType, template);
+	}
+
+	private TCodeTemplate newTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");

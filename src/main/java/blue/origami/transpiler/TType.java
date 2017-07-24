@@ -2,7 +2,11 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
-public abstract class TType {
+import blue.origami.transpiler.code.TCode;
+//import blue.origami.ocode.OCode;
+import blue.origami.util.ODebug;
+
+public abstract class TType implements TypeApi {
 	public static final TType tUntyped = new TSimpleType("?");
 	public static final TType tVoid = new TSimpleType("Void");
 	public static final TType tBool = new TSimpleType("Bool");
@@ -23,15 +27,15 @@ public abstract class TType {
 		return t;
 	}
 
+	public static final TType tVar(String name) {
+		return new TVarType(name);
+	}
+
 	//
 
 	@Override
 	public boolean equals(Object t) {
 		return this == t;
-	}
-
-	public boolean isUntyped() {
-		return tUntyped.equals(this);
 	}
 
 	public abstract String strOut(TEnv env);
@@ -43,6 +47,17 @@ public abstract class TType {
 			}
 		}
 		return false;
+	}
+
+}
+
+interface TypeApi {
+	public default boolean isUntyped() {
+		return TType.tUntyped.equals(this);
+	}
+
+	public default boolean accept(TCode code) {
+		return this.equals(code.getType());
 	}
 
 }
@@ -118,6 +133,70 @@ class TFuncType extends TType {
 	@Override
 	public String strOut(TEnv env) {
 		return env.format(this.name, this.name);
+	}
+}
+
+class TVarType extends TType {
+	private String varName;
+	private TType wrappedType;
+	// private TType[] upperTypes = TType.emptyTypes;
+	// private TType[] lowerTypes = TType.emptyTypes;
+
+	public TVarType(String varName) {
+		this.varName = varName;
+		this.wrappedType = TType.tUntyped;
+	}
+
+	@Override
+	public String toString() {
+		return this.wrappedType.toString();
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		return this.wrappedType.strOut(env);
+	}
+
+	@Override
+	public boolean isUntyped() {
+		return this.wrappedType.isUntyped();
+	}
+
+	public void setType(TType t) {
+		if (this.isUntyped() && !t.isUntyped()) {
+			ODebug.trace("infer %s as %s", this.varName, t);
+			this.wrappedType = t;
+		}
+	}
+
+	@Override
+	public boolean accept(TCode code) {
+		if (this.isUntyped()) {
+			TType t = code.getType(); // FIXME valueType();
+			this.appendUpperBounds(t);
+			return true;
+		}
+		return this.wrappedType.accept(code);
+	}
+
+	public void appendUpperBounds(TType t) {
+		this.setType(t);
+		// for (TType u : this.upperTypes) {
+		// if (u.eq(t)) {
+		// break;
+		// }
+		// }
+		// append(this.upperTypes, t);
+	}
+
+	public void appendLowerBounds(TType t) {
+		this.setType(t);
+		// for (TType u : this.lowerTypes) {
+		// if (u.eq(t)) {
+		// break;
+		// }
+		// }
+		// append(this.lowerTypes, t);
 	}
 
 }

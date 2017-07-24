@@ -2,13 +2,13 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 
 public class TBoolCode extends EmptyTypedCode implements TValueCode {
 	private boolean value;
 
-	TBoolCode(boolean value) {
+	public TBoolCode(boolean value) {
 		super(TType.tBool);
 		this.value = value;
 	}

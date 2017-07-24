@@ -21,28 +21,39 @@ import blue.origami.util.OConsole;
 import blue.origami.util.OLog;
 
 public class TGenerator {
-	protected SourceSection head = new SourceSection();
-	protected SourceSection lib = new SourceSection();
+	protected SourceSection head;
+	protected SourceSection data;
+	protected SourceSection eval;
 	// private SourceSection body = this.head;
 
 	protected void setup() {
-
+		this.head = new SourceSection();
+		this.data = new SourceSection();
+		this.eval = new SourceSection();
+		this.secList = new ArrayList<>();
+		this.secMap = new HashMap<>();
 	}
 
 	protected void wrapUp() {
-
+		System.out.println(this.head.toString());
+		System.out.println(this.data.toString());
+		for (SourceSection sec : this.secList) {
+			System.out.println(sec);
+		}
+		System.out.println(this.eval);
 	}
 
 	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
-		this.head.pushLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
+		this.data.pushLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
 	}
 
 	private String currentFuncName = null;
 
-	protected HashMap<String, SourceSection> sectionMap = new HashMap<>();
+	protected ArrayList<SourceSection> secList = new ArrayList<>();
+	protected HashMap<String, SourceSection> secMap = new HashMap<>();
 
 	public boolean isDefinedSection(String funcName) {
-		return this.sectionMap.containsKey(funcName);
+		return this.secMap.containsKey(funcName);
 	}
 
 	String getCurrentFuncName() {
@@ -63,7 +74,8 @@ public class TGenerator {
 			params = sb.toString();
 		}
 		SourceSection sec = new SourceSection();
-		this.sectionMap.put(name, sec);
+		this.secList.add(sec);
+		this.secMap.put(name, sec);
 		this.currentFuncName = name;
 		sec.pushLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
 		sec.incIndent();
@@ -140,10 +152,9 @@ public class TGenerator {
 
 	public void generateExpression(TEnv env, Tree<?> t) {
 		TCode code = env.typeTree(env, t);
-		SourceSection topLevel = new SourceSection();
-		code.emitCode(env, topLevel);
 		if (code.getType() != TType.tVoid) {
-			OConsole.println("(%s) %s", code.getType(), OConsole.bold(topLevel.toString()));
+			code.emitCode(env, this.eval);
+			OConsole.println("(%s) %s", code.getType(), OConsole.bold(this.eval.toString()));
 		}
 	}
 

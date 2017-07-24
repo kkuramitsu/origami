@@ -216,11 +216,11 @@ abstract class SingleTypedCode extends SingleCode {
 abstract class MultiTypedCode extends MultiCode {
 	private TType typed;
 	protected Template template;
-	protected TCode[] args;
 
 	MultiTypedCode(TType t, Template template, TCode... args) {
+		super(args);
+		this.setType(t);
 		this.template = template;
-		this.args = args;
 	}
 
 	@Override

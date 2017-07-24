@@ -33,7 +33,8 @@ INDENT      = S*
 /* TopLevel */
 
 TopLevel =
-	FuncDecl
+	AssumeDecl
+	/ FuncDecl
 	/ ConstDecl
 	/ ExampleDecl
 	/ Expression
@@ -80,6 +81,33 @@ TopLevel =
 "->"   = '->' _
 "=>"   = '=>' _
 "<-"   = '<-' _
+
+/* AssumeDecl */
+
+example AssumeDecl&Statement '''
+assume x,y,z : Float
+'''
+
+AssumeDecl = { 
+  ('assume' EOT / 'name EOT') __
+  $body(NameDecls) 
+  #AssumeDecl 
+}
+
+NameDecls = {
+  $(NameDecl) ("," $(NameDecl))* 
+}
+
+NameDecl = {
+  $name(Identifiers) 
+  ":" 
+  ($type(Type) / $expr(Constant))
+}
+
+Identifiers = {
+	$(Identifier) 
+	( "," $(Identifier) )* 
+}
 
 /* FuncDecl */
 
@@ -170,12 +198,11 @@ LetParam = {
 	/ ''
 
 ConstDecl = {
-	("public" "const" #PubConstDecl ) / ("const" #ConstDecl )
+	("public" "const" #PubLetDecl ) / ("const" #LetDecl )
 	$name(Identifier) 
 	$suffix(Quantity)?
 	(":" $type(Type))? 
 	"=" $expr(Expression) 
-	#ConstDecl 
 }
 
 example ExampleDecl '''
@@ -418,15 +445,15 @@ AndExpr =
 
 LOrExpr = 
 	XOrExpr 
-	{$left ('lor' EOT / "|") $right(XOrExpr) #BitwiseOrExpr }*
+	{$left ('lor' EOT / "|") $right(XOrExpr) #OrExpr }*
 
 XOrExpr = 
 	LAndExpr 
-	{$left ('xor' EOT / "^") $right(LAndExpr) #BitwiseXorExpr }*
+	{$left ('xor' EOT / "^") $right(LAndExpr) #XorExpr }*
 
 LAndExpr = 
 	EqualExpr 
-	{$left ('land' EOT / "&") $right(EqualExpr) #BitwiseAndExpr }*
+	{$left ('land' EOT / "&") $right(EqualExpr) #AndExpr }*
 
 EqualExpr = 
 	CmprExpr 
@@ -642,10 +669,9 @@ FRACTION =
 EXPONENT = 
 	[eE] [+\-]? DIGIT ( '_'* DIGIT )*
 
-
-TrueExpr  = { ('true' / 'True') !W #TrueExpr } _
-FalseExpr = { ('false' / 'False') !W #FalseExpr } _
-NullExpr  = { ('null' / 'None') !W #NullExpr } _
+TrueExpr  = { ('true' !W / 'True' !W)  #TrueExpr } _
+FalseExpr = { ('false' !W / 'False' !W)  #FalseExpr } _
+NullExpr  = { ('null' !W / 'None' !W)  #NullExpr } _
 
 /* Identifier */
 
@@ -672,7 +698,7 @@ TSUFFIX =
 
 PrimaryType = 
 	VarType
-	/ {'@' $name(Identifier) $type(PrimaryType) #ConceptType }
+	/ {'@' $name(Identifier) $type(PrimaryType) #MType }
 	/ ClassType
 	/ UnitType
 	/ FuncType

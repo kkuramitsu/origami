@@ -6,34 +6,67 @@ Float      = double
 String     = String
 
 null       = null
-true:Bool  = true
-false:Bool = false
 
-()            = (%s)
-Int->Float        = %s
-Float->>Int       = (int)(%s)
+# Bool
+true:Bool       = true
+false:Bool      = false
+&:Bool:Bool:Bool = (%s && %s)
+|:Bool:Bool:Bool = (%s || %s)
+!:Bool:Bool      = (!(%s))
 
-0:Int         = %d
+#Int 
+0:Int            = %d
++:Int:Int        = +%s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (%s / %s)
+%:Int:Int:Int    = (%s %% %s)
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+<<:Int:Int:Int   = (%s << %s)
+>>:Int:Int:Int   = (%s >> %s)
+&:Int:Int:Int    = (%s & %s)
+|:Int:Int:Int    = (%s | %s)
+^:Int:Int:Int    = (%s ^ %s)
+!:Int:Int        = ~%s
+
+# Float
 0:Float       = %f
+Int=>Float           = (double)%s
+Float->Int           = (int)%s
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s / %s)
+%:Float:Float:Float    = (%s %% %s)
 
-+:Int:Int:Int       = %s+%s
-+:Float:Float:Float = %s+%s
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+#Syntax
 
 comment          = // %s
 begin            = {
 end              = }
 ;                = ;
 ,                = ,
+()               = (%s)
 
 module           = final class $|base| {
-
-structname       = %s<T>
-
-struct           = static class %s <T> {
-field            = %s %s;
-constructor      = %s(%s) {
-init             = this.%s = %s;
-new              = new %s<>
 
 functype         = '''
 public interface %2$s <T> {
@@ -51,7 +84,7 @@ return           = return %s;
 apply            = %s.apply
 funcref          = $|base|::%s
 
-if               = if(%s) {
+if               = if(%s)
 else if          = else if(%s) {
 while            = while(%s) {
 switch           = switch(%s) {

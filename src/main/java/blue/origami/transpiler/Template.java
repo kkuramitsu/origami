@@ -13,8 +13,9 @@ public abstract class Template {
 
 	public Template(String name, TType returnType, TType... paramTypes) {
 		this.name = name;
-		this.paramTypes = paramTypes;
 		this.returnType = returnType;
+		this.paramTypes = paramTypes;
+		assert (this.returnType != null) : this;
 	}
 
 	public String getName() {

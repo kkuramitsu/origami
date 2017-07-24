@@ -257,28 +257,28 @@ interface TEnvApi {
 		if (loc == -1) {
 			String name = key;
 			if (key.indexOf('>') > 0) {
-				if ((loc = key.indexOf("-->>")) > 0) {
+				if ((loc = key.indexOf("-->")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 4));
+					TType t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.CONV, value));
 					return;
 				}
-				if ((loc = key.indexOf("-->")) > 0) {
+				if ((loc = key.indexOf("==>")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.CAST, value));
 					return;
 				}
-				if ((loc = key.indexOf("->>")) > 0) {
+				if ((loc = key.indexOf("->")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 3));
+					TType t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCONV, value));
 					return;
 				}
-				if ((loc = key.indexOf("->")) > 0) {
+				if ((loc = key.indexOf("=>")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
@@ -347,8 +347,12 @@ interface TEnvApi {
 	}
 
 	public default void addTypeHint(TEnv env, String names, TType t) {
+		this.addTypeHint(env, names.split(","), t);
+	}
+
+	public default void addTypeHint(TEnv env, String[] names, TType t) {
 		TTypeHint hint = TTypeHint.newTypeHint(t);
-		for (String n : names.split(",")) {
+		for (String n : names) {
 			env().add(n, hint);
 		}
 	}

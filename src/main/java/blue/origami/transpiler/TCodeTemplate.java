@@ -35,6 +35,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 
 	@Override
 	public TParamCode newParamCode(TEnv env, String name, TCode[] params) {
+		// ODebug.trace("paramcode: %s", this);
 		return new TParamCode(this, params);
 	}
 

@@ -1,16 +1,95 @@
 # racket/init.kh
 
-Bool       = boolean
-Int        = int
-String     = String
+extension  = rkt
+
+Bool       = 
+Int        = 
+String     = 
 
 null       = nil
-true:Bool  = #t
-false:Bool = #f
 
-0:Int         = %s
-+:Int:Int:Int = (+ %s %s)
--:Int:Int:Int = (- %s %s)
-*:Int:Int:Int = (* %s %s)
-/:Int:Int:Int = (/ %s %s)
+true       = #t
+false      = #f
+&:Bool:Bool:Bool = (and %s %s)
+|:Bool:Bool:Bool = (or %s %s)
+!:Bool:Bool      = (not %s)
+
+0:Int            = %d
++:Int:Int        = (+ %s)
+-:Int:Int        = (- %s)
++:Int:Int:Int    = (+ %s %s)
+-:Int:Int:Int    = (- %s %s)
+*:Int:Int:Int    = (* %s %s)
+/:Int:Int:Int    = (/ %s %s)
+%:Int:Int:Int    = (modulo %s %s)
+
+==:Int:Int:Bool  = (= %s %s)
+!=:Int:Int:Bool  = (not (= %s %s))
+<:Int:Int:Bool   = (< %s %s)
+>:Int:Int:Bool   = (> %s %s)
+<=:Int:Int:Bool  = (<= %s %s)
+>=:Int:Int:Bool  = (>= %s %s)
+
+<<:Int:Int:Int   = (arithmetic-shift %s %s)
+>>:Int:Int:Int   = (arithmetic-shift %s (- %s))
+&:Int:Int:Int    = (bitwise-and %s %s)
+|:Int:Int:Int    = (bitwise-ior %s %s)
+^:Int:Int:Int    = (bitwise-xor %s %s)
+!:Int:Int        = (bitwise-not %s)
+
+0:Float       = %f
+Int=>Float          = %s
+Float->Int          = %s
+
++:Float:Float:Float = (+ %s %s)
+-:Float:Float:Float = (- %s %s)
+*:Float:Float:Float = (* %s %s)
+/:Float:Float:Float = (/ %s %s)
+%:Float:Float:Float = (modulo %s %s)
+
+==:Float:Float:Bool = (= %s %s)
+!=:Float:Float:Bool = (not (= %s %s))
+<:Float:Float:Bool  = (< %s %s)
+>:Float:Float:Bool  = (> %s %s)
+<=:Float:Float:Bool = (<= %s %s)
+>=:Float:Float:Bool = (>= %s %s)
+
+#()               = %s
+
+# syntax
+comment          = ; %s
+begin            = (
+end              = )
+;                =
+
+module           = #lang racket
+
+getter           = (get-field _%2$s %1$s)
+setter           = (set-field! _%2$s %1$s %3$s)
+
+const            = (define %2$s %3$s)
+function         = (define (%2$s %3$s)
+param            = %2$s
+params           = $|space|
+return           = %s
+block            =
+
+
+ifexpr           = (if %1$s (begin %2$s) (begin %3$s))
+# FIXME divide class const
+funccall         = (%s %s)
+args             =
+
+val              = (define %2$s %3$s)
+var              = (define %2$s %3$s)
+assign           = (set! %s %s)
+
+if               = (if %s
+switch           = (match %s
+case             = [%s %s]
+default          = [_ %s]
+lambda           = (lambda (%s) %s)
+
+
+
 
