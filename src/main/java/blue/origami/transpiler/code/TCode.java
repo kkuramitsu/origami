@@ -42,6 +42,14 @@ interface TCodeAPI {
 		return new TCastCode(t, tt, self);
 	}
 
+	public default boolean hasReturn() {
+		return false;
+	}
+
+	public default TCode addReturn() {
+		return new TReturnCode(self());
+	}
+
 	public default TCode applyCode(TEnv env, TCode... params) {
 		return self();
 	}

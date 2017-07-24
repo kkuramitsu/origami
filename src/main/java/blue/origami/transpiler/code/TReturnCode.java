@@ -11,6 +11,16 @@ public class TReturnCode extends SingleCode {
 	}
 
 	@Override
+	public boolean hasReturn() {
+		return true;
+	}
+
+	@Override
+	public TCode addReturn() {
+		return this;
+	}
+
+	@Override
 	public Template getTemplate(TEnv env) {
 		return env.getTemplate("return", "%s");
 	}

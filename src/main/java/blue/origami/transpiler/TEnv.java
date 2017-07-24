@@ -16,7 +16,6 @@ import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.code.TTypeCode;
 import blue.origami.transpiler.rule.TTypeRule;
 import blue.origami.util.Handled;
-import blue.origami.util.ODebug;
 
 public class TEnv implements TEnvTraits, TEnvApi {
 	private TEnv parent;
@@ -336,6 +335,15 @@ interface TEnvApi {
 		return String.format(this.getSymbolOrElse(key, def), args);
 	}
 
+	public default SourceSection newSourceSection() {
+		SourceSection sec = env().get(SourceSection.class);
+		if (sec == null) {
+			return new SourceSection();
+		} else {
+			return sec.dup();
+		}
+	}
+
 	public default TType getType(String tsig) {
 		return env().get(tsig, TType.class);
 	}
@@ -379,7 +387,7 @@ interface TEnvApi {
 			} catch (TErrorCode e) {
 				throw e;
 			} catch (Exception e) {
-				ODebug.traceException(e);
+				// ODebug.traceException(e);
 			}
 		}
 		if (node == null) {

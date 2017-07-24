@@ -16,7 +16,7 @@
 
 package blue.origami.nezcc;
 
-class SourceSection {
+public class SourceSection {
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
 
@@ -46,6 +46,11 @@ class SourceSection {
 	@Override
 	public String toString() {
 		return this.sb.toString();
+	}
+
+	public SourceSection dup() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

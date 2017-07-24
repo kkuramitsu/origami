@@ -1,9 +1,10 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 
 public class TIfCode extends MultiCode {
 
@@ -23,13 +24,18 @@ public class TIfCode extends MultiCode {
 		return this.args[2];
 	}
 
-	// @Override
-	// public boolean hasReturnCode() {
-	// if (this.args.length == 2) {
-	// return this.args[1].hasReturnCode() && this.args[2].hasReturnCode();
-	// }
-	// return false;
-	// }
+	@Override
+	public boolean hasReturn() {
+		assert (this.args[1].hasReturn() == this.args[2].hasReturn());
+		return this.args[1].hasReturn();
+	}
+
+	@Override
+	public TCode addReturn() {
+		this.args[1] = this.args[1].addReturn();
+		this.args[2] = this.args[2].addReturn();
+		return this;
+	}
 
 	/* type dependency */
 
@@ -48,7 +54,21 @@ public class TIfCode extends MultiCode {
 
 	@Override
 	public Template getTemplate(TEnv env) {
-		return env.getTemplate("ifexpr", "%1$s?%2$s:%3$");
+		return env.getTemplate("ifexpr", "(%1$s?%2$s:%3$)");
+	}
+
+	public boolean isStatementStyle() {
+		return this.getType() == TType.tVoid || this.hasReturn();
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		if (this.isStatementStyle()) {
+			SourceSection sec = env.newSourceSection();
+			sec.pushIf(env, this);
+			return sec.toString();
+		}
+		return super.strOut(env);
 	}
 
 	@Override
