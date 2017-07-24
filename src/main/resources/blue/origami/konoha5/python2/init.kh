@@ -1,0 +1,89 @@
+# python2/init.kh
+
+extension  = py
+
+Bool       =
+Int        =
+String     =
+
+null       = None
+
+true       = True
+false      = False
+&:Bool:Bool:Bool = %s and %s
+|:Bool:Bool:Bool = (%s) or (%s)
+!:Bool:Bool      = not (%s)
+
+#Int
+0:Int            = %d
++:Int:Int        = +%s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (%s // %s)
+%:Int:Int:Int    = (%s % %s)
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+<<:Int:Int:Int   = (%s << %s)
+>>:Int:Int:Int   = (%s >> %s)
+&:Int:Int:Int    = (%s & %s)
+|:Int:Int:Int    = (%s | %s)
+^:Int:Int:Int    = (%s ^ %s)
+!:Int:Int        = ~%s
+
+# Float
+0:Float       = %f
+Int=>Float           = %s
+Float->Int           = %s
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s // %s)
+%:Float:Float:Float    = (%s % %s)
+
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+# syntax
+comment          = # %s
+begin            =
+end              =
+;                =
+,                = ,
+()               = (%s)
+
+module           =
+
+getter           = %s.%s
+setter           = %s.%s = %s
+
+const            = %2$s = %3$s
+function         = def %2$s(%3$s):
+param            = %2$s
+params           = ,
+return           = return %s
+
+
+ifexpr           = (%2$s if (%1$s) else (%3$s))
+funccall         = %s(%s)
+args             = ,
+
+val              = %2$s = %3$s
+var              = %2$s = %3$s
+assign           = %s = %s
+
+if               = if %s:
+lambda           = (lambda %s : %s)
