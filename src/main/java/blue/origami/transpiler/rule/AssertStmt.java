@@ -12,7 +12,7 @@ public class AssertStmt implements TTypeRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		TCode cond = env.typeExpr(env, t.get(_cond)).asType(env, TType.tBool);
+		TCode cond = env.parseCode(env, t.get(_cond)).asType(env, TType.tBool);
 		Template tp = env.getTemplate("assert", "assert (%s)");
 		return new TParamCode(tp, cond);
 	}

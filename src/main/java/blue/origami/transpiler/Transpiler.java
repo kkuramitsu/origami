@@ -205,7 +205,7 @@ public class Transpiler extends TEnv {
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
 		}
-		TCode code = env.typeTree(env, body);
+		TCode code = env.parseCode(env, body);
 		if (isUntyped) {
 			TType ret = code.getType();
 			if (ret.isUntyped()) {
@@ -244,6 +244,19 @@ public class Transpiler extends TEnv {
 		}
 		String template = env.format("funccall", "%s(%s)", lname, param);
 		return new TCodeTemplate(lname, returnType, paramTypes, template);
+	}
+
+	SourceSection sec = null;
+
+	public void setSourceSection(SourceSection sec) {
+		this.sec = sec;
+	}
+
+	public SourceSection getSourceSection() {
+		if (this.sec == null) {
+			return new SourceSection();
+		}
+		return this.sec;
 	}
 
 }

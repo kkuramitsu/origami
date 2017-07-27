@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 public class TSourceCode extends TMultiCode {
 
 	public TSourceCode(TCode... args) {
-		super(args);
+		super(false, args);
 	}
 
 	@Override

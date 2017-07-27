@@ -16,6 +16,7 @@ import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.code.TTypeCode;
 import blue.origami.transpiler.rule.TTypeRule;
 import blue.origami.util.Handled;
+import blue.origami.util.ODebug;
 
 public class TEnv implements TEnvTraits, TEnvApi {
 	private TEnv parent;
@@ -335,13 +336,12 @@ interface TEnvApi {
 		return String.format(this.getSymbolOrElse(key, def), args);
 	}
 
-	public default SourceSection newSourceSection() {
-		SourceSection sec = env().get(SourceSection.class);
-		if (sec == null) {
-			return new SourceSection();
-		} else {
-			return sec.dup();
-		}
+	public default SourceSection getCurrentSourceSection() {
+		return env().getTranspiler().getSourceSection();
+	}
+
+	public default void setCurrentSourceSection(SourceSection sec) {
+		env().getTranspiler().setSourceSection(sec);
 	}
 
 	public default TType getType(String tsig) {
@@ -369,7 +369,7 @@ interface TEnvApi {
 		return TTypeHint.lookupTypeName(env, name);
 	}
 
-	public default TCode typeTree(TEnv env, Tree<?> t) {
+	public default TCode parseCode(TEnv env, Tree<?> t) {
 		String name = t.getTag().getSymbol();
 		TCode node = null;
 		try {
@@ -383,7 +383,7 @@ interface TEnvApi {
 				Class<?> c = Class.forName("blue.origami.transpiler.rule." + name);
 				TTypeRule rule = (TTypeRule) c.newInstance();
 				env.getTranspiler().add(name, rule);
-				return typeTree(env, t);
+				return parseCode(env, t);
 			} catch (TErrorCode e) {
 				throw e;
 			} catch (Exception e) {
@@ -397,22 +397,22 @@ interface TEnvApi {
 		return node;
 	}
 
-	public default TCode typeExpr(TEnv env, Tree<?> t) {
-		// if (t == null) {
-		// return new EmptyCode(env);
-		// }
-		return typeTree(env, t);
-	}
+	// public default TCode typeExpr(TEnv env, Tree<?> t) {
+	// // if (t == null) {
+	// // return new EmptyCode(env);
+	// // }
+	// return parseCode(env, t);
+	// }
 
 	// public default TCode[] typeParams(TEnv env, Tree<?> t) {
 	// return typeParams(env, t, OSymbols._param);
 	// }
 
-	public default TCode[] typeParams(TEnv env, Tree<?> t, Symbol param) {
+	public default TCode[] parseParams(TEnv env, Tree<?> t, Symbol param) {
 		Tree<?> p = t.get(param, null);
 		TCode[] params = new TCode[p.size()];
 		for (int i = 0; i < p.size(); i++) {
-			params[i] = typeExpr(env, p.get(i));
+			params[i] = parseCode(env, p.get(i));
 		}
 		return params;
 	}
@@ -420,7 +420,7 @@ interface TEnvApi {
 	public default TType parseType(TEnv env, Tree<?> t, TType defty) {
 		if (t != null) {
 			try {
-				TCode node = typeTree(env, t);
+				TCode node = parseCode(env, t);
 				if (node instanceof TTypeCode) {
 					return ((TTypeCode) node).getTypeValue();
 				}
@@ -484,6 +484,10 @@ interface TEnvApi {
 			sb.append(t.getType());
 		}
 		return sb.toString();
+	}
+
+	public default void addExample(String name, TCode code) {
+		ODebug.TODO("name=%s code=%s");
 	}
 
 }

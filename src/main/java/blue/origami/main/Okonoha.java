@@ -1,6 +1,5 @@
 package blue.origami.main;
 
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
@@ -12,12 +11,12 @@ public class Okonoha extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		String[] files = options.stringList(ParserOption.InputFiles);
-		if (options.stringValue(ParserOption.GrammarFile, null) == null) {
-			if (files.length > 0) {
-				String ext = SourcePosition.extractFileExtension(files[0]);
-				options.set(ParserOption.GrammarFile, ext + ".opeg");
-			}
-		}
+		// if (options.stringValue(ParserOption.GrammarFile, null) == null) {
+		// if (files.length > 0) {
+		// String ext = SourcePosition.extractFileExtension(files[0]);
+		// options.set(ParserOption.GrammarFile, ext + ".opeg");
+		// }
+		// }
 		String target = options.stringValue(ParserOption.Target, "racket");
 		Grammar g = this.getGrammar(options, "konoha5.opeg");
 		Transpiler env = new Transpiler(g, target, options);

@@ -5,18 +5,11 @@ import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 
-public class UnaryExpr implements TTypeRule, OSymbols {
-
-	final String op;
-
-	public UnaryExpr(String op) {
-		this.op = op;
-	}
-
+public class GetIndex implements TTypeRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		TCode expr = env.parseCode(env, t.get(_expr));
-		return env.findParamCode(env, this.op, expr);
+		TCode recv = env.parseCode(env, t.get(_recv));
+		TCode[] params = env.parseParams(env, t, _param);
+		return recv.applyMethodCode(env, "[]", params);
 	}
-
 }

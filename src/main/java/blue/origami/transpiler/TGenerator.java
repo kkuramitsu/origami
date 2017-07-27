@@ -34,7 +34,7 @@ public class TGenerator {
 	}
 
 	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
-		this.data.pushLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
+		this.data.pushIndentLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
 	}
 
 	private String currentFuncName = null;
@@ -64,14 +64,16 @@ public class TGenerator {
 			params = sb.toString();
 		}
 		SourceSection sec = new SourceSection();
+		env.setCurrentSourceSection(sec);
 		this.secList.add(sec);
 		this.secMap.put(name, sec);
 		this.currentFuncName = name;
-		sec.pushLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
+		sec.pushIndentLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
 		sec.incIndent();
-		sec.pushLine(code.addReturn().strOut(env));
+		sec.pushIndentLine(code.addReturn().strOut(env));
 		sec.decIndent();
-		sec.pushLine(env.getSymbol("end function", "end", "}"));
+		sec.pushIndentLine(env.getSymbol("end function", "end", "}"));
+		env.setCurrentSourceSection(null);
 	}
 
 	HashSet<String> crossRefNames = new HashSet<>();
@@ -141,7 +143,7 @@ public class TGenerator {
 	}
 
 	public void generateExpression(TEnv env, Tree<?> t) {
-		TCode code = env.typeTree(env, t);
+		TCode code = env.parseCode(env, t);
 		if (code.getType() != TType.tVoid) {
 			code.emitCode(env, this.eval);
 			OConsole.println("(%s) %s", code.getType(), OConsole.bold(this.eval.toString()));

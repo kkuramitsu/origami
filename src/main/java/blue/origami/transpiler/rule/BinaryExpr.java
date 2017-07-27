@@ -15,8 +15,8 @@ public class BinaryExpr implements TTypeRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		TCode left = env.typeTree(env, t.get(_left));
-		TCode right = env.typeTree(env, t.get(_right));
+		TCode left = env.parseCode(env, t.get(_left));
+		TCode right = env.parseCode(env, t.get(_right));
 		// syncType(env, left, right);
 		// return left.op(env, this.op, right);
 		return env.findParamCode(env, this.op, left, right);

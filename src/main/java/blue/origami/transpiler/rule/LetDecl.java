@@ -26,7 +26,7 @@ public class LetDecl extends SyntaxRule implements TTypeRule {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		String name = t.getStringAt(_name, "");
-		TCode right = env.typeExpr(env, t.get(_expr));
+		TCode right = env.parseCode(env, t.get(_expr));
 		TType type = t.has(_type) //
 				? env.parseType(env, t.get(_type, null), null)//
 				: right.getType(); // FIXME right.valueType();

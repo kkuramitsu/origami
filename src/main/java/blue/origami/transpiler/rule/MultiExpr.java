@@ -15,11 +15,11 @@ public class MultiExpr implements TTypeRule {
 		TCode[] nodes = new TCode[t.size()];
 		int last = t.size();
 		for (int i = 0; i < last; i++) {
-			nodes[i] = env.typeTree(env, t.get(i));
+			nodes[i] = env.parseCode(env, t.get(i));
 		}
 		// if (last >= 0) {
 		// nodes[last] = this.typeExpr(env, t.get(last));
 		// }
-		return new TMultiCode(nodes);
+		return new TMultiCode(false, nodes);
 	}
 }

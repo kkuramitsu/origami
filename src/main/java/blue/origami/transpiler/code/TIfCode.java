@@ -64,8 +64,11 @@ public class TIfCode extends MultiCode {
 	@Override
 	public String strOut(TEnv env) {
 		if (this.isStatementStyle()) {
-			SourceSection sec = env.newSourceSection();
+			SourceSection p = env.getCurrentSourceSection();
+			SourceSection sec = p.dup();
+			env.setCurrentSourceSection(sec);
 			sec.pushIf(env, this);
+			env.setCurrentSourceSection(p);
 			return sec.toString();
 		}
 		return super.strOut(env);

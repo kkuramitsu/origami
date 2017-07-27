@@ -54,8 +54,11 @@ interface TCodeAPI {
 		return self();
 	}
 
-	public default TCode op(TEnv env, String op, TCode right) {
-		return self();
+	public default TCode applyMethodCode(TEnv env, String name, TCode... params) {
+		TCode[] p = new TCode[params.length + 1];
+		p[0] = self();
+		System.arraycopy(params, 0, p, 1, params.length);
+		return env.findParamCode(env, name, p);
 	}
 }
 
@@ -123,6 +126,10 @@ abstract class MultiCode implements TCode {
 
 	public MultiCode(TCode... args) {
 		this.args = args;
+	}
+
+	public int size() {
+		return this.args.length;
 	}
 
 	@Override

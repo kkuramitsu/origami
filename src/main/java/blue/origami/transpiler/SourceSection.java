@@ -47,13 +47,21 @@ public class SourceSection implements TCodeSection {
 		return sb.toString();
 	}
 
-	public void pushLine(String line) {
-		this.sb.append(this.Indent("  ", line + "\n"));
-	}
-
 	@Override
 	public void push(String t) {
 		this.sb.append(t);
+	}
+
+	public void pushLine(String line) {
+		this.sb.append(line + "\n");
+	}
+
+	public void pushIndent(String line) {
+		this.sb.append(this.Indent("  ", line));
+	}
+
+	public void pushIndentLine(String line) {
+		this.sb.append(this.Indent("  ", line + "\n"));
 	}
 
 	@Override
@@ -114,18 +122,18 @@ public class SourceSection implements TCodeSection {
 			String cond = code.condCode().strOut(env);
 			this.pushLine(env.format("if", "if(%s) {", cond));
 			this.incIndent();
-			code.thenCode().emitCode(env, this);
+			// code.thenCode().emitCode(env, this);
+			this.pushIndentLine(code.thenCode().strOut(env));
 			this.decIndent();
-			this.pushLine(env.getSymbol("end if", "end", "}"));
-			this.pushLine(env.getSymbol("else", "else {"));
+			this.pushIndentLine(env.getSymbol("end if", "end", "}"));
+			this.pushIndentLine(env.getSymbol("else", "else {"));
 			this.incIndent();
-			code.elseCode().emitCode(env, this);
+			this.pushIndentLine(code.elseCode().strOut(env));
 			this.decIndent();
-			this.pushLine(env.getSymbol("end else ", "end if", "end", "}"));
+			this.pushIndent(env.getSymbol("end else ", "end if", "end", "}"));
 		} else {
 			this.push(code.strOut(env));
 		}
-
 	}
 
 	@Override
@@ -134,13 +142,24 @@ public class SourceSection implements TCodeSection {
 			this.pushLine(env.getSymbol("block", "begin", "{"));
 			this.incIndent();
 			code.addReturn();
-		}
-		for (TCode c : code) {
-			this.pushLine(c.strOut(env));
-		}
-		if (code.isBlockExpr()) {
+			for (TCode c : code) {
+				this.pushIndentLine(c.strOut(env));
+			}
 			this.decIndent();
 			this.push(env.getSymbol("end block", "end", "}"));
+		} else {
+			int cnt = 0;
+			for (TCode c : code) {
+				if (cnt == 0) {
+					this.push(c.strOut(env));
+				} else {
+					this.pushIndent(c.strOut(env));
+				}
+				cnt++;
+				if (cnt != code.size()) {
+					this.push("\n");
+				}
+			}
 		}
 	}
 
