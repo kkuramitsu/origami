@@ -1,0 +1,89 @@
+# kotlin/init.kh
+
+Bool       = Boolean
+Int        = Int
+Float      = Double
+String     = String
+
+null       = null
+
+# Bool
+true:Bool       = true
+false:Bool      = false
+&:Bool:Bool:Bool = (%s && %s)
+|:Bool:Bool:Bool = (%s || %s)
+!:Bool:Bool      = (!(%s))
+
+#Int
+0:Int            = %d
++:Int:Int        = +%s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (%s / %s)
+%:Int:Int:Int    = (%s % %s)
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+<<:Int:Int:Int   = (%s shl %s)
+>>:Int:Int:Int   = (%s shr %s)
+&:Int:Int:Int    = (%s and %s)
+|:Int:Int:Int    = (%s or %s)
+^:Int:Int:Int    = (%s xor %s)
+!:Int:Int        = inv %s
+
+# Float
+0:Float       = %f
+Int=>Float           = (%s).toDouble()
+Float->Int           = (%s).toInt()
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s / %s)
+%:Float:Float:Float    = (%s % %s)
+
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+#Syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                =
+,                = ,
+()               = (%s)
+
+#module           =
+
+#functype         =
+
+const            = private val %2$s:%1$s = %3$s
+val              = val %2$s:%1$s = %3$s
+var              = var %2$s:%1$s = %3$s
+
+function         = private fun %2$s (%3$s):%1$s {
+return           = return %s
+
+#funcref           = {%s(px)}
+
+if               = if(%s) {
+else if          = else if(%s) {
+while            = while(%s) {
+switch           = when(%s.toInt()) {
+case             = %s -> %s
+ifexpr           = if(%s) (%s) else (%s)
+
+lambda           = { %s -> (%s) }
