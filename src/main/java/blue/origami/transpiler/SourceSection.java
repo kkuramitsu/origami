@@ -10,6 +10,8 @@ import blue.origami.transpiler.code.TLetCode;
 import blue.origami.transpiler.code.TMultiCode;
 import blue.origami.transpiler.code.TNameCode;
 import blue.origami.transpiler.code.TReturnCode;
+import blue.origami.transpiler.code.TStringCode;
+import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.util.OLog;
 
 public class SourceSection implements TCodeSection {
@@ -97,6 +99,11 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
+	public void pushString(TEnv env, TStringCode code) {
+		this.push(code.strOut(env));
+	}
+
+	@Override
 	public void pushCast(TEnv env, TCastCode code) {
 		this.push(code.strOut(env));
 	}
@@ -165,6 +172,12 @@ public class SourceSection implements TCodeSection {
 
 	@Override
 	public void pushReturn(TEnv env, TReturnCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushTemplate(TEnv env, TemplateCode code) {
 		// TODO Auto-generated method stub
 
 	}

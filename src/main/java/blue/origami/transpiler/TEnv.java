@@ -1,6 +1,5 @@
 package blue.origami.transpiler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,7 +11,6 @@ import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.code.TTypeCode;
 import blue.origami.transpiler.rule.TTypeRule;
 import blue.origami.util.Handled;
@@ -206,10 +204,6 @@ interface TEnvTraits {
 		return y;
 	}
 
-	public interface OListMatcher<X> {
-		public boolean isMatched(X x);
-	}
-
 	public default <X> void findList(String name, Class<X> c, List<X> l, OListMatcher<X> f) {
 		for (TEnvTraits env = this; env != null; env = env.getParent()) {
 			for (TEnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
@@ -287,7 +281,7 @@ interface TEnvApi {
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new TCodeTemplate(name, TType.tUntyped, TConsts.emptyTypes, value));
+			env().add(name, new TCodeTemplate(name, TType.tUntyped, EmptyConstants.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
@@ -299,7 +293,7 @@ interface TEnvApi {
 				}
 				env().add(name, new TCodeTemplate(name, ret, p, value));
 			} else {
-				Template t = new TCodeTemplate(name, ret, TConsts.emptyTypes, value);
+				Template t = new TCodeTemplate(name, ret, EmptyConstants.emptyTypes, value);
 				env().add(name, t);
 				env().add(key, t);
 			}
@@ -443,47 +437,55 @@ interface TEnvApi {
 		return tp == null ? TConvTemplate.Stupid : tp;
 	}
 
-	public default TCode findParamCode(TEnv env, String name, TCode... params) {
-		// for (TCode p : params) {
-		// if (p.isUntyped()) {
-		// return new TUntypedParamCode(name, params);
-		// }
-		// }
-		List<Template> l = new ArrayList<>(8);
-		env.findList(name, Template.class, l, (tt) -> tt.isEnabled() && tt.getParamSize() == params.length);
-		// ODebug.trace("l = %s", l);
-		if (l.size() == 0) {
-			throw new TErrorCode("undefined %s%s", name, types(params));
-		}
-		TParamCode start = l.get(0).newParamCode(env, name, params);
-		int mapCost = start.checkParam(env);
-		// System.out.println("cost=" + mapCost + ", " + l.get(0));
-		for (int i = 1; i < l.size(); i++) {
-			if (mapCost <= 0) {
-				return start;
-			}
-			TParamCode next = l.get(i).newParamCode(env, name, params);
-			int nextCost = next.checkParam(env);
-			// System.out.println("nextcost=" + nextCost + ", " + l.get(i));
-			if (nextCost < mapCost) {
-				start = next;
-				mapCost = nextCost;
-			}
-		}
-		if (mapCost >= TCastCode.STUPID) {
-			// ODebug.trace("miss cost=%d %s", start.getMatchCost(), start);
-			throw new TErrorCode("mismatched %s%s", name, types(params));
-		}
-		return start;
-	}
+	// public default TCode findParamCode(TEnv env, String name, TCode...
+	// params) {
+	// // for (TCode p : params) {
+	// // if (p.isUntyped()) {
+	// // return new TUntypedParamCode(name, params);
+	// // }
+	// // }
+	// List<Template> l = new ArrayList<>(8);
+	// env.findList(name, Template.class, l, (tt) -> tt.isEnabled() &&
+	// tt.getParamSize() == params.length);
+	// // ODebug.trace("l = %s", l);
+	// if (l.size() == 0) {
+	// throw new TErrorCode("undefined %s%s", name, types(params));
+	// }
+	// TExprCode start = l.get(0).newParamCode(env, name, params);
+	// int mapCost = start.checkParam(env);
+	// // System.out.println("cost=" + mapCost + ", " + l.get(0));
+	// for (int i = 1; i < l.size(); i++) {
+	// if (mapCost <= 0) {
+	// return start;
+	// }
+	// TExprCode next = l.get(i).newParamCode(env, name, params);
+	// int nextCost = next.checkParam(env);
+	// // System.out.println("nextcost=" + nextCost + ", " + l.get(i));
+	// if (nextCost < mapCost) {
+	// start = next;
+	// mapCost = nextCost;
+	// }
+	// }
+	// if (mapCost >= TCastCode.STUPID) {
+	// // ODebug.trace("miss cost=%d %s", start.getMatchCost(), start);
+	// throw new TErrorCode("mismatched %s%s", name, types(params));
+	// }
+	// return start;
+	// }
+	//
+	// default String types(TCode... params) {
+	// StringBuilder sb = new StringBuilder();
+	// for (TCode t : params) {
+	// sb.append(" ");
+	// sb.append(t.getType());
+	// }
+	// return sb.toString();
+	// }
 
-	default String types(TCode... params) {
-		StringBuilder sb = new StringBuilder();
-		for (TCode t : params) {
-			sb.append(" ");
-			sb.append(t.getType());
-		}
-		return sb.toString();
+	public default void addFunction(TFunction f) {
+		Transpiler tr = this.env().getTranspiler();
+		// tr.addFunction(f);
+		this.env().add(f.getName(), f);
 	}
 
 	public default void addExample(String name, TCode code) {

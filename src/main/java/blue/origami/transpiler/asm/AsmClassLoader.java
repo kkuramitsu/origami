@@ -4,15 +4,16 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.util.HashMap;
 
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 
-public class TClassLoader extends ClassLoader {
+public class AsmClassLoader extends ClassLoader {
 
 	// private final Map<String, OClassDecl> uncompiledMap;
 
-	public TClassLoader() {
+	public AsmClassLoader() {
 		super();
 		this.dumpDirectory = System.getenv("DUMPDIR");
 	}
@@ -25,106 +26,46 @@ public class TClassLoader extends ClassLoader {
 		return className.replace('.', '/');
 	}
 
-	// private void addClassDecl(OClassDecl cdecl) {
-	// String classname = toClassName(cdecl.getName());
-	// this.uncompiledMap.put(classname, cdecl);
-	// }
-	//
-	// public OClassDeclType newType(OEnv env, OAnno anno, String cname, OType[]
-	// paramTypes, OType superType,
-	// OType... interfaces) {
-	// OClassDeclType t = new OClassDeclType(env, anno, cname, paramTypes,
-	// superType, interfaces);
-	// this.addClassDecl(t.getDecl());
-	// return t;
-	// }
-	//
-	// private int currentId = 0;
-	// private OClassDecl currentDecl = null;
-	//
-	// public OClassDecl currentClassDecl(OEnv env) {
-	// if (this.currentDecl == null) {
-	// String cname = "$C" + this.currentId++;
-	// OClassDeclType t = this.newType(env, new OAnno("public,abstract"), cname,
-	// null, env.t(Object.class),
-	// env.t(OrigamiObject.class));
-	// this.currentDecl = t.getDecl();
-	// }
-	// return this.currentDecl;
-	// }
-	//
-	// @Override
-	// protected Class<?> findClass(String cname) throws ClassNotFoundException
-	// {
-	// OClassDecl cdecl = this.uncompiledMap.remove(cname);
-	// if (cdecl == null) {
-	// throw new ClassNotFoundException("not found " + cname);
-	// }
-	// if (cdecl == this.currentDecl) {
-	// this.currentDecl = null;
-	// }
-	// byte[] byteCode = cdecl.byteCompile();
-	// this.dump(cname, byteCode);
-	// Class<?> c = this.defineClass(cname, byteCode, 0, byteCode.length);
-	// this.setInitStaticField(c, cdecl);
-	// return c;
-	// }
-	//
-	// private void setInitStaticField(Class<?> c, OClassDecl cdecl) {
-	// for (OField f : cdecl.fields()) {
-	// if (f.isStatic()) {
-	// OFieldDecl fdecl = f.getDecl();
-	// Object value = fdecl.getValue();
-	// if (value == null) {
-	// continue;
-	// }
-	// Field ff = OTypeUtils.loadField(c, fdecl.getName());
-	// try {
-	// ff.setAccessible(true);
-	// ff.set(null, value);
-	// ff.setAccessible(false);
-	// } catch (IllegalAccessException e) {
-	// ODebug.traceException(e);
-	// }
-	// }
-	// }
-	// ValueCode[] pools = cdecl.getPooledValues();
-	// for (int id = 0; id < pools.length; id++) {
-	// Field f = OTypeUtils.loadField(c, cdecl.constFieldName(id));
-	// try {
-	// f.setAccessible(true);
-	// f.set(null, pools[id].getHandled());
-	// f.setAccessible(false);
-	// } catch (IllegalAccessException e) {
-	// ODebug.traceException(e);
-	// }
-	// }
-	// }
-	//
-	// @Override
-	// protected Class<?> loadClass(String name, boolean resolve) throws
-	// ClassNotFoundException {
-	// Class<?> foundClass = this.findLoadedClass(name);
-	// if (foundClass == null) {
-	// ClassLoader parent = this.getParent();
-	// try {
-	// foundClass = parent.loadClass(name);
-	// } catch (Throwable e) {
-	// }
-	// }
-	// if (foundClass == null) {
-	// foundClass = this.findClass(name);
-	// }
-	// if (resolve) {
-	// this.resolveClass(foundClass);
-	// }
-	// return foundClass;
-	// }
+	@Override
+	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		Class<?> foundClass = this.findLoadedClass(name);
+		if (foundClass == null) {
+			ClassLoader parent = this.getParent();
+			try {
+				foundClass = parent.loadClass(name);
+			} catch (Throwable e) {
+			}
+		}
+		if (foundClass == null) {
+			foundClass = this.findClass(name);
+		}
+		if (resolve) {
+			this.resolveClass(foundClass);
+		}
+		return foundClass;
+	}
+
+	private HashMap<String, byte[]> codeMap = new HashMap<>();
+
+	public void set(String cname, byte[] byteCode) {
+		this.codeMap.put(cname, byteCode);
+	}
+
+	@Override
+	protected Class<?> findClass(String cname) throws ClassNotFoundException {
+		byte[] byteCode = this.codeMap.remove(cname);
+		if (byteCode == null) {
+			throw new ClassNotFoundException("not found " + cname);
+		}
+		this.dump(cname, byteCode);
+		Class<?> c = this.defineClass(cname, byteCode, 0, byteCode.length);
+		return c;
+	}
 
 	public boolean traceMode = true;
 	private String dumpDirectory = null;
 
-	private void dump(String className, byte[] byteCode) {
+	void dump(String className, byte[] byteCode) {
 		if (ODebug.enabled && (this.traceMode || this.dumpDirectory != null)) {
 			int index = className.lastIndexOf('.');
 			String classFileName = className.substring(index + 1) + ".class";
@@ -149,7 +90,7 @@ public class TClassLoader extends ClassLoader {
 				p.destroy();
 				OConsole.endColor();
 			} catch (IOException e) {
-				ODebug.trace("cannot dump " + classFileName + " caused by " + e);
+				ODebug.trace("Cannot dump " + classFileName + " caused by " + e);
 			} catch (InterruptedException e) {
 				ODebug.traceException(e);
 			}

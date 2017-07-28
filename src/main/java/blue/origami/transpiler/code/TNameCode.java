@@ -2,8 +2,8 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
 
 public class TNameCode extends EmptyTypedCode {
@@ -71,7 +71,7 @@ public class TNameCode extends EmptyTypedCode {
 
 		@Override
 		public TCode applyCode(TEnv env, TCode... params) {
-			return env.findParamCode(env, this.name, params);
+			return new TExprCode(this.name, params);
 		}
 
 	}

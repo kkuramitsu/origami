@@ -22,7 +22,6 @@ public class NameExpr implements TTypeRule {
 		public boolean isNameRef(TEnv env);
 
 		public TCode nameCode(TEnv env, String name);
-
 	}
 
 }

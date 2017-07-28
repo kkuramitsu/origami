@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
-import blue.origami.transpiler.TConsts;
+import blue.origami.transpiler.EmptyConstants;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TErrorCode;
@@ -80,7 +80,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 
 	public TType[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, TType defaultType) {
 		if (params == null) {
-			return TConsts.emptyTypes;
+			return EmptyConstants.emptyTypes;
 		}
 		TType[] p = new TType[paramNames.length];
 		if (params.has(_name) && p.length == 1) {
@@ -133,7 +133,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 
 	public TType[] parseTypes(TEnv env, Tree<?> types) {
 		if (types == null) {
-			return TConsts.emptyTypes;
+			return EmptyConstants.emptyTypes;
 		}
 		TType[] p = new TType[types.size()];
 		int i = 0;

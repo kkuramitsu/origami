@@ -35,7 +35,7 @@ interface TCodeAPI {
 	public default TCode asType(TEnv env, TType t) {
 		TCode self = self();
 		TType f = self.getType();
-		if (t.equals(f)) {
+		if (f.isUntyped() || t.accept(self)) {
 			return self;
 		}
 		TConvTemplate tt = env.findTypeMap(env, f, t);
@@ -58,7 +58,7 @@ interface TCodeAPI {
 		TCode[] p = new TCode[params.length + 1];
 		p[0] = self();
 		System.arraycopy(params, 0, p, 1, params.length);
-		return env.findParamCode(env, name, p);
+		return new TExprCode(name, p);
 	}
 }
 
@@ -232,10 +232,10 @@ abstract class MultiTypedCode extends MultiCode {
 	private TType typed;
 	protected Template template;
 
-	MultiTypedCode(TType t, Template template, TCode... args) {
+	MultiTypedCode(TType t, Template tp, TCode... args) {
 		super(args);
 		this.setType(t);
-		this.template = template;
+		this.setTemplate(tp);
 	}
 
 	@Override
@@ -251,6 +251,10 @@ abstract class MultiTypedCode extends MultiCode {
 	@Override
 	public Template getTemplate(TEnv env) {
 		return this.template;
+	}
+
+	public void setTemplate(Template tp) {
+		this.template = tp;
 	}
 
 }

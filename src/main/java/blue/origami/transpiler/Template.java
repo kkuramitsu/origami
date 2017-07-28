@@ -1,7 +1,6 @@
 package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TParamCode;
 
 public abstract class Template {
 	public final static Template Null = null;
@@ -40,12 +39,14 @@ public abstract class Template {
 		return true;
 	}
 
-	public abstract TParamCode newParamCode(TEnv env, String name, TCode[] params);
+	public Template update(TEnv env, TCode[] params) {
+		return this;
+	}
 
 	public abstract String format(Object... args);
 
 	public TInst[] getInsts() {
-		return TConsts.emptyInsts;
+		return EmptyConstants.emptyInsts;
 	}
 
 	@Override

@@ -481,7 +481,7 @@ ShiftExpr =
 
 SHIFT = 
 	"<<"  #LShiftExpr 
-	/ ">>"  #ShiftExpr 
+	/ ">>"  #RShiftExpr 
 	/ ">>>" #LRShiftExpr
 
 SumExpr = 
@@ -507,7 +507,7 @@ UnaryExpr
 	= PostExpr
     / { "-"  $expr(CastExpr) #MinusExpr }
     / { ('!' _ / 'not' EOT)  $expr(CastExpr) #NotExpr }
-    / { '~' _  $expr(CastExpr)    #ComplExpr }
+    / { '~' _  $expr(CastExpr)    #CmplExpr }
     / { "+"  $expr(CastExpr)    #PlusExpr }
     / { "|"  $expr(Expression) "|"    #SizeOfExpr }
 //    / { "#"  $expr(CastExpr)    #TweetExpr }

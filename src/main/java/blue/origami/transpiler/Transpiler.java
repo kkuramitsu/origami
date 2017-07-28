@@ -13,13 +13,13 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
+import blue.origami.transpiler.asm.AsmGenerator;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OTree;
 
@@ -32,7 +32,7 @@ public class Transpiler extends TEnv {
 		super(null);
 		this.target = "/blue/origami/konoha5/" + target + "/";
 		this.options = options;
-		this.generator = new TGenerator();
+		this.generator = target.equals("jvm") ? new AsmGenerator() : new TGenerator();
 		this.initEnv(grammar);
 		this.loadLibrary("init.kh");
 
@@ -64,6 +64,7 @@ public class Transpiler extends TEnv {
 		this.add("NotExpr", new UnaryExpr("!"));
 		this.add("MinusExpr", new UnaryExpr("-"));
 		this.add("PlusExpr", new UnaryExpr("+"));
+		this.add("CmplExpr", new UnaryExpr("~"));
 
 		// type
 		this.add("?", TType.tUntyped);
@@ -173,8 +174,12 @@ public class Transpiler extends TEnv {
 		OConsole.println(t);
 		OConsole.endColor();
 		this.generator.setup();
-		this.generator.generateExpression(env, t);
-		this.generator.wrapUp();
+		TCode code = env.parseCode(env, t).asType(env, TType.tUntyped);
+		this.generator.emit(env, code);
+		Object result = this.generator.wrapUp();
+		if (code.getType() != TType.tVoid) {
+			OConsole.println("(%s) %s", code.getType(), OConsole.bold("" + result));
+		}
 	}
 
 	// ConstDecl
@@ -184,7 +189,7 @@ public class Transpiler extends TEnv {
 	public Template defineConst(boolean isPublic, String name, TType type, TCode expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
-		TCodeTemplate tp = this.newTemplate(env, lname, type);
+		TCodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
 		this.add(name, tp);
 		this.generator.defineConst(this, isPublic, lname, type, expr);
 		return tp;
@@ -196,26 +201,16 @@ public class Transpiler extends TEnv {
 			TType returnType, Tree<?> body) {
 		final TEnv env = this.newEnv();
 		final String lname = isPublic ? name : this.getLocalName(name);
-		final boolean isUntyped = returnType.isUntyped();
-		final TCodeTemplate tp = this.newTemplate(env, lname, returnType, paramTypes);
+		final TCodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
 		this.add(name, tp);
-
 		TFunctionContext fcx = new TFunctionContext();
 		env.add(TFunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
 		}
 		TCode code = env.parseCode(env, body);
-		if (isUntyped) {
-			TType ret = code.getType();
-			if (ret.isUntyped()) {
-				ODebug.trace("ERROR still untyped %s", tp);
-			}
-			returnType.accept(code);
-			// ODebug.trace("typed %s", tp);
-		} else {
-			code = code.asType(env, returnType);
-		}
+		code = code.asType(env, returnType);
+		assert (!returnType.isUntyped());
 		this.generator.defineFunction(this, isPublic, lname, paramNames, paramTypes, returnType, code);
 		return tp;
 	}
@@ -223,27 +218,6 @@ public class Transpiler extends TEnv {
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + name;
-	}
-
-	private TCodeTemplate newTemplate(TEnv env, String lname, TType returnType) {
-		String template = env.format("constname", "name", "%s", lname);
-		return new TConstTemplate(lname, returnType, template);
-	}
-
-	private TCodeTemplate newTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
-		String param = "";
-		if (paramTypes.length > 0) {
-			String delim = env.getSymbolOrElse(",", ",");
-			StringBuilder sb = new StringBuilder();
-			sb.append("%s");
-			for (int i = 1; i < paramTypes.length; i++) {
-				sb.append(delim);
-				sb.append("%s");
-			}
-			param = sb.toString();
-		}
-		String template = env.format("funccall", "%s(%s)", lname, param);
-		return new TCodeTemplate(lname, returnType, paramTypes, template);
 	}
 
 	SourceSection sec = null;

@@ -3,7 +3,6 @@ package blue.origami.transpiler;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TNameCode.TFuncRefCode;
-import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TFunction extends Template implements TNameRef {
@@ -11,8 +10,10 @@ public class TFunction extends Template implements TNameRef {
 	protected String[] paramNames;
 	protected Tree<?> body;
 
-	public TFunction(String name, TType returnType, String[] paramNames, TType[] paramTypes, Tree<?> body) {
+	public TFunction(boolean isPublic, String name, TType returnType, String[] paramNames, TType[] paramTypes,
+			Tree<?> body) {
 		super(name, returnType, paramTypes);
+		this.isPublic = isPublic;
 		this.paramNames = paramNames;
 		this.body = body;
 	}
@@ -40,7 +41,7 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	@Override
-	public TParamCode newParamCode(TEnv env, String name, TCode[] params) {
+	public Template update(TEnv env, TCode[] params) {
 		TType[] p = this.getParamTypes();
 		if (TType.hasUntyped(p)) {
 			p = p.clone();
@@ -48,21 +49,24 @@ public class TFunction extends Template implements TNameRef {
 				if (p[i].isUntyped()) {
 					p[i] = params[i].getType();
 				}
+				if (p[i].isUntyped()) {
+					return null;
+				}
 			}
-			String sig = getSignature(name, p);
+			String sig = getSignature(this.name, p);
 			Template tp = env.get(sig, Template.class);
 			if (tp == null) {
 				Transpiler tr = env.getTranspiler();
-				tp = tr.defineFunction(this.isPublic, name, this.paramNames, p, this.getReturnType(), this.body);
+				tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, p, this.getReturnType(), this.body);
 				env.add(sig, tp);
 			}
-			return new TParamCode(tp, params);
+			return tp;
 		} else {
 			Transpiler tr = env.getTranspiler();
-			Template tp = tr.defineFunction(this.isPublic, name, this.paramNames, this.paramTypes, this.returnType,
+			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
 					this.body);
 			this.setDisabled();
-			return new TParamCode(tp, params);
+			return tp;
 		}
 	}
 

@@ -3,11 +3,10 @@ package blue.origami.transpiler;
 import java.util.HashMap;
 
 import blue.origami.transpiler.code.TCode;
-//import blue.origami.ocode.OCode;
 import blue.origami.util.ODebug;
 
 public abstract class TType implements TypeApi {
-	public static final TType tUntyped = new TSimpleType("?");
+	public static final TType tUntyped = new UntypedType("?");
 	public static final TType tVoid = new TSimpleType("Void");
 	public static final TType tBool = new TSimpleType("Bool");
 	public static final TType tInt = new TSimpleType("Int");
@@ -77,6 +76,19 @@ class TSimpleType extends TType {
 	@Override
 	public String strOut(TEnv env) {
 		return env.format(this.name, this.name);
+	}
+
+}
+
+class UntypedType extends TSimpleType {
+
+	UntypedType(String name) {
+		super(name);
+	}
+
+	@Override
+	public boolean accept(TCode code) {
+		return true;
 	}
 
 }

@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.TConsts;
+import blue.origami.transpiler.EmptyConstants;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
@@ -17,7 +17,7 @@ public class TMultiCode extends MultiCode {
 	}
 
 	public TMultiCode() {
-		this(false, TConsts.emptyCodes);
+		this(false, EmptyConstants.emptyCodes);
 	}
 
 	public boolean isBlockExpr() {

@@ -10,6 +10,8 @@ import blue.origami.transpiler.code.TLetCode;
 import blue.origami.transpiler.code.TMultiCode;
 import blue.origami.transpiler.code.TNameCode;
 import blue.origami.transpiler.code.TReturnCode;
+import blue.origami.transpiler.code.TStringCode;
+import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.util.OLog;
 
 public interface TCodeSection {
@@ -25,6 +27,8 @@ public interface TCodeSection {
 
 	public void pushDouble(TEnv env, TDoubleCode code);
 
+	public void pushString(TEnv env, TStringCode code);
+
 	public void pushCast(TEnv env, TCastCode code);
 
 	public void pushCall(TEnv env, TCode code);
@@ -37,6 +41,8 @@ public interface TCodeSection {
 
 	public void pushReturn(TEnv env, TReturnCode code);
 
-	public void pushMulti(TEnv env, TMultiCode tMultiCode);
+	public void pushMulti(TEnv env, TMultiCode code);
+
+	public void pushTemplate(TEnv env, TemplateCode code);
 
 }

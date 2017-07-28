@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.util.OConsole;
 
@@ -24,13 +23,22 @@ public class TGenerator {
 		this.secMap = new HashMap<>();
 	}
 
-	protected void wrapUp() {
+	protected Object wrapUp() {
 		System.out.println(this.head.toString());
 		System.out.println(this.data.toString());
 		for (SourceSection sec : this.secList) {
 			System.out.println(sec);
 		}
-		System.out.println(this.eval);
+		return this.eval.toString();
+	}
+
+	public void emit(TEnv env, TCode code) {
+		code.emitCode(env, this.eval);
+	}
+
+	public TCodeTemplate newConstTemplate(TEnv env, String lname, TType returnType) {
+		String template = env.format("constname", "name", "%s", lname);
+		return new TConstTemplate(lname, returnType, template);
 	}
 
 	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
@@ -48,6 +56,22 @@ public class TGenerator {
 
 	String getCurrentFuncName() {
 		return this.currentFuncName;
+	}
+
+	public TCodeTemplate newFuncTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
+		String param = "";
+		if (paramTypes.length > 0) {
+			String delim = env.getSymbolOrElse(",", ",");
+			StringBuilder sb = new StringBuilder();
+			sb.append("%s");
+			for (int i = 1; i < paramTypes.length; i++) {
+				sb.append(delim);
+				sb.append("%s");
+			}
+			param = sb.toString();
+		}
+		String template = env.format("funccall", "%s(%s)", lname, param);
+		return new TCodeTemplate(lname, returnType, paramTypes, template);
 	}
 
 	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
@@ -140,14 +164,6 @@ public class TGenerator {
 		}
 		// this.depsMap.clear();
 		return funcList;
-	}
-
-	public void generateExpression(TEnv env, Tree<?> t) {
-		TCode code = env.parseCode(env, t);
-		if (code.getType() != TType.tVoid) {
-			code.emitCode(env, this.eval);
-			OConsole.println("(%s) %s", code.getType(), OConsole.bold(this.eval.toString()));
-		}
 	}
 
 	protected void log(String line, Object... args) {

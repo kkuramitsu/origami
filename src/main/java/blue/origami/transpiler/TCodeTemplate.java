@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TNameCode;
-import blue.origami.transpiler.code.TParamCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TCodeTemplate extends Template implements TNameRef {
@@ -15,7 +14,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 	}
 
 	public TCodeTemplate(String template) {
-		this(template, TType.tUntyped, TConsts.emptyTypes, template);
+		this(template, TType.tUntyped, EmptyConstants.emptyTypes, template);
 	}
 
 	@Override
@@ -30,13 +29,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 
 	@Override
 	public TInst[] getInsts() {
-		return TConsts.emptyInsts;
-	}
-
-	@Override
-	public TParamCode newParamCode(TEnv env, String name, TCode[] params) {
-		// ODebug.trace("paramcode: %s", this);
-		return new TParamCode(this, params);
+		return EmptyConstants.emptyInsts;
 	}
 
 	@Override

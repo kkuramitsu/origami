@@ -16,7 +16,7 @@ public class UnaryExpr implements TTypeRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TCode expr = env.parseCode(env, t.get(_expr));
-		return env.findParamCode(env, this.op, expr);
+		return expr.applyMethodCode(env, this.op);
 	}
 
 }

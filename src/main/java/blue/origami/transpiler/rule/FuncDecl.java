@@ -6,8 +6,11 @@ import blue.origami.transpiler.TFunction;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;
+import blue.origami.util.ODebug;
 
 public class FuncDecl extends SyntaxRule implements TTypeRule {
+
+	boolean isPublic = true;
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
@@ -18,8 +21,14 @@ public class FuncDecl extends SyntaxRule implements TTypeRule {
 		if (returnType.isUntyped()) {
 			returnType = TType.tVar("return");
 		}
-		TFunction tf = new TFunction(name, returnType, paramNames, paramTypes, t.get(_body, null));
-		env.add(name, tf);
+		if (this.isPublic) {
+			TFunction tf = env.get(name, TFunction.class);
+			if (tf != null) {
+				ODebug.trace("duplicated name %s", name);
+			}
+		}
+		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
+		env.addFunction(tf);
 		return new TDeclCode();
 	}
 
