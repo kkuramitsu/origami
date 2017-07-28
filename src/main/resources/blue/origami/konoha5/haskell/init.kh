@@ -1,0 +1,108 @@
+# haskell/init.kh
+
+extension  = hs
+
+Bool       = Bool
+Int        = Int
+Float      = Double
+String     = String
+
+null       = Nothing
+
+# Bool
+true:Bool       = True
+false:Bool      = False
+&:Bool:Bool:Bool = (%s && %s)
+|:Bool:Bool:Bool = (%s || %s)
+!:Bool:Bool      = (not (%s))
+
+#Int
+0:Int            = %d
++:Int:Int        = %s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (%s `div` %s)
+%:Int:Int:Int    = (%s `mod` %s)
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+# (import Data.Bits) is necessary
+<<:Int:Int:Int   = (%s << %s)
+>>:Int:Int:Int   = (%s >> %s)
+&:Int:Int:Int    = (%s .&. %s)
+|:Int:Int:Int    = (%s .|. %s)
+^:Int:Int:Int    = (%s `xor` %s)
+!:Int:Int        = (complement %s)
+
+# Float
+0:Float       = %f
+Int=>Float           = (fromIntegral %s ::Double)
+Float->Int           = (truncate %s ::Int)
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s / %s)
+%:Float:Float:Float    = (fromIntegral ((truncate %s ::Int) `mod` (truncate %s ::Int)) ::Double)
+
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+#Syntax
+
+comment          = -- %s
+begin            =
+end              =
+;                =
+,                =
+()               = (%s)
+
+module           =
+
+const            = '''
+%2$s :: %1$s
+%2$s = %3$s
+'''
+
+let              = '''
+%2$s :: %1$s
+%2$s = %3$s
+'''
+
+#function         = '''
+%2$s :: %1$s
+%2$s %3$s = do
+'''
+#function1        = '''
+%2$s :: %1$s
+%2$s %3$s = do
+'''
+#param            = %2$s
+#params           =
+
+return           = return %s
+
+apply            = %s
+funcref          = %s
+
+if               = if (%s) then
+else if          = else if (%s) then
+#while           =
+switch           = case (%s) of
+case             = %s -> %s
+default          = _ -> %s
+ifexpr           = (if (%1$s) then (%2$s) else (%3$s))
+
+lambda           = (\%s -> return (%s))
