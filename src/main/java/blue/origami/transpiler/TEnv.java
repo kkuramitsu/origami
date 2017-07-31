@@ -359,7 +359,7 @@ interface TEnvApi {
 		}
 	}
 
-	public default TType lookupTypeHint(TEnv env, String name) {
+	public default TType findTypeHint(TEnv env, String name) {
 		return TTypeHint.lookupTypeName(env, name);
 	}
 
@@ -482,10 +482,9 @@ interface TEnvApi {
 	// return sb.toString();
 	// }
 
-	public default void addFunction(TFunction f) {
+	public default void addFunction(String name, TFunction f) {
 		Transpiler tr = this.env().getTranspiler();
-		// tr.addFunction(f);
-		this.env().add(f.getName(), f);
+		tr.add(name, f);
 	}
 
 	public default void addExample(String name, TCode code) {

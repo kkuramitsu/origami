@@ -12,9 +12,11 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.code.TArrayCode;
 import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
@@ -494,6 +496,27 @@ public class AsmSection implements TCodeSection, Opcodes {
 		// "(D)D", false);
 		this.mBuilder.visitMethodInsn(INVOKESTATIC, "blue/origami/transpiler/asm/APIs", "join",
 				"([Ljava/lang/String;)Ljava/lang/String;", false);
+
+	}
+
+	@Override
+	public void pushArray(TEnv env, TArrayCode code) {
+		Type ty = Type.getType(AsmGenerator.toClass(code.getElementType()));
+		this.mBuilder.push(code.size());
+		this.mBuilder.newArray(ty);
+		int c = 0;
+		for (TCode sub : code) {
+			this.mBuilder.dup();
+			this.mBuilder.push(c++);
+			sub.emitCode(env, this);
+			this.mBuilder.arrayStore(ty);
+		}
+	}
+
+	@Override
+	public void pushData(TEnv env, TDataCode code) {
+		TArrayCode keys = new TArrayCode(code.getNames());
+		TArrayCode values = new TArrayCode(code.args());
 
 	}
 

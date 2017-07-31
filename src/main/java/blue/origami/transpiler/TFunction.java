@@ -83,18 +83,11 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public boolean isNameRef(TEnv env) {
-		return true;
+		return this.isEnabled();
 	}
 
 	@Override
 	public TCode nameCode(TEnv env, String name) {
-		// if (!TType.hasUntyped(this.getParamTypes())) {
-		// Transpiler tr = env.getTranspiler();
-		// TTemplate tp = tr.defineFunction(name, this.paramNames,
-		// this.paramTypes, this.returnType, this.body);
-		// this.setDisabled();
-		// return new TFuncRefCode(name, tp);
-		// }
 		return new TFuncRefCode(name, this);
 	}
 

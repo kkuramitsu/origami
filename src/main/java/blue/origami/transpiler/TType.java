@@ -48,6 +48,16 @@ public abstract class TType implements TypeApi {
 		return false;
 	}
 
+	public static TType tOption(TType ty) {
+		ODebug.TODO();
+		return ty;
+	}
+
+	public static TType tArray(TType ty) {
+		ODebug.TODO();
+		return ty;
+	}
+
 }
 
 interface TypeApi {

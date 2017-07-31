@@ -1,8 +1,10 @@
 package blue.origami.transpiler;
 
+import blue.origami.transpiler.code.TArrayCode;
 import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
@@ -178,6 +180,18 @@ public class SourceSection implements TCodeSection {
 
 	@Override
 	public void pushTemplate(TEnv env, TemplateCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushArray(TEnv env, TArrayCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushData(TEnv env, TDataCode code) {
 		// TODO Auto-generated method stub
 
 	}

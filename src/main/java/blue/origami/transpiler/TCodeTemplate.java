@@ -39,7 +39,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 
 	@Override
 	public boolean isNameRef(TEnv env) {
-		return !this.getReturnType().isUntyped();
+		return true;
 	}
 
 	@Override

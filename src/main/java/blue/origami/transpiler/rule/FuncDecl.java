@@ -28,7 +28,7 @@ public class FuncDecl extends SyntaxRule implements TTypeRule {
 			}
 		}
 		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
-		env.addFunction(tf);
+		env.addFunction(name, tf);
 		return new TDeclCode();
 	}
 

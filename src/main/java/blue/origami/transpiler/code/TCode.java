@@ -42,6 +42,10 @@ interface TCodeAPI {
 		return new TCastCode(t, tt, self);
 	}
 
+	public default TType guessType() {
+		return self().getType();
+	}
+
 	public default boolean hasReturn() {
 		return false;
 	}
@@ -130,6 +134,10 @@ abstract class MultiCode implements TCode {
 
 	public int size() {
 		return this.args.length;
+	}
+
+	public TCode[] args() {
+		return this.args;
 	}
 
 	@Override

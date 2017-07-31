@@ -1,8 +1,10 @@
 package blue.origami.transpiler;
 
+import blue.origami.transpiler.code.TArrayCode;
 import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
@@ -44,5 +46,9 @@ public interface TCodeSection {
 	public void pushMulti(TEnv env, TMultiCode code);
 
 	public void pushTemplate(TEnv env, TemplateCode code);
+
+	public void pushArray(TEnv env, TArrayCode code);
+
+	public void pushData(TEnv env, TDataCode code);
 
 }
