@@ -42,8 +42,13 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 		implements OptionalFactory<LeftRecursionEliminator> {
 
 	public class LREContext {
+		// if reach to expression named lookingNTName, return True
 		public String lookingNTName;
+		// if leftCornerFlag is true, the most left search(e.g. only choice[0] or only
+		// first of pair)
 		public Boolean leftCornerFlag;
+		// if newNTName is not null, renamed non terminal from lookingNTName to
+		// newNTName
 		public String newNTName;
 
 		LREContext(String name, boolean flag) {
@@ -99,15 +104,15 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 			List<Expression> recursiveExprs = exprMap.get(Boolean.TRUE);
 			List<Expression> notRecursiveExprs = exprMap.get(Boolean.FALSE);
 
-			// covert left recursive in first recursive-choice ( and divide into first and
+			// covert left recursive in first recursive-choice ( and divide into first-expr
+			// and
 			// sub-exprs )
 			Expression firstRecursive = recursiveExprs.get(0);
 			recursiveExprs.remove(0);
-			final LREContext context = new LREContext(name, false, newName);
-			firstRecursive.visit(this, context);
-			recursiveExprs.forEach(e -> e.visit(this, context));
+			firstRecursive.visit(this, new LREContext(name, true, newName));
+			recursiveExprs.forEach(e -> e.visit(this, new LREContext(name, false, newName)));
 
-			// redefine original expression ( converted first recursive and not recursive )
+			// redefine original expression ( converted first-recursive and not-recursives )
 			List<Expression> newOrgChoices = new ArrayList<>();
 			newOrgChoices.add(firstRecursive);
 			newOrgChoices.addAll(notRecursiveExprs);
