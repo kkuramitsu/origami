@@ -1,5 +1,6 @@
 package blue.origami.main;
 
+import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.LeftRecursionEliminator;
@@ -12,12 +13,20 @@ public class Okourin extends OCommand {
 	public void exec(OOption options) throws Throwable {
 		String[] files = options.stringList(ParserOption.InputFiles);
 		Grammar g = SourceGrammar.loadFile(files[0]);
+		System.out.println("=== original grammar ===");
+		g.dump();
+		System.out.println();
 
-		// Eliminate Left-Recursion
 		LeftRecursionEliminator eliminator = options.newInstance(LeftRecursionEliminator.class);
 		eliminator.compute(g);
-
-		// result
+		System.out.println("=== converted grammar ===");
 		g.dump();
+		System.out.println();
+
+		Parser parser = new Parser(g.getStartProduction(), options);
+		parser.compile();
+		System.out.println("=== compiled grammar ===");
+		parser.getParserGrammar().dump();
+		System.out.println();
 	}
 }

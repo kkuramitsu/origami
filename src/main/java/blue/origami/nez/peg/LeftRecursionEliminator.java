@@ -1,5 +1,12 @@
 package blue.origami.nez.peg;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 import blue.origami.nez.peg.expression.PAnd;
 import blue.origami.nez.peg.expression.PAny;
 import blue.origami.nez.peg.expression.PByte;
@@ -27,12 +34,101 @@ import blue.origami.nez.peg.expression.PValue;
 import blue.origami.util.OOption;
 import blue.origami.util.OptionalFactory;
 
-public class LeftRecursionEliminator extends ExpressionVisitor<Void, Void>
+public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecursionEliminator.LREContext>
 		implements OptionalFactory<LeftRecursionEliminator> {
 
+	public class LREContext {
+		public String lookingNTName;
+		public Boolean leftCornerFlag;
+		public String newNTName;
+
+		LREContext(String name, boolean flag) {
+			this.lookingNTName = name;
+			this.leftCornerFlag = Boolean.valueOf(flag);
+			this.newNTName = null;
+		}
+
+		LREContext(String name, boolean flag, String newNTName) {
+			this.lookingNTName = name;
+			this.leftCornerFlag = Boolean.valueOf(flag);
+			this.newNTName = newNTName;
+		}
+	}
+
+	private Grammar grammar;
+	private Set<String> ntSet;
+	private Deque<String> ntQue;
+
+	private final boolean isDebug = false;
+
 	public void compute(Grammar g) {
-		Expression root = g.getStartProduction().getExpression();
-		root.visit(this, null);
+		this.grammar = g;
+		this.ntSet = new HashSet<>();
+		this.ntQue = new ArrayDeque<>();
+
+		String root = g.getStartProduction().getLocalName();
+		this.ntSet.add(root);
+		this.ntQue.offerFirst(root);
+		while (!this.ntQue.isEmpty()) {
+			String name = this.ntQue.pollFirst();
+			// temporarily throw NullPointerException if production named "name" is
+			// undefined
+			Expression e = this.grammar.getProduction(name).getExpression();
+
+			Boolean isLR = e.visit(this, new LREContext(name, true));
+			if (isLR) {
+				Optional<String> newNTName = this.eliminateLR(name, e);
+				newNTName.ifPresent(s -> this.addQueue(s));
+			}
+		}
+	}
+
+	private Optional<String> eliminateLR(String name, Expression e) {
+		if (e instanceof PChoice) {
+			String newName = name + "a";
+			PChoice choice = (PChoice) e;
+			Expression c = choice.get(0);
+			Expression[] cs = Arrays.copyOfRange(choice.inners, 1, choice.size());
+
+			this.grammar.setExpression(name, c);
+			if (cs.length == 1) {
+				this.grammar.setExpression(newName, cs[0]);
+			} else {
+				this.grammar.setExpression(newName, new PChoice(false, cs));
+			}
+
+			LREContext context = new LREContext(name, false, newName);
+			Expression orgExpr = this.grammar.getExpression(name);
+			Expression newExpr = this.grammar.getExpression(newName);
+			orgExpr.visit(this, context);
+			newExpr.visit(this, context);
+
+			return Optional.of(newName);
+		}
+		return Optional.ofNullable(null);
+	}
+
+	private void addQueue(String name) {
+		if (!this.ntSet.contains(name)) {
+			this.ntSet.add(name);
+			this.ntQue.addLast(name);
+		}
+	}
+
+	private Expression updateExpression(Expression e, LREContext context) {
+		if (e instanceof PNonTerminal) {
+			String name = ((PNonTerminal) e).getLocalName();
+			if (context.newNTName != null && context.lookingNTName.equals(name)) {
+				return new PNonTerminal(this.grammar, context.newNTName);
+			}
+		}
+		return e;
+	}
+
+	private void debug(String str) {
+		if (this.isDebug) {
+			System.out.println(str);
+		}
 	}
 
 	@Override
@@ -48,174 +144,204 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Void, Void>
 	}
 
 	@Override
-	public Void visitTrap(PTrap e, Void a) {
+	public Boolean visitTrap(PTrap e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitTrap : " + e.toString());
+		this.debug("visitTrap : " + e.toString());
 		return null;
 	}
 
 	@Override
-	public Void visitNonTerminal(PNonTerminal e, Void a) {
+	public Boolean visitNonTerminal(PNonTerminal e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitNonTerminal : " + e.getUniqueName());
-		return null;
+		this.debug("visitNonTerminal : " + e.getUniqueName());
+
+		String name = e.getLocalName();
+		final String lookingName = context.lookingNTName;
+		if (name.equals(lookingName)) {
+			return true;
+		} else {
+			this.addQueue(name);
+			return false;
+		}
 	}
 
 	@Override
-	public Void visitEmpty(PEmpty e, Void a) {
+	public Boolean visitEmpty(PEmpty e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitEmpty : " + e.toString());
-		return null;
+		this.debug("visitEmpty : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitFail(PFail e, Void a) {
+	public Boolean visitFail(PFail e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitFail : " + e.toString());
-		return null;
+		this.debug("visitFail : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitByte(PByte e, Void a) {
+	public Boolean visitByte(PByte e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitByte : " + e.toString());
-		return null;
+		this.debug("visitByte : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitByteSet(PByteSet e, Void a) {
+	public Boolean visitByteSet(PByteSet e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitByteSet : " + e.toString());
-		return null;
+		this.debug("visitByteSet : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitAny(PAny e, Void a) {
+	public Boolean visitAny(PAny e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitAny : " + e.toString());
-		return null;
+		this.debug("visitAny : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitPair(PPair e, Void a) {
-		System.out.println("visitPair");
+	public Boolean visitPair(PPair e, LREContext context) {
+		this.debug("visitPair : " + e.left.toString() + "," + e.right.toString());
 
-		e.left.visit(this, a);
-		e.right.visit(this, a);
-		// TODO Auto-generated method stub
-		return null;
+		if (context.leftCornerFlag) {
+			Boolean l = e.left.visit(this, context);
+			e.left = this.updateExpression(e.left, context);
+			return l;
+		} else {
+			Boolean l = e.left.visit(this, context);
+			Boolean r = e.right.visit(this, context);
+
+			e.left = this.updateExpression(e.left, context);
+			e.right = this.updateExpression(e.right, context);
+
+			return l.equals(Boolean.TRUE) || r.equals(Boolean.TRUE);
+		}
 	}
 
 	@Override
-	public Void visitChoice(PChoice e, Void a) {
+	public Boolean visitChoice(PChoice e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitChoice : " + e.toString());
-		return null;
+		this.debug("visitChoice : " + e.toString());
+		if (context.leftCornerFlag) {
+			Boolean l = e.get(0).visit(this, context);
+			e.inners[0] = this.updateExpression(e.inners[0], context);
+			return l;
+		} else {
+			boolean res = false;
+			for (Expression ce : e) {
+				if (ce.visit(this, context)) {
+					res = true;
+				}
+				ce = this.updateExpression(ce, context);
+			}
+			return res;
+		}
 	}
 
 	@Override
-	public Void visitDispatch(PDispatch e, Void a) {
+	public Boolean visitDispatch(PDispatch e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitDispatch : " + e.toString());
-		return null;
+		this.debug("visitDispatch : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitOption(POption e, Void a) {
+	public Boolean visitOption(POption e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitOption : " + e.toString());
-		return null;
+		this.debug("visitOption : " + e.toString());
+		return e.get(0).visit(this, context);
+	}
+
+	// many is contain only 1 expression, get to call e.get(0)
+	@Override
+	public Boolean visitMany(PMany e, LREContext context) {
+		// TODO Auto-generated method stub
+		this.debug("visitMany : " + e.get(0).toString() + "*");
+		return e.get(0).visit(this, context);
 	}
 
 	@Override
-	public Void visitMany(PMany e, Void a) {
+	public Boolean visitAnd(PAnd e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitMany : " + e.toString());
-		return null;
+		this.debug("visitAnd : " + e.toString());
+		return e.get(0).visit(this, context);
 	}
 
 	@Override
-	public Void visitAnd(PAnd e, Void a) {
+	public Boolean visitNot(PNot e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitAnd : " + e.toString());
-		return null;
+		return e.get(0).visit(this, context);
 	}
 
 	@Override
-	public Void visitNot(PNot e, Void a) {
+	public Boolean visitTree(PTree e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitNot : " + e.toString());
-		return null;
+		this.debug("visitTree : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitTree(PTree e, Void a) {
+	public Boolean visitDetree(PDetree e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitTree : " + e.toString());
-		return null;
+		this.debug("visitDetree : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitDetree(PDetree e, Void a) {
+	public Boolean visitLinkTree(PLinkTree e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitDetree : " + e.toString());
-		return null;
+		this.debug("visitLinkTree : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitLinkTree(PLinkTree e, Void a) {
+	public Boolean visitTag(PTag e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitLinkTree : " + e.toString());
-		return null;
+		this.debug("visitTag : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitTag(PTag e, Void a) {
+	public Boolean visitValue(PValue e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitTag : " + e.toString());
-		return null;
+		this.debug("visitValue : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitValue(PValue e, Void a) {
+	public Boolean visitSymbolScope(PSymbolScope e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitValue : " + e.toString());
-		return null;
+		this.debug("visitSymbolScope : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitSymbolScope(PSymbolScope e, Void a) {
+	public Boolean visitSymbolAction(PSymbolAction e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitSymbolScope : " + e.toString());
-		return null;
+		this.debug("visitSymbolAction : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitSymbolAction(PSymbolAction e, Void a) {
+	public Boolean visitSymbolPredicate(PSymbolPredicate e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitSymbolAction : " + e.toString());
-		return null;
+		this.debug("visitSymbolPredicate : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitSymbolPredicate(PSymbolPredicate e, Void a) {
+	public Boolean visitIf(PIf e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitSymbolPredicate : " + e.toString());
-		return null;
+		this.debug("visitIf : " + e.toString());
+		return false;
 	}
 
 	@Override
-	public Void visitIf(PIf e, Void a) {
+	public Boolean visitOn(POn e, LREContext context) {
 		// TODO Auto-generated method stub
-		System.out.println("visitIf : " + e.toString());
-		return null;
-	}
-
-	@Override
-	public Void visitOn(POn e, Void a) {
-		// TODO Auto-generated method stub
-		System.out.println("visitOn : " + e.toString());
-		return null;
+		this.debug("visitOn : " + e.toString());
+		return false;
 	}
 
 	@Override
