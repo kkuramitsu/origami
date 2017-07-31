@@ -1,11 +1,15 @@
 package blue.origami.nez.peg;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import blue.origami.nez.peg.expression.PAnd;
 import blue.origami.nez.peg.expression.PAny;
@@ -77,32 +81,59 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 
 			Boolean isLR = e.visit(this, new LREContext(name, true));
 			if (isLR) {
-				Optional<String> newNTName = this.eliminateLR(name, e);
+				Optional<String> newNTName = this.eliminateLR(name);
 				newNTName.ifPresent(s -> this.addQueue(s));
 			}
 		}
 	}
 
-	private Optional<String> eliminateLR(String name, Expression e) {
-		if (e instanceof PChoice) {
+	private Optional<String> eliminateLR(String name) {
+		Expression expr = this.grammar.getProduction(name).getExpression();
+		if (expr instanceof PChoice) {
 			String newName = name + "a";
-			PChoice choice = (PChoice) e;
-			Expression c = choice.get(0);
-			Expression[] cs = Arrays.copyOfRange(choice.inners, 1, choice.size());
+			PChoice choice = (PChoice) expr;
 
-			this.grammar.setExpression(name, c);
-			if (cs.length == 1) {
-				this.grammar.setExpression(newName, cs[0]);
-			} else {
-				this.grammar.setExpression(newName, new PChoice(false, cs));
-			}
+			// divide into recursive exprs and not-recursive exprs from choice
+			Map<Boolean, List<Expression>> exprMap = Arrays.stream(choice.inners)
+					.collect(Collectors.partitioningBy(e -> e.visit(this, new LREContext(name, false))));
+			List<Expression> recursiveExprs = exprMap.get(Boolean.TRUE);
+			List<Expression> notRecursiveExprs = exprMap.get(Boolean.FALSE);
 
-			LREContext context = new LREContext(name, false, newName);
-			Expression orgExpr = this.grammar.getExpression(name);
-			Expression newExpr = this.grammar.getExpression(newName);
-			orgExpr.visit(this, context);
-			newExpr.visit(this, context);
+			// covert left recursive in first recursive-choice ( and divide into first and
+			// sub-exprs )
+			Expression firstRecursive = recursiveExprs.get(0);
+			recursiveExprs.remove(0);
+			final LREContext context = new LREContext(name, false, newName);
+			firstRecursive.visit(this, context);
+			recursiveExprs.forEach(e -> e.visit(this, context));
 
+			// redefine original expression ( converted first recursive and not recursive )
+			List<Expression> newOrgChoices = new ArrayList<>();
+			newOrgChoices.add(firstRecursive);
+			newOrgChoices.addAll(notRecursiveExprs);
+			PChoice newOrgExpr = new PChoice(false, newOrgChoices.toArray(new Expression[newOrgChoices.size()]));
+			this.grammar.setExpression(name, newOrgExpr);
+
+			// define new expression
+			List<Expression> newSubChoices = new ArrayList<>();
+			newSubChoices.addAll(recursiveExprs);
+			newSubChoices.addAll(notRecursiveExprs);
+			PChoice newSubExpr = new PChoice(false, newSubChoices.toArray(new Expression[newSubChoices.size()]));
+			this.grammar.setExpression(newName, newSubExpr);
+
+			/*
+			 * Expression c = choice.get(0); Expression[] cs =
+			 * Arrays.copyOfRange(choice.inners, 1, choice.size());
+			 * 
+			 * this.grammar.setExpression(name, c); if (cs.length == 1) {
+			 * this.grammar.setExpression(newName, cs[0]); } else {
+			 * this.grammar.setExpression(newName, new PChoice(false, cs)); }
+			 * 
+			 * LREContext context = new LREContext(name, false, newName); Expression orgExpr
+			 * = this.grammar.getExpression(name); Expression newExpr =
+			 * this.grammar.getExpression(newName); orgExpr.visit(this, context);
+			 * newExpr.visit(this, context);
+			 */
 			return Optional.of(newName);
 		}
 		return Optional.ofNullable(null);

@@ -1,5 +1,6 @@
 package blue.origami.main;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
@@ -28,5 +29,8 @@ public class Okourin extends OCommand {
 		System.out.println("=== compiled grammar ===");
 		parser.getParserGrammar().dump();
 		System.out.println();
+
+		Tree<?> res = parser.parse("1-1");
+		System.out.println(res.toString());
 	}
 }
