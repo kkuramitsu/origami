@@ -7,7 +7,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,8 +75,7 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 		this.ntQue = new ArrayDeque<>();
 
 		String root = g.getStartProduction().getLocalName();
-		this.ntSet.add(root);
-		this.ntQue.offerFirst(root);
+		this.addProcessQueue(root);
 		while (!this.ntQue.isEmpty()) {
 			String name = this.ntQue.pollFirst();
 			// temporarily throw NullPointerException if production named "name" is
@@ -86,13 +84,13 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 
 			Boolean isLR = e.visit(this, new LREContext(name, true));
 			if (isLR) {
-				Optional<String> newNTName = this.eliminateLR(name);
-				newNTName.ifPresent(s -> this.addQueue(s));
+				String newNTName = this.eliminateLR(name);
+				this.addProcessQueue(newNTName);
 			}
 		}
 	}
 
-	private Optional<String> eliminateLR(String name) {
+	private String eliminateLR(String name) {
 		Expression expr = this.grammar.getProduction(name).getExpression();
 		if (expr instanceof PChoice) {
 			String newName = name + "a";
@@ -108,9 +106,9 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 			// and
 			// sub-exprs )
 			Expression firstRecursive = recursiveExprs.get(0);
-			recursiveExprs.remove(0);
+			List<Expression> subRecursiveExprs = recursiveExprs.subList(1, recursiveExprs.size());
 			firstRecursive.visit(this, new LREContext(name, true, newName));
-			recursiveExprs.forEach(e -> e.visit(this, new LREContext(name, false, newName)));
+			subRecursiveExprs.forEach(e -> e.visit(this, new LREContext(name, false, newName)));
 
 			// redefine original expression ( converted first-recursive and not-recursives )
 			List<Expression> newOrgChoices = new ArrayList<>();
@@ -121,7 +119,7 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 
 			// define new expression
 			List<Expression> newSubChoices = new ArrayList<>();
-			newSubChoices.addAll(recursiveExprs);
+			newSubChoices.addAll(subRecursiveExprs);
 			newSubChoices.addAll(notRecursiveExprs);
 			PChoice newSubExpr = new PChoice(false, newSubChoices.toArray(new Expression[newSubChoices.size()]));
 			this.grammar.setExpression(newName, newSubExpr);
@@ -139,16 +137,9 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 			 * this.grammar.getExpression(newName); orgExpr.visit(this, context);
 			 * newExpr.visit(this, context);
 			 */
-			return Optional.of(newName);
+			return newName;
 		}
-		return Optional.ofNullable(null);
-	}
-
-	private void addQueue(String name) {
-		if (!this.ntSet.contains(name)) {
-			this.ntSet.add(name);
-			this.ntQue.addLast(name);
-		}
+		return null;
 	}
 
 	private Expression updateExpression(Expression e, LREContext context) {
@@ -159,6 +150,13 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 			}
 		}
 		return e;
+	}
+
+	private void addProcessQueue(String name) {
+		if (name != null && name != "" && !this.ntSet.contains(name)) {
+			this.ntSet.add(name);
+			this.ntQue.addLast(name);
+		}
 	}
 
 	private void debug(String str) {
@@ -195,10 +193,10 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 		final String lookingName = context.lookingNTName;
 		if (name.equals(lookingName)) {
 			return true;
-		} else {
-			this.addQueue(name);
-			return false;
+		} else if (!this.ntSet.contains(name)) {
+			this.addProcessQueue(name);
 		}
+		return false;
 	}
 
 	@Override
