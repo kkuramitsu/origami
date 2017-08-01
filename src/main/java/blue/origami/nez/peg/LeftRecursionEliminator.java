@@ -64,6 +64,8 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 	}
 
 	private Grammar grammar;
+
+	// ntSet and ntQue is queue of non-terminal to process
 	private Set<String> ntSet;
 	private Deque<String> ntQue;
 
@@ -107,7 +109,10 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 			// sub-exprs )
 			Expression firstRecursive = recursiveExprs.get(0);
 			List<Expression> subRecursiveExprs = recursiveExprs.subList(1, recursiveExprs.size());
-			firstRecursive.visit(this, new LREContext(name, true, newName));
+			// If true replaced in only left-recursive-nonterminal
+			// If false replaced all non-terminal
+			// firstRecursive.visit(this, new LREContext(name, true, newName));
+			firstRecursive.visit(this, new LREContext(name, false, newName));
 			subRecursiveExprs.forEach(e -> e.visit(this, new LREContext(name, false, newName)));
 
 			// redefine original expression ( converted first-recursive and not-recursives )
@@ -312,7 +317,9 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 	public Boolean visitTree(PTree e, LREContext context) {
 		// TODO Auto-generated method stub
 		this.debug("visitTree : " + e.toString());
-		return false;
+		Boolean res = e.get(0).visit(this, context);
+		e.set(0, this.updateExpression(e.get(0), context));
+		return res;
 	}
 
 	@Override
@@ -326,7 +333,9 @@ public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecu
 	public Boolean visitLinkTree(PLinkTree e, LREContext context) {
 		// TODO Auto-generated method stub
 		this.debug("visitLinkTree : " + e.toString());
-		return false;
+		Boolean res = e.get(0).visit(this, context);
+		e.set(0, this.updateExpression(e.get(0), context));
+		return res;
 	}
 
 	@Override

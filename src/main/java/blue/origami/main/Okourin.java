@@ -1,5 +1,7 @@
 package blue.origami.main;
 
+import blue.origami.nez.ast.Tree;
+import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.LeftRecursionEliminator;
@@ -22,10 +24,13 @@ public class Okourin extends OCommand {
 		g.dump();
 		System.out.println();
 
-		/*
-		 * Parser parser = new Parser(g.getStartProduction(), options);
-		 * parser.compile(); System.out.println("=== compiled grammar ===");
-		 * parser.getParserGrammar().dump(); System.out.println();
-		 */
+		Parser parser = new Parser(g.getStartProduction(), options);
+		parser.compile();
+		System.out.println("=== compiled grammar ===");
+		parser.getParserGrammar().dump();
+		System.out.println();
+
+		Tree<?> res = parser.parse("1-2-3");
+		System.out.println(res.toString());
 	}
 }
