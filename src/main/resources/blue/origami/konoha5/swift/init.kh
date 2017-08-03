@@ -1,0 +1,93 @@
+# swift/init.kh
+
+extension  = swift
+
+Bool       = Bool
+Int        = Int
+Float      = Double
+String     = String
+
+null       = nil
+
+# Bool
+true:Bool       = true
+false:Bool      = false
+&:Bool:Bool:Bool = (%s && %s)
+|:Bool:Bool:Bool = (%s || %s)
+!:Bool:Bool      = (!(%s))
+
+#Int
+0:Int            = %d
++:Int:Int        = %s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (%s / %s)
+%:Int:Int:Int    = (%s % %s)
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+<<:Int:Int:Int   = (%s << %s)
+>>:Int:Int:Int   = (%s >> %s)
+&:Int:Int:Int    = (%s & %s)
+|:Int:Int:Int    = (%s | %s)
+^:Int:Int:Int    = (%s ^ %s)
+!:Int:Int        = ~%s
+
+# Float
+0:Float       = %f
+Int=>Float           = Double(%s)
+Float->Int           = Int(%s-9)
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s / %s)
+%:Float:Float:Float    = (%s.truncatingRemainder(dividingBy: %s))
+
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+#Syntax
+
+comment          = // %s
+begin            = {
+end              = }
+;                =
+,                = ,
+()               = (%s)
+
+module           =
+
+const            = let %2$s: %1$s = %3$s
+let              = let %2$s: %1$s = %3$s
+
+function         = private func %2$s(%3$s) -> %1$s {
+function1        = open func %2$s<T>(%3$s) -> %1$s{
+return           = return %s
+param            = %2$s: %1$s
+
+apply            = %s
+funcref          = %s
+
+if               = if %s {
+else if          = else if %s {
+else             = else{
+while            = while %s {
+switch           = switch %s {
+case             = case %s : %s
+default          = default : %s
+ifexpr           = (%1$s ? %2$s : %3$s)
+
+lambda           = (%s) -> %s
