@@ -5,7 +5,7 @@ import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 
-public class BinaryExpr implements TTypeRule, OSymbols {
+public class BinaryExpr implements ParseRule, OSymbols {
 
 	final String op;
 

@@ -8,6 +8,7 @@ import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TFuncCode;
+import blue.origami.transpiler.code.TFuncRefCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
@@ -61,5 +62,7 @@ public interface TCodeSection {
 		env.reportLog(code.getLog());
 		code.getInner().emitCode(env, this);
 	}
+
+	public void pushFuncRef(TEnv env, TFuncRefCode code);
 
 }

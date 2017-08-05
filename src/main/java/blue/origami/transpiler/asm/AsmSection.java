@@ -2,7 +2,6 @@ package blue.origami.transpiler.asm;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -27,6 +26,7 @@ import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TFuncCode;
+import blue.origami.transpiler.code.TFuncRefCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
@@ -40,10 +40,13 @@ import blue.origami.util.ODebug;
 public class AsmSection implements TCodeSection, Opcodes {
 	private final static String APIs = "blue/origami/transpiler/asm/APIs";
 
+	String cname;
 	GeneratorAdapter mBuilder; // method writer
 
-	AsmSection(GeneratorAdapter mw) {
+	AsmSection(String cname, GeneratorAdapter mw) {
+		this.cname = cname;
 		this.mBuilder = mw;
+
 	}
 
 	@Override
@@ -82,8 +85,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 	public void pushCast(TEnv env, TCastCode code) {
 		TType f = code.getInner().getType();
 		TType t = code.getType();
-		Class<?> fc = AsmGenerator.toClass(f);
-		Class<?> tc = AsmGenerator.toClass(t);
+		Class<?> fc = Asm.toClass(f);
+		Class<?> tc = Asm.toClass(t);
 		if (code instanceof TBoxCode) {
 			code.getInner().emitCode(env, this);
 			this.box(tc);
@@ -133,7 +136,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return;
 		case "F":
 		case "GETSTATIC":
-			desc = AsmGenerator.toTypeDesc(tp.getReturnType());
+			desc = Asm.toTypeDesc(tp.getReturnType());
 			// ODebug.trace("GETSTATIC %s,%s,%s", def[1], def[2], desc);
 			this.mBuilder.visitFieldInsn(GETSTATIC, def[1], def[2], desc);
 			return;
@@ -141,23 +144,23 @@ public class AsmSection implements TCodeSection, Opcodes {
 		case "INVOKESTATIC":
 			// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 			// "(D)D", false);
-			desc = AsmGenerator.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
+			desc = Asm.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
 			// ODebug.trace("INVOKESTATIC %s,%s,%s", def[1], def[2], desc);
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, def[1], def[2], desc, false);
 			return;
 		case "V":
 		case "INVOKEVIRTUAL":
-			desc = AsmGenerator.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = Asm.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, def[1], def[2], desc, false);
 			return;
 		case "I":
 		case "INVOKEINTERFACE":
-			desc = AsmGenerator.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = Asm.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEINTERFACE, def[1], def[2], desc, false);
 			return;
 		case "N":
 		case "INVOKESPECIAL":
-			desc = AsmGenerator.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
+			desc = Asm.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
 			this.mBuilder.visitMethodInsn(INVOKESPECIAL, def[1], def[2], desc, false);
 			return;
 		case "O":
@@ -455,7 +458,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushLet(TEnv env, TLetCode code) {
 		this.addVariable(code.getName(), code.getDeclType());
-		Type typeDesc = Type.getType(AsmGenerator.toClass(this.varStack.varType));
+		Type typeDesc = Asm.ti(this.varStack.varType);
 		code.getInner().emitCode(env, this);
 		this.mBuilder.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), this.varStack.varIndex);
 	}
@@ -463,9 +466,14 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushName(TEnv env, TNameCode code) {
 		// ODebug.trace("name=%s", code.getName());
-		VarEntry var = this.varStack.find(code.getName());
-		Type typeDesc = Type.getType(AsmGenerator.toClass(var.varType));
-		this.mBuilder.visitVarInsn(typeDesc.getOpcode(ILOAD), var.varIndex);
+		if (code.getRefLevel() > 0) {
+			this.mBuilder.loadThis();
+			this.mBuilder.getField(Type.getType("L" + this.cname + ";"), code.getName(), Asm.ti(code.getType()));
+		} else {
+			VarEntry var = this.varStack.find(code.getName());
+			Type typeDesc = (Asm.ti(var.varType));
+			this.mBuilder.visitVarInsn(typeDesc.getOpcode(ILOAD), var.varIndex);
+		}
 	}
 
 	@Override
@@ -521,7 +529,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.push(c++);
 			sub.emitCode(env, this);
 			if (boxing) {
-				this.box(AsmGenerator.toClass(sub.getType()));
+				this.box(Asm.toClass(sub.getType()));
 			}
 			this.mBuilder.arrayStore(ty);
 		}
@@ -537,7 +545,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	private void box(Class<?> c) {
 		if (c.isPrimitive()) {
-			Class<?> bc = boxType(c);
+			Class<?> bc = Asm.boxType(c);
 			String desc = String.format("(%s)%s", Type.getDescriptor(c), Type.getDescriptor(bc));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "box", desc, false);
 		}
@@ -559,24 +567,23 @@ public class AsmSection implements TCodeSection, Opcodes {
 			for (TCode sub : code) {
 				sub.emitCode(env, this);
 			}
-			String desc = String.format("(II)%s", Type.getDescriptor(AsmGenerator.toClass(dt)));
+			String desc = String.format("(II)%s", Type.getDescriptor(Asm.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
 			return;
 		}
 		if (code.isArray()) {
 			TDataType dt = (TDataType) code.getType();
-			if (AsmGenerator.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
+			if (Asm.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());
-				String desc = String.format("([%s)%s", ty.getDescriptor(),
-						Type.getDescriptor(AsmGenerator.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "data", desc, false);
+				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(Asm.toClass(dt)));
+				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			} else {
 				TType t = dt.getInnerType();
-				this.pushArray(env, AsmGenerator.ti(t), false, code.args());
-				String desc = String.format("([%s)%s", Type.getDescriptor(AsmGenerator.toClass(t)),
-						Type.getDescriptor(AsmGenerator.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "data", desc, false);
+				this.pushArray(env, Asm.ti(t), false, code.args());
+				String desc = String.format("([%s)%s", Type.getDescriptor(Asm.toClass(t)),
+						Type.getDescriptor(Asm.toClass(dt)));
+				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			}
 			// } else if (code.isDict()) {
 			//
@@ -600,18 +607,26 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	@Override
 	public void pushError(TEnv env, TErrorCode code) {
-		System.out.println("@@@@@@" + code.getLog());
+		env.reportLog(code.getLog());
+	}
 
+	@Override
+	public void pushFuncRef(TEnv env, TFuncRefCode code) {
+		Template tp = code.getRef();
+		// ODebug.trace("funcref %s %s", code.getType(), tp);
+		Class<?> c = AsmGenerator.loadFuncRefClass(env, tp);
+		String cname = Type.getInternalName(c);
+		this.mBuilder.visitTypeInsn(NEW, cname);
+		this.mBuilder.dup();
+		this.mBuilder.visitMethodInsn(INVOKESPECIAL, cname, "<init>", "()V", false);
 	}
 
 	@Override
 	public void pushFuncExpr(TEnv env, TFuncCode code) {
 		String[] fieldNames = code.getFieldNames();
 		TType[] fieldTypes = code.getFieldTypes();
-		AsmGenerator asm = env.get(AsmGenerator.class);
-		assert (asm != null);
-		Class<?> c = asm.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(), code.getParamNames(),
-				code.getParamTypes(), code.getReturnType(), code.getInner());
+		Class<?> c = AsmGenerator.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(),
+				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
 		TCode[] inits = code.getFieldInitCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -620,9 +635,10 @@ public class AsmSection implements TCodeSection, Opcodes {
 		for (int i = 0; i < fieldNames.length; i++) {
 			this.mBuilder.dup();
 			inits[i].emitCode(env, this);
-			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i],
-					AsmGenerator.toTypeDesc(fieldTypes[i]));
+			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i], Asm.toTypeDesc(fieldTypes[i]));
 		}
+		ODebug.trace("FuncCode.asType %s", code.getType());
+
 	}
 
 	@Override
@@ -631,44 +647,13 @@ public class AsmSection implements TCodeSection, Opcodes {
 			sub.emitCode(env, this);
 		}
 		TFuncType funcType = (TFuncType) code.args()[0].getType();
-		// String desc = AsmGenerator.toTypeDesc(funcType.getReturnType(),
+		// String desc = Asm.toTypeDesc(funcType.getReturnType(),
 		// TArrays.join(funcType, funcType.getParamTypes()));
-		String desc = AsmGenerator.toTypeDesc(funcType.getReturnType(), funcType.getParamTypes());
-		String cname = Type.getInternalName(AsmGenerator.toClass(funcType));
-		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, "apply", desc, true);
-		// this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, cname, "apply", desc,
-		// true);
+		String desc = Asm.toTypeDesc(funcType.getReturnType(), funcType.getParamTypes());
+		String cname = Type.getInternalName(Asm.toClass(funcType));
+		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmGenerator.nameApply(funcType.getReturnType()), desc,
+				true);
 		return;
-
-	}
-
-	public final static Class<?> boxType(Class<?> c) {
-		return boxMap.getOrDefault(c, c);
-	}
-
-	private final static Map<Class<?>, Class<?>> boxMap = new HashMap<>();
-	// private final static Map<Class<?>, Class<?>> unboxMap = new HashMap<>();
-	//
-	// static {
-	// unboxMap.put(Boolean.class, boolean.class);
-	// unboxMap.put(Byte.class, byte.class);
-	// unboxMap.put(Character.class, char.class);
-	// unboxMap.put(Short.class, short.class);
-	// unboxMap.put(Integer.class, int.class);
-	// unboxMap.put(Float.class, float.class);
-	// unboxMap.put(Long.class, long.class);
-	// unboxMap.put(Double.class, double.class);
-	// }
-
-	static {
-		boxMap.put(boolean.class, Boolean.class);
-		boxMap.put(byte.class, Byte.class);
-		boxMap.put(char.class, Character.class);
-		boxMap.put(short.class, Short.class);
-		boxMap.put(int.class, Integer.class);
-		boxMap.put(float.class, Float.class);
-		boxMap.put(long.class, Long.class);
-		boxMap.put(double.class, Double.class);
 	}
 
 }

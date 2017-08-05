@@ -8,7 +8,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TTypeCode;
 
-public class ClassType implements TTypeRule {
+public class ClassType implements ParseRule {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TType type = this.parseType(env, t);

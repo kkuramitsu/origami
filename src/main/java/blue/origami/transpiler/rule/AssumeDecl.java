@@ -7,7 +7,7 @@ import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;
 
-public class AssumeDecl implements TTypeRule, OSymbols {
+public class AssumeDecl implements ParseRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

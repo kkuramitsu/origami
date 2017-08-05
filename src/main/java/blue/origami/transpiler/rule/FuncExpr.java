@@ -6,7 +6,7 @@ import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TFuncCode;
 
-public class FuncExpr extends SyntaxRule implements TTypeRule {
+public class FuncExpr extends SyntaxRule implements ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

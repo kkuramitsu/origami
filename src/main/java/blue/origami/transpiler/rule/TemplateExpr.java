@@ -6,7 +6,7 @@ import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TemplateCode;
 
-public class TemplateExpr implements TTypeRule {
+public class TemplateExpr implements ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

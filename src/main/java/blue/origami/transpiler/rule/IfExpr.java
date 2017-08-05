@@ -8,7 +8,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TMultiCode;
 
-public class IfExpr implements TTypeRule, OSymbols {
+public class IfExpr implements ParseRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

@@ -82,7 +82,7 @@ public class ObjArray extends Data implements FuncIntObj {
 	public IntArray map(FuncObjInt f) {
 		int[] a = new int[this.size];
 		for (int i = 0; i < this.size; i++) {
-			a[i] = f.apply(this.arrays[i]);
+			a[i] = f.applyI(this.arrays[i]);
 		}
 		return new IntArray(a, a.length);
 	}
@@ -99,7 +99,7 @@ public class ObjArray extends Data implements FuncIntObj {
 		Object[] a = new Object[this.size];
 		int c = 0;
 		for (int i = 0; i < this.size; i++) {
-			if (f.apply(this.arrays[i])) {
+			if (f.applyZ(this.arrays[i])) {
 				a[i] = this.arrays[i];
 			}
 		}

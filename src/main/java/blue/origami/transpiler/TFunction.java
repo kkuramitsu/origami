@@ -2,7 +2,7 @@ package blue.origami.transpiler;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TNameCode.TFuncRefCode;
+import blue.origami.transpiler.code.TFuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TFunction extends Template implements TNameRef {
@@ -20,7 +20,7 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public boolean isGenerated() {
-		return this.paramNames != null;
+		return this.paramNames == null;
 	}
 
 	void setGenerated() {
@@ -43,7 +43,7 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	public TCode getCode(TEnv env) {
-		return env.parseCode(env, this.body);
+		return env.parseCode(env, this.body).asType(env, this.returnType);
 	}
 
 	@Override
@@ -74,12 +74,17 @@ public class TFunction extends Template implements TNameRef {
 			}
 			return tp;
 		} else {
-			Transpiler tr = env.getTranspiler();
-			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
-					this.body);
-			this.setGenerated();
-			return tp;
+			return this.generate(env);
 		}
+	}
+
+	public Template generate(TEnv env) {
+		Transpiler tr = env.getTranspiler();
+		Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
+				this.body);
+		this.setGenerated();
+		// env.add(this.name, tp); already added in defineFunction
+		return tp;
 	}
 
 	static String getSignature(String name, TType[] p) {
@@ -100,6 +105,13 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public TCode nameCode(TEnv env, String name) {
+		if (!this.isGenerated()) {
+			Transpiler tr = env.getTranspiler();
+			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
+					this.body);
+			this.setGenerated();
+			return new TFuncRefCode(name, tp);
+		}
 		return new TFuncRefCode(name, this);
 	}
 

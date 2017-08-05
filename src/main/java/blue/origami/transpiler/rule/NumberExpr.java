@@ -9,7 +9,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.TCode;
 
-public abstract class NumberExpr extends LoggerRule implements TTypeRule {
+public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	public final Class<?> baseType;
 
 	public NumberExpr() {

@@ -55,7 +55,7 @@ public class IntRange extends IntArray implements StringCombinator {
 	public IntArray map(FuncIntInt f) {
 		int[] a = new int[this.size()];
 		for (int i = this.start; i <= this.until; i++) {
-			a[i - this.start] = f.apply(i);
+			a[i - this.start] = f.applyI(i);
 		}
 		return new IntArray(a, a.length);
 	}
@@ -74,7 +74,7 @@ public class IntRange extends IntArray implements StringCombinator {
 		int[] a = new int[this.size()];
 		int c = 0;
 		for (int i = this.start; i <= this.until; i++) {
-			if (f.apply(i)) {
+			if (f.applyZ(i)) {
 				a[i - this.start] = i;
 			}
 		}

@@ -7,9 +7,16 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
+import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.ODebug;
 
-public class TNameCode extends TypedCode0 {
+public class TNameCode extends TypedCode0 implements ParseRule {
+
+	@Override
+	public TCode apply(TEnv env, Tree<?> t) {
+		return new TNameCode(t);
+	}
+
 	private Tree<?> nameTree = null;
 	private final String lname;
 	private final int refLevel;
@@ -35,7 +42,8 @@ public class TNameCode extends TypedCode0 {
 
 	@Override
 	public TCode asType(TEnv env, TType t) {
-		if (this.getType().isUntyped()) {
+		// ODebug.trace("finding %s %s", this.lname, t);
+		if (this.isUntyped()) {
 			TNameRef ref = env.get(this.lname, TNameRef.class, (e, c) -> e.isNameRef(env) ? e : null);
 			if (ref == null) {
 				throw new TErrorCode(this.nameTree, TFmt.undefined_name__YY0, this.lname);
@@ -57,48 +65,16 @@ public class TNameCode extends TypedCode0 {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushName(env, this);
+		try {
+			sec.pushName(env, this);
+		} catch (Exception e) {
+			ODebug.trace("unfound name %s %d", this.lname, this.refLevel);
+			ODebug.traceException(e);
+		}
 	}
 
-	// @Override
-	// public OCode newAssignCode(OEnv env, OCode right) {
-	// if (this.readOnly) {
-	// throw new ErrorCode(env, OFmt.read_only__YY0, this.getName());
-	// }
-	// OType ty = this.getType();
-	// return new AssignCode(ty, false, this.getName(), right.asType(env, ty));
-	// }
-
-	public final static class TFuncRefCode extends TypedCode0 {
-		String name;
-		Template template;
-
-		public TFuncRefCode(String name, Template tp) {
-			super(TType.tFunc(tp.getReturnType(), tp.getParamTypes()));
-			this.name = name;
-			this.template = tp;
-		}
-
-		@Override
-		public Template getTemplate(TEnv env) {
-			return env.getTemplate("funcref", "%s");
-		}
-
-		@Override
-		public String strOut(TEnv env) {
-			return this.getTemplate(env).format(this.template.getName());
-		}
-
-		@Override
-		public void emitCode(TEnv env, TCodeSection sec) {
-			ODebug.TODO(this);
-		}
-
-		@Override
-		public TCode applyCode(TEnv env, TCode... params) {
-			return new TExprCode(this.name, params);
-		}
-
+	@Override
+	public String toString() {
+		return this.lname + ",ref=" + this.refLevel;
 	}
-
 }

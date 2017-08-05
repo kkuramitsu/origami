@@ -8,7 +8,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;
 import blue.origami.util.ODebug;
 
-public class FuncDecl extends SyntaxRule implements TTypeRule {
+public class FuncDecl extends SyntaxRule implements ParseRule {
 
 	boolean isPublic = true;
 

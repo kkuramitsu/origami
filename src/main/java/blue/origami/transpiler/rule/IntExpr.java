@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TIntCode;
 
-public class IntExpr extends NumberExpr implements TTypeRule {
+public class IntExpr extends NumberExpr implements ParseRule {
 
 	@Override
 	protected TCode newCode(Number value) {

@@ -4,6 +4,6 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 
-public interface TTypeRule {
+public interface ParseRule {
 	TCode apply(TEnv env, Tree<?> t);
 }

@@ -73,7 +73,7 @@ public abstract class TType implements TypeApi {
 
 	public abstract boolean acceptType(TType t);
 
-	public final boolean accept(TCode code) {
+	public boolean accept(TCode code) {
 		return this.acceptType(code.getType());
 	}
 

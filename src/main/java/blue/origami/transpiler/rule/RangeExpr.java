@@ -7,7 +7,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDataRangeCode;
 import blue.origami.transpiler.code.TIntCode;
 
-public class RangeExpr implements TTypeRule, OSymbols {
+public class RangeExpr implements ParseRule, OSymbols {
 	boolean inclusive;
 
 	public RangeExpr() {

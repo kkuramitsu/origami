@@ -15,7 +15,7 @@ public class IntArray extends Data implements FuncIntInt {
 	}
 
 	@Override
-	public int apply(int v) {
+	public int applyI(int v) {
 		return this.arrays[v];
 	}
 
@@ -81,7 +81,7 @@ public class IntArray extends Data implements FuncIntInt {
 	public IntArray map(FuncIntInt f) {
 		int[] a = new int[this.size];
 		for (int i = 0; i < this.size; i++) {
-			a[i] = f.apply(this.arrays[i]);
+			a[i] = f.applyI(this.arrays[i]);
 		}
 		return new IntArray(a, a.length);
 	}
@@ -98,7 +98,7 @@ public class IntArray extends Data implements FuncIntInt {
 		int[] a = new int[this.size];
 		int c = 0;
 		for (int i = 0; i < this.size; i++) {
-			if (f.apply(this.arrays[i])) {
+			if (f.applyZ(this.arrays[i])) {
 				a[i] = this.arrays[i];
 			}
 		}

@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TemplateCode extends MultiTypedCode {
+public class TemplateCode extends TypedCodeN {
 
 	public TemplateCode(TCode... codes) {
 		super(TType.tString, null, codes);

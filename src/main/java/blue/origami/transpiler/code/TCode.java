@@ -58,16 +58,24 @@ interface TCodeAPI {
 	}
 
 	public default TCode asType(TEnv env, TType t) {
+		return asExactType(env, t);
+	}
+
+	public default TCode asExactType(TEnv env, TType t) {
 		TCode self = self();
 		TType f = self.getType();
-		if (f.isUntyped() || t.accept(self)) {
+		if (self.isUntyped() || t.accept(self)) {
 			return self;
 		}
 		TConvTemplate tt = env.findTypeMap(env, f, t);
 		if (tt == TConvTemplate.Stupid) {
-			// ODebug.trace("stupid asType (%s)%s", t, self);
+
 		}
 		return new TCastCode(t, tt, self);
+	}
+
+	public default TCode stillUntyped() {
+		return self();
 	}
 
 	public default TType guessType() {
@@ -279,14 +287,18 @@ abstract class TypedCode1 extends Code1 {
 	}
 }
 
-abstract class MultiTypedCode extends CodeN {
+abstract class TypedCodeN extends CodeN {
 	private TType typed;
 	protected Template template;
 
-	MultiTypedCode(TType t, Template tp, TCode... args) {
+	TypedCodeN(TType t, Template tp, TCode... args) {
 		super(args);
 		this.setType(t);
 		this.setTemplate(tp);
+	}
+
+	TypedCodeN(TCode... args) {
+		this(TType.tUntyped, Template.Null, args);
 	}
 
 	@Override

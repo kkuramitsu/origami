@@ -171,22 +171,22 @@ public class Func {
 
 	@FunctionalInterface
 	public interface FuncIntBool {
-		public boolean apply(int v);
+		public boolean applyZ(int v);
 	}
 
 	@FunctionalInterface
 	public interface FuncIntInt {
-		public int apply(int v);
+		public int applyI(int v);
 	}
 
 	@FunctionalInterface
 	public interface FuncIntFloat {
-		public float apply(int v);
+		public double applyD(int v);
 	}
 
 	@FunctionalInterface
 	public interface FuncIntStr {
-		public String apply(int v);
+		public String applyS(int v);
 	}
 
 	@FunctionalInterface

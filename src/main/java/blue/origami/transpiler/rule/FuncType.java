@@ -7,7 +7,7 @@ import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TTypeCode;
 
-public class FuncType implements TTypeRule, OSymbols {
+public class FuncType implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TType ret = env.parseType(env, t.get(_base), null);

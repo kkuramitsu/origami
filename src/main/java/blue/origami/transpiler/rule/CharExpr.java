@@ -7,7 +7,7 @@ import blue.origami.transpiler.code.TIntCode.TCharCode;
 import blue.origami.transpiler.code.TStringCode;
 import blue.origami.util.OStringUtils;
 
-public class CharExpr implements TTypeRule {
+public class CharExpr implements ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

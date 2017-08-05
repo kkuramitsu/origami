@@ -12,7 +12,7 @@ import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TTypeCode;
-import blue.origami.transpiler.rule.TTypeRule;
+import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
 
@@ -401,15 +401,15 @@ interface TEnvApi {
 		String name = t.getTag().getSymbol();
 		TCode node = null;
 		try {
-			node = env.get(name, TTypeRule.class, (d, c) -> d.apply(env, t));
+			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
 		} catch (TErrorCode e) {
 			e.setSourcePosition(t);
 			throw e;
 		}
-		if (node == null && env.get(name, TTypeRule.class) == null) {
+		if (node == null && env.get(name, ParseRule.class) == null) {
 			try {
 				Class<?> c = Class.forName("blue.origami.transpiler.rule." + name);
-				TTypeRule rule = (TTypeRule) c.newInstance();
+				ParseRule rule = (ParseRule) c.newInstance();
 				env.getTranspiler().add(name, rule);
 				return parseCode(env, t);
 			} catch (ClassNotFoundException e) {

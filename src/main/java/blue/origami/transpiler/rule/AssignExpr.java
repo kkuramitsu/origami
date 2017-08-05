@@ -15,7 +15,7 @@ import blue.origami.transpiler.code.TSugarCode;
 import blue.origami.transpiler.rule.GetExpr.TGetCode;
 import blue.origami.transpiler.rule.IndexExpr.TGetIndexCode;
 
-public class AssignExpr implements TTypeRule, OSymbols {
+public class AssignExpr implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TCode left = env.parseCode(env, t.get(_left));

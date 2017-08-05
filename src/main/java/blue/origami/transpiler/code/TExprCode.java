@@ -14,7 +14,7 @@ import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCastCode.TUnboxCode;
 import blue.origami.util.ODebug;
 
-public class TExprCode extends MultiTypedCode {
+public class TExprCode extends TypedCodeN {
 
 	private String name;
 
@@ -59,12 +59,12 @@ public class TExprCode extends MultiTypedCode {
 			}
 			Template selected = l.get(0);
 			int mapCost = this.checkMapCost(env, t, selected);
-			ODebug.trace("cost=%d,%s", mapCost, selected);
+			// ODebug.trace("cost=%d,%s", mapCost, selected);
 			for (int i = 1; i < l.size(); i++) {
 				if (mapCost > 0) {
 					Template next = l.get(i);
 					int nextCost = this.checkMapCost(env, t, next);
-					ODebug.trace("nextcost=%d,%s", nextCost, next);
+					// ODebug.trace("nextcost=%d,%s", nextCost, next);
 					if (nextCost < mapCost) {
 						mapCost = nextCost;
 						selected = next;

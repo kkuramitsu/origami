@@ -8,6 +8,7 @@ import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TFuncCode;
+import blue.origami.transpiler.code.TFuncRefCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
@@ -200,6 +201,12 @@ public class SourceSection implements TCodeSection {
 
 	@Override
 	public void pushApply(TEnv env, TApplyCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushFuncRef(TEnv env, TFuncRefCode code) {
 		// TODO Auto-generated method stub
 
 	}

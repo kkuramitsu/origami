@@ -5,7 +5,7 @@ import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 
-public class SizeOfExpr implements TTypeRule, OSymbols {
+public class SizeOfExpr implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TCode recv = env.parseCode(env, t.get(_expr));

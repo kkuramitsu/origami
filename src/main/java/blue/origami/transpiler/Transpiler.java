@@ -151,6 +151,10 @@ public class Transpiler extends TEnv {
 	}
 
 	void showThrowable(Throwable e) {
+		if (e instanceof Error) {
+			OConsole.exit(1, e);
+			return;
+		}
 		if (e instanceof InvocationTargetException) {
 			this.showThrowable(((InvocationTargetException) e).getTargetException());
 			return;
@@ -230,7 +234,9 @@ public class Transpiler extends TEnv {
 		TCode code = env.parseCode(env, body);
 		code = code.asType(env, returnType);
 		int untyped = code.countUntyped(0);
-		ODebug.trace("untyped node=%d", untyped);
+		if (untyped > 0) {
+			ODebug.trace("untyped node=%d", untyped);
+		}
 		assert (!returnType.isUntyped());
 		this.generator.defineFunction(this, isPublic, lname, paramNames, paramTypes, returnType, code);
 		return tp;

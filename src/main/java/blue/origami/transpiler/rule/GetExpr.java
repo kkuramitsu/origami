@@ -13,7 +13,7 @@ import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TSugarCode;
 
-public class GetExpr implements TTypeRule, OSymbols {
+public class GetExpr implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		TCode recv = env.parseCode(env, t.get(_recv));

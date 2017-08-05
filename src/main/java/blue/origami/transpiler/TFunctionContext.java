@@ -36,7 +36,9 @@ public class TFunctionContext {
 		HashMap<String, TCode> backMap = this.fieldMap;
 		this.fieldMap = fieldMap;
 		for (TVariable v : this.varList) {
-			v.decRef();
+			if (v.refLevel > 0) {
+				v.decRef();
+			}
 		}
 		return backMap;
 	}
@@ -72,6 +74,7 @@ public class TFunctionContext {
 
 		@Override
 		public TCode nameCode(TEnv env, String name) {
+			// ODebug.trace("capture %s %d", name, this.refLevel);
 			if (this.refLevel > 0 && TFunctionContext.this.fieldMap != null) {
 				TFunctionContext.this.fieldMap.put(this.getName(),
 						new TNameCode(this.getName(), this.type, this.refLevel - 1));

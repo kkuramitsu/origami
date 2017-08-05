@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDataCode;
 
-public class DataExpr extends LoggerRule implements OSymbols, TTypeRule {
+public class DataExpr extends LoggerRule implements OSymbols, ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

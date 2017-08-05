@@ -1,27 +1,28 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TFuncType;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.util.ODebug;
 
-public class TApplyCode extends CodeN {
-	private TType typed = TType.tUntyped;
-
+public class TApplyCode extends TypedCodeN {
 	public TApplyCode(TCode... values) {
 		super(values);
 	}
 
 	@Override
-	public TType getType() {
-		return this.typed;
-	}
-
-	@Override
 	public TCode asType(TEnv env, TType t) {
-		if (this.typed.isUntyped()) {
+		if (this.isUntyped()) {
 			this.args[0] = this.args[0].asType(env, TType.tUntyped);
+			if (this.args[0] instanceof TFuncRefCode) {
+				ODebug.trace("switching to expr %s", this.args[0]);
+				String name = ((TFuncRefCode) this.args[0]).name;
+				return new TExprCode(name, TArrays.ltrim(this.args[0])).asType(env, t);
+			}
 			if (this.args[0].getType() instanceof TFuncType) {
 				TFuncType funcType = (TFuncType) this.args[0].getType();
 				TType[] p = funcType.getParamTypes();
@@ -30,13 +31,33 @@ public class TApplyCode extends CodeN {
 				}
 				for (int i = 0; i < p.length; i++) {
 					this.args[i + 1] = this.args[i + 1].asType(env, p[i]);
-					if (this.args[i + 1].getType().isUntyped()) {
-						return this;
+					if (this.args[i + 1].isUntyped()) {
+						return this.stillUntyped();
 					}
 				}
-				this.typed = funcType.getReturnType();
-				return super.asType(env, t);
+				this.setType(funcType.getReturnType());
+				return super.asExactType(env, t);
 			}
+			if (this.args[0].isUntyped()) {
+				if (!t.isSpecific()) {
+					return this.stillUntyped();
+				}
+				TType[] p = new TType[this.args.length - 1];
+				for (int i = 0; i < p.length; i++) {
+					this.args[i + 1] = this.args[i + 1].asType(env, TType.tUntyped);
+					if (this.args[i + 1].isUntyped()) {
+						return this.stillUntyped();
+					}
+				}
+				TType funcType = TType.tFunc(t, p);
+				this.args[0] = this.args[0].asType(env, funcType);
+				if (this.args[0].getType() == funcType) {
+					this.setType(t);
+					return super.asExactType(env, t);
+				}
+				return this.stillUntyped();
+			}
+			throw new TErrorCode(this.args[0], TFmt.not_function__YY0, this.args[0].getType());
 		}
 		return this;
 	}

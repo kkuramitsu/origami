@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TMultiCode;
 
-public class MultiExpr implements TTypeRule {
+public class MultiExpr implements ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

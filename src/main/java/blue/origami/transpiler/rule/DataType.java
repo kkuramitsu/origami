@@ -9,7 +9,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TTypeCode;
 
-public class DataType implements TTypeRule {
+public class DataType implements ParseRule {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		String[] names = new String[t.size()];

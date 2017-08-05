@@ -11,7 +11,7 @@ import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;
 import blue.origami.transpiler.code.TLetCode;
 
-public class LetDecl extends SyntaxRule implements TTypeRule {
+public class LetDecl extends SyntaxRule implements ParseRule {
 
 	private boolean isPublic;
 

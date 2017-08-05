@@ -26,6 +26,12 @@ public class TErrorCode extends RuntimeException implements Code0 {
 		this(SourcePosition.UnknownPosition, fmt, args);
 	}
 
+	public TErrorCode(TCode at, LocaleFormat fmt, Object... args) {
+		super();
+		this.log = new TLog(null, OLog.Error, fmt, args);
+		this.ret = TType.tVoid;
+	}
+
 	public TErrorCode(SourcePosition s, String fmt, Object... args) {
 		this(s, LocaleFormat.wrap(fmt), args);
 	}

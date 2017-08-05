@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TExprCode;
 
-public class AssertStmt implements TTypeRule, OSymbols {
+public class AssertStmt implements ParseRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {

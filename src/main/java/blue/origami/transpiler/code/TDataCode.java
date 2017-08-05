@@ -9,7 +9,7 @@ import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
 
-public class TDataCode extends MultiTypedCode {
+public class TDataCode extends TypedCodeN {
 	private String[] names;
 
 	public TDataCode(String[] names, TCode[] values) {

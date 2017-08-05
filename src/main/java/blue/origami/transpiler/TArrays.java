@@ -28,4 +28,10 @@ public class TArrays {
 		System.arraycopy(params, 1, p, 0, params.length - 1);
 		return p;
 	}
+
+	public static TCode[] ltrim(TCode... params) {
+		TCode[] p = new TCode[params.length - 1];
+		System.arraycopy(params, 1, p, 0, params.length - 1);
+		return p;
+	}
 }

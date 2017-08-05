@@ -5,7 +5,7 @@ import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 
-public class ApplyExpr implements TTypeRule, OSymbols {
+public class ApplyExpr implements ParseRule, OSymbols {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
