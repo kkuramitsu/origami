@@ -1,0 +1,96 @@
+# swift/init.kh
+
+extension  = exs
+
+Bool       =
+Int        =
+Float      =
+String     =
+
+null       = nil
+
+# Bool
+true:Bool       = true
+false:Bool      = false
+&:Bool:Bool:Bool = (%s && %s)
+|:Bool:Bool:Bool = (%s || %s)
+!:Bool:Bool      = (!(%s))
+
+#Int
+0:Int            = %d
++:Int:Int        = %s
+-:Int:Int        = -%s
++:Int:Int:Int    = (%s + %s)
+-:Int:Int:Int    = (%s - %s)
+*:Int:Int:Int    = (%s * %s)
+/:Int:Int:Int    = (div(%s, %s))
+%:Int:Int:Int    = (rem(%s, %s))
+
+==:Int:Int:Bool  = %s == %s
+!=:Int:Int:Bool  = %s != %s
+<:Int:Int:Bool   = %s < %s
+>:Int:Int:Bool   = %s > %s
+<=:Int:Int:Bool  = %s <= %s
+>=:Int:Int:Bool  = %s >= %s
+
+# (use Bitwise) is necessary
+<<:Int:Int:Int   = (%s <<< %s)
+>>:Int:Int:Int   = (%s >>> %s)
+&:Int:Int:Int    = (%s &&& %s)
+|:Int:Int:Int    = (%s ||| %s)
+^:Int:Int:Int    = (%s ^^^ %s)
+!:Int:Int        = ~~~%s
+
+# Float
+0:Float       = %f
+Int=>Float           = (%s / 1)
+Float->Int           = trunc(%s)
++:Float:Float        = +%s
+-:Float:Float        = -%s
++:Float:Float:Float    = (%s + %s)
+-:Float:Float:Float    = (%s - %s)
+*:Float:Float:Float    = (%s * %s)
+/:Float:Float:Float    = (%s / %s)
+%:Float:Float:Float    = (%s % %s)
+
+==:Float:Float:Bool  = %s == %s
+!=:Float:Float:Bool  = %s != %s
+<:Float:Float:Bool   = %s < %s
+>:Float:Float:Bool   = %s > %s
+<=:Float:Float:Bool  = %s <= %s
+>=:Float:Float:Bool  = %s >= %s
+
+#Syntax
+
+comment          = # %s
+begin            = do
+end              = end
+;                =
+,                = ,
+()               = (%s)
+
+module           = defmodule A$|base| do
+
+const            = %2$s = %3$s
+let              = %2$s = %3$s
+
+function         = defp %2$s(%3$s) do
+function1        = def %2$s(%3$s) do
+return           = %s
+
+apply            = %s
+funcref          = %s
+
+if               = '''
+cond do
+  %s ->
+'''
+else if          = %s ->
+else             = true ->
+#while           =
+switch           = case %s do
+case             = %s -> %s
+default          = _ -> %s
+ifexpr           = (if %1$s, do: %2$s, else: %3$s)
+
+lambda           = (%s) -> %s
