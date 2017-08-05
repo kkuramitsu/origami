@@ -7,6 +7,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunctionContext;
 import blue.origami.transpiler.TType;
+import blue.origami.util.StringCombinator;
 
 public class TFuncCode extends Code1 {
 
@@ -103,6 +104,19 @@ public class TFuncCode extends Code1 {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushFuncExpr(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append("(");
+		for (int i = 0; i < this.paramNames.length; i++) {
+			sb.append("\\");
+			sb.append(this.paramNames[i]);
+			sb.append(" ");
+		}
+		sb.append("-> ");
+		StringCombinator.append(sb, this.getInner());
+		sb.append(")");
 	}
 
 }

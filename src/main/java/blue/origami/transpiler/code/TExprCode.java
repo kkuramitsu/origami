@@ -14,6 +14,7 @@ import blue.origami.transpiler.code.TCastCode.TBoxCode;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCastCode.TUnboxCode;
 import blue.origami.util.ODebug;
+import blue.origami.util.StringCombinator;
 
 public class TExprCode extends CodeN {
 
@@ -195,4 +196,17 @@ public class TExprCode extends CodeN {
 		}
 		return mapCost;
 	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append("(");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 1) {
+				sb.append(" ");
+			}
+			StringCombinator.append(sb, this.args[i]);
+		}
+		sb.append(")");
+	}
+
 }

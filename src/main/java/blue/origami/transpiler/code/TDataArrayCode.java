@@ -6,6 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
+import blue.origami.util.StringCombinator;
 
 public class TDataArrayCode extends TDataCode {
 
@@ -48,6 +49,19 @@ public class TDataArrayCode extends TDataCode {
 	public String strOut(TEnv env) {
 		ODebug.TODO(this);
 		return this.getTemplate(env).format();
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.append(sb, this.args[0]);
+		sb.append(this.isMutable() ? "{" : "[");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			StringCombinator.append(sb, this.args[i]);
+		}
+		sb.append(this.isMutable() ? "}" : "]");
 	}
 
 }

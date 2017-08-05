@@ -6,6 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TFuncType;
 import blue.origami.transpiler.TType;
+import blue.origami.util.StringCombinator;
 
 public class TApplyCode extends CodeN {
 	public TApplyCode(TCode... values) {
@@ -63,6 +64,19 @@ public class TApplyCode extends CodeN {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushApply(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.append(sb, this.args[0]);
+		sb.append("(");
+		for (int i = 1; i < this.args.length; i++) {
+			if (i > 1) {
+				sb.append(",");
+			}
+			StringCombinator.append(sb, this.args[i]);
+		}
+		sb.append(")");
 	}
 
 }

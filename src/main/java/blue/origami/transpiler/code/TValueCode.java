@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TEnv;
+import blue.origami.util.StringCombinator;
 
 public interface TValueCode extends TCode {
 	public Object getValue();
@@ -8,6 +9,11 @@ public interface TValueCode extends TCode {
 	@Override
 	public default String strOut(TEnv env) {
 		return this.getTemplate(env).format(this.getValue());
+	}
+
+	@Override
+	public default void strOut(StringBuilder sb) {
+		StringCombinator.appendQuoted(sb, this.getValue());
 	}
 
 	public static TCode[] values(String... values) {

@@ -10,6 +10,7 @@ import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 import blue.origami.util.OLog;
+import blue.origami.util.StringCombinator;
 
 @SuppressWarnings("serial")
 public class TErrorCode extends RuntimeException implements TCode {
@@ -84,6 +85,11 @@ public class TErrorCode extends RuntimeException implements TCode {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushError(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.appendQuoted(sb, this.log);
 	}
 
 }

@@ -4,6 +4,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.util.StringCombinator;
 
 public class TLetCode extends Code1 {
 	private TType decltype;
@@ -36,6 +37,13 @@ public class TLetCode extends Code1 {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushLet(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append(this.name);
+		sb.append(" = ");
+		StringCombinator.append(sb, this.getInner());
 	}
 
 }

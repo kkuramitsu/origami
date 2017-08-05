@@ -5,14 +5,14 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
-import blue.origami.transpiler.Template;
+import blue.origami.util.StringCombinator;
 
 public class TMultiCode extends CodeN {
 
 	private boolean isBlockExpr;
 
 	public TMultiCode(boolean isBlockExpr, TCode... nodes) {
-		super(nodes);
+		super(AutoType, nodes);
 		this.setBlockExpr(isBlockExpr);
 	}
 
@@ -72,11 +72,6 @@ public class TMultiCode extends CodeN {
 	}
 
 	@Override
-	public Template getTemplate(TEnv env) {
-		return Template.Null;
-	}
-
-	@Override
 	public String strOut(TEnv env) {
 		SourceSection p = env.getCurrentSourceSection();
 		SourceSection sec = p.dup();
@@ -89,6 +84,18 @@ public class TMultiCode extends CodeN {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushMulti(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append("{");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 1) {
+				sb.append(";");
+			}
+			StringCombinator.append(sb, this.args[i]);
+		}
+		sb.append("}");
 	}
 
 }

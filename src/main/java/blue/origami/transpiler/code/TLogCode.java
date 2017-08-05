@@ -5,12 +5,13 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Template;
+import blue.origami.util.StringCombinator;
 
 public class TLogCode extends Code1 {
 	protected TLog log;
 
 	public TLogCode(TLog log, TCode inner) {
-		super(inner);
+		super(AutoType, inner);
 		this.log = log;
 	}
 
@@ -20,6 +21,7 @@ public class TLogCode extends Code1 {
 
 	@Override
 	public TCode setSource(Tree<?> t) {
+		this.inner.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;
 	}
@@ -33,6 +35,11 @@ public class TLogCode extends Code1 {
 	public String strOut(TEnv env) {
 		env.reportLog(this.log);
 		return this.inner.strOut(env);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.append(sb, this.getInner());
 	}
 
 	@Override

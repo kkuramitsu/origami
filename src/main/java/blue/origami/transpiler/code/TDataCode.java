@@ -7,9 +7,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.util.StringCombinator;
 
 public class TDataCode extends CodeN {
-	private String[] names;
+	protected String[] names;
 
 	public TDataCode(String[] names, TCode[] values) {
 		super(values);
@@ -23,6 +24,10 @@ public class TDataCode extends CodeN {
 
 	public String[] getNames() {
 		return this.names;
+	}
+
+	public boolean isMutable() {
+		return true;
 	}
 
 	public boolean isArray() {
@@ -71,6 +76,21 @@ public class TDataCode extends CodeN {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushData(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.append(sb, this.args[0]);
+		sb.append(this.isMutable() ? "{" : "[");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 0) {
+				sb.append(",");
+			}
+			sb.append(this.names[i]);
+			sb.append(":");
+			StringCombinator.append(sb, this.args[i]);
+		}
+		sb.append(this.isMutable() ? "}" : "]");
 	}
 
 }

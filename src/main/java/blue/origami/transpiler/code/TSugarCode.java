@@ -4,6 +4,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.util.ODebug;
 
 public class TSugarCode extends CommonCode {
 
@@ -28,6 +29,11 @@ public class TSugarCode extends CommonCode {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		this.asType(env, TType.tUntyped).emitCode(env, sec);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		ODebug.TODO();
 	}
 
 }

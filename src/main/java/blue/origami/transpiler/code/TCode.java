@@ -10,8 +10,9 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
+import blue.origami.util.StringCombinator;
 
-public interface TCode extends TCodeAPI, Iterable<TCode> {
+public interface TCode extends TCodeAPI, Iterable<TCode>, StringCombinator {
 	@Override
 	public default TCode self() {
 		return this;
@@ -23,6 +24,11 @@ public interface TCode extends TCodeAPI, Iterable<TCode> {
 
 	public TCode[] args();
 
+	@Override
+	public default Iterator<TCode> iterator() {
+		return TCodeAPI.super.iterator();
+	}
+
 	public TType getType();
 
 	public Template getTemplate(TEnv env);
@@ -30,11 +36,6 @@ public interface TCode extends TCodeAPI, Iterable<TCode> {
 	public String strOut(TEnv env);
 
 	public void emitCode(TEnv env, TCodeSection sec);
-
-	@Override
-	public default Iterator<TCode> iterator() {
-		return TCodeAPI.super.iterator();
-	}
 
 }
 
@@ -200,9 +201,11 @@ abstract class CommonCode implements TCode {
 		this.typed = typed;
 	}
 
+	protected static final TType AutoType = null;
+
 	@Override
 	public TType getType() {
-		if (this.typed == null) {
+		if (this.typed == AutoType) {
 			TCode[] a = this.args();
 			if (a.length == 0) {
 				return TType.tVoid;

@@ -25,4 +25,8 @@ public class TDeclCode extends CommonCode {
 		// do nothing
 	}
 
+	@Override
+	public void strOut(StringBuilder sb) {
+	}
+
 }

@@ -4,6 +4,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
+import blue.origami.util.StringCombinator;
 
 public class TCastCode extends Code1 {
 	public TCastCode(TType ret, TConvTemplate tp, TCode inner) {
@@ -14,6 +15,14 @@ public class TCastCode extends Code1 {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushCast(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append("(");
+		StringCombinator.append(sb, this.getType());
+		sb.append(")");
+		StringCombinator.append(sb, this.getInner());
 	}
 
 	// constants

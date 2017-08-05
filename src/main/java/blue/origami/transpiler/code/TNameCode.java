@@ -73,4 +73,9 @@ public class TNameCode extends CommonCode implements ParseRule {
 		}
 	}
 
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append(this.lname);
+	}
+
 }

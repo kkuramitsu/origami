@@ -35,6 +35,11 @@ public final class TFuncRefCode extends CommonCode {
 	}
 
 	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append(this.name);
+	}
+
+	@Override
 	public TCode applyCode(TEnv env, TCode... params) {
 		return new TExprCode(this.name, params);
 	}

@@ -5,11 +5,12 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.util.StringCombinator;
 
 public class TIfCode extends CodeN {
 
 	public TIfCode(TCode condCode, TCode thenCode, TCode elseCode) {
-		super(condCode, thenCode, elseCode);
+		super(AutoType, condCode, thenCode, elseCode);
 	}
 
 	public TCode condCode() {
@@ -77,6 +78,16 @@ public class TIfCode extends CodeN {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushIf(env, this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		sb.append("if(");
+		StringCombinator.append(sb, this.args[0]);
+		sb.append(") ");
+		StringCombinator.append(sb, this.args[1]);
+		sb.append(" then ");
+		StringCombinator.append(sb, this.args[2]);
 	}
 
 }
