@@ -6,7 +6,7 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 import blue.origami.util.ODebug;
 
-public class TTypeCode extends EmptyTypedCode {
+public class TTypeCode extends TypedCode0 {
 	private TType value;
 
 	public TTypeCode(TType value) {

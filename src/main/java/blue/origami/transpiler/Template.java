@@ -5,6 +5,7 @@ import blue.origami.transpiler.code.TCode;
 public abstract class Template {
 	public final static Template Null = null;
 	// Skeleton
+	protected boolean isGeneric;
 	protected final String name;
 	protected final TType[] paramTypes;
 	protected final TType returnType;
@@ -14,6 +15,12 @@ public abstract class Template {
 		this.name = name;
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
+		for (TType t : paramTypes) {
+			if (t.isVarType()) {
+				this.isGeneric = true;
+				break;
+			}
+		}
 		assert (this.returnType != null) : this;
 	}
 
@@ -23,6 +30,10 @@ public abstract class Template {
 
 	public TType getReturnType() {
 		return this.returnType;
+	}
+
+	public boolean isGeneric() {
+		return this.isGeneric;
 	}
 
 	public int getParamSize() {
@@ -35,7 +46,7 @@ public abstract class Template {
 
 	public abstract String getDefined();
 
-	public boolean isEnabled() {
+	public boolean isGenerated() {
 		return true;
 	}
 
@@ -46,7 +57,7 @@ public abstract class Template {
 	public abstract String format(Object... args);
 
 	public TInst[] getInsts() {
-		return EmptyConstants.emptyInsts;
+		return TArrays.emptyInsts;
 	}
 
 	@Override

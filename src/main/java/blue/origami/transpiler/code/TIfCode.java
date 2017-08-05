@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TIfCode extends MultiCode {
+public class TIfCode extends CodeN {
 
 	public TIfCode(TCode condCode, TCode thenCode, TCode elseCode) {
 		super(condCode, thenCode, elseCode);

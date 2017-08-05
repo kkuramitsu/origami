@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.nez.ast.Source;
+import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserSource;
@@ -20,6 +21,7 @@ import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.util.OConsole;
+import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OTree;
 
@@ -72,10 +74,10 @@ public class Transpiler extends TEnv {
 		this.add("Int", TType.tInt);
 		this.add("Float", TType.tFloat);
 		this.add("String", TType.tString);
-		this.add("Data", TType.tData);
-		this.addTypeHint(this, "i,j,m,n", TType.tInt);
+		this.add("Data", TType.tData());
+		this.addTypeHint(this, "i,j,k,m,n", TType.tInt);
 		this.addTypeHint(this, "x,y,z,w", TType.tFloat);
-		this.addTypeHint(this, "s,t,u", TType.tString);
+		this.addTypeHint(this, "s,t,u,name", TType.tString);
 	}
 
 	private void loadLibrary(String file) {
@@ -182,6 +184,23 @@ public class Transpiler extends TEnv {
 		}
 	}
 
+	// Buffering
+
+	public void addFunction(String name, TFunction f) {
+		this.add(name, f);
+		this.generator.addFunction(name, f);
+	}
+
+	public void addExample(String name, Tree<?> tree) {
+		if (tree.is(Symbol.unique("MultiExpr"))) {
+			for (Tree<?> t : tree) {
+				this.generator.addExample(name, t);
+			}
+		} else {
+			this.generator.addExample(name, tree);
+		}
+	}
+
 	// ConstDecl
 
 	int functionId = 0;
@@ -210,6 +229,8 @@ public class Transpiler extends TEnv {
 		}
 		TCode code = env.parseCode(env, body);
 		code = code.asType(env, returnType);
+		int untyped = code.countUntyped(0);
+		ODebug.trace("untyped node=%d", untyped);
 		assert (!returnType.isUntyped());
 		this.generator.defineFunction(this, isPublic, lname, paramNames, paramTypes, returnType, code);
 		return tp;
@@ -217,7 +238,7 @@ public class Transpiler extends TEnv {
 
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
-		return prefix + name;
+		return prefix + TNameHint.safeName(name);
 	}
 
 	SourceSection sec = null;

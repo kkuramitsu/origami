@@ -11,11 +11,16 @@ import blue.origami.util.ODebug;
 
 public class AsmClassLoader extends ClassLoader {
 
+	int seq = 0;
 	// private final Map<String, OClassDecl> uncompiledMap;
 
 	public AsmClassLoader() {
 		super();
 		this.dumpDirectory = System.getenv("DUMPDIR");
+	}
+
+	int seq() {
+		return this.seq++;
 	}
 
 	final static String toClassName(String pathName) {

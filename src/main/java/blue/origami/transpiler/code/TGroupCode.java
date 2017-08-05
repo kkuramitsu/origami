@@ -1,27 +1,12 @@
 package blue.origami.transpiler.code;
 
-import java.util.Iterator;
-
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.code.EmptyCode.EmptyCodeIterator;
 
-public class TGroupCode extends SingleCode {
-	protected TCode inner;
-
+public class TGroupCode extends Code1 {
 	TGroupCode(TCode inner) {
 		super(inner);
-	}
-
-	@Override
-	public TCode self() {
-		return this;
-	}
-
-	@Override
-	public Iterator<TCode> iterator() {
-		return new EmptyCodeIterator();
 	}
 
 	@Override

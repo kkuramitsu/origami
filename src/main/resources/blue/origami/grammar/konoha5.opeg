@@ -146,7 +146,7 @@ f = 1
 	/ ('def' EOT)
 	
 FuncDecl = LetFuncDecl / {
-	("public" "function" #PubFuncDecl ) / ("function" #FuncDecl )
+	("public" "function" #PublicFuncDecl ) / ("function" #FuncDecl )
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(":" Type)? 
@@ -171,7 +171,7 @@ CParam = {
 }
 
 LetFuncDecl = {
-	("public" ('let' EOT)? #PubFuncDecl ) / ( ('let' EOT)? #FuncDecl )
+	("public" ('let' EOT)? #PublicFuncDecl ) / ( ('let' EOT)? #FuncDecl )
 	$name(Identifier) 
 	("(" $param(Params) ")" / $param(LetParams)) 
 	$type(":" Type)? 
@@ -198,7 +198,7 @@ LetParam = {
 	/ ''
 
 ConstDecl = {
-	("public" "const" #PubLetDecl ) / ("const" #LetDecl )
+	("public" "const" #PublicLetDecl ) / ("const" #LetDecl )
 	$name(Identifier) 
 	$suffix(Quantity)?
 	(":" $type(Type))? 
@@ -228,11 +228,11 @@ BlockExpr = {
 	($(Statement) EOS)+
 	"}"
 	#MultiExpr
-} / { "{" "}" #EmptyExpr }
+}
 
 PyBlockExpr = {
 	(':') _
-	(EOL <block INDENT_BLOCK >) / ($(Statement) EOS) 
+	((EOL <block INDENT_BLOCK >) / ($(Statement) EOS)) 
 	#MultiExpr
 }
 
@@ -270,7 +270,6 @@ Statement =
 	/ IfStmt
 	/ ReturnStmt
 	/ AssertStmt
-	/ AssignStmt
 	/ Expression
 
 LetDecl = {
@@ -431,7 +430,13 @@ DataCaseExpr = {
 
 /* Operator */
 
-OperatorExpr = 
+OperatorExpr = {
+	$left(UnaryExpr) 
+	"=" #AssignExpr 
+	$right(Expression) 
+} / ConditionalExpr
+
+ConditionalExpr = 
 	OrExpr 
 	{$cond "?" $then(Expression) ":" $else(OrExpr) #IfExpr }*
 
@@ -482,7 +487,7 @@ ShiftExpr =
 SHIFT = 
 	"<<"  #LShiftExpr 
 	/ ">>"  #RShiftExpr 
-	/ ">>>" #LRShiftExpr
+	/ ">>>" #RShiftExpr
 
 SumExpr = 
 	ProdExpr 
@@ -508,8 +513,9 @@ UnaryExpr
     / { "-"  $expr(CastExpr) #MinusExpr }
     / { ('!' _ / 'not' EOT)  $expr(CastExpr) #NotExpr }
     / { '~' _  $expr(CastExpr)    #CmplExpr }
-    / { "+"  $expr(CastExpr)    #PlusExpr }
+    / { "+"  $expr(CastExpr)      #PlusExpr }
     / { "|"  $expr(Expression) "|"    #SizeOfExpr }
+    / { "<<"  $expr(Expression) #PopExpr }
 //    / { "#"  $expr(CastExpr)    #TweetExpr }
 //    / { "++" $expr(UnaryExpr)   #IncExpr }
 //    / { "--" $expr(UnaryExpr)   #DecExpr }
@@ -519,18 +525,11 @@ PostExpr =
 	{$recv POSTOP }* // {$left '(' ASSERTOP _  $right(Expression) ")" }?
 
 POSTOP = 
-	"." $name(Identifier) ( ("(" ($param(Arguments) ")" #MethodExpr) / (!'(' #GetExpr) ))
+	"." $name(Identifier) ( ("(" ($param(Arguments) ")" #MethodExpr) / #GetExpr ))
 	/ "(" $param(Arguments) ")" #ApplyExpr
-	/ "[" $(Arguments) "]" #IndexExpr
+	/ "[" $param(Arguments) "]" #IndexExpr
 //	/ "++" #PostIncExpr
 //	/ "--" #PostDecExpr
-
-AssignStmt =
-	PostExpr 
-	( {$recv "." $name(Identifier) ASSIGN $right(Expression) #SetExpr }
-	/ PostExpr {$recv "[" $(Arguments) "]" ASSIGN $right(Expression) #SetIndexExpr } )
-
-ASSIGN = ('=' _ / '<-' _)
 
 //ASSERTOP = 
 //	'==' #AssertEqExpr
@@ -581,14 +580,27 @@ ListExpr = {
 	"[" SET #ListExpr "]"
 }
 
-SetExpr = {
-	"{" SET #SetExpr "}"
+SetExpr = RangeExpr / {
+	"{" SET #DataSetExpr "}"
 }
 
 SET = $(EgExpr) ("," $(EgExpr))* 
 
+RangeExpr = {
+	"{" 
+	$left(Expression) 
+	'to' EOT 
+	(("<" #RangeUntilExpr) / #RangeExpr) 
+	$right(Expression)
+	"}"
+}
+
+EgExpr =
+	{ ( '(e.g.' / '(ex ' ) _ $(Expression) ")" #ForExampleExpr }
+	/ Expression
+
 DataExpr = TypedDataExpr / {
-	"{" DATA #DataExpr "}"
+	"{" DATA? #DataExpr "}"
 }
 
 TypedDataExpr = {
@@ -600,13 +612,10 @@ DATA = $(KeyValue) ("," $(KeyValue))*
 KeyValue = {
 	$name(Identifier)
 	(":" / "=")
-	$value(EgExpr)
+	$value(Expression)
 	#KeyValue
 }
 
-EgExpr =
-	{ '(e.g.' _ $(Expression) ")" #ForExampleExpr }
-	/ Expression
 
 /* Literal */
 
@@ -675,7 +684,7 @@ NullExpr  = { ('null' !W / 'None' !W)  #NullExpr } _
 
 /* Identifier */
 
-Identifier = { NAME [']* #NameExpr } _
+Identifier = { NAME [']* '?'? #NameExpr } _
 W          = [a-zA-Z0-9_$\x80-\xF7]
 NAME       = [a-zA-Z_\x80-\xF7] W*
 
@@ -690,24 +699,24 @@ Type =
 	{$base TSUFFIX }*
 
 TSUFFIX = 
-	"[" "]" #ArrayType
-    / "*" #ArrayType
-    / "+" #OneMoreArrayType
-    / "?" #NullableType
+	"[" "]" #DictType
+    / "*"   #ArrayType
+    / "?"   #NullableType
     / "->" $param(Type) #CurryFuncType
 
 PrimaryType = 
 	VarType
-	/ {'@' $name(Identifier) $type(PrimaryType) #MType }
-	/ ClassType
-	/ UnitType
-	/ FuncType
-	/ TupleType
 	/ { 'typeof' EOT $expr(Expression) #ExprType }
+	/ {'@' $name(Identifier) $type(PrimaryType) #MType }
+	/ ThisType
+	/ ClassType
+	/ FuncType
+	/ DataType
+	/ UnitType
                                    
 ClassType = 
 	TypeName 
-	{$base "<" $param(TypeParams) ">"  #GenericType }?
+	{$base (("<" $param(TypeParams) ">") / ("[" $param(TypeParams) "]")) #GenericType }?
 
 TypeName = { 
 	[A-Za-z_\x80-\xF7] 
@@ -718,6 +727,11 @@ TypeName = {
 TypeParams = { 
 	( $(Type) ("," $(Type))* )? 
 }
+
+ThisType = { 
+	'This' EOT 
+	#ThisType
+} _
 
 VarType = ['] { 
 	[A-Za-z_] [A-Za-z0-9_]* 
@@ -737,10 +751,10 @@ FuncType = {
 	#FuncType 
 }
 
-TupleType =  { "(" 
-	$(Type) ("," $(Type))+ 
-	#TupleType 
-")" } 
+DataType =  { "{" 
+	($(Identifier) ("," $(Identifier))*)? 
+	#DataType 
+"}" } 
 
 TypeVariable = Identifier
 TypeParameters = { 

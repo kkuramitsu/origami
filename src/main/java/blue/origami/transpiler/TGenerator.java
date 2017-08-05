@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.TCode;
-import blue.origami.util.OConsole;
 
 public class TGenerator {
 	protected SourceSection head;
@@ -166,8 +166,23 @@ public class TGenerator {
 		return funcList;
 	}
 
-	protected void log(String line, Object... args) {
-		OConsole.println(line, args);
+	protected ArrayList<TFunction> funcList = null;
+
+	public void addFunction(String name, TFunction f) {
+		if (f.isPublic) {
+			if (this.funcList == null) {
+				this.funcList = new ArrayList<>(0);
+			}
+			this.funcList.add(f);
+		}
 	}
 
+	protected ArrayList<Tree<?>> exampleList = null;
+
+	public void addExample(String name, Tree<?> t) {
+		if (this.exampleList == null) {
+			this.exampleList = new ArrayList<>(0);
+		}
+		this.exampleList.add(t);
+	}
 }

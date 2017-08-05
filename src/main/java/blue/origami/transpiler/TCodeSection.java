@@ -1,27 +1,27 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TArrayCode;
+import blue.origami.transpiler.code.TApplyCode;
 import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
+import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.TFuncCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
+import blue.origami.transpiler.code.TLogCode;
 import blue.origami.transpiler.code.TMultiCode;
 import blue.origami.transpiler.code.TNameCode;
 import blue.origami.transpiler.code.TReturnCode;
 import blue.origami.transpiler.code.TStringCode;
 import blue.origami.transpiler.code.TemplateCode;
-import blue.origami.util.OLog;
 
 public interface TCodeSection {
 	public void push(String t);
 
 	public void push(TCode t);
-
-	public void pushLog(OLog log);
 
 	public void pushBool(TEnv env, TBoolCode code);
 
@@ -47,8 +47,19 @@ public interface TCodeSection {
 
 	public void pushTemplate(TEnv env, TemplateCode code);
 
-	public void pushArray(TEnv env, TArrayCode code);
+	// public void pushArray(TEnv env, TArrayCode code);
 
 	public void pushData(TEnv env, TDataCode code);
+
+	public void pushFuncExpr(TEnv env, TFuncCode code);
+
+	public void pushApply(TEnv env, TApplyCode code);
+
+	public void pushError(TEnv env, TErrorCode code);
+
+	public default void pushLog(TEnv env, TLogCode code) {
+		env.reportLog(code.getLog());
+		code.getInner().emitCode(env, this);
+	}
 
 }

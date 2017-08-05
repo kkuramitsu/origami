@@ -5,8 +5,9 @@ import java.math.BigInteger;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.TCode;
-import blue.origami.util.OLog;
 
 public abstract class NumberExpr extends LoggerRule implements TTypeRule {
 	public final Class<?> baseType;
@@ -23,7 +24,7 @@ public abstract class NumberExpr extends LoggerRule implements TTypeRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		OLog log = null;
+		TLog log = null;
 		String text = t.getString().replace("_", "");
 		int radix = 10;
 		if (text.endsWith("L") || text.endsWith("l")) {
@@ -44,42 +45,42 @@ public abstract class NumberExpr extends LoggerRule implements TTypeRule {
 			try {
 				value = Integer.parseInt(text, radix);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
 				value = 0;
 			}
 		} else if (base == double.class) {
 			try {
 				value = Double.parseDouble(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
 				value = 0.0;
 			}
 		} else if (base == long.class) {
 			try {
 				value = Long.parseLong(text, radix);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
 				value = 0L;
 			}
 		} else if (base == float.class) {
 			try {
 				value = Float.parseFloat(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
 				value = 0.0f;
 			}
 		} else if (base == BigInteger.class) {
 			try {
 				value = new BigInteger(text, radix);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e2);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e2);
 				value = BigInteger.ZERO;
 			}
 		} else {
 			try {
 				value = new BigDecimal(text);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, "wrong number format %s by %s", text, e2);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e2);
 				value = BigDecimal.ZERO;
 			}
 		}

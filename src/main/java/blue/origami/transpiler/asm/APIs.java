@@ -19,9 +19,48 @@ package blue.origami.transpiler.asm;
 import java.util.Objects;
 
 import blue.origami.ffi.OAlias;
-import blue.origami.ffi.OCast;
+import blue.origami.konoha5.Data;
+import blue.origami.konoha5.IntArray;
+import blue.origami.konoha5.IntRange;
+import blue.origami.konoha5.ObjArray;
 
 public class APIs {
+	public final static Boolean box(boolean a) {
+		return a;
+	}
+
+	public final static boolean unboxZ(Object a) {
+		return (Boolean) a;
+	}
+
+	public final static Integer box(int a) {
+		return a;
+	}
+
+	public final static int unboxI(Object a) {
+		return ((Number) a).intValue();
+	}
+
+	public final static Double box(double a) {
+		return a;
+	}
+
+	public final static double unboxD(Object a) {
+		return ((Number) a).doubleValue();
+	}
+
+	public final static String unboxS(Object a) {
+		return (String) a;
+	}
+
+	// public final static Long box(long a) {
+	// return a;
+	// }
+	//
+	// public final static long unboxL(Object a) {
+	// return ((Number) a).longValue();
+	// }
+
 	// /* Object */
 	//
 	// // @ODynamic
@@ -104,14 +143,6 @@ public class APIs {
 
 	/* Boolean, conversion */
 
-	public final static Boolean box(boolean a) {
-		return a;
-	}
-
-	public final static boolean unbox(Boolean a) {
-		return a;
-	}
-
 	public final static String toString(boolean a) {
 		return String.valueOf(a);
 	}
@@ -160,14 +191,6 @@ public class APIs {
 		return (short) a;
 	}
 
-	public final static Integer box(int a) {
-		return a;
-	}
-
-	public final static int unbox(Integer a) {
-		return a;
-	}
-
 	public final static String toString(int a) {
 		return String.valueOf(a);
 	}
@@ -200,16 +223,8 @@ public class APIs {
 
 	/* Conversion */
 
-	public final static Double box(double a) {
-		return a;
-	}
-
 	public final static String toString(double a) {
 		return String.valueOf(a);
-	}
-
-	public final static double unbox(Double a) {
-		return a;
 	}
 
 	/* String */
@@ -286,6 +301,11 @@ public class APIs {
 		}
 	}
 
+	public final static boolean p(String a) {
+		System.out.println(a);
+		return true;
+	}
+
 	public final static String join(String[] a) {
 		StringBuilder sb = new StringBuilder();
 		for (String s : a) {
@@ -294,271 +314,62 @@ public class APIs {
 		return sb.toString();
 	}
 
-	// array to elements
+	// Data
 
-	@OCast(cost = OCast.LESSCONV)
-	public static boolean toboolean(boolean[] a) {
-		if (a.length > 0) {
-			return a[0];
-		}
-		return false;
+	public final static ObjArray array(Object[] values) {
+		return new ObjArray(values, values.length);
 	}
 
-	@OCast(cost = OCast.LESSCONV)
-	public static int toint(int[] a) {
-		if (a.length > 0) {
-			return a[0];
-		}
-		return 0;
+	public final static IntArray array(int[] values) {
+		return new IntArray(values, values.length);
 	}
 
-	@OCast(cost = OCast.LESSCONV)
-	public static double todouble(double[] a) {
-		if (a.length > 0) {
-			return a[0];
-		}
-		return 0.0;
+	public final static IntArray range(int start, int end) {
+		return new IntRange(start, end);
 	}
 
-	// value to array
-
-	@OCast(cost = OCast.CONV)
-	public static boolean[] tobool(boolean v) {
-		return new boolean[] { v };
+	public final static Data data(int[] keys, Object[] values) {
+		return new Data(keys, values);
 	}
 
-	@OCast(cost = OCast.CONV)
-	public static int[] toint(int v) {
-		return new int[] { v };
+	public final static int getf(Data d, int key, int def) {
+		Object v = d.getf(key, null);
+		return v == null ? def : ((Number) v).intValue();
 	}
 
-	@OCast(cost = OCast.CONV)
-	public static double[] todouble(double v) {
-		return new double[] { v };
+	public final static Data setf(Data d, int key, int def) {
+		d.setf(key, def);
+		return d;
 	}
 
-	@OCast(cost = OCast.CONV)
-	public static String[] toS(String v) {
-		return new String[] { v };
+	public final static double getf(Data d, int key, double def) {
+		Object v = d.getf(key, null);
+		return v == null ? def : ((Number) v).doubleValue();
 	}
 
-	// /* float conversion */
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static byte tobyte(float a) {
-	// return (byte) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static char tochar(float a) {
-	// return (char) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static short toshort(float a) {
-	// return (short) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static int toint(float a) {
-	// return (int) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static long tolong(float a) {
-	// return (long) a;
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static double todouble(float a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.UPCAST)
-	// public final static Object toObject(float a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.UPCAST)
-	// public final static Number toNumber(float a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static Float toFloat(float a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.CONV)
-	// public final static String toString(float a) {
-	// return String.valueOf(a);
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static float tofloat(float a) {
-	// return a;
-	// }
-	//
-	// @OAlias(name = "-")
-	// public final static long neq(long a) {
-	// return -a;
-	// }
-	//
-	// @OAlias(name = "+")
-	// public final static long add(long a, long b) {
-	// return a + b;
-	// }
-	//
-	// @OAlias(name = "+")
-	// public final static String add(long a, String b) {
-	// return a + b;
-	// }
-	//
-	// @OAlias(name = "-")
-	// public final static long _sub(long a, long b) {
-	// return a - b;
-	// }
-	//
-	// @OAlias(name = "*")
-	// public final static long _mul(long a, long b) {
-	// return a * b;
-	// }
-	//
-	// @OAlias(name = "*")
-	// public final static long _div(long a, long b) {
-	// return a / b;
-	// }
-	//
-	// @OAlias(name = "%")
-	// public final static long _mod(long a, long b) {
-	// return a % b;
-	// }
-	//
-	// @OAlias(name = "<>")
-	// public final static int compareTo(long a, long b) {
-	// return Long.compare(a, b);
-	// }
-	//
-	// @OAlias(name = "==")
-	// public final static boolean eq(long a, long b) {
-	// return a == b;
-	// }
-	//
-	// @OAlias(name = "!=")
-	// public final static boolean ne(long a, long b) {
-	// return a != b;
-	// }
-	//
-	// @OAlias(name = "<")
-	// public final static boolean lt(long a, long b) {
-	// return a < b;
-	// }
-	//
-	// @OAlias(name = ">")
-	// public final static boolean gt(long a, long b) {
-	// return a > b;
-	// }
-	//
-	// @OAlias(name = "<=")
-	// public final static boolean lte(long a, long b) {
-	// return a <= b;
-	// }
-	//
-	// @OAlias(name = ">=")
-	// public final static boolean gte(long a, long b) {
-	// return a >= b;
-	// }
-	//
-	// @OAlias(name = "<<")
-	// public final static long shiftLeft(long a, long b) {
-	// return a << b;
-	// }
-	//
-	// @OAlias(name = ">>")
-	// public final static long shiftRight(long a, long b) {
-	// return a >> b;
-	// }
-	//
-	// @OAlias(name = ">>>")
-	// public final static long opLogicalRightShift(long a, long b) {
-	// return a >>> b;
-	// }
-	//
-	// @OAlias(name = "&")
-	// public final static long and(long a, long b) {
-	// return a & b;
-	// }
-	//
-	// @OAlias(name = "|")
-	// public final static long or(long a, long b) {
-	// return a | b;
-	// }
-	//
-	// @OAlias(name = "^")
-	// public final static long xor(long a, long b) {
-	// return a ^ b;
-	// }
-	//
-	// @OAlias(name = "~")
-	// public final static long not(long a) {
-	// return ~a;
-	// }
-	//
-	// /* cast */
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static byte tobyte(long a) {
-	// return (byte) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static char tochar(long a) {
-	// return (char) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static short toshort(long a) {
-	// return (short) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static int toint(long a) {
-	// return (int) a;
-	// }
-	//
-	// @OCast(cost = OCast.LESSSAME)
-	// public final static float tofloat(long a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static double todouble(long a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.UPCAST)
-	// public final static Object toObject(long a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.UPCAST)
-	// public final static Number toNumber(long a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static Long toLong(long a) {
-	// return a;
-	// }
-	//
-	// @OCast(cost = OCast.CONV)
-	// public final static String toString(long a) {
-	// return String.valueOf(a);
-	// }
-	//
-	// @OCast(cost = OCast.SAME)
-	// public final static long tolong(Long a) {
-	// return a;
-	// }
+	public final static Data setf(Data d, int key, double def) {
+		d.setf(key, def);
+		return d;
+	}
+
+	public final static String getf(Data d, int key, String def) {
+		Object v = d.getf(key, null);
+		return v == null ? def : (String) v;
+	}
+
+	public final static Data setf(Data d, int key, String def) {
+		d.setf(key, def);
+		return d;
+	}
+
+	public final static Data getf(Data d, int key, Data def) {
+		Object v = d.getf(key, null);
+		return v == null ? def : (Data) v;
+	}
+
+	public final static Data setf(Data d, int key, Data def) {
+		d.setf(key, def);
+		return d;
+	}
 
 }

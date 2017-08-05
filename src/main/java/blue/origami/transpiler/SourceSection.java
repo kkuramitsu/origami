@@ -1,11 +1,13 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TArrayCode;
+import blue.origami.transpiler.code.TApplyCode;
 import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TDoubleCode;
+import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.TFuncCode;
 import blue.origami.transpiler.code.TIfCode;
 import blue.origami.transpiler.code.TIntCode;
 import blue.origami.transpiler.code.TLetCode;
@@ -14,7 +16,6 @@ import blue.origami.transpiler.code.TNameCode;
 import blue.origami.transpiler.code.TReturnCode;
 import blue.origami.transpiler.code.TStringCode;
 import blue.origami.transpiler.code.TemplateCode;
-import blue.origami.util.OLog;
 
 public class SourceSection implements TCodeSection {
 
@@ -76,11 +77,6 @@ public class SourceSection implements TCodeSection {
 	@Override
 	public String toString() {
 		return this.sb.toString();
-	}
-
-	@Override
-	public void pushLog(OLog log) {
-		System.out.println(log);
 	}
 
 	// Asm compatible
@@ -185,13 +181,25 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
-	public void pushArray(TEnv env, TArrayCode code) {
+	public void pushData(TEnv env, TDataCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushData(TEnv env, TDataCode code) {
+	public void pushError(TEnv env, TErrorCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushFuncExpr(TEnv env, TFuncCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushApply(TEnv env, TApplyCode code) {
 		// TODO Auto-generated method stub
 
 	}

@@ -2,21 +2,23 @@ package blue.origami.transpiler.code;
 
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 import blue.origami.util.OLog;
 
 @SuppressWarnings("serial")
-public class TErrorCode extends RuntimeException implements EmptyCode {
+public class TErrorCode extends RuntimeException implements Code0 {
 
-	private final OLog log;
+	private final TLog log;
 	private TType ret;
 
 	public TErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
-		this.log = new OLog(s, OLog.Error, fmt, args);
+		this.log = new TLog(s, OLog.Error, fmt, args);
 		this.ret = TType.tVoid;
 	}
 
@@ -37,7 +39,7 @@ public class TErrorCode extends RuntimeException implements EmptyCode {
 		return this;
 	}
 
-	public OLog getLog() {
+	public TLog getLog() {
 		return this.log;
 	}
 
@@ -46,8 +48,20 @@ public class TErrorCode extends RuntimeException implements EmptyCode {
 		return this.ret;
 	}
 
+	@Override
+	public TCode asType(TEnv env, TType t) {
+		this.ret = t;
+		return this;
+	}
+
 	public SourcePosition getSourcePosition() {
 		return this.log.s;
+	}
+
+	@Override
+	public TCode setSourcePosition(Tree<?> t) {
+		this.log.setSourcePosition(t);
+		return this;
 	}
 
 	@Override
@@ -62,7 +76,7 @@ public class TErrorCode extends RuntimeException implements EmptyCode {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushLog(this.log);
+		sec.pushError(env, this);
 	}
 
 }

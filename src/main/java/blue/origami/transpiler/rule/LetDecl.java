@@ -29,7 +29,7 @@ public class LetDecl extends SyntaxRule implements TTypeRule {
 		TCode right = env.parseCode(env, t.get(_expr));
 		TType type = t.has(_type) //
 				? env.parseType(env, t.get(_type, null), null)//
-				: right.getType(); // FIXME right.valueType();
+				: right.asType(env, TType.tUntyped).guessType();
 		// FIXME: type = env.parseTypeArity(env, type, t);
 		right = right.asType(env, type);
 

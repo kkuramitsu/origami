@@ -1,13 +1,13 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.EmptyConstants;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TMultiCode extends MultiCode {
+public class TMultiCode extends CodeN {
 
 	private boolean isBlockExpr;
 
@@ -17,7 +17,7 @@ public class TMultiCode extends MultiCode {
 	}
 
 	public TMultiCode() {
-		this(false, EmptyConstants.emptyCodes);
+		this(false, TArrays.emptyCodes);
 	}
 
 	public boolean isBlockExpr() {
@@ -26,6 +26,16 @@ public class TMultiCode extends MultiCode {
 
 	public void setBlockExpr(boolean isBlockExpr) {
 		this.isBlockExpr = isBlockExpr;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		for (TCode a : this.args) {
+			if (!a.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

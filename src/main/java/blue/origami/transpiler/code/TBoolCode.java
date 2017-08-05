@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TBoolCode extends EmptyTypedCode implements TValueCode {
+public class TBoolCode extends TypedCode0 implements TValueCode {
 	private boolean value;
 
 	public TBoolCode(boolean value) {
@@ -15,7 +15,7 @@ public class TBoolCode extends EmptyTypedCode implements TValueCode {
 
 	@Override
 	public Object getValue() {
-		return this.getValue();
+		return this.value;
 	}
 
 	@Override

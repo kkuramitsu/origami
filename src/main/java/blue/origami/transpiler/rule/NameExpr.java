@@ -1,10 +1,9 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.rule.OFmt;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.TNameCode;
 
 public class NameExpr implements TTypeRule {
 
@@ -13,7 +12,7 @@ public class NameExpr implements TTypeRule {
 		String name = t.getString();
 		TNameRef ref = env.get(name, TNameRef.class, (e, c) -> e.isNameRef(env) ? e : null);
 		if (ref == null) {
-			throw new TErrorCode(t, OFmt.undefined_name__YY0, name);
+			return new TNameCode(t);
 		}
 		return ref.nameCode(env, name);
 	}

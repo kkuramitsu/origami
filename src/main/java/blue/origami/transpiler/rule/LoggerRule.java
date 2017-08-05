@@ -1,40 +1,33 @@
 package blue.origami.transpiler.rule;
 
+import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.TCode;
-import blue.origami.util.OLog;
+import blue.origami.transpiler.code.TLogCode;
 
 public class LoggerRule {
-	private OLog addMessage(OLog head, Tree<?> s, int level, String format, Object[] args) {
-		OLog m = new OLog(s, level, format, args);
-		if (head == null) {
-			return m;
-		}
-		OLog cur = head;
-		while (cur.next != null) {
-			cur = cur.next;
-		}
-		cur.next = m;
-		return head;
+	private TLog addMessage(TLog head, Tree<?> s, int level, LocaleFormat format, Object[] args) {
+		return new TLog(head, s, level, format, args);
 	}
 
-	public OLog reportError(OLog log, Tree<?> s, String fmt, Object... args) {
-		return this.addMessage(log, s, OLog.Error, fmt, args);
+	public TLog reportError(TLog log, Tree<?> s, LocaleFormat fmt, Object... args) {
+		return this.addMessage(log, s, TLog.Error, fmt, args);
 	}
 
-	public OLog reportWarning(OLog log, Tree<?> s, String fmt, Object... args) {
-		return this.addMessage(log, s, OLog.Warning, fmt, args);
+	public TLog reportWarning(TLog log, Tree<?> s, LocaleFormat fmt, Object... args) {
+		return this.addMessage(log, s, TLog.Warning, fmt, args);
 	}
 
-	public OLog reportNotice(OLog log, Tree<?> s, String fmt, Object... args) {
-		return this.addMessage(log, s, OLog.Notice, fmt, args);
+	public TLog reportNotice(TLog log, Tree<?> s, LocaleFormat fmt, Object... args) {
+		return this.addMessage(log, s, TLog.Notice, fmt, args);
 	}
 
-	public TCode log(OLog log, TCode code) {
+	public TCode log(TLog log, TCode code) {
 		if (log == null) {
 			return code;
 		}
-		return code; // new WarningCode(code, head);
+		return new TLogCode(log, code);
 	}
 
 }

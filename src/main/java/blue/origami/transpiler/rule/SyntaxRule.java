@@ -1,44 +1,16 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.rule.OFmt;
 import blue.origami.rule.OSymbols;
-import blue.origami.transpiler.EmptyConstants;
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.util.ODebug;
 
 public class SyntaxRule extends LoggerRule implements OSymbols {
-	// public OAnno parseAnno(TEnv env, String init, Tree<?> annos) {
-	// OAnno anno = new OAnno(init);
-	// if (annos != null) {
-	// for (Tree<?> sub : annos) {
-	// if (sub.is(_Annotation)) {
-	// String name = sub.getStringAt(_name, null);
-	// Map<String, Object> value = null; // FIXME
-	// Class<?> c = env.get("@" + name, TType.class).unwrap();
-	// if (c == null || !c.isAnnotation()) {
-	// OLog.reportWarning(env, "FIXME undefined annotation: " + name);
-	// continue;
-	// }
-	// anno.setAnnotation(c, value);
-	// } else {
-	// anno.add(sub.getTag().getSymbol().toLowerCase());
-	// }
-	// // else if (sub.is(_Pure)) {
-	// // // anno.setAnnotation(OPure.class);
-	// // } else if (sub.is(_Dynamic)) {
-	// // anno.setAnnotation(ODynamic.class);
-	// // } else if (sub.is(_Method)) {
-	// // // anno.setAnnotation(OMethod.class);
-	// // } else {
-	// // anno.acc = acc(anno.acc, sub);
-	// // }
-	// }
-	// }
-	// return anno;
-	// }
 
 	final static String[] emptyNames = new String[0];
 
@@ -81,16 +53,18 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 
 	public TType[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, TType defaultType) {
 		if (params == null) {
-			return EmptyConstants.emptyTypes;
+			return TArrays.emptyTypes;
 		}
+		/* We create a new env for local name hint */
+		TEnv lenv = env.newEnv();
 		TType[] p = new TType[paramNames.length];
 		if (params.has(_name) && p.length == 1) {
-			p[0] = this.parseParamType(env, params, paramNames[0], params.get(_type, null), defaultType);
+			p[0] = this.parseParamType(lenv, params, paramNames[0], params.get(_type, null), defaultType);
 			return p;
 		}
 		int i = 0;
 		for (Tree<?> sub : params) {
-			p[i] = this.parseParamType(env, sub, paramNames[i], sub.get(_type, null), defaultType);
+			p[i] = this.parseParamType(lenv, sub, paramNames[i], sub.get(_type, null), defaultType);
 			i++;
 		}
 		return p;
@@ -103,27 +77,43 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 			ty = env.parseType(env, type, null);
 		}
 		if (ty == null && name != null) {
-			ty = env.findTypeHint(env, name);
+			if (name.endsWith("?")) {
+				ty = TType.tBool;
+			} else {
+				TNameHint hint = env.findNameHint(env, name);
+				if (hint != null) {
+					ty = hint.getType();
+				}
+			}
 		}
 		if (ty == null) {
-			if (defaultType == null) {
-				throw new TErrorCode(param, OFmt.no_typing_hint__YY0, param.getString());
+			if (TNameHint.isShortName(name)) {
+				ODebug.trace("local data variable %s", name);
+				ty = TType.tData().asParameter();
+				env.addTypeHint(env, name, ty);
 			}
-			ty = defaultType;
 		}
 		ty = this.parseTypeArity(env, ty, param);
+		if (ty == null) {
+			if (defaultType != null) {
+				ty = defaultType;
+			} else {
+				throw new TErrorCode(param, TFmt.no_typing_hint__YY0, param.getString());
+			}
+		}
 		return ty;
 	}
 
+	// name
 	public TType parseTypeArity(TEnv env, TType ty, Tree<?> param) {
 		if (param.has(_suffix)) {
 			String suffix = param.getStringAt(_suffix, "");
-			if (suffix.equals("?")) {
-				ty = TType.tOption(ty);
-				ODebug.trace("arity %s", ty);
-				return ty;
-			}
-			if (suffix.equals("*")) {
+			// if (ty != null && suffix.equals("?")) {
+			// ty = TType.tOption(ty);
+			// ODebug.trace("arity %s", ty);
+			// return ty;
+			// }
+			if (ty != null && suffix.equals("*")) {
 				ty = TType.tArray(ty);
 				ODebug.trace("arity %s", ty);
 				return ty;
@@ -134,7 +124,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 
 	public TType[] parseTypes(TEnv env, Tree<?> types) {
 		if (types == null) {
-			return EmptyConstants.emptyTypes;
+			return TArrays.emptyTypes;
 		}
 		TType[] p = new TType[types.size()];
 		int i = 0;

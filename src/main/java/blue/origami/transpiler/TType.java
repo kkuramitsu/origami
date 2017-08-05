@@ -2,17 +2,25 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
+import blue.origami.transpiler.code.TBoolCode;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TDoubleCode;
+import blue.origami.transpiler.code.TIntCode;
+import blue.origami.transpiler.code.TStringCode;
 import blue.origami.util.ODebug;
 
 public abstract class TType implements TypeApi {
+
+	// Core types
+	public static final TType tBool = new TBoolType();
+	public static final TType tInt = new TIntType();
+	public static final TType tFloat = new TFloatType();
+	public static final TType tString = new TStringType();
+	// public static final TType tData = new TDataType();
+	// Hidden types
 	public static final TType tUntyped = new UntypedType("?");
-	public static final TType tVoid = new TSimpleType("Void");
-	public static final TType tBool = new TSimpleType("Bool");
-	public static final TType tInt = new TSimpleType("Int");
-	public static final TType tFloat = new TSimpleType("Float");
-	public static final TType tString = new TSimpleType("String");
-	public static final TType tData = new TSimpleType("Data");
+	public static final TType tVoid = new TSimpleType("void");
+	public static final TType tChar = new TSimpleType("char");
 
 	private static HashMap<String, TType> typeMap = new HashMap<>();
 
@@ -26,15 +34,47 @@ public abstract class TType implements TypeApi {
 		return t;
 	}
 
-	public static final TType tVar(String name) {
+	public static final TDataType tData() {
+		return new TDataType();
+	}
+
+	public static final TDataType tArray(TType innerType) {
+		String key = innerType + "*";
+		TType t = typeMap.get(key);
+		if (t == null) {
+			t = new TDataType(false, innerType);
+			typeMap.put(key, t);
+		}
+		return (TDataType) t;
+	}
+
+	public static final TDataType tDict(TType innerType) {
+		return new TDataType(true, innerType);
+	}
+
+	public static final TDataType tRecord(String... names) {
+		return new TDataType(false, names);
+	}
+
+	public static final TDataType tData(String... names) {
+		return new TDataType(true, names);
+	}
+
+	public static final TVarType tVar(String name) {
 		return new TVarType(name);
 	}
 
 	//
 
 	@Override
-	public boolean equals(Object t) {
+	public final boolean equals(Object t) {
 		return this == t;
+	}
+
+	public abstract boolean acceptType(TType t);
+
+	public final boolean accept(TCode code) {
+		return this.acceptType(code.getType());
 	}
 
 	public abstract String strOut(TEnv env);
@@ -53,20 +93,69 @@ public abstract class TType implements TypeApi {
 		return ty;
 	}
 
-	public static TType tArray(TType ty) {
-		ODebug.TODO();
-		return ty;
+	static HashMap<String, TType> hiddenMap = null;
+
+	public static TType getHiddenType1(String tsig) {
+		if (hiddenMap == null) {
+			hiddenMap = new HashMap<>();
+			hiddenMap.put("void", tVoid);
+			hiddenMap.put("char", tChar);
+			hiddenMap.put("a", TType.tVar("a"));
+			hiddenMap.put("b", TType.tVar("b"));
+		}
+		return hiddenMap.get(tsig);
+	}
+
+	public TType realType() {
+		return this;
+	}
+
+	public TType dup(TVarDomain dom) {
+		return this;
 	}
 
 }
 
 interface TypeApi {
+
 	public default boolean isUntyped() {
-		return TType.tUntyped.equals(this);
+		return this == TType.tUntyped;
 	}
 
-	public default boolean accept(TCode code) {
-		return this.equals(code.getType());
+	public default boolean isVoid() {
+		return this == TType.tVoid;
+	}
+
+	public default boolean isSpecific() {
+		return !this.isVoid() && !this.isUntyped();
+	}
+
+	public default TCode getDefaultValue() {
+		return null;
+	}
+
+	// TDataType
+
+	public default boolean isArrayType() {
+		return false;
+	}
+
+	public default TType asArrayInnerType() {
+		return TType.tUntyped;
+	}
+
+	public default boolean isDictType() {
+		return false;
+	}
+
+	public default TType asDictInnerType() {
+		return TType.tUntyped;
+	}
+
+	// VarType
+
+	public default boolean isVarType() {
+		return false;
 	}
 
 }
@@ -79,6 +168,16 @@ class TSimpleType extends TType {
 	}
 
 	@Override
+	public TCode getDefaultValue() {
+		return null;
+	}
+
+	@Override
+	public boolean acceptType(TType t) {
+		return this == t || this == t.realType();
+	}
+
+	@Override
 	public String toString() {
 		return this.name;
 	}
@@ -88,6 +187,51 @@ class TSimpleType extends TType {
 		return env.format(this.name, this.name);
 	}
 
+}
+
+class TBoolType extends TSimpleType {
+	TBoolType() {
+		super("Bool");
+	}
+
+	@Override
+	public TCode getDefaultValue() {
+		return new TBoolCode(false);
+	}
+
+}
+
+class TIntType extends TSimpleType {
+	TIntType() {
+		super("Int");
+	}
+
+	@Override
+	public TCode getDefaultValue() {
+		return new TIntCode(0);
+	}
+}
+
+class TFloatType extends TSimpleType {
+	TFloatType() {
+		super("Float");
+	}
+
+	@Override
+	public TCode getDefaultValue() {
+		return new TDoubleCode(0);
+	}
+}
+
+class TStringType extends TSimpleType {
+	TStringType() {
+		super("String");
+	}
+
+	@Override
+	public TCode getDefaultValue() {
+		return new TStringCode("");
+	}
 }
 
 class UntypedType extends TSimpleType {
@@ -97,128 +241,8 @@ class UntypedType extends TSimpleType {
 	}
 
 	@Override
-	public boolean accept(TCode code) {
+	public boolean acceptType(TType t) {
 		return true;
-	}
-
-}
-
-class TFuncType extends TType {
-	protected final String name;
-	protected final TType[] paramTypes;
-	protected final TType returnType;
-
-	public TFuncType(String name, TType returnType, TType... paramTypes) {
-		this.name = name;
-		this.paramTypes = paramTypes;
-		this.returnType = returnType;
-	}
-
-	public TType getReturnType() {
-		return this.returnType;
-	}
-
-	public int getParamSize() {
-		return this.paramTypes.length;
-	}
-
-	public TType[] getParamTypes() {
-		return this.paramTypes;
-	}
-
-	public static String stringfy(TType returnType, TType... paramTypes) {
-		StringBuilder sb = new StringBuilder();
-		if (paramTypes.length != 1) {
-			sb.append("(");
-		}
-		int c = 0;
-		for (TType t : paramTypes) {
-			if (c > 0) {
-				sb.append(",");
-			}
-			sb.append(t);
-			c++;
-		}
-		if (paramTypes.length != 1) {
-			sb.append(")");
-		}
-		sb.append("->");
-		sb.append(returnType);
-		return sb.toString();
-	}
-
-	@Override
-	public String toString() {
-		return this.name;
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return env.format(this.name, this.name);
-	}
-}
-
-class TVarType extends TType {
-	private String varName;
-	private TType wrappedType;
-	// private TType[] upperTypes = TType.emptyTypes;
-	// private TType[] lowerTypes = TType.emptyTypes;
-
-	public TVarType(String varName) {
-		this.varName = varName;
-		this.wrappedType = TType.tUntyped;
-	}
-
-	@Override
-	public String toString() {
-		return this.wrappedType.toString();
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.wrappedType.strOut(env);
-	}
-
-	@Override
-	public boolean isUntyped() {
-		return this.wrappedType.isUntyped();
-	}
-
-	public void setType(TType t) {
-		if (this.isUntyped() && !t.isUntyped()) {
-			ODebug.trace("infer %s as %s", this.varName, t);
-			this.wrappedType = t;
-		}
-	}
-
-	@Override
-	public boolean accept(TCode code) {
-		if (this.isUntyped()) {
-			TType t = code.getType(); // FIXME valueType();
-			this.appendUpperBounds(t);
-			return true;
-		}
-		return this.wrappedType.accept(code);
-	}
-
-	public void appendUpperBounds(TType t) {
-		this.setType(t);
-		// for (TType u : this.upperTypes) {
-		// if (u.eq(t)) {
-		// break;
-		// }
-		// }
-		// append(this.upperTypes, t);
-	}
-
-	public void appendLowerBounds(TType t) {
-		this.setType(t);
-		// for (TType u : this.lowerTypes) {
-		// if (u.eq(t)) {
-		// break;
-		// }
-		// }
-		// append(this.lowerTypes, t);
 	}
 
 }

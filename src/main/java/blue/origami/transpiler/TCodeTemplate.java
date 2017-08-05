@@ -14,7 +14,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 	}
 
 	public TCodeTemplate(String template) {
-		this(template, TType.tUntyped, EmptyConstants.emptyTypes, template);
+		this(template, TType.tUntyped, TArrays.emptyTypes, template);
 	}
 
 	@Override
@@ -29,7 +29,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 
 	@Override
 	public TInst[] getInsts() {
-		return EmptyConstants.emptyInsts;
+		return TArrays.emptyInsts;
 	}
 
 	@Override

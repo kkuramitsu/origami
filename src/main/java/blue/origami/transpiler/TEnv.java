@@ -2,11 +2,11 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.rule.OFmt;
 import blue.origami.transpiler.code.TCastCode;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCode;
@@ -219,6 +219,18 @@ interface TEnvTraits {
 		findList(key(cname), c, l, f);
 	}
 
+	public default TCode catchCode(Supplier<TCode> f) {
+		try {
+			return f.get();
+		} catch (TErrorCode e) {
+			return e;
+		}
+	}
+
+	public default void reportLog(TLog log) {
+		log.dump();
+	}
+
 }
 
 interface TEnvApi {
@@ -251,6 +263,13 @@ interface TEnvApi {
 		if (loc == -1) {
 			String name = key;
 			if (key.indexOf('>') > 0) {
+				if ((loc = key.indexOf("--->")) > 0) {
+					TType f = this.checkType(key.substring(0, loc));
+					TType t = this.checkType(key.substring(loc + 4));
+					name = f + "->" + t;
+					env().add(name, new TConvTemplate(name, f, t, TCastCode.BADCONV, value));
+					return;
+				}
 				if ((loc = key.indexOf("-->")) > 0) {
 					TType f = this.checkType(key.substring(0, loc));
 					TType t = this.checkType(key.substring(loc + 3));
@@ -281,7 +300,7 @@ interface TEnvApi {
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new TCodeTemplate(name, TType.tUntyped, EmptyConstants.emptyTypes, value));
+			env().add(name, new TCodeTemplate(name, TType.tUntyped, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
@@ -293,7 +312,7 @@ interface TEnvApi {
 				}
 				env().add(name, new TCodeTemplate(name, ret, p, value));
 			} else {
-				Template t = new TCodeTemplate(name, ret, EmptyConstants.emptyTypes, value);
+				Template t = new TCodeTemplate(name, ret, TArrays.emptyTypes, value);
 				env().add(name, t);
 				env().add(key, t);
 			}
@@ -344,6 +363,19 @@ interface TEnvApi {
 
 	default TType checkType(String tsig) {
 		TType t = this.getType(tsig);
+		if (t == null) {
+			if (tsig.endsWith("*")) {
+				t = checkType(tsig.substring(0, tsig.length() - 1));
+				return TType.tArray(t);
+			}
+			int loc = 0;
+			if ((loc = tsig.indexOf("->")) > 0) {
+				TType ft = checkType(tsig.substring(0, loc));
+				TType tt = checkType(tsig.substring(loc + 2));
+				return TType.tFunc(tt, ft);
+			}
+			t = TType.getHiddenType1(tsig);
+		}
 		assert (t != null) : tsig;
 		return t;
 	}
@@ -353,14 +385,16 @@ interface TEnvApi {
 	}
 
 	public default void addTypeHint(TEnv env, String[] names, TType t) {
-		TTypeHint hint = TTypeHint.newTypeHint(t);
-		for (String n : names) {
-			env().add(n, hint);
+		if (!t.isUntyped()) {
+			TNameHint hint = TNameHint.newNameHint(t);
+			for (String n : names) {
+				env().add(TNameHint.shortName(n), hint);
+			}
 		}
 	}
 
-	public default TType findTypeHint(TEnv env, String name) {
-		return TTypeHint.lookupTypeName(env, name);
+	public default TNameHint findNameHint(TEnv env, String name) {
+		return TNameHint.lookupNameHint(env, name);
 	}
 
 	public default TCode parseCode(TEnv env, Tree<?> t) {
@@ -378,14 +412,16 @@ interface TEnvApi {
 				TTypeRule rule = (TTypeRule) c.newInstance();
 				env.getTranspiler().add(name, rule);
 				return parseCode(env, t);
+			} catch (ClassNotFoundException e) {
+
 			} catch (TErrorCode e) {
 				throw e;
 			} catch (Exception e) {
-				// ODebug.traceException(e);
+				ODebug.exit(1, e);
 			}
 		}
 		if (node == null) {
-			throw new TErrorCode(t, OFmt.undefined_syntax__YY0, name);
+			throw new TErrorCode(t, TFmt.undefined_syntax__YY0, name);
 		}
 		node.setSourcePosition(t);
 		return node;
@@ -420,6 +456,9 @@ interface TEnvApi {
 				}
 				return node.getType();
 			} catch (TErrorCode e) {
+				if (defty == null) {
+					throw e;
+				}
 			}
 		}
 		return defty;
@@ -435,60 +474,6 @@ interface TEnvApi {
 			env.getTranspiler().add(key, tp);
 		}
 		return tp == null ? TConvTemplate.Stupid : tp;
-	}
-
-	// public default TCode findParamCode(TEnv env, String name, TCode...
-	// params) {
-	// // for (TCode p : params) {
-	// // if (p.isUntyped()) {
-	// // return new TUntypedParamCode(name, params);
-	// // }
-	// // }
-	// List<Template> l = new ArrayList<>(8);
-	// env.findList(name, Template.class, l, (tt) -> tt.isEnabled() &&
-	// tt.getParamSize() == params.length);
-	// // ODebug.trace("l = %s", l);
-	// if (l.size() == 0) {
-	// throw new TErrorCode("undefined %s%s", name, types(params));
-	// }
-	// TExprCode start = l.get(0).newParamCode(env, name, params);
-	// int mapCost = start.checkParam(env);
-	// // System.out.println("cost=" + mapCost + ", " + l.get(0));
-	// for (int i = 1; i < l.size(); i++) {
-	// if (mapCost <= 0) {
-	// return start;
-	// }
-	// TExprCode next = l.get(i).newParamCode(env, name, params);
-	// int nextCost = next.checkParam(env);
-	// // System.out.println("nextcost=" + nextCost + ", " + l.get(i));
-	// if (nextCost < mapCost) {
-	// start = next;
-	// mapCost = nextCost;
-	// }
-	// }
-	// if (mapCost >= TCastCode.STUPID) {
-	// // ODebug.trace("miss cost=%d %s", start.getMatchCost(), start);
-	// throw new TErrorCode("mismatched %s%s", name, types(params));
-	// }
-	// return start;
-	// }
-	//
-	// default String types(TCode... params) {
-	// StringBuilder sb = new StringBuilder();
-	// for (TCode t : params) {
-	// sb.append(" ");
-	// sb.append(t.getType());
-	// }
-	// return sb.toString();
-	// }
-
-	public default void addFunction(String name, TFunction f) {
-		Transpiler tr = this.env().getTranspiler();
-		tr.add(name, f);
-	}
-
-	public default void addExample(String name, TCode code) {
-		ODebug.TODO("name=%s code=%s");
 	}
 
 }

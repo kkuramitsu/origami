@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TDoubleCode extends EmptyTypedCode implements TValueCode {
+public class TDoubleCode extends TypedCode0 implements TValueCode {
 	private double value;
 
 	public TDoubleCode(double value) {

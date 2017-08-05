@@ -11,12 +11,12 @@ null       = null
 true:Bool       = true
 false:Bool      = false
 
-==:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|eq|(ZZ)Z
-!=:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|ne|(ZZ)Z
+==:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|eq
+!=:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|ne
 &:Bool:Bool:Bool       = X|band
 |:Bool:Bool:Bool       = X|bor
-!:Bool:Bool            = S|blue/origami/transpiler/asm/APIs|not|(Z)Z
-assert:Bool:Bool       = S|blue/origami/transpiler/asm/APIs|_assert|(Z)Z
+!:Bool:Bool            = S|blue/origami/transpiler/asm/APIs|not
+assert:Bool:Bool       = S|blue/origami/transpiler/asm/APIs|_assert
 
 #Int 
 0:Int            = %d
@@ -28,19 +28,19 @@ assert:Bool:Bool       = S|blue/origami/transpiler/asm/APIs|_assert|(Z)Z
 /:Int:Int:Int    = O|idiv
 %:Int:Int:Int    = O|irem
 
-==:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|eq|(II)Z
-!=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|ne|(II)Z
-<:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|lt|(II)Z
->:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|gt|(II)Z
-<=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|lte|(II)Z
->=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|gte|(II)Z
+==:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|eq
+!=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|ne
+<:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|lt
+>:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|gt
+<=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|lte
+>=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|gte
 
 <<:Int:Int:Int   = O|ishl
 >>:Int:Int:Int   = O|ishr
 &:Int:Int:Int    = O|iand
 |:Int:Int:Int    = O|ior
 ^:Int:Int:Int    = O|ixor
-~:Int:Int        = S|blue/origami/transpiler/asm/APIs|cmpl|(I)I
+~:Int:Int        = S|blue/origami/transpiler/asm/APIs|cmpl
 ||:Int:Int       = S|java/lang/Math|abs
 
 # Float
@@ -65,8 +65,9 @@ Float->Int             = O|d2i
 ||:Float:Int         = S|java/lang/Math|abs
 
 #String
-String-->Int           = S|blue/origami/transpiler/asm/APIs|toint
-String-->Float         = S|blue/origami/transpiler/asm/APIs|todouble
+char->String           = O|blue/origami/transpiler/asm/APIs|toch
+String--->Int          = S|blue/origami/transpiler/asm/APIs|toint
+String--->Float        = S|blue/origami/transpiler/asm/APIs|todouble
 Int-->String           = S|blue/origami/transpiler/asm/APIs|toString
 Float-->String         = S|blue/origami/transpiler/asm/APIs|toString
 
@@ -77,6 +78,39 @@ Float-->String         = S|blue/origami/transpiler/asm/APIs|toString
 >:String:String:Bool   = S|blue/origami/transpiler/asm/APIs|gt
 <=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|lte
 >=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|gte
+println:String:Bool    = S|blue/origami/transpiler/asm/APIs|p
 
+#Data
+getf:Data:Int:Bool:Bool           = S|blue/origami/transpiler/asm/APIs|getf
+setf:Data:Int:Bool:Data           = S|blue/origami/transpiler/asm/APIs|setf
+getf:Data:Int:Int:Int             = S|blue/origami/transpiler/asm/APIs|getf
+setf:Data:Int:Int:Data            = S|blue/origami/transpiler/asm/APIs|setf
+getf:Data:Int:Float:Float         = S|blue/origami/transpiler/asm/APIs|getf
+setf:Data:Int:Float:Data          = S|blue/origami/transpiler/asm/APIs|setf
+getf:Data:Int:String:String       = S|blue/origami/transpiler/asm/APIs|getf
+setf:Data:Int:String:Data         = S|blue/origami/transpiler/asm/APIs|setf
+getf:Data:Int:Data:Data           = S|blue/origami/transpiler/asm/APIs|getf
+setf:Data:Int:Data:Data           = S|blue/origami/transpiler/asm/APIs|setf
 
+# Int*
+||:Int*:Int                       = V|blue/origami/konoha5/IntArray|size
+[]:Int*:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
+[]=:Int*:Int:Int:void             = V|blue/origami/konoha5/IntArray|seti
+push:Int*:Int:void                = V|blue/origami/konoha5/IntArray|push
+pop:Int*:Int                      = V|blue/origami/konoha5/IntArray|pop
+
+each:Int*:Int->void:void          = V|blue/origami/konoha5/IntArray|each
+map:Int*:Int->Int:Int*            = V|blue/origami/konoha5/IntArray|map
+map:Int*:Int->a:a*                = V|blue/origami/konoha5/IntArray|map
+filter:Int*:Int->Bool:Int*        = V|blue/origami/konoha5/IntArray|filter
+
+# a*
+||:a*:Int                         = V|blue/origami/konoha5/ObjArray|size
+[]:a*:Int:a                       = V|blue/origami/konoha5/ObjArray|geti
+[]=:a*:Int:a:void                 = V|blue/origami/konoha5/ObjArray|seti
+
+each:a*:a->void:void              = V|blue/origami/konoha5/ObjArray|each
+map:a*:a->b:b*                    = V|blue/origami/konoha5/ObjArray|map
+map:a*:a->Int:Int*                = V|blue/origami/konoha5/ObjArray|map
+filter:a*:a->Bool:a*              = V|blue/origami/konoha5/ObjArray|filter
 

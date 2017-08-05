@@ -3,13 +3,14 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TType;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TTypeCode;
 
-public class GetIndex implements TTypeRule, OSymbols {
+public class DictType implements TTypeRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		TCode recv = env.parseCode(env, t.get(_recv));
-		TCode[] params = env.parseParams(env, t, _param);
-		return recv.applyMethodCode(env, "[]", params);
+		TType ty = env.parseType(env, t.get(_base), null);
+		return new TTypeCode(TType.tDict(ty));
 	}
 }

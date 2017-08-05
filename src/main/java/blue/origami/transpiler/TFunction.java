@@ -19,11 +19,11 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	@Override
-	public boolean isEnabled() {
+	public boolean isGenerated() {
 		return this.paramNames != null;
 	}
 
-	void setDisabled() {
+	void setGenerated() {
 		this.paramNames = null;
 		this.body = null;
 	}
@@ -32,6 +32,18 @@ public class TFunction extends Template implements TNameRef {
 	public String getDefined() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public boolean isPublic() {
+		return this.isPublic;
+	}
+
+	public String[] getParamNames() {
+		return this.paramNames;
+	}
+
+	public TCode getCode(TEnv env) {
+		return env.parseCode(env, this.body);
 	}
 
 	@Override
@@ -65,7 +77,7 @@ public class TFunction extends Template implements TNameRef {
 			Transpiler tr = env.getTranspiler();
 			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
 					this.body);
-			this.setDisabled();
+			this.setGenerated();
 			return tp;
 		}
 	}
@@ -83,7 +95,7 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public boolean isNameRef(TEnv env) {
-		return this.isEnabled();
+		return this.isGenerated();
 	}
 
 	@Override

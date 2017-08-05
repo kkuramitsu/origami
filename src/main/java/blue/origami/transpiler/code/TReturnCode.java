@@ -4,7 +4,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 
-public class TReturnCode extends SingleCode {
+public class TReturnCode extends Code1 {
 
 	public TReturnCode(TCode expr) {
 		super(expr);

@@ -19,7 +19,7 @@ public class FuncDecl extends SyntaxRule implements TTypeRule {
 		TType[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), null);
 		TType returnType = env.parseType(env, t.get(_type, null), TType.tUntyped);
 		if (returnType.isUntyped()) {
-			returnType = TType.tVar("return");
+			returnType = name.endsWith("?") ? TType.tBool : TType.tVar("return");
 		}
 		if (this.isPublic) {
 			TFunction tf = env.get(name, TFunction.class);
@@ -28,7 +28,7 @@ public class FuncDecl extends SyntaxRule implements TTypeRule {
 			}
 		}
 		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
-		env.addFunction(name, tf);
+		env.getTranspiler().addFunction(name, tf);
 		return new TDeclCode();
 	}
 

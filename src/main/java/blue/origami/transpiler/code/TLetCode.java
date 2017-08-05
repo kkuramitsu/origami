@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
 
-public class TLetCode extends EmptyTypedCode {
+public class TLetCode extends TypedCode0 {
 	private TType decltype;
 	private String name;
 	private TCode expr;
