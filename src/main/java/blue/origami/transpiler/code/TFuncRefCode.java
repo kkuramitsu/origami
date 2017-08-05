@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public final class TFuncRefCode extends TypedCode0 {
+public final class TFuncRefCode extends CommonCode {
 	String name;
 	Template template;
 
@@ -20,18 +20,13 @@ public final class TFuncRefCode extends TypedCode0 {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType ret) {
-		return super.asType(env, ret);
-	}
-
-	@Override
 	public Template getTemplate(TEnv env) {
 		return env.getTemplate("funcref", "%s");
 	}
 
 	@Override
 	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.template.getName());
+		return this.getTemplate(env).format(this.name);
 	}
 
 	@Override

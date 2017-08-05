@@ -7,18 +7,17 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
-import blue.origami.util.ODebug;
 
-public class TDataCode extends TypedCodeN {
+public class TDataCode extends CodeN {
 	private String[] names;
 
 	public TDataCode(String[] names, TCode[] values) {
-		super(TType.tUntyped, null, values);
+		super(values);
 		this.names = names;
 	}
 
 	public TDataCode(TDataType dt) {
-		super(dt, null, TArrays.emptyCodes);
+		super(dt, TArrays.emptyCodes);
 		this.names = TArrays.emptyNames;
 	}
 
@@ -67,12 +66,6 @@ public class TDataCode extends TypedCodeN {
 	@Override
 	public Template getTemplate(TEnv env) {
 		return env.getTemplate("{}");
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		ODebug.TODO(this);
-		return this.getTemplate(env).format();
 	}
 
 	@Override

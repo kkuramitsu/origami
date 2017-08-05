@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TStringCode extends TypedCode0 implements TValueCode {
+public class TStringCode extends CommonCode implements TValueCode {
 	private String value;
 
 	public TStringCode(String value) {

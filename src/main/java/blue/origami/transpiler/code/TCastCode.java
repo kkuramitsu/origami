@@ -5,9 +5,10 @@ import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 
-public class TCastCode extends TypedCode1 {
-	public TCastCode(TType ret, TConvTemplate tt, TCode inner) {
-		super(ret, tt, inner);
+public class TCastCode extends Code1 {
+	public TCastCode(TType ret, TConvTemplate tp, TCode inner) {
+		super(ret, inner);
+		this.setTemplate(tp);
 	}
 
 	@Override

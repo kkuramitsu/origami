@@ -19,7 +19,7 @@ public class TLogCode extends Code1 {
 	}
 
 	@Override
-	public TCode setSourcePosition(Tree<?> t) {
+	public TCode setSource(Tree<?> t) {
 		this.log.setSourcePosition(t);
 		return this;
 	}

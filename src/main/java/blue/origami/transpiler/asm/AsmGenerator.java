@@ -65,7 +65,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		}
 		if (this.funcList != null) {
 			for (TFunction f : this.funcList) {
-				if (f.isGenerated()) {
+				if (f.isExpired()) {
 					continue;
 				}
 				f.generate(env);

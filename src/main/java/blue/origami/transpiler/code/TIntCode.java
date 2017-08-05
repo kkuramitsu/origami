@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TIntCode extends TypedCode0 implements TValueCode {
+public class TIntCode extends CommonCode implements TValueCode {
 	private int value;
 
 	public TIntCode(int value) {

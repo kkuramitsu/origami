@@ -403,7 +403,7 @@ interface TEnvApi {
 		try {
 			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
 		} catch (TErrorCode e) {
-			e.setSourcePosition(t);
+			e.setSource(t);
 			throw e;
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
@@ -423,7 +423,7 @@ interface TEnvApi {
 		if (node == null) {
 			throw new TErrorCode(t, TFmt.undefined_syntax__YY0, name);
 		}
-		node.setSourcePosition(t);
+		node.setSource(t);
 		return node;
 	}
 

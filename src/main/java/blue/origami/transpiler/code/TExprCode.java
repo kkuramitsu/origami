@@ -5,6 +5,7 @@ import java.util.List;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.TVarDomain;
 import blue.origami.transpiler.TVarType;
@@ -14,17 +15,18 @@ import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.transpiler.code.TCastCode.TUnboxCode;
 import blue.origami.util.ODebug;
 
-public class TExprCode extends TypedCodeN {
+public class TExprCode extends CodeN {
 
 	private String name;
 
 	public TExprCode(Template tp, TCode... args) {
-		super(tp.getReturnType(), tp, args);
+		super(tp.getReturnType(), args);
+		this.setTemplate(tp);
 		this.name = tp.getName();
 	}
 
 	public TExprCode(String name, TCode... args) {
-		super(TType.tUntyped, null, args);
+		super(TType.tUntyped, args);
 		this.name = name;
 	}
 
@@ -35,13 +37,14 @@ public class TExprCode extends TypedCodeN {
 
 	@Override
 	public TCode asType(TEnv env, TType t) {
-		if (this.getType().isUntyped()) {
+		if (this.isUntyped()) {
 			final TCode[] params = this.args;
 			List<Template> l = new ArrayList<>(8);
-			env.findList(this.name, Template.class, l, (tt) -> tt.isGenerated() && tt.getParamSize() == params.length);
+			env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == params.length);
 			// ODebug.trace("l = %s", l);
 			if (l.size() == 0) {
-				throw new TErrorCode("undefined %s%s", this.name, this.types(params));
+				env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
+				throw new TErrorCode("undefined %s%s%s", this.name, this.types(params), this.hint(l));
 			}
 			if (l.size() == 1) {
 				return this.asType(env, l.get(0).update(env, params), t);
@@ -72,19 +75,43 @@ public class TExprCode extends TypedCodeN {
 				}
 			}
 			if (mapCost >= TCastCode.STUPID) {
-				throw new TErrorCode("mismatched %s%s", this.name, this.types(params));
+				throw new TErrorCode("mismatched %s%s%s", this.name, this.types(params), this.hint(l));
 			}
 			return this.asType(env, selected.update(env, params), t);
 		}
 		return super.asType(env, t);
 	}
 
+	private String hint(List<Template> l) {
+		StringBuilder sb = new StringBuilder();
+		int c = 0;
+		for (Template tp : l) {
+			if (c > 0) {
+				sb.append(", ");
+			}
+			sb.append(tp.getName());
+			sb.append(":: ");
+			sb.append(tp.getFuncType());
+			c++;
+		}
+		if (sb.length() == 0) {
+			return "";
+		}
+		return " \t" + TFmt.hint + " " + sb.toString();
+	}
+
 	private String types(TCode... params) {
 		StringBuilder sb = new StringBuilder();
+		int c = 0;
+		sb.append("(");
 		for (TCode t : params) {
-			sb.append(" ");
+			if (c > 0) {
+				sb.append(", ");
+			}
 			sb.append(t.getType());
+			c++;
 		}
+		sb.append(")");
 		return sb.toString();
 	}
 

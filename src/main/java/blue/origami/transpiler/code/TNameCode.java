@@ -10,7 +10,7 @@ import blue.origami.transpiler.rule.NameExpr.TNameRef;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.ODebug;
 
-public class TNameCode extends TypedCode0 implements ParseRule {
+public class TNameCode extends CommonCode implements ParseRule {
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
@@ -23,7 +23,7 @@ public class TNameCode extends TypedCode0 implements ParseRule {
 
 	public TNameCode(Tree<?> nameTree) {
 		this(nameTree.getString(), TType.tUntyped, 0);
-		this.nameTree = nameTree;
+		this.setSource(nameTree);
 	}
 
 	public TNameCode(String name, TType ty, int refLevel) {
@@ -73,8 +73,4 @@ public class TNameCode extends TypedCode0 implements ParseRule {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return this.lname + ",ref=" + this.refLevel;
-	}
 }

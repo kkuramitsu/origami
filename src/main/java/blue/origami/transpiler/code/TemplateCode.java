@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TemplateCode extends TypedCodeN {
+public class TemplateCode extends CodeN {
 
 	public TemplateCode(TCode... codes) {
-		super(TType.tString, null, codes);
+		super(TType.tString, codes);
 	}
 
 	@Override

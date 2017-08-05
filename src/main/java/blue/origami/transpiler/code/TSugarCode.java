@@ -5,13 +5,13 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TSugarCode extends TypedCode0 {
+public class TSugarCode extends CommonCode {
 
 	public TSugarCode() {
 		super(TType.tUntyped);
 	}
 
-	protected TCode[] args(TCode... args) {
+	protected TCode[] makeArgs(TCode... args) {
 		return args;
 	}
 
@@ -28,7 +28,6 @@ public class TSugarCode extends TypedCode0 {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		this.asType(env, TType.tUntyped).emitCode(env, sec);
-
 	}
 
 }

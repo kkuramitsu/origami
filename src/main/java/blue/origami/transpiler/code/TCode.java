@@ -17,6 +17,12 @@ public interface TCode extends TCodeAPI, Iterable<TCode> {
 		return this;
 	}
 
+	public TCode setSource(Tree<?> t);
+
+	public Tree<?> getSource();
+
+	public TCode[] args();
+
 	public TType getType();
 
 	public Template getTemplate(TEnv env);
@@ -25,18 +31,46 @@ public interface TCode extends TCodeAPI, Iterable<TCode> {
 
 	public void emitCode(TEnv env, TCodeSection sec);
 
+	@Override
+	public default Iterator<TCode> iterator() {
+		return TCodeAPI.super.iterator();
+	}
+
 }
 
 interface TCodeAPI {
 
 	public TCode self();
 
-	public default TCode setSourcePosition(Tree<?> t) {
-		return self();
-	}
-
 	public default boolean isEmpty() {
 		return false;
+	}
+
+	public default int size() {
+		return self().args().length;
+	}
+
+	public default Iterator<TCode> iterator() {
+		class CodeIterN implements Iterator<TCode> {
+			int loc;
+			protected TCode[] args;
+
+			CodeIterN(TCode... args) {
+				this.args = args;
+				this.loc = 0;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return this.loc < this.args.length;
+			}
+
+			@Override
+			public TCode next() {
+				return this.args[this.loc++];
+			}
+		}
+		return new CodeIterN(this.self().args());
 	}
 
 	public default boolean isUntyped() {
@@ -74,7 +108,7 @@ interface TCodeAPI {
 		return new TCastCode(t, tt, self);
 	}
 
-	public default TCode stillUntyped() {
+	public default TCode StillUntyped() {
 		return self();
 	}
 
@@ -107,30 +141,117 @@ interface TCodeAPI {
 	}
 }
 
-abstract interface Code0 extends TCode {
+abstract class CommonCode implements TCode {
+	Tree<?> at;
+	TType typed;
+	Template template;
+
+	protected CommonCode(TType t) {
+		this.at = null;
+		this.typed = t;
+		this.template = null;
+	}
+
+	protected CommonCode() {
+		this(TType.tUntyped);
+	}
+
 	@Override
-	public default Iterator<TCode> iterator() {
-		return new CodeIter0();
+	public Tree<?> getSource() {
+		if (this.at == null) {
+			for (TCode c : this.args()) {
+				Tree<?> at = c.getSource();
+				if (at != null) {
+					return at;
+				}
+			}
+		}
+		return this.at;
 	}
 
-	static class CodeIter0 implements Iterator<TCode> {
-		@Override
-		public boolean hasNext() {
-			return false;
-		}
+	@Override
+	public TCode setSource(Tree<?> t) {
+		this.at = t;
+		return this;
+	}
 
-		@Override
-		public TCode next() {
-			return null;
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public TCode[] args() {
+		return TArrays.emptyCodes;
+	}
+
+	// @Override
+	// public TCode asType(TEnv env, TType t) {
+	// if (this.typed == null) {
+	// for (TCode c : this.args()) {
+	// c.asType(env, t);
+	// }
+	// }
+	// return super.asType(env, t);
+	// }
+
+	public void setType(TType typed) {
+		assert (typed != null);
+		this.typed = typed;
+	}
+
+	@Override
+	public TType getType() {
+		if (this.typed == null) {
+			TCode[] a = this.args();
+			if (a.length == 0) {
+				return TType.tVoid;
+			}
+			return a[a.length - 1].getType();
+		}
+		return this.typed;
+	}
+
+	public void setTemplate(Template tp) {
+		this.template = tp;
+	}
+
+	@Override
+	public Template getTemplate(TEnv env) {
+		return this.template;
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		TCode[] a = this.args();
+		switch (a.length) {
+		case 0:
+			return this.getTemplate(env).format();
+		case 1:
+			return this.getTemplate(env).format(a[0].strOut(env));
+		case 2:
+			return this.getTemplate(env).format(a[0].strOut(env), a[1].strOut(env));
+		default:
+			Object[] p = new Object[a.length];
+			for (int i = 0; i < a.length; i++) {
+				p[i] = a[i].strOut(env);
+			}
+			return this.getTemplate(env).format(p);
 		}
 	}
+
 }
 
-abstract class Code1 implements TCode {
+abstract class Code1 extends CommonCode {
 	protected TCode inner;
 
-	Code1(TCode inner) {
+	Code1(TType t, TCode inner) {
+		super(t);
 		this.inner = inner;
+	}
+
+	Code1(TCode inner) {
+		this(TType.tUntyped, inner);
 	}
 
 	public TCode getInner() {
@@ -138,186 +259,37 @@ abstract class Code1 implements TCode {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return this.inner.isEmpty();
+	public int size() {
+		return 1;
 	}
 
 	@Override
-	public TType getType() {
-		return this.inner.getType();
-	}
-
-	@Override
-	public TCode setSourcePosition(Tree<?> t) {
-		this.inner.setSourcePosition(t);
-		return this;
-	}
-
-	@Override
-	public TCode asType(TEnv env, TType t) {
-		this.inner = this.inner.asType(env, t);
-		return this;
-	}
-
-	@Override
-	public Iterator<TCode> iterator() {
-		return new CodeIterN(this.inner);
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.inner.strOut(env));
+	public TCode[] args() {
+		return new TCode[] { this.inner };
 	}
 
 }
 
-abstract class CodeN implements TCode {
+abstract class CodeN extends CommonCode {
 	protected TCode[] args;
 
-	public CodeN(TCode... args) {
+	public CodeN(TType t, TCode... args) {
+		super(t);
 		this.args = args;
 	}
 
+	public CodeN(TCode... args) {
+		this(TType.tUntyped, args);
+	}
+
+	@Override
 	public int size() {
 		return this.args.length;
 	}
 
+	@Override
 	public TCode[] args() {
 		return this.args;
-	}
-
-	@Override
-	public Iterator<TCode> iterator() {
-		return new CodeIterN(this.args);
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		switch (this.args.length) {
-		case 0:
-			return this.getTemplate(env).format();
-		case 1:
-			return this.getTemplate(env).format(this.args[0].strOut(env));
-		case 2:
-			return this.getTemplate(env).format(this.args[0].strOut(env), this.args[1].strOut(env));
-		default:
-			Object[] p = new String[this.args.length];
-			for (int i = 0; i < this.args.length; i++) {
-				p[i] = this.args[i].strOut(env);
-			}
-			return this.getTemplate(env).format(p);
-		}
-	}
-}
-
-class CodeIterN implements Iterator<TCode> {
-	int loc;
-	protected TCode[] args;
-
-	CodeIterN(TCode... args) {
-		this.args = args;
-		this.loc = 0;
-	}
-
-	@Override
-	public boolean hasNext() {
-		return this.loc < this.args.length;
-	}
-
-	@Override
-	public TCode next() {
-		return this.args[this.loc++];
-	}
-}
-
-abstract class TypedCode0 implements Code0 {
-
-	TypedCode0(TType typed) {
-		this.setType(typed);
-	}
-
-	private TType typed;
-
-	@Override
-	public TType getType() {
-		return this.typed;
-	}
-
-	public void setType(TType typed) {
-		assert (typed != null);
-		this.typed = typed;
-	}
-
-}
-
-abstract class TypedCode1 extends Code1 {
-	private TType typed;
-	protected Template template;
-	protected TCode inner;
-
-	public TypedCode1(TType ret, Template template, TCode inner) {
-		super(inner);
-		this.setType(ret);
-		this.template = template;
-		this.inner = inner;
-	}
-
-	public TypedCode1(TCode inner) {
-		this(TType.tUntyped, Template.Null, inner);
-	}
-
-	@Override
-	public TType getType() {
-		return this.typed;
-	}
-
-	public void setType(TType typed) {
-		assert (typed != null);
-		this.typed = typed;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return this.template;
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.inner.strOut(env));
-	}
-}
-
-abstract class TypedCodeN extends CodeN {
-	private TType typed;
-	protected Template template;
-
-	TypedCodeN(TType t, Template tp, TCode... args) {
-		super(args);
-		this.setType(t);
-		this.setTemplate(tp);
-	}
-
-	TypedCodeN(TCode... args) {
-		this(TType.tUntyped, Template.Null, args);
-	}
-
-	@Override
-	public TType getType() {
-		return this.typed;
-	}
-
-	public void setType(TType typed) {
-		assert (typed != null);
-		this.typed = typed;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return this.template;
-	}
-
-	public void setTemplate(Template tp) {
-		this.template = tp;
 	}
 
 }

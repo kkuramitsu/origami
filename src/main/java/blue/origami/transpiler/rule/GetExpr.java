@@ -32,7 +32,7 @@ public class GetExpr implements ParseRule, OSymbols {
 		}
 
 		public TCode[] args() {
-			return this.args(this.recv);
+			return this.makeArgs(this.recv);
 		}
 
 		@Override

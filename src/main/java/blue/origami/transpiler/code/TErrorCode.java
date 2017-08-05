@@ -3,6 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
@@ -11,15 +12,14 @@ import blue.origami.transpiler.Template;
 import blue.origami.util.OLog;
 
 @SuppressWarnings("serial")
-public class TErrorCode extends RuntimeException implements Code0 {
+public class TErrorCode extends RuntimeException implements TCode {
 
 	private final TLog log;
-	private TType ret;
+	private final CommonCode dummy = new TDeclCode();
 
 	public TErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(s, OLog.Error, fmt, args);
-		this.ret = TType.tVoid;
 	}
 
 	public TErrorCode(LocaleFormat fmt, Object... args) {
@@ -28,8 +28,7 @@ public class TErrorCode extends RuntimeException implements Code0 {
 
 	public TErrorCode(TCode at, LocaleFormat fmt, Object... args) {
 		super();
-		this.log = new TLog(null, OLog.Error, fmt, args);
-		this.ret = TType.tVoid;
+		this.log = new TLog(at.getSource(), OLog.Error, fmt, args);
 	}
 
 	public TErrorCode(SourcePosition s, String fmt, Object... args) {
@@ -40,32 +39,34 @@ public class TErrorCode extends RuntimeException implements Code0 {
 		this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
 	}
 
-	@Override
-	public TCode self() {
-		return this;
-	}
-
 	public TLog getLog() {
 		return this.log;
 	}
 
 	@Override
+	public TCode[] args() {
+		return TArrays.emptyCodes;
+	}
+
+	@Override
 	public TType getType() {
-		return this.ret;
+		return this.dummy.getType();
 	}
 
 	@Override
 	public TCode asType(TEnv env, TType t) {
-		this.ret = t;
+		this.dummy.setType(t);
 		return this;
 	}
 
-	public SourcePosition getSourcePosition() {
-		return this.log.s;
+	@Override
+	public Tree<?> getSource() {
+		return this.dummy.getSource();
 	}
 
 	@Override
-	public TCode setSourcePosition(Tree<?> t) {
+	public TCode setSource(Tree<?> t) {
+		this.dummy.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;
 	}

@@ -33,7 +33,7 @@ public class IndexExpr implements ParseRule, OSymbols {
 		}
 
 		public TCode[] args() {
-			return this.args(this.recv, this.index);
+			return this.makeArgs(this.recv, this.index);
 		}
 
 		@Override

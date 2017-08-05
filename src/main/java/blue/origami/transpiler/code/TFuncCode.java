@@ -7,9 +7,8 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunctionContext;
 import blue.origami.transpiler.TType;
-import blue.origami.transpiler.Template;
 
-public class TFuncCode extends TypedCode1 {
+public class TFuncCode extends Code1 {
 
 	int startIndex;
 	String[] paramNames;
@@ -72,11 +71,6 @@ public class TFuncCode extends TypedCode1 {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return false;
-	}
-
-	@Override
 	public TCode asType(TEnv env, TType t) {
 		if (this.isUntyped()) {
 			TEnv lenv = env.newEnv();
@@ -104,12 +98,6 @@ public class TFuncCode extends TypedCode1 {
 			// this.fieldMap, this.self());
 		}
 		return this.asExactType(env, t);
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

@@ -44,7 +44,7 @@ public class AssignExpr implements ParseRule, OSymbols {
 		}
 
 		public TCode[] args() {
-			return this.args(this.recv, this.right);
+			return this.makeArgs(this.recv, this.right);
 		}
 
 		@Override
@@ -83,7 +83,7 @@ public class AssignExpr implements ParseRule, OSymbols {
 		}
 
 		public TCode[] args() {
-			return this.args(this.recv, this.index, this.right);
+			return this.makeArgs(this.recv, this.index, this.right);
 		}
 
 		@Override

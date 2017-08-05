@@ -19,11 +19,11 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	@Override
-	public boolean isGenerated() {
+	public boolean isExpired() {
 		return this.paramNames == null;
 	}
 
-	void setGenerated() {
+	void setExpired() {
 		this.paramNames = null;
 		this.body = null;
 	}
@@ -82,7 +82,7 @@ public class TFunction extends Template implements TNameRef {
 		Transpiler tr = env.getTranspiler();
 		Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
 				this.body);
-		this.setGenerated();
+		this.setExpired();
 		// env.add(this.name, tp); already added in defineFunction
 		return tp;
 	}
@@ -100,16 +100,16 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public boolean isNameRef(TEnv env) {
-		return this.isGenerated();
+		return this.isExpired();
 	}
 
 	@Override
 	public TCode nameCode(TEnv env, String name) {
-		if (!this.isGenerated()) {
+		if (!this.isExpired()) {
 			Transpiler tr = env.getTranspiler();
 			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
 					this.body);
-			this.setGenerated();
+			this.setExpired();
 			return new TFuncRefCode(name, tp);
 		}
 		return new TFuncRefCode(name, this);

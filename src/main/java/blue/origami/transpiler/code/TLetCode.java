@@ -2,19 +2,17 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 
-public class TLetCode extends TypedCode0 {
+public class TLetCode extends Code1 {
 	private TType decltype;
 	private String name;
-	private TCode expr;
 
 	public TLetCode(String name, TType type, TCode expr) {
-		super(TType.tVoid);
+		super(expr);
 		this.name = name;
 		this.decltype = type;
-		this.expr = expr;
 	}
 
 	public String getName() {
@@ -25,10 +23,6 @@ public class TLetCode extends TypedCode0 {
 		return this.decltype;
 	}
 
-	public TCode getInner() {
-		return this.expr;
-	}
-
 	@Override
 	public Template getTemplate(TEnv env) {
 		return env.getTemplate("let", "%2$s=%3$s");
@@ -36,7 +30,7 @@ public class TLetCode extends TypedCode0 {
 
 	@Override
 	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.decltype.strOut(env), this.name, this.expr.strOut(env));
+		return this.getTemplate(env).format(this.decltype.strOut(env), this.name, this.getInner().strOut(env));
 	}
 
 	@Override

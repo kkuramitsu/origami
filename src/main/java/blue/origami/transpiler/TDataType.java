@@ -77,6 +77,48 @@ public class TDataType extends TType implements StringCombinator {
 		}
 	}
 
+	static class AtomContent extends Content {
+		final TType innerType;
+
+		AtomContent(TType innerType) {
+			this.innerType = innerType;
+		}
+
+		@Override
+		TType getInnerType() {
+			return this.innerType;
+		}
+
+		@Override
+		public TCode getDefaultValue() {
+			return this.innerType.getDefaultValue();
+		}
+
+		@Override
+		public void strOut(StringBuilder sb) {
+			StringCombinator.append(sb, this.innerType);
+		}
+
+		@Override
+		public boolean isVarType() {
+			return this.innerType.isVarType();
+		}
+
+		@Override
+		public Content dup(TVarDomain dom) {
+			if (this.isVarType()) {
+				return new AtomContent(this.innerType.dup(dom));
+			}
+			return this;
+		}
+
+		@Override
+		public boolean acceptType(TDataType self, TDataType dt) {
+			return self.getInnerType().acceptType(dt.getInnerType());
+		}
+
+	}
+
 	static class ArrayContent extends Content {
 		final TType innerType;
 
@@ -415,6 +457,10 @@ public class TDataType extends TType implements StringCombinator {
 
 	/* TTypeApi */
 
+	public boolean isAtomType() {
+		return this.content instanceof AtomContent;
+	}
+
 	@Override
 	public boolean isArrayType() {
 		return this.content instanceof ArrayContent;
@@ -458,15 +504,24 @@ public class TDataType extends TType implements StringCombinator {
 	public boolean acceptType(TType t) {
 		if (t instanceof TDataType) {
 			TDataType dt = (TDataType) t;
+			if (dt.isAtomType()) {
+				return this.acceptType(dt.getInnerType());
+			}
 			return this.content.acceptType(this, dt);
+		}
+		if (t.isSpecific()) {
+			if (this.content instanceof EmptyContent) {
+				this.content = new AtomContent(t);
+				return true;
+			}
+			return false;
 		}
 		return false;
 	}
 
 	@Override
 	public String strOut(TEnv env) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.content.toString();
 	}
 
 }

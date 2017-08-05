@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
 
-public class TTypeCode extends TypedCode0 {
+public class TTypeCode extends CommonCode {
 	private TType value;
 
 	public TTypeCode(TType value) {
@@ -20,12 +20,7 @@ public class TTypeCode extends TypedCode0 {
 
 	@Override
 	public Template getTemplate(TEnv env) {
-		return env.get(this.value.toString(), Template.class);
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.value);
+		return env.getTemplate(this.value.toString(), "%s");
 	}
 
 	@Override

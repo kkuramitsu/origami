@@ -5,7 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
 
-public class TBoolCode extends TypedCode0 implements TValueCode {
+public class TBoolCode extends CommonCode implements TValueCode {
 	private boolean value;
 
 	public TBoolCode(boolean value) {
@@ -21,11 +21,6 @@ public class TBoolCode extends TypedCode0 implements TValueCode {
 	@Override
 	public Template getTemplate(TEnv env) {
 		return env.get(this.value ? "true:Bool" : "false:Bool", Template.class);
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.value);
 	}
 
 	@Override

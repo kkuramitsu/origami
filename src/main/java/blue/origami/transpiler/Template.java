@@ -46,8 +46,8 @@ public abstract class Template {
 
 	public abstract String getDefined();
 
-	public boolean isGenerated() {
-		return true;
+	public boolean isExpired() {
+		return false;
 	}
 
 	public Template update(TEnv env, TCode[] params) {
@@ -71,6 +71,10 @@ public abstract class Template {
 		sb.append(":");
 		sb.append(this.getReturnType());
 		return sb.toString();
+	}
+
+	public TFuncType getFuncType() {
+		return (TFuncType) TType.tFunc(this.getReturnType(), this.getParamTypes());
 	}
 
 }
