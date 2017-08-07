@@ -1,13 +1,13 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDoubleCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DoubleCode;
 
 public class DoubleExpr extends NumberExpr implements ParseRule {
 
 	@Override
-	protected TCode newCode(Number value) {
-		return new TDoubleCode(value.doubleValue());
+	protected Code newCode(Number value) {
+		return new DoubleCode(value.doubleValue());
 	}
 
 }

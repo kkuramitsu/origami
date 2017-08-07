@@ -1,6 +1,6 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 import blue.origami.util.ODebug;
 
 public interface TNameHint {
@@ -11,10 +11,10 @@ public interface TNameHint {
 
 	public Ty getType();
 
-	public TCode getDefaultValue();
+	public Code getDefaultValue();
 
 	public static TNameHint newNameHint(Ty t) {
-		TCode v = t.getDefaultValue();
+		Code v = t.getDefaultValue();
 		return new SimpleNameHint(t, v);
 	}
 
@@ -73,9 +73,9 @@ public interface TNameHint {
 
 class SimpleNameHint implements TNameHint {
 	Ty ty;
-	TCode defined;
+	Code defined;
 
-	SimpleNameHint(Ty ty, TCode def) {
+	SimpleNameHint(Ty ty, Code def) {
 		this.ty = ty;
 		this.defined = def;
 	}
@@ -86,7 +86,7 @@ class SimpleNameHint implements TNameHint {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
+	public Code getDefaultValue() {
 		return this.defined;
 	}
 }

@@ -1,8 +1,8 @@
 package blue.origami.transpiler;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TFuncRefCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TFunction extends Template implements TNameRef {
@@ -42,7 +42,7 @@ public class TFunction extends Template implements TNameRef {
 		return this.paramNames;
 	}
 
-	public TCode getCode(TEnv env) {
+	public Code getCode(TEnv env) {
 		return env.parseCode(env, this.body).asType(env, this.returnType);
 	}
 
@@ -53,7 +53,7 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	@Override
-	public Template update(TEnv env, TCode[] params) {
+	public Template update(TEnv env, Code[] params) {
 		Ty[] p = this.getParamTypes();
 		if (Ty.hasUntyped(p)) {
 			p = p.clone();
@@ -104,15 +104,15 @@ public class TFunction extends Template implements TNameRef {
 	}
 
 	@Override
-	public TCode nameCode(TEnv env, String name) {
+	public Code nameCode(TEnv env, String name) {
 		if (!this.isExpired()) {
 			Transpiler tr = env.getTranspiler();
 			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
 					this.body);
 			this.setExpired();
-			return new TFuncRefCode(name, tp);
+			return new FuncRefCode(name, tp);
 		}
-		return new TFuncRefCode(name, this);
+		return new FuncRefCode(name, this);
 	}
 
 }

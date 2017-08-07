@@ -9,24 +9,24 @@ import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.code.TCastCode.TConvTemplate;
+import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.util.StringCombinator;
 
-public interface TCode extends TCodeAPI, Iterable<TCode>, StringCombinator {
+public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
 	@Override
-	public default TCode self() {
+	public default Code self() {
 		return this;
 	}
 
-	public TCode setSource(Tree<?> t);
+	public Code setSource(Tree<?> t);
 
 	public Tree<?> getSource();
 
-	public TCode[] args();
+	public Code[] args();
 
 	@Override
-	public default Iterator<TCode> iterator() {
-		return TCodeAPI.super.iterator();
+	public default Iterator<Code> iterator() {
+		return CodeAPI.super.iterator();
 	}
 
 	public Ty getType();
@@ -39,9 +39,9 @@ public interface TCode extends TCodeAPI, Iterable<TCode>, StringCombinator {
 
 }
 
-interface TCodeAPI {
+interface CodeAPI {
 
-	public TCode self();
+	public Code self();
 
 	public default boolean isEmpty() {
 		return false;
@@ -51,12 +51,12 @@ interface TCodeAPI {
 		return self().args().length;
 	}
 
-	public default Iterator<TCode> iterator() {
-		class CodeIterN implements Iterator<TCode> {
+	public default Iterator<Code> iterator() {
+		class CodeIterN implements Iterator<Code> {
 			int loc;
-			protected TCode[] args;
+			protected Code[] args;
 
-			CodeIterN(TCode... args) {
+			CodeIterN(Code... args) {
 				this.args = args;
 				this.loc = 0;
 			}
@@ -67,7 +67,7 @@ interface TCodeAPI {
 			}
 
 			@Override
-			public TCode next() {
+			public Code next() {
 				return this.args[this.loc++];
 			}
 		}
@@ -86,18 +86,18 @@ interface TCodeAPI {
 		if (this.isUntyped()) {
 			count++;
 		}
-		for (TCode c : self()) {
+		for (Code c : self()) {
 			count = c.countUntyped(count);
 		}
 		return count;
 	}
 
-	public default TCode asType(TEnv env, Ty t) {
+	public default Code asType(TEnv env, Ty t) {
 		return asExactType(env, t);
 	}
 
-	public default TCode asExactType(TEnv env, Ty t) {
-		TCode self = self();
+	public default Code asExactType(TEnv env, Ty t) {
+		Code self = self();
 		Ty f = self.getType();
 		if (self.isUntyped() || t.accept(self)) {
 			return self;
@@ -106,10 +106,10 @@ interface TCodeAPI {
 		if (tt == TConvTemplate.Stupid) {
 
 		}
-		return new TCastCode(t, tt, self);
+		return new CastCode(t, tt, self);
 	}
 
-	public default TCode StillUntyped() {
+	public default Code StillUntyped() {
 		return self();
 	}
 
@@ -117,7 +117,7 @@ interface TCodeAPI {
 		return self().getType();
 	}
 
-	public default TCode goingOut() {
+	public default Code goingOut() {
 		Ty t = self().getType();
 		if (t instanceof DataTy) {
 			// t.asLocal();
@@ -129,20 +129,20 @@ interface TCodeAPI {
 		return false;
 	}
 
-	public default TCode addReturn() {
-		return new TReturnCode(self());
+	public default Code addReturn() {
+		return new ReturnCode(self());
 	}
 
-	public default TCode applyCode(TEnv env, TCode... params) {
-		return new TApplyCode(TArrays.join(self(), params));
+	public default Code applyCode(TEnv env, Code... params) {
+		return new ApplyCode(TArrays.join(self(), params));
 	}
 
-	public default TCode applyMethodCode(TEnv env, String name, TCode... params) {
-		return new TExprCode(name, TArrays.join(self(), params));
+	public default Code applyMethodCode(TEnv env, String name, Code... params) {
+		return new ExprCode(name, TArrays.join(self(), params));
 	}
 }
 
-abstract class CommonCode implements TCode {
+abstract class CommonCode implements Code {
 	Tree<?> at;
 	Ty typed;
 	Template template;
@@ -160,7 +160,7 @@ abstract class CommonCode implements TCode {
 	@Override
 	public Tree<?> getSource() {
 		if (this.at == null) {
-			for (TCode c : this.args()) {
+			for (Code c : this.args()) {
 				Tree<?> at = c.getSource();
 				if (at != null) {
 					return at;
@@ -171,7 +171,7 @@ abstract class CommonCode implements TCode {
 	}
 
 	@Override
-	public TCode setSource(Tree<?> t) {
+	public Code setSource(Tree<?> t) {
 		this.at = t;
 		return this;
 	}
@@ -182,7 +182,7 @@ abstract class CommonCode implements TCode {
 	}
 
 	@Override
-	public TCode[] args() {
+	public Code[] args() {
 		return TArrays.emptyCodes;
 	}
 
@@ -206,7 +206,7 @@ abstract class CommonCode implements TCode {
 	@Override
 	public Ty getType() {
 		if (this.typed == AutoType) {
-			TCode[] a = this.args();
+			Code[] a = this.args();
 			if (a.length == 0) {
 				return Ty.tVoid;
 			}
@@ -226,7 +226,7 @@ abstract class CommonCode implements TCode {
 
 	@Override
 	public String strOut(TEnv env) {
-		TCode[] a = this.args();
+		Code[] a = this.args();
 		switch (a.length) {
 		case 0:
 			return this.getTemplate(env).format();
@@ -246,18 +246,18 @@ abstract class CommonCode implements TCode {
 }
 
 abstract class Code1 extends CommonCode {
-	protected TCode inner;
+	protected Code inner;
 
-	Code1(Ty t, TCode inner) {
+	Code1(Ty t, Code inner) {
 		super(t);
 		this.inner = inner;
 	}
 
-	Code1(TCode inner) {
+	Code1(Code inner) {
 		this(Ty.tUntyped, inner);
 	}
 
-	public TCode getInner() {
+	public Code getInner() {
 		return this.inner;
 	}
 
@@ -267,21 +267,21 @@ abstract class Code1 extends CommonCode {
 	}
 
 	@Override
-	public TCode[] args() {
-		return new TCode[] { this.inner };
+	public Code[] args() {
+		return new Code[] { this.inner };
 	}
 
 }
 
 abstract class CodeN extends CommonCode {
-	protected TCode[] args;
+	protected Code[] args;
 
-	public CodeN(Ty t, TCode... args) {
+	public CodeN(Ty t, Code... args) {
 		super(t);
 		this.args = args;
 	}
 
-	public CodeN(TCode... args) {
+	public CodeN(Code... args) {
 		this(Ty.tUntyped, args);
 	}
 
@@ -291,7 +291,7 @@ abstract class CodeN extends CommonCode {
 	}
 
 	@Override
-	public TCode[] args() {
+	public Code[] args() {
 		return this.args;
 	}
 

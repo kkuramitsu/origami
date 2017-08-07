@@ -3,9 +3,9 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDataRangeCode;
-import blue.origami.transpiler.code.TIntCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DataRangeCode;
+import blue.origami.transpiler.code.IntCode;
 
 public class RangeExpr implements ParseRule, OSymbols {
 	boolean inclusive;
@@ -19,13 +19,13 @@ public class RangeExpr implements ParseRule, OSymbols {
 	}
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
-		TCode left = env.parseCode(env, t.get(_left));
-		TCode right = env.parseCode(env, t.get(_right));
+	public Code apply(TEnv env, Tree<?> t) {
+		Code left = env.parseCode(env, t.get(_left));
+		Code right = env.parseCode(env, t.get(_right));
 		if (!this.inclusive) {
-			right = right.applyMethodCode(env, "+", new TIntCode(1));
+			right = right.applyMethodCode(env, "+", new IntCode(1));
 		}
-		return new TDataRangeCode(left, right);
+		return new DataRangeCode(left, right);
 	}
 
 }

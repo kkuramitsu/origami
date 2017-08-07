@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDataCode;
-import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.StringCombinator;
 
 public class DataTy extends Ty implements StringCombinator {
@@ -33,20 +33,20 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		public void checkArray(Tree<?> at, Ty t) {
-			throw new TErrorCode(at, TFmt.unsupported_operator);
+			throw new ErrorCode(at, TFmt.unsupported_operator);
 		}
 
 		public void checkDict(Tree<?> at, Ty t) {
-			throw new TErrorCode(at, TFmt.unsupported_operator);
+			throw new ErrorCode(at, TFmt.unsupported_operator);
 		}
 
 		public void checkField(Tree<?> at, String name, boolean ext) {
-			throw new TErrorCode(at, TFmt.unsupported_operator);
+			throw new ErrorCode(at, TFmt.unsupported_operator);
 		}
 
 		public abstract boolean acceptType(DataTy self, DataTy dt);
 
-		public TCode getDefaultValue() {
+		public Code getDefaultValue() {
 			return null;
 		}
 
@@ -90,7 +90,7 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public TCode getDefaultValue() {
+		public Code getDefaultValue() {
 			return this.innerType.getDefaultValue();
 		}
 
@@ -140,8 +140,8 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public TCode getDefaultValue() {
-			return new TDataCode(DataTy.this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tMArray(this.innerType));
+		public Code getDefaultValue() {
+			return new DataCode(DataTy.this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tMArray(this.innerType));
 		}
 
 		@Override
@@ -274,7 +274,7 @@ public class DataTy extends Ty implements StringCombinator {
 				if (ext && this.growing) {
 					this.addField(f);
 				} else {
-					throw new TErrorCode(at, TFmt.undefined_name__YY0__YY1, name, this);
+					throw new ErrorCode(at, TFmt.undefined_name__YY0__YY1, name, this);
 				}
 			}
 		}
@@ -361,7 +361,7 @@ public class DataTy extends Ty implements StringCombinator {
 
 	public void checkSetIndex(Tree<?> at, Ty t) {
 		if (this.isImmutable) {
-			throw new TErrorCode(TFmt.immutable_data);
+			throw new ErrorCode(TFmt.immutable_data);
 		} else {
 			this.checkGetIndex(at, t);
 			this.isMutable = true;
@@ -379,7 +379,7 @@ public class DataTy extends Ty implements StringCombinator {
 
 	public void checkSetDict(Tree<?> at, Ty t) {
 		if (this.isImmutable) {
-			throw new TErrorCode(TFmt.immutable_data);
+			throw new ErrorCode(TFmt.immutable_data);
 		} else {
 			this.checkGetDict(at, t);
 			this.isMutable = true;
@@ -397,7 +397,7 @@ public class DataTy extends Ty implements StringCombinator {
 
 	public void checkSetField(Tree<?> at, String name) {
 		if (this.isImmutable) {
-			throw new TErrorCode(TFmt.immutable_data);
+			throw new ErrorCode(TFmt.immutable_data);
 		} else {
 			if (this.content == Variant) {
 				this.content = new Record(true, name);
@@ -429,7 +429,7 @@ public class DataTy extends Ty implements StringCombinator {
 	// }
 
 	@Override
-	public TCode getDefaultValue() {
+	public Code getDefaultValue() {
 		return this.content.getDefaultValue();
 	}
 

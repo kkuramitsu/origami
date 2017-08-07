@@ -1,6 +1,6 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public abstract class Template {
 	public final static Template Null = null;
@@ -50,7 +50,7 @@ public abstract class Template {
 		return false;
 	}
 
-	public Template update(TEnv env, TCode[] params) {
+	public Template update(TEnv env, Code[] params) {
 		return this;
 	}
 

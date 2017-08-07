@@ -4,19 +4,19 @@ import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDeclCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DeclCode;
 
 public class AssumeDecl implements ParseRule, OSymbols {
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, Tree<?> t) {
 		for (Tree<?> sub : t.get(_body)) {
 			Ty type = env.parseType(env, sub.get(_type), null);
 			String[] names = this.parseNames(sub.get(_name));
 			env.addTypeHint(env, names, type);
 		}
-		return new TDeclCode();
+		return new DeclCode();
 	}
 
 	final static String[] emptyNames = new String[0];

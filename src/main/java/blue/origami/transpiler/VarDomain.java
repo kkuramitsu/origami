@@ -1,6 +1,6 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TCastCode;
+import blue.origami.transpiler.code.CastCode;
 
 public class VarDomain {
 	VarTy[] dom = new VarTy[4];
@@ -27,10 +27,10 @@ public class VarDomain {
 			}
 			Ty t = this.dom[i].realTy();
 			if (t.isUntyped()) {
-				mapCost += TCastCode.STUPID;
+				mapCost += CastCode.STUPID;
 			}
 			if (t == Ty.tBool || t == Ty.tInt || t == Ty.tFloat) {
-				mapCost += TCastCode.CAST;
+				mapCost += CastCode.CAST;
 			}
 		}
 		return mapCost;

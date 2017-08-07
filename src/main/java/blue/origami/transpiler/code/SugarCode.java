@@ -5,33 +5,35 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
 
-public class TTypeCode extends CommonCode {
-	private Ty value;
+public class SugarCode extends CommonCode {
 
-	public TTypeCode(Ty value) {
-		super(Ty.tVoid);
-		this.value = value;
+	public SugarCode() {
+		super(Ty.tUntyped);
 	}
 
-	public Ty getTypeValue() {
-		return this.value;
+	protected Code[] makeArgs(Code... args) {
+		return args;
 	}
 
 	@Override
 	public Template getTemplate(TEnv env) {
-		return env.getTemplate(this.value.toString(), "%s");
+		return this.asType(env, Ty.tUntyped).getTemplate(env);
+	}
+
+	@Override
+	public String strOut(TEnv env) {
+		return this.asType(env, Ty.tUntyped).strOut(env);
 	}
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		ODebug.TODO(this);
+		this.asType(env, Ty.tUntyped).emitCode(env, sec);
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.value);
+		ODebug.TODO();
 	}
 
 }

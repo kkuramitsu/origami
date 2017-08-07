@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.TEnv;
 import blue.origami.util.StringCombinator;
 
-public interface TValueCode extends TCode {
+public interface ValueCode extends Code {
 	public Object getValue();
 
 	@Override
@@ -16,11 +16,11 @@ public interface TValueCode extends TCode {
 		StringCombinator.appendQuoted(sb, this.getValue());
 	}
 
-	public static TCode[] values(String... values) {
-		TCode[] v = new TCode[values.length];
+	public static Code[] values(String... values) {
+		Code[] v = new Code[values.length];
 		int c = 0;
 		for (String s : values) {
-			v[c] = new TStringCode(s);
+			v[c] = new StringCode(s);
 			c++;
 		}
 		return v;

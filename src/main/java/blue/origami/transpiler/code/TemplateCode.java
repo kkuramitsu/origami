@@ -8,7 +8,7 @@ import blue.origami.util.StringCombinator;
 
 public class TemplateCode extends CodeN {
 
-	public TemplateCode(TCode... codes) {
+	public TemplateCode(Code... codes) {
 		super(Ty.tString, codes);
 	}
 

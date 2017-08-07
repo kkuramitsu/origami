@@ -8,17 +8,17 @@ import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class TDataCode extends CodeN {
+public class DataCode extends CodeN {
 	protected String[] names;
 	boolean isMutable = false;
 
-	public TDataCode(boolean isMutable, String[] names, TCode[] values) {
+	public DataCode(boolean isMutable, String[] names, Code[] values) {
 		super(values);
 		this.names = names;
 		this.isMutable = isMutable;
 	}
 
-	public TDataCode(DataTy dt) { // DefaultValue
+	public DataCode(DataTy dt) { // DefaultValue
 		super(dt, TArrays.emptyCodes);
 		this.names = TArrays.emptyNames;
 		this.isMutable = !dt.isImmutable();
@@ -33,24 +33,24 @@ public class TDataCode extends CodeN {
 	}
 
 	public boolean isArray() {
-		return this instanceof TDataArrayCode;
+		return this instanceof DataArrayCode;
 	}
 
 	public boolean isRange() {
-		return this instanceof TDataRangeCode;
+		return this instanceof DataRangeCode;
 	}
 
 	public boolean isDict() {
-		return this instanceof TDataDictCode;
+		return this instanceof DataDictCode;
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			DataTy dt = Ty.tData(this.names).asLocal();
 			for (int i = 0; i < this.args.length; i++) {
 				String key = this.names[i];
-				TCode value = this.args[i];
+				Code value = this.args[i];
 				TNameHint hint = env.findNameHint(env, key);
 				if (hint != null) {
 					value = value.asType(env, hint.getType());

@@ -3,8 +3,8 @@ package blue.origami.transpiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TNameCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
 public class TFunctionContext {
@@ -30,10 +30,10 @@ public class TFunctionContext {
 		return this.varList.size();
 	}
 
-	HashMap<String, TCode> fieldMap = null;
+	HashMap<String, Code> fieldMap = null;
 
-	public HashMap<String, TCode> enterScope(HashMap<String, TCode> fieldMap) {
-		HashMap<String, TCode> backMap = this.fieldMap;
+	public HashMap<String, Code> enterScope(HashMap<String, Code> fieldMap) {
+		HashMap<String, Code> backMap = this.fieldMap;
 		this.fieldMap = fieldMap;
 		for (TVariable v : this.varList) {
 			v.incRef();
@@ -41,8 +41,8 @@ public class TFunctionContext {
 		return backMap;
 	}
 
-	public HashMap<String, TCode> exitScope(HashMap<String, TCode> fieldMap) {
-		HashMap<String, TCode> backMap = this.fieldMap;
+	public HashMap<String, Code> exitScope(HashMap<String, Code> fieldMap) {
+		HashMap<String, Code> backMap = this.fieldMap;
 		this.fieldMap = fieldMap;
 		for (TVariable v : this.varList) {
 			if (v.refLevel > 0) {
@@ -82,13 +82,13 @@ public class TFunctionContext {
 		}
 
 		@Override
-		public TCode nameCode(TEnv env, String name) {
+		public Code nameCode(TEnv env, String name) {
 			// ODebug.trace("capture %s %d", name, this.refLevel);
 			if (this.refLevel > 0 && TFunctionContext.this.fieldMap != null) {
 				TFunctionContext.this.fieldMap.put(this.getName(),
-						new TNameCode(this.getName(), this.type, this.refLevel - 1));
+						new NameCode(this.getName(), this.type, this.refLevel - 1));
 			}
-			return new TNameCode(this.getName(), this.type, this.refLevel);
+			return new NameCode(this.getName(), this.type, this.refLevel);
 		}
 	}
 

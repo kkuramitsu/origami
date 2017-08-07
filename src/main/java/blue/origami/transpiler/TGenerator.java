@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public class TGenerator {
 	protected SourceSection head;
@@ -32,7 +32,7 @@ public class TGenerator {
 		return this.eval.toString();
 	}
 
-	public void emit(TEnv env, TCode code) {
+	public void emit(TEnv env, Code code) {
 		code.emitCode(env, this.eval);
 	}
 
@@ -41,7 +41,7 @@ public class TGenerator {
 		return new TConstTemplate(lname, returnType, template);
 	}
 
-	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, TCode expr) {
+	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
 		this.data.pushIndentLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
 	}
 
@@ -75,7 +75,7 @@ public class TGenerator {
 	}
 
 	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, TCode code) {
+			Ty returnType, Code code) {
 		String params = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");

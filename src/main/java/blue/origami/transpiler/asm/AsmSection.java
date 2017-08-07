@@ -16,24 +16,24 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.code.TApplyCode;
-import blue.origami.transpiler.code.TBoolCode;
-import blue.origami.transpiler.code.TCastCode;
-import blue.origami.transpiler.code.TCastCode.TBoxCode;
-import blue.origami.transpiler.code.TCastCode.TUnboxCode;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDataCode;
-import blue.origami.transpiler.code.TDoubleCode;
-import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.code.TFuncCode;
-import blue.origami.transpiler.code.TFuncRefCode;
-import blue.origami.transpiler.code.TIfCode;
-import blue.origami.transpiler.code.TIntCode;
-import blue.origami.transpiler.code.TLetCode;
-import blue.origami.transpiler.code.TMultiCode;
-import blue.origami.transpiler.code.TNameCode;
-import blue.origami.transpiler.code.TReturnCode;
-import blue.origami.transpiler.code.TStringCode;
+import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CastCode.TBoxCode;
+import blue.origami.transpiler.code.CastCode.TUnboxCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DoubleCode;
+import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.FuncCode;
+import blue.origami.transpiler.code.FuncRefCode;
+import blue.origami.transpiler.code.IfCode;
+import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.ReturnCode;
+import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.util.ODebug;
 
@@ -56,33 +56,33 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void push(TCode t) {
+	public void push(Code t) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushBool(TEnv env, TBoolCode code) {
+	public void pushBool(TEnv env, BoolCode code) {
 		this.mBuilder.push((boolean) code.getValue());
 	}
 
 	@Override
-	public void pushInt(TEnv env, TIntCode code) {
+	public void pushInt(TEnv env, IntCode code) {
 		this.mBuilder.push((int) code.getValue());
 	}
 
 	@Override
-	public void pushDouble(TEnv env, TDoubleCode code) {
+	public void pushDouble(TEnv env, DoubleCode code) {
 		this.mBuilder.push((double) code.getValue());
 	}
 
 	@Override
-	public void pushString(TEnv env, TStringCode code) {
+	public void pushString(TEnv env, StringCode code) {
 		this.mBuilder.push((String) code.getValue());
 	}
 
 	@Override
-	public void pushCast(TEnv env, TCastCode code) {
+	public void pushCast(TEnv env, CastCode code) {
 		Ty f = code.getInner().getType();
 		Ty t = code.getType();
 		Class<?> fc = Asm.toClass(f);
@@ -116,7 +116,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	// I,+,
 	@Override
-	public void pushCall(TEnv env, TCode code) {
+	public void pushCall(TEnv env, Code code) {
 		final Template tp = code.getTemplate(env);
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
@@ -127,7 +127,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.visitTypeInsn(NEW, def[1]);
 			this.mBuilder.visitInsn(DUP);
 		}
-		for (TCode sub : code) {
+		for (Code sub : code) {
 			sub.emitCode(env, this);
 		}
 		String desc = null;
@@ -174,10 +174,10 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 	}
 
-	private void pushCall(TEnv env, TCode code, String ext) {
-		Iterator<TCode> iter = code.iterator();
-		TCode first = iter.next();
-		TCode second = iter.next();
+	private void pushCall(TEnv env, Code code, String ext) {
+		Iterator<Code> iter = code.iterator();
+		Code first = iter.next();
+		Code second = iter.next();
 		switch (ext) {
 		case "band": {
 			Label elseLabel = this.mBuilder.newLabel();
@@ -456,7 +456,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushLet(TEnv env, TLetCode code) {
+	public void pushLet(TEnv env, LetCode code) {
 		this.addVariable(code.getName(), code.getDeclType());
 		Type typeDesc = Asm.ti(this.varStack.varType);
 		code.getInner().emitCode(env, this);
@@ -464,7 +464,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushName(TEnv env, TNameCode code) {
+	public void pushName(TEnv env, NameCode code) {
 		// ODebug.trace("name=%s", code.getName());
 		if (code.getRefLevel() > 0) {
 			this.mBuilder.loadThis();
@@ -477,7 +477,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushIf(TEnv env, TIfCode code) {
+	public void pushIf(TEnv env, IfCode code) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
@@ -498,33 +498,33 @@ public class AsmSection implements TCodeSection, Opcodes {
 		// 1, new Object[] { "java/io/PrintStream" });
 	}
 
-	private void pushIfTrue(TEnv env, TCode cond, Label jump) {
+	private void pushIfTrue(TEnv env, Code cond, Label jump) {
 		cond.emitCode(env, this);
 		this.mBuilder.visitJumpInsn(IFNE, jump);
 	}
 
-	private void pushIfFalse(TEnv env, TCode cond, Label jump) {
+	private void pushIfFalse(TEnv env, Code cond, Label jump) {
 		cond.emitCode(env, this);
 		this.mBuilder.visitJumpInsn(IFEQ, jump);
 	}
 
 	@Override
-	public void pushReturn(TEnv env, TReturnCode code) {
+	public void pushReturn(TEnv env, ReturnCode code) {
 
 	}
 
 	@Override
-	public void pushMulti(TEnv env, TMultiCode code) {
-		for (TCode sub : code) {
+	public void pushMulti(TEnv env, MultiCode code) {
+		for (Code sub : code) {
 			sub.emitCode(env, this);
 		}
 	}
 
-	void pushArray(TEnv env, Type ty, boolean boxing, TCode... subs) {
+	void pushArray(TEnv env, Type ty, boolean boxing, Code... subs) {
 		this.mBuilder.push(subs.length);
 		this.mBuilder.newArray(ty);
 		int c = 0;
-		for (TCode sub : subs) {
+		for (Code sub : subs) {
 			this.mBuilder.dup();
 			this.mBuilder.push(c++);
 			sub.emitCode(env, this);
@@ -561,10 +561,10 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushData(TEnv env, TDataCode code) {
+	public void pushData(TEnv env, DataCode code) {
 		if (code.isRange()) {
 			DataTy dt = (DataTy) code.getType();
-			for (TCode sub : code) {
+			for (Code sub : code) {
 				sub.emitCode(env, this);
 			}
 			String desc = String.format("(II)%s", Type.getDescriptor(Asm.toClass(dt)));
@@ -595,23 +595,23 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 	}
 
-	TCode[] symbols(String... values) {
-		TCode[] v = new TCode[values.length];
+	Code[] symbols(String... values) {
+		Code[] v = new Code[values.length];
 		int c = 0;
 		for (String s : values) {
-			v[c] = new TIntCode(DSymbol.id(s));
+			v[c] = new IntCode(DSymbol.id(s));
 			c++;
 		}
 		return v;
 	}
 
 	@Override
-	public void pushError(TEnv env, TErrorCode code) {
+	public void pushError(TEnv env, ErrorCode code) {
 		env.reportLog(code.getLog());
 	}
 
 	@Override
-	public void pushFuncRef(TEnv env, TFuncRefCode code) {
+	public void pushFuncRef(TEnv env, FuncRefCode code) {
 		Template tp = code.getRef();
 		// ODebug.trace("funcref %s %s", code.getType(), tp);
 		Class<?> c = AsmGenerator.loadFuncRefClass(env, tp);
@@ -622,12 +622,12 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushFuncExpr(TEnv env, TFuncCode code) {
+	public void pushFuncExpr(TEnv env, FuncCode code) {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = AsmGenerator.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(),
 				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
-		TCode[] inits = code.getFieldInitCode();
+		Code[] inits = code.getFieldInitCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();
@@ -642,8 +642,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushApply(TEnv env, TApplyCode code) {
-		for (TCode sub : code) {
+	public void pushApply(TEnv env, ApplyCode code) {
+		for (Code sub : code) {
 			sub.emitCode(env, this);
 		}
 		FuncTy funcType = (FuncTy) code.args()[0].getType();

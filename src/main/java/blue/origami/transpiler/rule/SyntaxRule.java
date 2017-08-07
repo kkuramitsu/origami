@@ -7,7 +7,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.ODebug;
 
 public class SyntaxRule extends LoggerRule implements OSymbols {
@@ -98,7 +98,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 			if (defaultType != null) {
 				ty = defaultType;
 			} else {
-				throw new TErrorCode(param, TFmt.no_typing_hint__YY0, param.getString());
+				throw new ErrorCode(param, TFmt.no_typing_hint__YY0, param.getString());
 			}
 		}
 		return ty;

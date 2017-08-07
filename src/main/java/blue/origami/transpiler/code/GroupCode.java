@@ -5,8 +5,8 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
-public class TGroupCode extends Code1 {
-	TGroupCode(TCode inner) {
+public class GroupCode extends Code1 {
+	GroupCode(Code inner) {
 		super(AutoType, inner);
 	}
 

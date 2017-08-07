@@ -4,8 +4,8 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunction;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDeclCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DeclCode;
 import blue.origami.util.ODebug;
 
 public class FuncDecl extends SyntaxRule implements ParseRule {
@@ -13,7 +13,7 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 	boolean isPublic = true;
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, Tree<?> t) {
 		String name = t.getStringAt(_name, null);
 		String[] paramNames = this.parseParamNames(env, t.get(_param, null));
 		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), null);
@@ -29,7 +29,7 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 		}
 		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
 		env.getTranspiler().addFunction(name, tf);
-		return new TDeclCode();
+		return new DeclCode();
 	}
 
 }

@@ -12,30 +12,30 @@ import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 @SuppressWarnings("serial")
-public class TErrorCode extends RuntimeException implements TCode {
+public class ErrorCode extends RuntimeException implements Code {
 
 	private final TLog log;
-	private final CommonCode dummy = new TDeclCode();
+	private final CommonCode dummy = new DeclCode();
 
-	public TErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public ErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(s, TLog.Error, fmt, args);
 	}
 
-	public TErrorCode(LocaleFormat fmt, Object... args) {
+	public ErrorCode(LocaleFormat fmt, Object... args) {
 		this(SourcePosition.UnknownPosition, fmt, args);
 	}
 
-	public TErrorCode(TCode at, LocaleFormat fmt, Object... args) {
+	public ErrorCode(Code at, LocaleFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(at.getSource(), TLog.Error, fmt, args);
 	}
 
-	public TErrorCode(SourcePosition s, String fmt, Object... args) {
+	public ErrorCode(SourcePosition s, String fmt, Object... args) {
 		this(s, LocaleFormat.wrap(fmt), args);
 	}
 
-	public TErrorCode(String fmt, Object... args) {
+	public ErrorCode(String fmt, Object... args) {
 		this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
 	}
 
@@ -44,7 +44,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TCode[] args() {
+	public Code[] args() {
 		return TArrays.emptyCodes;
 	}
 
@@ -54,7 +54,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		this.dummy.setType(t);
 		return this;
 	}
@@ -65,7 +65,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TCode setSource(Tree<?> t) {
+	public Code setSource(Tree<?> t) {
 		this.dummy.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;

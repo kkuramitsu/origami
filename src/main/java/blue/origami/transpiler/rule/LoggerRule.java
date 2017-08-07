@@ -3,8 +3,8 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TLogCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.LogCode;
 
 public class LoggerRule {
 	private TLog addMessage(TLog head, Tree<?> s, int level, LocaleFormat format, Object[] args) {
@@ -23,11 +23,11 @@ public class LoggerRule {
 		return this.addMessage(log, s, TLog.Notice, fmt, args);
 	}
 
-	public TCode log(TLog log, TCode code) {
+	public Code log(TLog log, Code code) {
 		if (log == null) {
 			return code;
 		}
-		return new TLogCode(log, code);
+		return new LogCode(log, code);
 	}
 
 }

@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
-public class TStringCode extends CommonCode implements TValueCode {
+public class StringCode extends CommonCode implements ValueCode {
 	private String value;
 
-	public TStringCode(String value) {
+	public StringCode(String value) {
 		super(Ty.tString);
 		this.value = value;
 	}

@@ -5,11 +5,11 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
-public final class TFuncRefCode extends CommonCode {
+public final class FuncRefCode extends CommonCode {
 	String name;
 	Template template;
 
-	public TFuncRefCode(String name, Template tp) {
+	public FuncRefCode(String name, Template tp) {
 		super(Ty.tFunc(tp.getReturnType(), tp.getParamTypes()));
 		this.name = name;
 		this.template = tp;
@@ -40,8 +40,8 @@ public final class TFuncRefCode extends CommonCode {
 	}
 
 	@Override
-	public TCode applyCode(TEnv env, TCode... params) {
-		return new TExprCode(this.name, params);
+	public Code applyCode(TEnv env, Code... params) {
+		return new ExprCode(this.name, params);
 	}
 
 }

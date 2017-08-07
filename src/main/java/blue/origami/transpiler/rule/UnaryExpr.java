@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public class UnaryExpr implements ParseRule, OSymbols {
 
@@ -14,8 +14,8 @@ public class UnaryExpr implements ParseRule, OSymbols {
 	}
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
-		TCode expr = env.parseCode(env, t.get(_expr));
+	public Code apply(TEnv env, Tree<?> t) {
+		Code expr = env.parseCode(env, t.get(_expr));
 		return expr.applyMethodCode(env, this.op);
 	}
 

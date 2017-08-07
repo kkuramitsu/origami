@@ -7,21 +7,21 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
-public class TIfCode extends CodeN {
+public class IfCode extends CodeN {
 
-	public TIfCode(TCode condCode, TCode thenCode, TCode elseCode) {
+	public IfCode(Code condCode, Code thenCode, Code elseCode) {
 		super(AutoType, condCode, thenCode, elseCode);
 	}
 
-	public TCode condCode() {
+	public Code condCode() {
 		return this.args[0];
 	}
 
-	public TCode thenCode() {
+	public Code thenCode() {
 		return this.args[1];
 	}
 
-	public TCode elseCode() {
+	public Code elseCode() {
 		return this.args[2];
 	}
 
@@ -32,7 +32,7 @@ public class TIfCode extends CodeN {
 	}
 
 	@Override
-	public TCode addReturn() {
+	public Code addReturn() {
 		this.args[1] = this.args[1].addReturn();
 		this.args[2] = this.args[2].addReturn();
 		return this;
@@ -47,7 +47,7 @@ public class TIfCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		this.args[1] = this.args[1].asType(env, t);
 		this.args[2] = this.args[2].asType(env, t);
 		return super.asType(env, t);

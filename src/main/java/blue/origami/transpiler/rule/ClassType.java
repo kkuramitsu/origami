@@ -4,18 +4,18 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.code.TTypeCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.TypeCode;
 
 public class ClassType implements ParseRule {
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, Tree<?> t) {
 		Ty type = this.parseType(env, t);
 		if (type == null) {
-			throw new TErrorCode(t, TFmt.undefined_type__YY0, t.getString());
+			throw new ErrorCode(t, TFmt.undefined_type__YY0, t.getString());
 		}
-		return new TTypeCode(type);
+		return new TypeCode(type);
 	}
 
 	public Ty parseType(TEnv env, Tree<?> t) {

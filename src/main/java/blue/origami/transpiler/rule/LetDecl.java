@@ -6,9 +6,9 @@ import blue.origami.transpiler.TFunctionContext;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDeclCode;
-import blue.origami.transpiler.code.TLetCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DeclCode;
+import blue.origami.transpiler.code.LetCode;
 
 public class LetDecl extends SyntaxRule implements ParseRule {
 
@@ -23,9 +23,9 @@ public class LetDecl extends SyntaxRule implements ParseRule {
 	}
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, Tree<?> t) {
 		String name = t.getStringAt(_name, "");
-		TCode right = env.parseCode(env, t.get(_expr));
+		Code right = env.parseCode(env, t.get(_expr));
 
 		TFunctionContext fcx = env.get(TFunctionContext.class);
 		if (fcx == null) { // TopLevel
@@ -38,10 +38,10 @@ public class LetDecl extends SyntaxRule implements ParseRule {
 			Transpiler tp = env.getTranspiler();
 			Template defined = tp.defineConst(this.isPublic, name, type, right);
 			env.add(name, defined);
-			return new TDeclCode();
+			return new DeclCode();
 		} else {
 			Ty type = t.has(_type) ? env.parseType(env, t.get(_type, null), null) : Ty.tUntyped;
-			return new TLetCode(name, type, right);
+			return new LetCode(name, type, right);
 		}
 	}
 

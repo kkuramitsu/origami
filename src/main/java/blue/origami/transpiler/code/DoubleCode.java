@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
-public class TDoubleCode extends CommonCode implements TValueCode {
+public class DoubleCode extends CommonCode implements ValueCode {
 	private double value;
 
-	public TDoubleCode(double value) {
+	public DoubleCode(double value) {
 		super(Ty.tFloat);
 		this.value = value;
 	}

@@ -9,12 +9,12 @@ import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
-public class TLetCode extends Code1 {
+public class LetCode extends Code1 {
 	private Ty declType;
 	private String name;
 	private boolean isDuplicated = false;
 
-	public TLetCode(String name, Ty type, TCode expr) {
+	public LetCode(String name, Ty type, Code expr) {
 		super(expr);
 		this.name = name;
 		this.declType = type;
@@ -29,7 +29,7 @@ public class TLetCode extends Code1 {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty ret) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			this.inner = this.inner.asType(env, this.declType);
 			if (this.declType.isUntyped()) {

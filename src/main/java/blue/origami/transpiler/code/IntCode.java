@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
-public class TIntCode extends CommonCode implements TValueCode {
+public class IntCode extends CommonCode implements ValueCode {
 	private int value;
 
-	public TIntCode(int value) {
+	public IntCode(int value) {
 		super(Ty.tInt);
 		this.value = value;
 	}
@@ -33,7 +33,7 @@ public class TIntCode extends CommonCode implements TValueCode {
 		sec.pushInt(env, this);
 	}
 
-	public static class TCharCode extends TIntCode {
+	public static class TCharCode extends IntCode {
 
 		public TCharCode(int value) {
 			super(value);

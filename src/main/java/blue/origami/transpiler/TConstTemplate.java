@@ -1,7 +1,7 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TExprCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ExprCode;
 
 public class TConstTemplate extends TCodeTemplate {
 
@@ -15,8 +15,8 @@ public class TConstTemplate extends TCodeTemplate {
 	}
 
 	@Override
-	public TCode nameCode(TEnv env, String name) {
-		return new TExprCode(this, TArrays.emptyCodes);
+	public Code nameCode(TEnv env, String name) {
+		return new ExprCode(this, TArrays.emptyCodes);
 		// return new TNameCode(this.getName(), this.getReturnType());
 	}
 

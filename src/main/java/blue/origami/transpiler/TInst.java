@@ -1,10 +1,10 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public class TInst {
 
-	public void emit(TEnv env, TCode tCode, TCodeSection sec) {
+	public void emit(TEnv env, Code tCode, TCodeSection sec) {
 
 	}
 

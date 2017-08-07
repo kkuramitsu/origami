@@ -4,9 +4,9 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 
-public class TDeclCode extends CommonCode {
+public class DeclCode extends CommonCode {
 
-	public TDeclCode() {
+	public DeclCode() {
 		super(Ty.tVoid);
 	}
 

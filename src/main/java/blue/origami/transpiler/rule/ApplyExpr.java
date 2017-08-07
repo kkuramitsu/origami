@@ -3,14 +3,14 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public class ApplyExpr implements ParseRule, OSymbols {
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
-		TCode[] params = env.parseParams(env, t, _param);
-		TCode recv = env.parseCode(env, t.get(_recv));
+	public Code apply(TEnv env, Tree<?> t) {
+		Code[] params = env.parseParams(env, t, _param);
+		Code recv = env.parseCode(env, t.get(_recv));
 		return recv.applyCode(env, params);
 	}
 }

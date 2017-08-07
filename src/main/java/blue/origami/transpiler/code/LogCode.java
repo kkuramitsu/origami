@@ -7,10 +7,10 @@ import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
-public class TLogCode extends Code1 {
+public class LogCode extends Code1 {
 	protected TLog log;
 
-	public TLogCode(TLog log, TCode inner) {
+	public LogCode(TLog log, Code inner) {
 		super(AutoType, inner);
 		this.log = log;
 	}
@@ -20,7 +20,7 @@ public class TLogCode extends Code1 {
 	}
 
 	@Override
-	public TCode setSource(Tree<?> t) {
+	public Code setSource(Tree<?> t) {
 		this.inner.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;

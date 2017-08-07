@@ -10,23 +10,23 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.VarTy;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.code.TCastCode.TBoxCode;
-import blue.origami.transpiler.code.TCastCode.TConvTemplate;
-import blue.origami.transpiler.code.TCastCode.TUnboxCode;
+import blue.origami.transpiler.code.CastCode.TBoxCode;
+import blue.origami.transpiler.code.CastCode.TConvTemplate;
+import blue.origami.transpiler.code.CastCode.TUnboxCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
-public class TExprCode extends CodeN {
+public class ExprCode extends CodeN {
 
 	private String name;
 
-	public TExprCode(Template tp, TCode... args) {
+	public ExprCode(Template tp, Code... args) {
 		super(tp.getReturnType(), args);
 		this.setTemplate(tp);
 		this.name = tp.getName();
 	}
 
-	public TExprCode(String name, TCode... args) {
+	public ExprCode(String name, Code... args) {
 		super(Ty.tUntyped, args);
 		this.name = name;
 	}
@@ -37,15 +37,15 @@ public class TExprCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
-			final TCode[] params = this.args;
+			final Code[] params = this.args;
 			List<Template> l = new ArrayList<>(8);
 			env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == params.length);
 			// ODebug.trace("l = %s", l);
 			if (l.size() == 0) {
 				env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
-				throw new TErrorCode("undefined %s%s%s", this.name, this.types(params), this.hint(l));
+				throw new ErrorCode("undefined %s%s%s", this.name, this.types(params), this.hint(l));
 			}
 			if (l.size() == 1) {
 				return this.asType(env, l.get(0).update(env, params), t);
@@ -75,8 +75,8 @@ public class TExprCode extends CodeN {
 					}
 				}
 			}
-			if (mapCost >= TCastCode.STUPID) {
-				throw new TErrorCode("mismatched %s%s%s", this.name, this.types(params), this.hint(l));
+			if (mapCost >= CastCode.STUPID) {
+				throw new ErrorCode("mismatched %s%s%s", this.name, this.types(params), this.hint(l));
 			}
 			return this.asType(env, selected.update(env, params), t);
 		}
@@ -101,11 +101,11 @@ public class TExprCode extends CodeN {
 		return " \t" + TFmt.hint + " " + sb.toString();
 	}
 
-	private String types(TCode... params) {
+	private String types(Code... params) {
 		StringBuilder sb = new StringBuilder();
 		int c = 0;
 		sb.append("(");
-		for (TCode t : params) {
+		for (Code t : params) {
 			if (c > 0) {
 				sb.append(", ");
 			}
@@ -116,7 +116,7 @@ public class TExprCode extends CodeN {
 		return sb.toString();
 	}
 
-	private TCode asType(TEnv env, Template tp, Ty t) {
+	private Code asType(TEnv env, Template tp, Ty t) {
 		if (tp != null) {
 			Ty[] p = tp.getParamTypes();
 			Ty ret = tp.getReturnType();
@@ -136,7 +136,7 @@ public class TExprCode extends CodeN {
 				}
 				this.setTemplate(tp);
 				this.setType(ret);
-				TCode result = this;
+				Code result = this;
 				if (tp.getReturnType() instanceof VarTy) {
 					ODebug.trace("must downcast %s => %s", tp.getReturnType(), ret);
 					result = new TUnboxCode(ret, result);
@@ -187,7 +187,7 @@ public class TExprCode extends CodeN {
 			if (i < 2) {
 				mapCost += conv.mapCost;
 			}
-			if (mapCost >= TCastCode.STUPID) {
+			if (mapCost >= CastCode.STUPID) {
 				return mapCost;
 			}
 		}

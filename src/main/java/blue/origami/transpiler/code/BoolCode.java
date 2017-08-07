@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
-public class TBoolCode extends CommonCode implements TValueCode {
+public class BoolCode extends CommonCode implements ValueCode {
 	private boolean value;
 
-	public TBoolCode(boolean value) {
+	public BoolCode(boolean value) {
 		super(Ty.tBool);
 		this.value = value;
 	}

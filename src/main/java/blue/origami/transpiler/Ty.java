@@ -2,11 +2,11 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
-import blue.origami.transpiler.code.TBoolCode;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDoubleCode;
-import blue.origami.transpiler.code.TIntCode;
-import blue.origami.transpiler.code.TStringCode;
+import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DoubleCode;
+import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.StringCode;
 import blue.origami.util.StringCombinator;
 
 public abstract class Ty implements TypeApi, StringCombinator {
@@ -126,7 +126,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	public abstract boolean acceptTy(Ty t);
 
-	public boolean accept(TCode code) {
+	public boolean accept(Code code) {
 		return this.acceptTy(code.getType());
 	}
 
@@ -187,7 +187,7 @@ interface TypeApi {
 		return !this.isVoid() && !this.isUntyped();
 	}
 
-	public default TCode getDefaultValue() {
+	public default Code getDefaultValue() {
 		return null;
 	}
 
@@ -231,7 +231,7 @@ class SimpleTy extends Ty {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
+	public Code getDefaultValue() {
 		return null;
 	}
 
@@ -258,8 +258,8 @@ class BoolTy extends SimpleTy {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
-		return new TBoolCode(false);
+	public Code getDefaultValue() {
+		return new BoolCode(false);
 	}
 
 }
@@ -270,8 +270,8 @@ class IntTy extends SimpleTy {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
-		return new TIntCode(0);
+	public Code getDefaultValue() {
+		return new IntCode(0);
 	}
 }
 
@@ -281,8 +281,8 @@ class FloatTy extends SimpleTy {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
-		return new TDoubleCode(0);
+	public Code getDefaultValue() {
+		return new DoubleCode(0);
 	}
 }
 
@@ -292,8 +292,8 @@ class StringTy extends SimpleTy {
 	}
 
 	@Override
-	public TCode getDefaultValue() {
-		return new TStringCode("");
+	public Code getDefaultValue() {
+		return new StringCode("");
 	}
 }
 

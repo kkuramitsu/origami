@@ -22,10 +22,10 @@ import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TExprCode;
-import blue.origami.transpiler.code.TMultiCode;
-import blue.origami.transpiler.code.TNameCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ExprCode;
+import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.NameCode;
 import blue.origami.util.ODebug;
 
 public class AsmGenerator extends TGenerator implements Opcodes {
@@ -58,7 +58,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	private static final String evalName = "eval";
 
 	@Override
-	public void emit(TEnv env, TCode code) {
+	public void emit(TEnv env, Code code) {
 		AsmGenerator asm = env.get(AsmGenerator.class);
 		if (asm == null) {
 			env.add(AsmGenerator.class, this);
@@ -73,12 +73,12 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 			this.funcList = null;
 		}
 		if (code.isEmpty() && this.exampleList != null) {
-			ArrayList<TCode> asserts = new ArrayList<>();
+			ArrayList<Code> asserts = new ArrayList<>();
 			for (Tree<?> t : this.exampleList) {
-				TCode body = env.parseCode(env, t).asType(env, Ty.tBool);
-				asserts.add(new TExprCode("assert", body));
+				Code body = env.parseCode(env, t).asType(env, Ty.tBool);
+				asserts.add(new ExprCode("assert", body));
 			}
-			code = new TMultiCode(false, asserts.toArray(new TCode[asserts.size()])).asType(env, Ty.tVoid);
+			code = new MultiCode(false, asserts.toArray(new Code[asserts.size()])).asType(env, Ty.tVoid);
 			this.exampleList = null;
 		}
 		// ODebug.trace("isEmpty: %s %s", code.isEmpty(), code);
@@ -130,7 +130,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	@Override
-	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, TCode expr) {
+	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
 		AsmGenerator asm = env.get(AsmGenerator.class);
 		if (asm == null) {
 			env.add(AsmGenerator.class, this);
@@ -157,7 +157,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 
 	@Override
 	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, TCode code) {
+			Ty returnType, Code code) {
 		Method m = new Method(name, Asm.ti(returnType), Asm.ti(paramTypes));
 		GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw);
 		AsmSection sec = new AsmSection(this.cname, mw);
@@ -224,7 +224,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	static Class<?> loadFuncExprClass(TEnv env, String[] fieldNames, Ty[] fieldTypes, int start, String[] paramNames,
-			Ty[] paramTypes, Ty returnType, TCode body) {
+			Ty[] paramTypes, Ty returnType, Code body) {
 		String cname1 = "C$" + Asm.classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		Class<?> funcType = Asm.toClass(Ty.tFunc(returnType, paramTypes));
@@ -263,13 +263,13 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		if (c == null) {
 			Ty returnType = tp.getReturnType();
 			Ty[] paramTypes = tp.getParamTypes();
-			TCode[] p = new TCode[paramTypes.length];
+			Code[] p = new Code[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {
-				p[i] = new TNameCode("a" + i, paramTypes[i], 0);
+				p[i] = new NameCode("a" + i, paramTypes[i], 0);
 				paramNames[i] = "a";
 			}
-			TCode body = new TExprCode(tp, p);
+			Code body = new ExprCode(tp, p);
 			c = loadFuncExprClass(env, TArrays.emptyNames, TArrays.emptyTypes, 0, paramNames, paramTypes, returnType,
 					body);
 			refMap.put(key, c);

@@ -3,12 +3,12 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public class SizeOfExpr implements ParseRule, OSymbols {
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
-		TCode recv = env.parseCode(env, t.get(_expr));
+	public Code apply(TEnv env, Tree<?> t) {
+		Code recv = env.parseCode(env, t.get(_expr));
 		return recv.applyMethodCode(env, "||");
 	}
 }

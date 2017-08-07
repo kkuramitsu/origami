@@ -6,8 +6,8 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class TCastCode extends Code1 {
-	public TCastCode(Ty ret, TConvTemplate tp, TCode inner) {
+public class CastCode extends Code1 {
+	public CastCode(Ty ret, TConvTemplate tp, Code inner) {
 		super(ret, inner);
 		this.setTemplate(tp);
 	}
@@ -48,17 +48,17 @@ public class TCastCode extends Code1 {
 
 	}
 
-	public static class TBoxCode extends TCastCode {
+	public static class TBoxCode extends CastCode {
 
-		public TBoxCode(Ty ret, TCode inner) {
+		public TBoxCode(Ty ret, Code inner) {
 			super(ret, null, inner);
 		}
 
 	}
 
-	public static class TUnboxCode extends TCastCode {
+	public static class TUnboxCode extends CastCode {
 
-		public TUnboxCode(Ty ret, TCode inner) {
+		public TUnboxCode(Ty ret, Code inner) {
 			super(ret, null, inner);
 		}
 

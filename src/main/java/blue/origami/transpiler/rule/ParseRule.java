@@ -2,8 +2,8 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 
 public interface ParseRule {
-	TCode apply(TEnv env, Tree<?> t);
+	Code apply(TEnv env, Tree<?> t);
 }

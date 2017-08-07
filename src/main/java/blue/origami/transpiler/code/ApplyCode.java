@@ -8,25 +8,25 @@ import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class TApplyCode extends CodeN {
-	public TApplyCode(TCode... values) {
+public class ApplyCode extends CodeN {
+	public ApplyCode(Code... values) {
 		super(values);
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			this.args[0] = this.args[0].asType(env, Ty.tUntyped);
-			if (this.args[0] instanceof TFuncRefCode) {
+			if (this.args[0] instanceof FuncRefCode) {
 				// ODebug.trace("switching to expr %s", this.args[0]);
-				String name = ((TFuncRefCode) this.args[0]).name;
-				return new TExprCode(name, TArrays.ltrim(this.args)).asType(env, t);
+				String name = ((FuncRefCode) this.args[0]).name;
+				return new ExprCode(name, TArrays.ltrim(this.args)).asType(env, t);
 			}
 			if (this.args[0].getType() instanceof FuncTy) {
 				FuncTy funcType = (FuncTy) this.args[0].getType();
 				Ty[] p = funcType.getParamTypes();
 				if (p.length + 1 != this.args.length) {
-					throw new TErrorCode("mismatched parameter size %d %d", p.length, this.args.length);
+					throw new ErrorCode("mismatched parameter size %d %d", p.length, this.args.length);
 				}
 				for (int i = 0; i < p.length; i++) {
 					this.args[i + 1] = this.args[i + 1].asType(env, p[i]);
@@ -56,7 +56,7 @@ public class TApplyCode extends CodeN {
 				}
 				return this.StillUntyped();
 			}
-			throw new TErrorCode(this.args[0], TFmt.not_function__YY0, this.args[0].getType());
+			throw new ErrorCode(this.args[0], TFmt.not_function__YY0, this.args[0].getType());
 		}
 		return this;
 	}

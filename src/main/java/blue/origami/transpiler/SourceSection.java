@@ -1,21 +1,21 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.TApplyCode;
-import blue.origami.transpiler.code.TBoolCode;
-import blue.origami.transpiler.code.TCastCode;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TDataCode;
-import blue.origami.transpiler.code.TDoubleCode;
-import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.code.TFuncCode;
-import blue.origami.transpiler.code.TFuncRefCode;
-import blue.origami.transpiler.code.TIfCode;
-import blue.origami.transpiler.code.TIntCode;
-import blue.origami.transpiler.code.TLetCode;
-import blue.origami.transpiler.code.TMultiCode;
-import blue.origami.transpiler.code.TNameCode;
-import blue.origami.transpiler.code.TReturnCode;
-import blue.origami.transpiler.code.TStringCode;
+import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DoubleCode;
+import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.FuncCode;
+import blue.origami.transpiler.code.FuncRefCode;
+import blue.origami.transpiler.code.IfCode;
+import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.ReturnCode;
+import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 
 public class SourceSection implements TCodeSection {
@@ -71,7 +71,7 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
-	public void push(TCode t) {
+	public void push(Code t) {
 		// TODO Auto-generated method stub
 	}
 
@@ -83,47 +83,47 @@ public class SourceSection implements TCodeSection {
 	// Asm compatible
 
 	@Override
-	public void pushBool(TEnv env, TBoolCode code) {
+	public void pushBool(TEnv env, BoolCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushInt(TEnv env, TIntCode code) {
+	public void pushInt(TEnv env, IntCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushDouble(TEnv env, TDoubleCode code) {
+	public void pushDouble(TEnv env, DoubleCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushString(TEnv env, TStringCode code) {
+	public void pushString(TEnv env, StringCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushCast(TEnv env, TCastCode code) {
+	public void pushCast(TEnv env, CastCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushName(TEnv env, TNameCode code) {
+	public void pushName(TEnv env, NameCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushLet(TEnv env, TLetCode code) {
+	public void pushLet(TEnv env, LetCode code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushCall(TEnv env, TCode code) {
+	public void pushCall(TEnv env, Code code) {
 		this.push(code.strOut(env));
 	}
 
 	@Override
-	public void pushIf(TEnv env, TIfCode code) {
+	public void pushIf(TEnv env, IfCode code) {
 		if (code.isStatementStyle()) {
 			String cond = code.condCode().strOut(env);
 			this.pushLine(env.format("if", "if(%s) {", cond));
@@ -143,19 +143,19 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
-	public void pushMulti(TEnv env, TMultiCode code) {
+	public void pushMulti(TEnv env, MultiCode code) {
 		if (code.isBlockExpr()) {
 			this.pushLine(env.getSymbol("block", "begin", "{"));
 			this.incIndent();
 			code.addReturn();
-			for (TCode c : code) {
+			for (Code c : code) {
 				this.pushIndentLine(c.strOut(env));
 			}
 			this.decIndent();
 			this.push(env.getSymbol("end block", "end", "}"));
 		} else {
 			int cnt = 0;
-			for (TCode c : code) {
+			for (Code c : code) {
 				if (cnt == 0) {
 					this.push(c.strOut(env));
 				} else {
@@ -170,7 +170,7 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
-	public void pushReturn(TEnv env, TReturnCode code) {
+	public void pushReturn(TEnv env, ReturnCode code) {
 		// TODO Auto-generated method stub
 
 	}
@@ -182,31 +182,31 @@ public class SourceSection implements TCodeSection {
 	}
 
 	@Override
-	public void pushData(TEnv env, TDataCode code) {
+	public void pushData(TEnv env, DataCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushError(TEnv env, TErrorCode code) {
+	public void pushError(TEnv env, ErrorCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncExpr(TEnv env, TFuncCode code) {
+	public void pushFuncExpr(TEnv env, FuncCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushApply(TEnv env, TApplyCode code) {
+	public void pushApply(TEnv env, ApplyCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncRef(TEnv env, TFuncRefCode code) {
+	public void pushFuncRef(TEnv env, FuncRefCode code) {
 		// TODO Auto-generated method stub
 
 	}

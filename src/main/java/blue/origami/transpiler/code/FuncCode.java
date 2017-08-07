@@ -9,15 +9,15 @@ import blue.origami.transpiler.TFunctionContext;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class TFuncCode extends Code1 {
+public class FuncCode extends Code1 {
 
 	int startIndex;
 	String[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
-	HashMap<String, TCode> fieldMap = null;
+	HashMap<String, Code> fieldMap = null;
 
-	public TFuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, TCode inner) {
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code inner) {
 		super(inner);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -31,9 +31,9 @@ public class TFuncCode extends Code1 {
 		return TArrays.emptyNames;
 	}
 
-	public TCode[] getFieldInitCode() {
+	public Code[] getFieldInitCode() {
 		if (this.fieldMap != null && this.fieldMap.size() > 0) {
-			TCode[] p = new TCode[this.fieldMap.size()];
+			Code[] p = new Code[this.fieldMap.size()];
 			int c = 0;
 			for (String name : this.fieldMap.keySet()) {
 				p[c++] = this.fieldMap.get(name);
@@ -72,7 +72,7 @@ public class TFuncCode extends Code1 {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			TEnv lenv = env.newEnv();
 			TFunctionContext fcx = env.get(TFunctionContext.class);
@@ -80,7 +80,7 @@ public class TFuncCode extends Code1 {
 				fcx = new TFunctionContext();
 				lenv.add(TFunctionContext.class, fcx);
 			}
-			HashMap<String, TCode> fieldMap = fcx.enterScope(new HashMap<>());
+			HashMap<String, Code> fieldMap = fcx.enterScope(new HashMap<>());
 			this.startIndex = fcx.getStartIndex();
 			for (int i = 0; i < this.paramNames.length; i++) {
 				// ODebug.trace("name=%s, %s", this.paramNames[i],

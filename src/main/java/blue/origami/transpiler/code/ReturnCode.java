@@ -5,9 +5,9 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
-public class TReturnCode extends Code1 {
+public class ReturnCode extends Code1 {
 
-	public TReturnCode(TCode expr) {
+	public ReturnCode(Code expr) {
 		super(AutoType, expr);
 	}
 
@@ -17,7 +17,7 @@ public class TReturnCode extends Code1 {
 	}
 
 	@Override
-	public TCode addReturn() {
+	public Code addReturn() {
 		return this;
 	}
 

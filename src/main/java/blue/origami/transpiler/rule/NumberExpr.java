@@ -7,7 +7,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.Code;
 import blue.origami.util.ODebug;
 
 public abstract class NumberExpr extends LoggerRule implements ParseRule {
@@ -21,10 +21,10 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 		this.baseType = baseType;
 	}
 
-	protected abstract TCode newCode(Number value);
+	protected abstract Code newCode(Number value);
 
 	@Override
-	public TCode apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, Tree<?> t) {
 		TLog log = null;
 		String text = t.getString().replace("_", "");
 		int radix = 10;

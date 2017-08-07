@@ -7,16 +7,16 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class TMultiCode extends CodeN {
+public class MultiCode extends CodeN {
 
 	private boolean isBlockExpr;
 
-	public TMultiCode(boolean isBlockExpr, TCode... nodes) {
+	public MultiCode(boolean isBlockExpr, Code... nodes) {
 		super(AutoType, nodes);
 		this.setBlockExpr(isBlockExpr);
 	}
 
-	public TMultiCode() {
+	public MultiCode() {
 		this(false, TArrays.emptyCodes);
 	}
 
@@ -30,7 +30,7 @@ public class TMultiCode extends CodeN {
 
 	@Override
 	public boolean isEmpty() {
-		for (TCode a : this.args) {
+		for (Code a : this.args) {
 			if (!a.isEmpty()) {
 				return false;
 			}
@@ -47,7 +47,7 @@ public class TMultiCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, Ty ret) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.args.length > 0) {
 			TEnv lenv = env.newEnv();
 			final int last = this.args.length - 1;
@@ -61,7 +61,7 @@ public class TMultiCode extends CodeN {
 	}
 
 	@Override
-	public TCode addReturn() {
+	public Code addReturn() {
 		int last = this.args.length - 1;
 		this.args[last] = this.args[last].addReturn();
 		return this;

@@ -15,8 +15,8 @@ import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.asm.AsmGenerator;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TErrorCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.DataType;
 import blue.origami.transpiler.rule.SourceUnit;
@@ -163,10 +163,10 @@ public class Transpiler extends TEnv {
 			this.showThrowable(((InvocationTargetException) e).getTargetException());
 			return;
 		}
-		if (e instanceof TErrorCode) {
+		if (e instanceof ErrorCode) {
 			OConsole.println(OConsole.bold("catching TErrorCode: "));
 			OConsole.beginColor(OConsole.Red);
-			OConsole.println(((TErrorCode) e).getLog());
+			OConsole.println(((ErrorCode) e).getLog());
 			OConsole.endColor();
 		} else {
 			OConsole.println(OConsole.bold("Runtime Exception: " + e));
@@ -184,7 +184,7 @@ public class Transpiler extends TEnv {
 		OConsole.println(t);
 		OConsole.endColor();
 		this.generator.setup();
-		TCode code = env.parseCode(env, t).asType(env, Ty.tUntyped);
+		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped);
 		this.generator.emit(env, code);
 		Object result = this.generator.wrapUp();
 		if (code.getType() != Ty.tVoid) {
@@ -213,7 +213,7 @@ public class Transpiler extends TEnv {
 
 	int functionId = 0;
 
-	public Template defineConst(boolean isPublic, String name, Ty type, TCode expr) {
+	public Template defineConst(boolean isPublic, String name, Ty type, Code expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
 		TCodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
@@ -235,7 +235,7 @@ public class Transpiler extends TEnv {
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
 		}
-		TCode code = env.parseCode(env, body);
+		Code code = env.parseCode(env, body);
 		code = code.asType(env, returnType);
 		int untyped = code.countUntyped(0);
 		if (untyped > 0) {

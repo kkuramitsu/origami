@@ -7,11 +7,11 @@ import java.util.function.Supplier;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.TCastCode;
-import blue.origami.transpiler.code.TCastCode.TConvTemplate;
-import blue.origami.transpiler.code.TCode;
-import blue.origami.transpiler.code.TErrorCode;
-import blue.origami.transpiler.code.TTypeCode;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CastCode.TConvTemplate;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
@@ -219,10 +219,10 @@ interface TEnvTraits {
 		findList(key(cname), c, l, f);
 	}
 
-	public default TCode catchCode(Supplier<TCode> f) {
+	public default Code catchCode(Supplier<Code> f) {
 		try {
 			return f.get();
-		} catch (TErrorCode e) {
+		} catch (ErrorCode e) {
 			return e;
 		}
 	}
@@ -267,35 +267,35 @@ interface TEnvApi {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 4));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, TCastCode.BADCONV, value));
+					env().add(name, new TConvTemplate(name, f, t, CastCode.BADCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("-->")) > 0) {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, TCastCode.CONV, value));
+					env().add(name, new TConvTemplate(name, f, t, CastCode.CONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("==>")) > 0) {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, TCastCode.CAST, value));
+					env().add(name, new TConvTemplate(name, f, t, CastCode.CAST, value));
 					return;
 				}
 				if ((loc = key.indexOf("->")) > 0) {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCONV, value));
+					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("=>")) > 0) {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCAST, value));
+					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCAST, value));
 					return;
 				}
 				System.out.println("FIXME: " + key);
@@ -417,12 +417,12 @@ interface TEnvApi {
 		return TNameHint.lookupNameHint(env, name);
 	}
 
-	public default TCode parseCode(TEnv env, Tree<?> t) {
+	public default Code parseCode(TEnv env, Tree<?> t) {
 		String name = t.getTag().getSymbol();
-		TCode node = null;
+		Code node = null;
 		try {
 			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
-		} catch (TErrorCode e) {
+		} catch (ErrorCode e) {
 			e.setSource(t);
 			throw e;
 		}
@@ -434,14 +434,14 @@ interface TEnvApi {
 				return parseCode(env, t);
 			} catch (ClassNotFoundException e) {
 
-			} catch (TErrorCode e) {
+			} catch (ErrorCode e) {
 				throw e;
 			} catch (Exception e) {
 				ODebug.exit(1, e);
 			}
 		}
 		if (node == null) {
-			throw new TErrorCode(t, TFmt.undefined_syntax__YY0, name);
+			throw new ErrorCode(t, TFmt.undefined_syntax__YY0, name);
 		}
 		node.setSource(t);
 		return node;
@@ -458,9 +458,9 @@ interface TEnvApi {
 	// return typeParams(env, t, OSymbols._param);
 	// }
 
-	public default TCode[] parseParams(TEnv env, Tree<?> t, Symbol param) {
+	public default Code[] parseParams(TEnv env, Tree<?> t, Symbol param) {
 		Tree<?> p = t.get(param, null);
-		TCode[] params = new TCode[p.size()];
+		Code[] params = new Code[p.size()];
 		for (int i = 0; i < p.size(); i++) {
 			params[i] = parseCode(env, p.get(i));
 		}
@@ -470,12 +470,12 @@ interface TEnvApi {
 	public default Ty parseType(TEnv env, Tree<?> t, Ty defty) {
 		if (t != null) {
 			try {
-				TCode node = parseCode(env, t);
-				if (node instanceof TTypeCode) {
-					return ((TTypeCode) node).getTypeValue();
+				Code node = parseCode(env, t);
+				if (node instanceof TypeCode) {
+					return ((TypeCode) node).getTypeValue();
 				}
 				return node.getType();
-			} catch (TErrorCode e) {
+			} catch (ErrorCode e) {
 				if (defty == null) {
 					throw e;
 				}
@@ -490,7 +490,7 @@ interface TEnvApi {
 		// System.out.printf("FIXME: finding %s %s\n", key, tp);
 		if (tp == null && t == Ty.tVoid) {
 			String format = env.getSymbol("(Void)", "(void)%s");
-			tp = new TConvTemplate("", Ty.tUntyped, Ty.tVoid, TCastCode.SAME, format);
+			tp = new TConvTemplate("", Ty.tUntyped, Ty.tVoid, CastCode.SAME, format);
 			env.getTranspiler().add(key, tp);
 		}
 		return tp == null ? TConvTemplate.Stupid : tp;
