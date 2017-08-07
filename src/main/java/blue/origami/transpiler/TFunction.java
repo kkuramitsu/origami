@@ -10,7 +10,7 @@ public class TFunction extends Template implements TNameRef {
 	protected String[] paramNames;
 	protected Tree<?> body;
 
-	public TFunction(boolean isPublic, String name, TType returnType, String[] paramNames, TType[] paramTypes,
+	public TFunction(boolean isPublic, String name, Ty returnType, String[] paramNames, Ty[] paramTypes,
 			Tree<?> body) {
 		super(name, returnType, paramTypes);
 		this.isPublic = isPublic;
@@ -54,8 +54,8 @@ public class TFunction extends Template implements TNameRef {
 
 	@Override
 	public Template update(TEnv env, TCode[] params) {
-		TType[] p = this.getParamTypes();
-		if (TType.hasUntyped(p)) {
+		Ty[] p = this.getParamTypes();
+		if (Ty.hasUntyped(p)) {
 			p = p.clone();
 			for (int i = 0; i < p.length; i++) {
 				if (p[i].isUntyped()) {
@@ -87,11 +87,11 @@ public class TFunction extends Template implements TNameRef {
 		return tp;
 	}
 
-	static String getSignature(String name, TType[] p) {
+	static String getSignature(String name, Ty[] p) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("#");
 		sb.append(name);
-		for (TType t : p) {
+		for (Ty t : p) {
 			sb.append(":");
 			sb.append(t);
 		}

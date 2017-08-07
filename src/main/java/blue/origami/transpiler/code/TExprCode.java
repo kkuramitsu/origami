@@ -6,9 +6,9 @@ import java.util.List;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TType;
-import blue.origami.transpiler.TVarDomain;
-import blue.origami.transpiler.TVarType;
+import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.VarDomain;
+import blue.origami.transpiler.VarTy;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.TCastCode.TBoxCode;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
@@ -27,7 +27,7 @@ public class TExprCode extends CodeN {
 	}
 
 	public TExprCode(String name, TCode... args) {
-		super(TType.tUntyped, args);
+		super(Ty.tUntyped, args);
 		this.name = name;
 	}
 
@@ -37,7 +37,7 @@ public class TExprCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			final TCode[] params = this.args;
 			List<Template> l = new ArrayList<>(8);
@@ -52,7 +52,7 @@ public class TExprCode extends CodeN {
 			}
 			boolean foundUntyped = false;
 			for (int i = 0; i < params.length; i++) {
-				TType pt = this.getCommonParamType(l, i);
+				Ty pt = this.getCommonParamType(l, i);
 				this.args[i] = this.args[i].asType(env, pt);
 				if (this.args[i].isUntyped()) {
 					foundUntyped = true;
@@ -116,20 +116,20 @@ public class TExprCode extends CodeN {
 		return sb.toString();
 	}
 
-	private TCode asType(TEnv env, Template tp, TType t) {
+	private TCode asType(TEnv env, Template tp, Ty t) {
 		if (tp != null) {
-			TType[] p = tp.getParamTypes();
-			TType ret = tp.getReturnType();
+			Ty[] p = tp.getParamTypes();
+			Ty ret = tp.getReturnType();
 			if (tp.isGeneric()) {
-				TVarDomain dom = new TVarDomain();
-				TType[] gp = new TType[p.length];
+				VarDomain dom = new VarDomain();
+				Ty[] gp = new Ty[p.length];
 				for (int i = 0; i < p.length; i++) {
-					gp[i] = p[i].dup(dom);
+					gp[i] = p[i].dupTy(dom);
 				}
-				ret = ret.dup(dom);
+				ret = ret.dupTy(dom);
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, gp[i]);
-					if (p[i] instanceof TVarType) {
+					if (p[i] instanceof VarTy) {
 						ODebug.trace("must upcast %s => %s", p[i], gp[i]);
 						this.args[i] = new TBoxCode(gp[i], this.args[i]);
 					}
@@ -137,7 +137,7 @@ public class TExprCode extends CodeN {
 				this.setTemplate(tp);
 				this.setType(ret);
 				TCode result = this;
-				if (tp.getReturnType() instanceof TVarType) {
+				if (tp.getReturnType() instanceof VarTy) {
 					ODebug.trace("must downcast %s => %s", tp.getReturnType(), ret);
 					result = new TUnboxCode(ret, result);
 				}
@@ -154,31 +154,31 @@ public class TExprCode extends CodeN {
 		return this;
 	}
 
-	private TType getCommonParamType(List<Template> l, int n) {
-		TType t = l.get(0).getParamTypes()[n];
+	private Ty getCommonParamType(List<Template> l, int n) {
+		Ty t = l.get(0).getParamTypes()[n];
 		for (int i = 1; i < l.size(); i++) {
 			if (!t.equals(l.get(i).getParamTypes()[n])) {
-				return TType.tUntyped;
+				return Ty.tUntyped;
 			}
 		}
 		return t;
 	}
 
-	private int checkMapCost(TEnv env, TType ret, Template tp) {
+	private int checkMapCost(TEnv env, Ty ret, Template tp) {
 		int mapCost = 0;
-		TVarDomain dom = null;
-		TType[] p = tp.getParamTypes();
+		VarDomain dom = null;
+		Ty[] p = tp.getParamTypes();
 		if (tp.isGeneric()) {
-			dom = new TVarDomain();
-			TType[] gp = new TType[p.length];
+			dom = new VarDomain();
+			Ty[] gp = new Ty[p.length];
 			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dup(dom);
+				gp[i] = p[i].dupTy(dom);
 			}
 			p = gp;
 		}
 		for (int i = 0; i < this.args.length; i++) {
-			TType f = this.args[i].getType();
-			if (p[i].acceptType(f)) {
+			Ty f = this.args[i].getType();
+			if (p[i].acceptTy(f)) {
 				continue;
 			}
 			TConvTemplate conv = env.findTypeMap(env, f, p[i]);

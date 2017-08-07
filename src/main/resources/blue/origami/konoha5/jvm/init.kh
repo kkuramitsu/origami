@@ -92,25 +92,44 @@ setf:Data:Int:String:Data         = S|blue/origami/transpiler/asm/APIs|setf
 getf:Data:Int:Data:Data           = S|blue/origami/transpiler/asm/APIs|getf
 setf:Data:Int:Data:Data           = S|blue/origami/transpiler/asm/APIs|setf
 
-# Int*
-||:Int*:Int                       = V|blue/origami/konoha5/IntArray|size
-[]:Int*:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
-[]=:Int*:Int:Int:void             = V|blue/origami/konoha5/IntArray|seti
-push:Int*:Int:void                = V|blue/origami/konoha5/IntArray|push
-pop:Int*:Int                      = V|blue/origami/konoha5/IntArray|pop
-
-each:Int*:Int->void:void          = V|blue/origami/konoha5/IntArray|each
-map:Int*:Int->Int:Int*            = V|blue/origami/konoha5/IntArray|map
-map:Int*:Int->a:a*                = V|blue/origami/konoha5/IntArray|map
-filter:Int*:Int->Bool:Int*        = V|blue/origami/konoha5/IntArray|filter
 
 # a*
 ||:a*:Int                         = V|blue/origami/konoha5/ObjArray|size
 []:a*:Int:a                       = V|blue/origami/konoha5/ObjArray|geti
-[]=:a*:Int:a:void                 = V|blue/origami/konoha5/ObjArray|seti
 
-each:a*:a->void:void              = V|blue/origami/konoha5/ObjArray|each
+each:a*:a->():()                  = V|blue/origami/konoha5/ObjArray|each
 map:a*:a->b:b*                    = V|blue/origami/konoha5/ObjArray|map
 map:a*:a->Int:Int*                = V|blue/origami/konoha5/ObjArray|map
 filter:a*:a->Bool:a*              = V|blue/origami/konoha5/ObjArray|filter
+
+[]=:{a*}:Int:a:()                 = V|blue/origami/konoha5/ObjArray|seti
+
+
+# Int*
+||:Int*:Int                       = V|blue/origami/konoha5/IntArray|size
+[]:Int*:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
+
+each:Int*:Int->():()              = V|blue/origami/konoha5/IntArray|each
+map:Int*:Int->Int:Int*            = V|blue/origami/konoha5/IntArray|map
+map:Int*:Int->a:a*                = V|blue/origami/konoha5/IntArray|map
+filter:Int*:Int->Bool:Int*        = V|blue/origami/konoha5/IntArray|filter
+
+# {Int*}
+||:{Int*}:Int                       = V|blue/origami/konoha5/IntArray|size
+[]:{Int*}:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
+[]=:{Int*}:Int:Int:()               = V|blue/origami/konoha5/IntArray|seti
+push:{Int*}:Int:()                  = V|blue/origami/konoha5/IntArray|push
+pop:{Int*}:Int                      = V|blue/origami/konoha5/IntArray|pop
+
+# Dict[a]
+||:Dict[a]:Int                      = V|blue/origami/konoha5/Dict|size
+[]:Dict[a]:String:a?                = V|blue/origami/konoha5/Dict|get
+Dict[a]->String*                    = V|blue/origami/konoha5/Dict|keys
+
+# Dict{a}
+||:Dict{a}:Int                      = V|blue/origami/konoha5/Dict|size
+[]:Dict{a}:String:a?                = V|blue/origami/konoha5/Dict|get
+Dict{a}->String*                    = V|blue/origami/konoha5/Dict|keys
+[]=:Dict{a}:String:a:()             = V|blue/origami/konoha5/Dict|set
+
 

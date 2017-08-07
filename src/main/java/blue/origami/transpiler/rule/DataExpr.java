@@ -8,6 +8,8 @@ import blue.origami.transpiler.code.TDataCode;
 
 public class DataExpr extends LoggerRule implements OSymbols, ParseRule {
 
+	boolean isMutable = true;
+
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		String[] names = new String[t.size()];
@@ -18,7 +20,7 @@ public class DataExpr extends LoggerRule implements OSymbols, ParseRule {
 			values[c] = env.parseCode(env, keyvalue.get(_value));
 			c++;
 		}
-		return new TDataCode(names, values);
+		return new TDataCode(this.isMutable, names, values);
 	}
 
 }

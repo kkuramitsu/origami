@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;
 
@@ -12,7 +12,7 @@ public class AssumeDecl implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		for (Tree<?> sub : t.get(_body)) {
-			TType type = env.parseType(env, sub.get(_type), null);
+			Ty type = env.parseType(env, sub.get(_type), null);
 			String[] names = this.parseNames(sub.get(_name));
 			env.addTypeHint(env, names, type);
 		}

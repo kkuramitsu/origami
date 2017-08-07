@@ -6,18 +6,18 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunctionContext;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class TFuncCode extends Code1 {
 
 	int startIndex;
 	String[] paramNames;
-	TType[] paramTypes;
-	TType returnType;
+	Ty[] paramTypes;
+	Ty returnType;
 	HashMap<String, TCode> fieldMap = null;
 
-	public TFuncCode(String[] paramNames, TType[] paramTypes, TType returnType, TCode inner) {
+	public TFuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, TCode inner) {
 		super(inner);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -43,9 +43,9 @@ public class TFuncCode extends Code1 {
 		return TArrays.emptyCodes;
 	}
 
-	public TType[] getFieldTypes() {
+	public Ty[] getFieldTypes() {
 		if (this.fieldMap != null && this.fieldMap.size() > 0) {
-			TType[] p = new TType[this.fieldMap.size()];
+			Ty[] p = new Ty[this.fieldMap.size()];
 			int c = 0;
 			for (String name : this.fieldMap.keySet()) {
 				p[c++] = this.fieldMap.get(name).getType();
@@ -55,11 +55,11 @@ public class TFuncCode extends Code1 {
 		return TArrays.emptyTypes;
 	}
 
-	public TType[] getParamTypes() {
+	public Ty[] getParamTypes() {
 		return this.paramTypes;
 	}
 
-	public TType getReturnType() {
+	public Ty getReturnType() {
 		return this.returnType;
 	}
 
@@ -72,7 +72,7 @@ public class TFuncCode extends Code1 {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			TEnv lenv = env.newEnv();
 			TFunctionContext fcx = env.get(TFunctionContext.class);
@@ -93,7 +93,7 @@ public class TFuncCode extends Code1 {
 				assert (!this.returnType.isUntyped());
 				return this;
 			}
-			this.setType(TType.tFunc(this.returnType, this.paramTypes));
+			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
 			this.fieldMap = fieldMap;
 			// ODebug.trace("FuncCode.asType %s fields=%s %s", this.getType(),
 			// this.fieldMap, this.self());

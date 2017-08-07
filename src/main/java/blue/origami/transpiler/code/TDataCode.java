@@ -1,25 +1,27 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.TDataType;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.TType;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class TDataCode extends CodeN {
 	protected String[] names;
+	boolean isMutable = false;
 
-	public TDataCode(String[] names, TCode[] values) {
+	public TDataCode(boolean isMutable, String[] names, TCode[] values) {
 		super(values);
 		this.names = names;
+		this.isMutable = isMutable;
 	}
 
-	public TDataCode(TDataType dt) {
+	public TDataCode(DataTy dt) { // DefaultValue
 		super(dt, TArrays.emptyCodes);
 		this.names = TArrays.emptyNames;
+		this.isMutable = !dt.isImmutable();
 	}
 
 	public String[] getNames() {
@@ -27,7 +29,7 @@ public class TDataCode extends CodeN {
 	}
 
 	public boolean isMutable() {
-		return true;
+		return !this.isMutable;
 	}
 
 	public boolean isArray() {
@@ -43,9 +45,9 @@ public class TDataCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
-			TDataType dt = TType.tData(this.names).asLocal();
+			DataTy dt = Ty.tData(this.names).asLocal();
 			for (int i = 0; i < this.args.length; i++) {
 				String key = this.names[i];
 				TCode value = this.args[i];
@@ -53,8 +55,8 @@ public class TDataCode extends CodeN {
 				if (hint != null) {
 					value = value.asType(env, hint.getType());
 				} else {
-					value = value.asType(env, TType.tUntyped);
-					TType ty = value.guessType();
+					value = value.asType(env, Ty.tUntyped);
+					Ty ty = value.guessType();
 					// ODebug.trace("undefined symbol %s as %s", key, ty);
 					env.addTypeHint(env, key, ty);
 				}
@@ -66,11 +68,6 @@ public class TDataCode extends CodeN {
 			this.setType(dt);
 		}
 		return super.asType(env, t);
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("{}");
 	}
 
 	@Override

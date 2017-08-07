@@ -2,12 +2,12 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 
 public class TDeclCode extends CommonCode {
 
 	public TDeclCode() {
-		super(TType.tVoid);
+		super(Ty.tVoid);
 	}
 
 	@Override

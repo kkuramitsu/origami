@@ -9,7 +9,7 @@ import blue.origami.transpiler.code.TDataCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.util.StringCombinator;
 
-public class TDataType extends TType implements StringCombinator {
+public class DataTy extends Ty implements StringCombinator {
 	public final static boolean Mutable = false;
 	public final static boolean Immutable = true;
 	boolean isImmutable = false;
@@ -19,11 +19,11 @@ public class TDataType extends TType implements StringCombinator {
 	boolean isLocal = false;
 	boolean isParameter = false;
 
-	private static Content EmptyContent = new EmptyContent();
+	private static Content Variant = new Variant();
 
 	// Content
-	static abstract class Content implements StringCombinator {
-		TType getInnerType() {
+	abstract static class Content implements StringCombinator {
+		Ty getInnerTy() {
 			return null;
 		}
 
@@ -32,11 +32,11 @@ public class TDataType extends TType implements StringCombinator {
 			return StringCombinator.stringfy(this);
 		}
 
-		public void checkArray(Tree<?> at, TType t) {
+		public void checkArray(Tree<?> at, Ty t) {
 			throw new TErrorCode(at, TFmt.unsupported_operator);
 		}
 
-		public void checkDict(Tree<?> at, TType t) {
+		public void checkDict(Tree<?> at, Ty t) {
 			throw new TErrorCode(at, TFmt.unsupported_operator);
 		}
 
@@ -44,7 +44,7 @@ public class TDataType extends TType implements StringCombinator {
 			throw new TErrorCode(at, TFmt.unsupported_operator);
 		}
 
-		public abstract boolean acceptType(TDataType self, TDataType dt);
+		public abstract boolean acceptType(DataTy self, DataTy dt);
 
 		public TCode getDefaultValue() {
 			return null;
@@ -52,13 +52,13 @@ public class TDataType extends TType implements StringCombinator {
 
 		public abstract boolean isVarType();
 
-		public abstract Content dup(TVarDomain dom);
+		public abstract Content dup(VarDomain dom);
 	}
 
-	static class EmptyContent extends Content {
+	static class Variant extends Content {
 		@Override
 		public void strOut(StringBuilder sb) {
-			sb.append("Data");
+			sb.append("?");
 		}
 
 		@Override
@@ -67,25 +67,25 @@ public class TDataType extends TType implements StringCombinator {
 		}
 
 		@Override
-		public Content dup(TVarDomain dom) {
+		public Content dup(VarDomain dom) {
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(TDataType self, TDataType dt) {
+		public boolean acceptType(DataTy self, DataTy dt) {
 			return self == dt;
 		}
 	}
 
 	static class AtomContent extends Content {
-		final TType innerType;
+		final Ty innerType;
 
-		AtomContent(TType innerType) {
+		AtomContent(Ty innerType) {
 			this.innerType = innerType;
 		}
 
 		@Override
-		TType getInnerType() {
+		Ty getInnerTy() {
 			return this.innerType;
 		}
 
@@ -101,38 +101,38 @@ public class TDataType extends TType implements StringCombinator {
 
 		@Override
 		public boolean isVarType() {
-			return this.innerType.isVarType();
+			return this.innerType.isVar();
 		}
 
 		@Override
-		public Content dup(TVarDomain dom) {
+		public Content dup(VarDomain dom) {
 			if (this.isVarType()) {
-				return new AtomContent(this.innerType.dup(dom));
+				return new AtomContent(this.innerType.dupTy(dom));
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(TDataType self, TDataType dt) {
-			return self.getInnerType().acceptType(dt.getInnerType());
+		public boolean acceptType(DataTy self, DataTy dt) {
+			return self.getInnerType().acceptTy(dt.getInnerType());
 		}
 
 	}
 
-	static class ArrayContent extends Content {
-		final TType innerType;
+	class ArrayData extends Content {
+		final Ty innerType;
 
-		ArrayContent(TType innerType) {
+		ArrayData(Ty innerType) {
 			this.innerType = innerType;
 		}
 
 		@Override
-		TType getInnerType() {
+		Ty getInnerTy() {
 			return this.innerType;
 		}
 
 		@Override
-		public void checkArray(Tree<?> at, TType t) {
+		public void checkArray(Tree<?> at, Ty t) {
 			// if (!t.equals(at)) {
 			// throw new TErrorCode(at, TFmt.mixed_array_YY0_YY1,
 			// this.innerType, t);
@@ -141,13 +141,19 @@ public class TDataType extends TType implements StringCombinator {
 
 		@Override
 		public TCode getDefaultValue() {
-			return new TDataCode(TType.tArray(this.innerType));
+			return new TDataCode(DataTy.this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tMArray(this.innerType));
 		}
 
 		@Override
 		public void strOut(StringBuilder sb) {
+			if (DataTy.this.isImmutable) {
+				sb.append("{");
+			}
 			StringCombinator.append(sb, this.innerType);
 			sb.append("*");
+			if (DataTy.this.isImmutable) {
+				sb.append("}");
+			}
 		}
 
 		@Override
@@ -157,79 +163,82 @@ public class TDataType extends TType implements StringCombinator {
 
 		@Override
 		public boolean isVarType() {
-			return this.innerType.isVarType();
+			return this.innerType.isVar();
 		}
 
 		@Override
-		public Content dup(TVarDomain dom) {
+		public Content dup(VarDomain dom) {
 			if (this.isVarType()) {
-				return new ArrayContent(this.innerType.dup(dom));
+				return new ArrayData(this.innerType.dupTy(dom));
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(TDataType self, TDataType dt) {
-			return dt.isArrayType() && self.getInnerType().acceptType(dt.getInnerType());
+		public boolean acceptType(DataTy self, DataTy dt) {
+			return dt.isArray() && self.getInnerType().acceptTy(dt.getInnerType());
 		}
 
 	}
 
-	static class DictContent extends ArrayContent {
-		DictContent(TType innerType) {
+	class DictData extends ArrayData {
+		DictData(Ty innerType) {
 			super(innerType);
 		}
 
 		@Override
-		public void checkArray(Tree<?> at, TType t) {
+		public void checkArray(Tree<?> at, Ty t) {
 			super.checkDict(at, t);
 		}
 
 		@Override
-		public void checkDict(Tree<?> at, TType t) {
-			super.checkDict(at, t);
+		public void checkDict(Tree<?> at, Ty t) {
+
 		}
 
 		@Override
 		public void strOut(StringBuilder sb) {
-			sb.append("[");
+			if (DataTy.this.isMutable) {
+				sb.append("$");
+			}
+			sb.append("Dict[");
 			StringCombinator.append(sb, this.innerType);
 			sb.append("]");
 		}
 
 		@Override
-		public Content dup(TVarDomain dom) {
+		public Content dup(VarDomain dom) {
 			if (this.isVarType()) {
-				return new DictContent(this.innerType.dup(dom));
+				return new DictData(this.innerType.dupTy(dom));
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(TDataType self, TDataType dt) {
-			return dt.isDictType() && self.getInnerType().acceptType(dt.getInnerType());
+		public boolean acceptType(DataTy self, DataTy dt) {
+			return dt.isDict() && self.getInnerType().acceptTy(dt.getInnerType());
 		}
 
 	}
 
-	static class RecordContent extends Content {
+	class Record extends Content {
 		boolean growing;
 		DSymbol[] fields;
 
-		RecordContent(boolean growing, String... names) {
+		Record(boolean growing, String... names) {
 			this.growing = growing;
 			this.fields = Arrays.stream(names).map(x -> DSymbol.unique(x)).toArray(DSymbol[]::new);
 		}
 
-		RecordContent(boolean growing, DSymbol[] names) {
+		Record(boolean growing, DSymbol[] names) {
 			this.growing = growing;
 			this.fields = names;
 		}
 
 		@Override
 		public boolean equals(Object o) {
-			if (o instanceof RecordContent) {
-				RecordContent record = (RecordContent) o;
+			if (o instanceof Record) {
+				Record record = (Record) o;
 				for (DSymbol f : record.fields) {
 					if (!this.hasField(f)) {
 						return false;
@@ -272,7 +281,7 @@ public class TDataType extends TType implements StringCombinator {
 
 		@Override
 		public void strOut(StringBuilder sb) {
-			sb.append("{");
+			sb.append(DataTy.this.isImmutable ? "[" : "{");
 			int c = 0;
 			for (DSymbol s : this.fields) {
 				if (c > 0) {
@@ -281,7 +290,7 @@ public class TDataType extends TType implements StringCombinator {
 				sb.append(s);
 				c++;
 			}
-			sb.append("}");
+			sb.append(DataTy.this.isImmutable ? "]" : "}");
 		}
 
 		@Override
@@ -290,18 +299,18 @@ public class TDataType extends TType implements StringCombinator {
 		}
 
 		@Override
-		public Content dup(TVarDomain dom) {
+		public Content dup(VarDomain dom) {
 			if (this.isVarType()) {
-				return new RecordContent(this.growing, this.fields);
+				return new Record(this.growing, this.fields);
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(TDataType self, TDataType dt) {
-			if (self.content instanceof RecordContent && dt.content instanceof RecordContent) {
-				RecordContent r1 = (RecordContent) self.content;
-				RecordContent r2 = (RecordContent) dt.content;
+		public boolean acceptType(DataTy self, DataTy dt) {
+			if (self.content instanceof Record && dt.content instanceof Record) {
+				Record r1 = (Record) self.content;
+				Record r2 = (Record) dt.content;
 				if (r1.growing || r2.growing) {
 					return true;
 				}
@@ -319,28 +328,30 @@ public class TDataType extends TType implements StringCombinator {
 
 	Content content;
 
-	TDataType(Content content) {
+	DataTy(Content content) {
 		this.content = content;
 		this.isImmutable = false;
 		this.isParameter = false;
 		this.isLocal = false;
 	}
 
-	TDataType() {
-		this(EmptyContent);
+	DataTy() {
+		this(Variant);
 	}
 
-	TDataType(boolean isDict, TType innerType) {
-		this(isDict ? new DictContent(innerType) : new ArrayContent(innerType));
+	DataTy(boolean isDict, Ty innerType) {
+		this(Variant);
+		this.content = isDict ? new DictData(innerType) : new ArrayData(innerType);
 	}
 
-	TDataType(boolean growing, String... names) {
-		this(new RecordContent(growing, names));
+	DataTy(boolean growing, String... names) {
+		this(Variant);
+		this.content = new Record(growing, names);
 	}
 
 	@Override
 	public boolean isUntyped() {
-		return this.content instanceof EmptyContent;
+		return this.content instanceof Variant;
 	}
 
 	@Override
@@ -348,12 +359,7 @@ public class TDataType extends TType implements StringCombinator {
 		this.content.strOut(sb);
 	}
 
-	@Override
-	public String toString() {
-		return StringCombinator.stringfy(this);
-	}
-
-	public void checkSetIndex(Tree<?> at, TType t) {
+	public void checkSetIndex(Tree<?> at, Ty t) {
 		if (this.isImmutable) {
 			throw new TErrorCode(TFmt.immutable_data);
 		} else {
@@ -362,16 +368,16 @@ public class TDataType extends TType implements StringCombinator {
 		}
 	}
 
-	public void checkGetIndex(Tree<?> at, TType t) {
+	public void checkGetIndex(Tree<?> at, Ty t) {
 		if (!t.isUntyped()) {
-			if (this.content == EmptyContent) {
-				this.content = new ArrayContent(t);
+			if (this.content == Variant) {
+				this.content = new ArrayData(t);
 			}
 			this.content.checkArray(at, t);
 		}
 	}
 
-	public void checkSetDict(Tree<?> at, TType t) {
+	public void checkSetDict(Tree<?> at, Ty t) {
 		if (this.isImmutable) {
 			throw new TErrorCode(TFmt.immutable_data);
 		} else {
@@ -380,10 +386,10 @@ public class TDataType extends TType implements StringCombinator {
 		}
 	}
 
-	public void checkGetDict(Tree<?> at, TType t) {
+	public void checkGetDict(Tree<?> at, Ty t) {
 		if (!t.isUntyped()) {
-			if (this.content == EmptyContent) {
-				this.content = new DictContent(t);
+			if (this.content == Variant) {
+				this.content = new DictData(t);
 			}
 			this.content.checkDict(at, t);
 		}
@@ -393,8 +399,8 @@ public class TDataType extends TType implements StringCombinator {
 		if (this.isImmutable) {
 			throw new TErrorCode(TFmt.immutable_data);
 		} else {
-			if (this.content == EmptyContent) {
-				this.content = new RecordContent(true, name);
+			if (this.content == Variant) {
+				this.content = new Record(true, name);
 			}
 			this.content.checkField(at, name, this.isParameter);
 			this.isMutable = true;
@@ -402,8 +408,8 @@ public class TDataType extends TType implements StringCombinator {
 	}
 
 	public void checkGetField(Tree<?> at, String name) {
-		if (this.content == EmptyContent) {
-			this.content = new RecordContent(true, name);
+		if (this.content == Variant) {
+			this.content = new Record(true, name);
 		}
 		this.content.checkField(at, name, this.isParameter);
 	}
@@ -431,28 +437,28 @@ public class TDataType extends TType implements StringCombinator {
 		return this.isImmutable;
 	}
 
-	public TType asImmutable() {
+	public Ty asImmutable() {
 		this.isImmutable = true;
 		return this;
 	}
 
-	public TType asParameter() {
+	public Ty asParameter() {
 		this.isParameter = true;
 		return this;
 	}
 
-	public TDataType asLocal() {
+	public DataTy asLocal() {
 		this.isLocal = true;
 		return this;
 	}
 
-	public TDataType asNonLocal() {
+	public DataTy asNonLocal() {
 		this.isLocal = false;
 		return this;
 	}
 
-	public TType getInnerType() {
-		return this.content.getInnerType();
+	public Ty getInnerType() {
+		return this.content.getInnerTy();
 	}
 
 	/* TTypeApi */
@@ -462,55 +468,55 @@ public class TDataType extends TType implements StringCombinator {
 	}
 
 	@Override
-	public boolean isArrayType() {
-		return this.content instanceof ArrayContent;
+	public boolean isArray() {
+		return this.content instanceof ArrayData;
 	}
 
 	@Override
-	public TType asArrayInnerType() {
-		if (this.isArrayType()) {
-			return this.content.getInnerType();
+	public Ty asArrayInner() {
+		if (this.isArray()) {
+			return this.content.getInnerTy();
 		}
-		return super.asArrayInnerType();
+		return super.asArrayInner();
 	}
 
 	@Override
-	public boolean isDictType() {
-		return this.content instanceof ArrayContent;
+	public boolean isDict() {
+		return this.content instanceof ArrayData;
 	}
 
 	@Override
-	public TType asDictInnerType() {
-		if (this.isDictType()) {
-			return this.content.getInnerType();
+	public Ty asDictInner() {
+		if (this.isDict()) {
+			return this.content.getInnerTy();
 		}
-		return super.asDictInnerType();
+		return super.asDictInner();
 	}
 
 	@Override
-	public boolean isVarType() {
+	public boolean isVar() {
 		return this.content.isVarType();
 	}
 
 	@Override
-	public TType dup(TVarDomain dom) {
-		if (this.isVarType()) {
-			return new TDataType(this.content.dup(dom));
+	public Ty dupTy(VarDomain dom) {
+		if (this.isVar()) {
+			return new DataTy(this.content.dup(dom));
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptType(TType t) {
-		if (t instanceof TDataType) {
-			TDataType dt = (TDataType) t;
+	public boolean acceptTy(Ty t) {
+		if (t instanceof DataTy) {
+			DataTy dt = (DataTy) t;
 			if (dt.isAtomType()) {
-				return this.acceptType(dt.getInnerType());
+				return this.acceptTy(dt.getInnerType());
 			}
 			return this.content.acceptType(this, dt);
 		}
 		if (t.isSpecific()) {
-			if (this.content instanceof EmptyContent) {
+			if (this.content instanceof Variant) {
 				this.content = new AtomContent(t);
 				return true;
 			}

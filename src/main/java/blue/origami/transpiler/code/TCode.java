@@ -5,9 +5,9 @@ import java.util.Iterator;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.TDataType;
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.TCastCode.TConvTemplate;
 import blue.origami.util.StringCombinator;
@@ -29,7 +29,7 @@ public interface TCode extends TCodeAPI, Iterable<TCode>, StringCombinator {
 		return TCodeAPI.super.iterator();
 	}
 
-	public TType getType();
+	public Ty getType();
 
 	public Template getTemplate(TEnv env);
 
@@ -79,7 +79,7 @@ interface TCodeAPI {
 	}
 
 	public default boolean isDataType() {
-		return self().getType() instanceof TDataType;
+		return self().getType() instanceof DataTy;
 	}
 
 	public default int countUntyped(int count) {
@@ -92,13 +92,13 @@ interface TCodeAPI {
 		return count;
 	}
 
-	public default TCode asType(TEnv env, TType t) {
+	public default TCode asType(TEnv env, Ty t) {
 		return asExactType(env, t);
 	}
 
-	public default TCode asExactType(TEnv env, TType t) {
+	public default TCode asExactType(TEnv env, Ty t) {
 		TCode self = self();
-		TType f = self.getType();
+		Ty f = self.getType();
 		if (self.isUntyped() || t.accept(self)) {
 			return self;
 		}
@@ -113,13 +113,13 @@ interface TCodeAPI {
 		return self();
 	}
 
-	public default TType guessType() {
+	public default Ty guessType() {
 		return self().getType();
 	}
 
 	public default TCode goingOut() {
-		TType t = self().getType();
-		if (t instanceof TDataType) {
+		Ty t = self().getType();
+		if (t instanceof DataTy) {
 			// t.asLocal();
 		}
 		return self();
@@ -144,17 +144,17 @@ interface TCodeAPI {
 
 abstract class CommonCode implements TCode {
 	Tree<?> at;
-	TType typed;
+	Ty typed;
 	Template template;
 
-	protected CommonCode(TType t) {
+	protected CommonCode(Ty t) {
 		this.at = null;
 		this.typed = t;
 		this.template = null;
 	}
 
 	protected CommonCode() {
-		this(TType.tUntyped);
+		this(Ty.tUntyped);
 	}
 
 	@Override
@@ -196,19 +196,19 @@ abstract class CommonCode implements TCode {
 	// return super.asType(env, t);
 	// }
 
-	public void setType(TType typed) {
+	public void setType(Ty typed) {
 		assert (typed != null);
 		this.typed = typed;
 	}
 
-	protected static final TType AutoType = null;
+	protected static final Ty AutoType = null;
 
 	@Override
-	public TType getType() {
+	public Ty getType() {
 		if (this.typed == AutoType) {
 			TCode[] a = this.args();
 			if (a.length == 0) {
-				return TType.tVoid;
+				return Ty.tVoid;
 			}
 			return a[a.length - 1].getType();
 		}
@@ -248,13 +248,13 @@ abstract class CommonCode implements TCode {
 abstract class Code1 extends CommonCode {
 	protected TCode inner;
 
-	Code1(TType t, TCode inner) {
+	Code1(Ty t, TCode inner) {
 		super(t);
 		this.inner = inner;
 	}
 
 	Code1(TCode inner) {
-		this(TType.tUntyped, inner);
+		this(Ty.tUntyped, inner);
 	}
 
 	public TCode getInner() {
@@ -276,13 +276,13 @@ abstract class Code1 extends CommonCode {
 abstract class CodeN extends CommonCode {
 	protected TCode[] args;
 
-	public CodeN(TType t, TCode... args) {
+	public CodeN(Ty t, TCode... args) {
 		super(t);
 		this.args = args;
 	}
 
 	public CodeN(TCode... args) {
-		this(TType.tUntyped, args);
+		this(Ty.tUntyped, args);
 	}
 
 	@Override

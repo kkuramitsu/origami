@@ -3,11 +3,11 @@ package blue.origami.transpiler.rule;
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
-import blue.origami.transpiler.TDataType;
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TIntCode;
@@ -36,15 +36,15 @@ public class GetExpr implements ParseRule, OSymbols {
 		}
 
 		@Override
-		public TCode asType(TEnv env, TType t) {
+		public TCode asType(TEnv env, Ty t) {
 			assert (this.isUntyped());
-			this.recv = this.recv.asType(env, TType.tUntyped);
+			this.recv = this.recv.asType(env, Ty.tUntyped);
 			if (this.recv.isDataType()) {
 				TNameHint hint = env.findNameHint(env, this.name);
 				if (hint == null) {
 					throw new TErrorCode(this.nameTree, TFmt.undefined_name__YY0, this.name);
 				}
-				TDataType dt = (TDataType) this.recv.getType();
+				DataTy dt = (DataTy) this.recv.getType();
 				dt.checkGetField(this.nameTree, this.name);
 				if (dt.isUntyped()) {
 					return this;

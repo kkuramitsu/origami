@@ -2,10 +2,10 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
-import blue.origami.transpiler.TDataType;
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TSugarCode;
@@ -37,16 +37,16 @@ public class IndexExpr implements ParseRule, OSymbols {
 		}
 
 		@Override
-		public TCode asType(TEnv env, TType t) {
+		public TCode asType(TEnv env, Ty t) {
 			assert (this.isUntyped());
-			this.recv = this.recv.asType(env, TType.tUntyped);
-			this.index = this.index.asType(env, TType.tUntyped);
+			this.recv = this.recv.asType(env, Ty.tUntyped);
+			this.index = this.index.asType(env, Ty.tUntyped);
 			if (this.index.isUntyped()) {
 				return this;
 			}
 			if (this.recv.isDataType()) {
-				TDataType dt = (TDataType) this.recv.getType();
-				dt.checkGetIndex(this.at, TType.tUntyped);
+				DataTy dt = (DataTy) this.recv.getType();
+				dt.checkGetIndex(this.at, Ty.tUntyped);
 				if (dt.isUntyped()) {
 					return this;
 				}

@@ -8,13 +8,13 @@ public class TCodeTemplate extends Template implements TNameRef {
 
 	protected final String template;
 
-	public TCodeTemplate(String name, TType returnType, TType[] paramTypes, String template) {
+	public TCodeTemplate(String name, Ty returnType, Ty[] paramTypes, String template) {
 		super(name, returnType, paramTypes);
 		this.template = template;
 	}
 
 	public TCodeTemplate(String template) {
-		this(template, TType.tUntyped, TArrays.emptyTypes, template);
+		this(template, Ty.tUntyped, TArrays.emptyTypes, template);
 	}
 
 	@Override

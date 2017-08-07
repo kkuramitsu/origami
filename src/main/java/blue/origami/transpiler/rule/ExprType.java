@@ -4,7 +4,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TTypeCode;
@@ -12,7 +12,7 @@ import blue.origami.transpiler.code.TTypeCode;
 public class ExprType implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
-		TCode c = env.parseCode(env, t.get(_expr)).asType(env, TType.tUntyped);
+		TCode c = env.parseCode(env, t.get(_expr)).asType(env, Ty.tUntyped);
 		if (c.getType().isUntyped()) {
 			throw new TErrorCode(t.get(_expr), TFmt.failed_type_inference);
 		}

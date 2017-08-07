@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
 public class TBoolCode extends CommonCode implements TValueCode {
 	private boolean value;
 
 	public TBoolCode(boolean value) {
-		super(TType.tBool);
+		super(Ty.tBool);
 		this.value = value;
 	}
 

@@ -204,7 +204,7 @@ interface TEnvTraits {
 		return y;
 	}
 
-	public default <X> void findList(String name, Class<X> c, List<X> l, OListMatcher<X> f) {
+	public default <X> void findList(String name, Class<X> c, List<X> l, ListMatcher<X> f) {
 		for (TEnvTraits env = this; env != null; env = env.getParent()) {
 			for (TEnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
@@ -215,7 +215,7 @@ interface TEnvTraits {
 		}
 	}
 
-	public default <X> void findList(Class<?> cname, Class<X> c, List<X> l, OListMatcher<X> f) {
+	public default <X> void findList(Class<?> cname, Class<X> c, List<X> l, ListMatcher<X> f) {
 		findList(key(cname), c, l, f);
 	}
 
@@ -264,49 +264,49 @@ interface TEnvApi {
 			String name = key;
 			if (key.indexOf('>') > 0) {
 				if ((loc = key.indexOf("--->")) > 0) {
-					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 4));
+					Ty f = this.checkType(key.substring(0, loc));
+					Ty t = this.checkType(key.substring(loc + 4));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.BADCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("-->")) > 0) {
-					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 3));
+					Ty f = this.checkType(key.substring(0, loc));
+					Ty t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.CONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("==>")) > 0) {
-					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 3));
+					Ty f = this.checkType(key.substring(0, loc));
+					Ty t = this.checkType(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.CAST, value));
 					return;
 				}
 				if ((loc = key.indexOf("->")) > 0) {
-					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 2));
+					Ty f = this.checkType(key.substring(0, loc));
+					Ty t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("=>")) > 0) {
-					TType f = this.checkType(key.substring(0, loc));
-					TType t = this.checkType(key.substring(loc + 2));
+					Ty f = this.checkType(key.substring(0, loc));
+					Ty t = this.checkType(key.substring(loc + 2));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, TCastCode.BESTCAST, value));
 					return;
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new TCodeTemplate(name, TType.tUntyped, TArrays.emptyTypes, value));
+			env().add(name, new TCodeTemplate(name, Ty.tUntyped, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
-			TType ret = this.checkType(tsigs[tsigs.length - 1]);
+			Ty ret = this.checkType(tsigs[tsigs.length - 1]);
 			if (tsigs.length > 1) {
-				TType[] p = new TType[tsigs.length - 1];
+				Ty[] p = new Ty[tsigs.length - 1];
 				for (int i = 0; i < p.length; i++) {
 					p[i] = this.checkType(tsigs[i]);
 				}
@@ -357,34 +357,54 @@ interface TEnvApi {
 		env().getTranspiler().setSourceSection(sec);
 	}
 
-	public default TType getType(String tsig) {
-		return env().get(tsig, TType.class);
+	public default Ty getType(String tsig) {
+		return env().get(tsig, Ty.class);
 	}
 
-	default TType checkType(String tsig) {
-		TType t = this.getType(tsig);
+	default Ty checkType(String tsig) {
+		Ty t = this.getType(tsig);
 		if (t == null) {
 			if (tsig.endsWith("*")) {
 				t = checkType(tsig.substring(0, tsig.length() - 1));
-				return TType.tArray(t);
+				return Ty.tImArray(t);
+			}
+			if (tsig.endsWith("?")) {
+				t = checkType(tsig.substring(0, tsig.length() - 1));
+				return Ty.tOption(t);
+			}
+			if (tsig.startsWith("{") && tsig.endsWith("*}")) {
+				t = checkType(tsig.substring(1, tsig.length() - 2));
+				return Ty.tMArray(t);
+			}
+			if (tsig.startsWith("Dict[") && tsig.endsWith("]")) {
+				t = checkType(tsig.substring(5, tsig.length() - 1));
+				return Ty.tImDict(t);
+			}
+			if (tsig.startsWith("Dict{") && tsig.endsWith("}")) {
+				t = checkType(tsig.substring(5, tsig.length() - 1));
+				return Ty.tMDict(t);
+			}
+			if (tsig.startsWith("Option[") && tsig.endsWith("]")) {
+				t = checkType(tsig.substring(7, tsig.length() - 1));
+				return Ty.tOption(t);
 			}
 			int loc = 0;
 			if ((loc = tsig.indexOf("->")) > 0) {
-				TType ft = checkType(tsig.substring(0, loc));
-				TType tt = checkType(tsig.substring(loc + 2));
-				return TType.tFunc(tt, ft);
+				Ty ft = checkType(tsig.substring(0, loc));
+				Ty tt = checkType(tsig.substring(loc + 2));
+				return Ty.tFunc(tt, ft);
 			}
-			t = TType.getHiddenType1(tsig);
+			t = Ty.getHidden(tsig);
 		}
 		assert (t != null) : tsig;
 		return t;
 	}
 
-	public default void addTypeHint(TEnv env, String names, TType t) {
+	public default void addTypeHint(TEnv env, String names, Ty t) {
 		this.addTypeHint(env, names.split(","), t);
 	}
 
-	public default void addTypeHint(TEnv env, String[] names, TType t) {
+	public default void addTypeHint(TEnv env, String[] names, Ty t) {
 		if (!t.isUntyped()) {
 			TNameHint hint = TNameHint.newNameHint(t);
 			for (String n : names) {
@@ -447,7 +467,7 @@ interface TEnvApi {
 		return params;
 	}
 
-	public default TType parseType(TEnv env, Tree<?> t, TType defty) {
+	public default Ty parseType(TEnv env, Tree<?> t, Ty defty) {
 		if (t != null) {
 			try {
 				TCode node = parseCode(env, t);
@@ -464,13 +484,13 @@ interface TEnvApi {
 		return defty;
 	}
 
-	public default TConvTemplate findTypeMap(TEnv env, TType f, TType t) {
+	public default TConvTemplate findTypeMap(TEnv env, Ty f, Ty t) {
 		String key = f + "->" + t;
 		TConvTemplate tp = env.get(key, TConvTemplate.class);
 		// System.out.printf("FIXME: finding %s %s\n", key, tp);
-		if (tp == null && t == TType.tVoid) {
+		if (tp == null && t == Ty.tVoid) {
 			String format = env.getSymbol("(Void)", "(void)%s");
-			tp = new TConvTemplate("", TType.tUntyped, TType.tVoid, TCastCode.SAME, format);
+			tp = new TConvTemplate("", Ty.tUntyped, Ty.tVoid, TCastCode.SAME, format);
 			env.getTranspiler().add(key, tp);
 		}
 		return tp == null ? TConvTemplate.Stupid : tp;

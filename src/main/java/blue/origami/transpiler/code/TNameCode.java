@@ -4,8 +4,8 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.ODebug;
@@ -17,16 +17,15 @@ public class TNameCode extends CommonCode implements ParseRule {
 		return new TNameCode(t);
 	}
 
-	private Tree<?> nameTree = null;
 	private final String lname;
 	private final int refLevel;
 
 	public TNameCode(Tree<?> nameTree) {
-		this(nameTree.getString(), TType.tUntyped, 0);
+		this(nameTree.getString(), Ty.tUntyped, 0);
 		this.setSource(nameTree);
 	}
 
-	public TNameCode(String name, TType ty, int refLevel) {
+	public TNameCode(String name, Ty ty, int refLevel) {
 		super(ty);
 		this.lname = name;
 		this.refLevel = refLevel;
@@ -41,12 +40,12 @@ public class TNameCode extends CommonCode implements ParseRule {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		// ODebug.trace("finding %s %s", this.lname, t);
 		if (this.isUntyped()) {
 			TNameRef ref = env.get(this.lname, TNameRef.class, (e, c) -> e.isNameRef(env) ? e : null);
 			if (ref == null) {
-				throw new TErrorCode(this.nameTree, TFmt.undefined_name__YY0, this.lname);
+				throw new TErrorCode(this, TFmt.undefined_name__YY0, this.lname);
 			}
 			return ref.nameCode(env, this.lname).asType(env, t);
 		}

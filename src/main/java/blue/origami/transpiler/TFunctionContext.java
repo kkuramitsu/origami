@@ -11,7 +11,16 @@ public class TFunctionContext {
 
 	ArrayList<TVariable> varList = new ArrayList<>();
 
-	public TVariable newVariable(String name, TType type) {
+	public boolean isDuplicatedName(String name, Ty declType) {
+		for (TVariable v : this.varList) {
+			if (name.equals(v.name) && declType.eq(v.type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public TVariable newVariable(String name, Ty type) {
 		TVariable v = new TVariable(this.varList.size(), name, type);
 		this.varList.add(v);
 		return v;
@@ -47,11 +56,11 @@ public class TFunctionContext {
 		int refLevel = 0;
 		int index;
 		String name;
-		TType type;
+		Ty type;
 
-		TVariable(int index, String name, TType type) {
+		TVariable(int index, String name, Ty type) {
 			this.index = index;
-			this.name = TNameHint.safeName(name);
+			this.name = name;
 			this.type = type;
 		}
 
@@ -64,7 +73,7 @@ public class TFunctionContext {
 		}
 
 		public String getName() {
-			return this.name + this.index;
+			return TNameHint.safeName(this.name) + this.index;
 		}
 
 		@Override

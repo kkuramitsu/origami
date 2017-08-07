@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
 public final class TFuncRefCode extends CommonCode {
@@ -10,7 +10,7 @@ public final class TFuncRefCode extends CommonCode {
 	Template template;
 
 	public TFuncRefCode(String name, Template tp) {
-		super(TType.tFunc(tp.getReturnType(), tp.getParamTypes()));
+		super(Ty.tFunc(tp.getReturnType(), tp.getParamTypes()));
 		this.name = name;
 		this.template = tp;
 	}

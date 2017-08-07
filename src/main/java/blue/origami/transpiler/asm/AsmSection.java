@@ -11,10 +11,10 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import blue.origami.konoha5.DSymbol;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.TDataType;
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TFuncType;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.FuncTy;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.TApplyCode;
 import blue.origami.transpiler.code.TBoolCode;
@@ -83,8 +83,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	@Override
 	public void pushCast(TEnv env, TCastCode code) {
-		TType f = code.getInner().getType();
-		TType t = code.getType();
+		Ty f = code.getInner().getType();
+		Ty t = code.getType();
 		Class<?> fc = Asm.toClass(f);
 		Class<?> tc = Asm.toClass(t);
 		if (code instanceof TBoxCode) {
@@ -424,9 +424,9 @@ public class AsmSection implements TCodeSection, Opcodes {
 		final VarEntry parent;
 		final String name;
 		final int varIndex;
-		final TType varType;
+		final Ty varType;
 
-		VarEntry(VarEntry parent, String name, int varIndex, TType varType) {
+		VarEntry(VarEntry parent, String name, int varIndex, Ty varType) {
 			this.parent = parent;
 			this.name = name;
 			this.varIndex = varIndex;
@@ -450,7 +450,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	VarEntry varStack = null;
 
-	void addVariable(String name, TType varType) {
+	void addVariable(String name, Ty varType) {
 		int index = this.varStack == null ? 0 : this.varStack.nextIndex();
 		this.varStack = new VarEntry(this.varStack, name, index, varType);
 	}
@@ -563,7 +563,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushData(TEnv env, TDataCode code) {
 		if (code.isRange()) {
-			TDataType dt = (TDataType) code.getType();
+			DataTy dt = (DataTy) code.getType();
 			for (TCode sub : code) {
 				sub.emitCode(env, this);
 			}
@@ -572,14 +572,14 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return;
 		}
 		if (code.isArray()) {
-			TDataType dt = (TDataType) code.getType();
+			DataTy dt = (DataTy) code.getType();
 			if (Asm.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());
 				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(Asm.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			} else {
-				TType t = dt.getInnerType();
+				Ty t = dt.getInnerType();
 				this.pushArray(env, Asm.ti(t), false, code.args());
 				String desc = String.format("([%s)%s", Type.getDescriptor(Asm.toClass(t)),
 						Type.getDescriptor(Asm.toClass(dt)));
@@ -624,7 +624,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushFuncExpr(TEnv env, TFuncCode code) {
 		String[] fieldNames = code.getFieldNames();
-		TType[] fieldTypes = code.getFieldTypes();
+		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = AsmGenerator.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(),
 				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
 		TCode[] inits = code.getFieldInitCode();
@@ -646,7 +646,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		for (TCode sub : code) {
 			sub.emitCode(env, this);
 		}
-		TFuncType funcType = (TFuncType) code.args()[0].getType();
+		FuncTy funcType = (FuncTy) code.args()[0].getType();
 		// String desc = Asm.toTypeDesc(funcType.getReturnType(),
 		// TArrays.join(funcType, funcType.getParamTypes()));
 		String desc = Asm.toTypeDesc(funcType.getReturnType(), funcType.getParamTypes());

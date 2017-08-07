@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
 public class TIntCode extends CommonCode implements TValueCode {
 	private int value;
 
 	public TIntCode(int value) {
-		super(TType.tInt);
+		super(Ty.tInt);
 		this.value = value;
 	}
 
@@ -37,7 +37,7 @@ public class TIntCode extends CommonCode implements TValueCode {
 
 		public TCharCode(int value) {
 			super(value);
-			this.setType(TType.tChar);
+			this.setType(Ty.tChar);
 		}
 
 	}

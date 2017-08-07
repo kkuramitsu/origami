@@ -2,26 +2,50 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.TFunctionContext;
+import blue.origami.transpiler.TFunctionContext.TVariable;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class TLetCode extends Code1 {
-	private TType decltype;
+	private Ty declType;
 	private String name;
+	private boolean isDuplicated = false;
 
-	public TLetCode(String name, TType type, TCode expr) {
+	public TLetCode(String name, Ty type, TCode expr) {
 		super(expr);
 		this.name = name;
-		this.decltype = type;
+		this.declType = type;
 	}
 
 	public String getName() {
 		return this.name;
 	}
 
-	public TType getDeclType() {
-		return this.decltype;
+	public Ty getDeclType() {
+		return this.declType;
+	}
+
+	@Override
+	public TCode asType(TEnv env, Ty ret) {
+		if (this.isUntyped()) {
+			this.inner = this.inner.asType(env, this.declType);
+			if (this.declType.isUntyped()) {
+				this.declType = this.inner.guessType();
+			}
+			this.setType(Ty.tVoid);
+		}
+		TFunctionContext fcx = env.get(TFunctionContext.class);
+		assert (fcx != null);
+		if (fcx.isDuplicatedName(this.name, this.declType)) {
+			this.isDuplicated = true;
+			ODebug.trace("duplicated local name %s", this.name);
+		}
+		TVariable var = fcx.newVariable(this.name, this.declType);
+		env.add(this.name, var);
+		return this;
 	}
 
 	@Override
@@ -31,7 +55,7 @@ public class TLetCode extends Code1 {
 
 	@Override
 	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.decltype.strOut(env), this.name, this.getInner().strOut(env));
+		return this.getTemplate(env).format(this.declType.strOut(env), this.name, this.getInner().strOut(env));
 	}
 
 	@Override

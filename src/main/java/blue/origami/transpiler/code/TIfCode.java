@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
@@ -41,13 +41,13 @@ public class TIfCode extends CodeN {
 	/* type dependency */
 
 	@Override
-	public TType getType() {
-		TType t = this.args[1].getType();
+	public Ty getType() {
+		Ty t = this.args[1].getType();
 		return (t.isUntyped()) ? this.args[2].getType() : t;
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		this.args[1] = this.args[1].asType(env, t);
 		this.args[2] = this.args[2].asType(env, t);
 		return super.asType(env, t);
@@ -59,7 +59,7 @@ public class TIfCode extends CodeN {
 	}
 
 	public boolean isStatementStyle() {
-		return this.getType() == TType.tVoid || this.hasReturn();
+		return this.getType() == Ty.tVoid || this.hasReturn();
 	}
 
 	@Override

@@ -3,10 +3,12 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.rule.OSymbols;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.code.TDataArrayCode;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.transpiler.code.TDataArrayCode;
 
 public class DataSetExpr extends LoggerRule implements OSymbols, ParseRule {
+
+	boolean isMutable = true;
 
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
@@ -16,6 +18,6 @@ public class DataSetExpr extends LoggerRule implements OSymbols, ParseRule {
 			values[c] = env.parseCode(env, sub);
 			c++;
 		}
-		return new TDataArrayCode(values);
+		return new TDataArrayCode(this.isMutable, values);
 	}
 }

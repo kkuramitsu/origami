@@ -4,8 +4,8 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TFuncType;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.FuncTy;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class TApplyCode extends CodeN {
@@ -14,17 +14,17 @@ public class TApplyCode extends CodeN {
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
-			this.args[0] = this.args[0].asType(env, TType.tUntyped);
+			this.args[0] = this.args[0].asType(env, Ty.tUntyped);
 			if (this.args[0] instanceof TFuncRefCode) {
 				// ODebug.trace("switching to expr %s", this.args[0]);
 				String name = ((TFuncRefCode) this.args[0]).name;
 				return new TExprCode(name, TArrays.ltrim(this.args)).asType(env, t);
 			}
-			if (this.args[0].getType() instanceof TFuncType) {
-				TFuncType funcType = (TFuncType) this.args[0].getType();
-				TType[] p = funcType.getParamTypes();
+			if (this.args[0].getType() instanceof FuncTy) {
+				FuncTy funcType = (FuncTy) this.args[0].getType();
+				Ty[] p = funcType.getParamTypes();
 				if (p.length + 1 != this.args.length) {
 					throw new TErrorCode("mismatched parameter size %d %d", p.length, this.args.length);
 				}
@@ -41,14 +41,14 @@ public class TApplyCode extends CodeN {
 				if (!t.isSpecific()) {
 					return this.StillUntyped();
 				}
-				TType[] p = new TType[this.args.length - 1];
+				Ty[] p = new Ty[this.args.length - 1];
 				for (int i = 0; i < p.length; i++) {
-					this.args[i + 1] = this.args[i + 1].asType(env, TType.tUntyped);
+					this.args[i + 1] = this.args[i + 1].asType(env, Ty.tUntyped);
 					if (this.args[i + 1].isUntyped()) {
 						return this.StillUntyped();
 					}
 				}
-				TType funcType = TType.tFunc(t, p);
+				Ty funcType = Ty.tFunc(t, p);
 				this.args[0] = this.args[0].asType(env, funcType);
 				if (this.args[0].getType() == funcType) {
 					this.setType(t);

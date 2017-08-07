@@ -2,20 +2,20 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class TTypeCode extends CommonCode {
-	private TType value;
+	private Ty value;
 
-	public TTypeCode(TType value) {
-		super(TType.tVoid);
+	public TTypeCode(Ty value) {
+		super(Ty.tVoid);
 		this.value = value;
 	}
 
-	public TType getTypeValue() {
+	public Ty getTypeValue() {
 		return this.value;
 	}
 

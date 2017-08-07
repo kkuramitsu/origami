@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
 public class TemplateCode extends CodeN {
 
 	public TemplateCode(TCode... codes) {
-		super(TType.tString, codes);
+		super(Ty.tString, codes);
 	}
 
 	@Override

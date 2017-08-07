@@ -4,12 +4,22 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.code.TTypeCode;
 
 public class DataType implements ParseRule {
+	boolean isMutable = true;
+
+	public DataType() {
+		this(true);
+	}
+
+	public DataType(boolean isMutable) {
+		this.isMutable = isMutable;
+	}
+
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		String[] names = new String[t.size()];
@@ -23,6 +33,6 @@ public class DataType implements ParseRule {
 			names[c] = name;
 			c++;
 		}
-		return new TTypeCode(TType.tRecord(names));
+		return new TTypeCode(this.isMutable ? Ty.tMRecord(names) : Ty.tImRecord(names));
 	}
 }

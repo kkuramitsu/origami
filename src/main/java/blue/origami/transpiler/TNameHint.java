@@ -9,11 +9,11 @@ public interface TNameHint {
 		return true;
 	}
 
-	public TType getType();
+	public Ty getType();
 
 	public TCode getDefaultValue();
 
-	public static TNameHint newNameHint(TType t) {
+	public static TNameHint newNameHint(Ty t) {
 		TCode v = t.getDefaultValue();
 		return new SimpleNameHint(t, v);
 	}
@@ -72,16 +72,16 @@ public interface TNameHint {
 }
 
 class SimpleNameHint implements TNameHint {
-	TType ty;
+	Ty ty;
 	TCode defined;
 
-	SimpleNameHint(TType ty, TCode def) {
+	SimpleNameHint(Ty ty, TCode def) {
 		this.ty = ty;
 		this.defined = def;
 	}
 
 	@Override
-	public TType getType() {
+	public Ty getType() {
 		return this.ty;
 	}
 

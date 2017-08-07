@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
 public class TDoubleCode extends CommonCode implements TValueCode {
 	private double value;
 
 	public TDoubleCode(double value) {
-		super(TType.tFloat);
+		super(Ty.tFloat);
 		this.value = value;
 	}
 

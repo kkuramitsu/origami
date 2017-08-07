@@ -5,7 +5,7 @@ import blue.origami.transpiler.code.TExprCode;
 
 public class TConstTemplate extends TCodeTemplate {
 
-	public TConstTemplate(String name, TType returnType, String template) {
+	public TConstTemplate(String name, Ty returnType, String template) {
 		super(name, returnType, TArrays.emptyTypes, template);
 	}
 

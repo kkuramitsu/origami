@@ -2,22 +2,22 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
-public class TFuncType extends TType {
+public class FuncTy extends Ty {
 	protected final String name;
-	protected final TType[] paramTypes;
-	protected final TType returnType;
+	protected final Ty[] paramTypes;
+	protected final Ty returnType;
 
-	TFuncType(String name, TType returnType, TType... paramTypes) {
+	FuncTy(String name, Ty returnType, Ty... paramTypes) {
 		this.name = name;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
 	}
 
-	TFuncType(TType returnType, TType... paramTypes) {
+	FuncTy(Ty returnType, Ty... paramTypes) {
 		this(stringfy(returnType, paramTypes), returnType, paramTypes);
 	}
 
-	public TType getReturnType() {
+	public Ty getReturnType() {
 		return this.returnType;
 	}
 
@@ -25,17 +25,17 @@ public class TFuncType extends TType {
 		return this.paramTypes.length;
 	}
 
-	public TType[] getParamTypes() {
+	public Ty[] getParamTypes() {
 		return this.paramTypes;
 	}
 
-	public static String stringfy(TType returnType, TType... paramTypes) {
+	public static String stringfy(Ty returnType, Ty... paramTypes) {
 		StringBuilder sb = new StringBuilder();
 		if (paramTypes.length != 1) {
 			sb.append("(");
 		}
 		int c = 0;
-		for (TType t : paramTypes) {
+		for (Ty t : paramTypes) {
 			if (c > 0) {
 				sb.append(",");
 			}
@@ -51,8 +51,8 @@ public class TFuncType extends TType {
 	}
 
 	@Override
-	public String toString() {
-		return this.name;
+	public void strOut(StringBuilder sb) {
+		sb.append(this.name);
 	}
 
 	@Override
@@ -61,10 +61,10 @@ public class TFuncType extends TType {
 	}
 
 	@Override
-	public boolean isVarType() {
-		if (!this.returnType.isVarType()) {
-			for (TType t : this.paramTypes) {
-				if (t.isVarType()) {
+	public boolean isVar() {
+		if (!this.returnType.isVar()) {
+			for (Ty t : this.paramTypes) {
+				if (t.isVar()) {
 					return true;
 				}
 			}
@@ -74,27 +74,27 @@ public class TFuncType extends TType {
 	}
 
 	@Override
-	public TType dup(TVarDomain dom) {
-		if (this.isVarType()) {
-			return new TFuncType(this.name, this.returnType.dup(dom),
-					Arrays.stream(this.paramTypes).map(x -> x.dup(dom)).toArray(TType[]::new));
+	public Ty dupTy(VarDomain dom) {
+		if (this.isVar()) {
+			return new FuncTy(this.name, this.returnType.dupTy(dom),
+					Arrays.stream(this.paramTypes).map(x -> x.dupTy(dom)).toArray(Ty[]::new));
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptType(TType t) {
-		if (t instanceof TFuncType) {
-			TFuncType ft = (TFuncType) t;
+	public boolean acceptTy(Ty t) {
+		if (t instanceof FuncTy) {
+			FuncTy ft = (FuncTy) t;
 			if (ft.getParamSize() != this.getParamSize()) {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptType(ft.paramTypes[i])) {
+				if (!this.paramTypes[i].acceptTy(ft.paramTypes[i])) {
 					return false;
 				}
 			}
-			return this.returnType.acceptType(ft.returnType);
+			return this.returnType.acceptTy(ft.returnType);
 		}
 		return false;
 	}

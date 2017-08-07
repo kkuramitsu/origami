@@ -118,4 +118,17 @@ public interface StringCombinator {
 		}
 	}
 
+	public static String joins(String[] names, String delim) {
+		StringBuilder sb = new StringBuilder();
+		int c = 0;
+		for (String n : names) {
+			if (c > 0) {
+				sb.append(",");
+			}
+			sb.append(n);
+			c++;
+		}
+		return sb.toString();
+	}
+
 }

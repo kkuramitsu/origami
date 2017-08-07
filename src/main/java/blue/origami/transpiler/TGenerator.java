@@ -36,12 +36,12 @@ public class TGenerator {
 		code.emitCode(env, this.eval);
 	}
 
-	public TCodeTemplate newConstTemplate(TEnv env, String lname, TType returnType) {
+	public TCodeTemplate newConstTemplate(TEnv env, String lname, Ty returnType) {
 		String template = env.format("constname", "name", "%s", lname);
 		return new TConstTemplate(lname, returnType, template);
 	}
 
-	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
+	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, TCode expr) {
 		this.data.pushIndentLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
 	}
 
@@ -58,7 +58,7 @@ public class TGenerator {
 		return this.currentFuncName;
 	}
 
-	public TCodeTemplate newFuncTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
+	public TCodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");
@@ -74,8 +74,8 @@ public class TGenerator {
 		return new TCodeTemplate(lname, returnType, paramTypes, template);
 	}
 
-	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
-			TType returnType, TCode code) {
+	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+			Ty returnType, TCode code) {
 		String params = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");

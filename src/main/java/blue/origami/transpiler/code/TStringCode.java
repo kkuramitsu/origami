@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 
 public class TStringCode extends CommonCode implements TValueCode {
 	private String value;
 
 	public TStringCode(String value) {
-		super(TType.tString);
+		super(Ty.tString);
 		this.value = value;
 	}
 

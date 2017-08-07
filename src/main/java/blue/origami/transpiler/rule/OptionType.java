@@ -7,10 +7,10 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TTypeCode;
 
-public class DictType implements ParseRule, OSymbols {
+public class OptionType implements ParseRule, OSymbols {
 	@Override
 	public TCode apply(TEnv env, Tree<?> t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
-		return new TTypeCode(Ty.tImDict(ty));
+		return new TTypeCode(Ty.tOption(ty));
 	}
 }

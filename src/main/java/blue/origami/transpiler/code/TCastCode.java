@@ -3,11 +3,11 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class TCastCode extends Code1 {
-	public TCastCode(TType ret, TConvTemplate tp, TCode inner) {
+	public TCastCode(Ty ret, TConvTemplate tp, TCode inner) {
 		super(ret, inner);
 		this.setTemplate(tp);
 	}
@@ -37,12 +37,12 @@ public class TCastCode extends Code1 {
 
 	public static class TConvTemplate extends TCodeTemplate {
 
-		public static final TConvTemplate Stupid = new TConvTemplate("", TType.tUntyped, TType.tUntyped, STUPID, "%s");
+		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped, Ty.tUntyped, STUPID, "%s");
 		// fields
 		protected int mapCost;
 
-		public TConvTemplate(String name, TType fromType, TType returnType, int mapCost, String template) {
-			super(name, returnType, new TType[] { fromType }, template);
+		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
+			super(name, returnType, new Ty[] { fromType }, template);
 			this.mapCost = mapCost;
 		}
 
@@ -50,7 +50,7 @@ public class TCastCode extends Code1 {
 
 	public static class TBoxCode extends TCastCode {
 
-		public TBoxCode(TType ret, TCode inner) {
+		public TBoxCode(Ty ret, TCode inner) {
 			super(ret, null, inner);
 		}
 
@@ -58,7 +58,7 @@ public class TCastCode extends Code1 {
 
 	public static class TUnboxCode extends TCastCode {
 
-		public TUnboxCode(TType ret, TCode inner) {
+		public TUnboxCode(Ty ret, TCode inner) {
 			super(ret, null, inner);
 		}
 

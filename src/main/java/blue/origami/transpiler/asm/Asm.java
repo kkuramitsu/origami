@@ -6,31 +6,31 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import blue.origami.konoha5.Func;
+import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TFuncType;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
 
 public class Asm {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 	static HashMap<String, Class<?>> t2cMap = new HashMap<>();
 
-	static void set(Class<?> c, TType t) {
+	static void set(Class<?> c, Ty t) {
 		String key = t.toString();
 		t2cMap.put(key, c);
 	}
 
-	static Class<?> toClass(TType t) {
-		t = t.realType();
+	static Class<?> toClass(Ty t) {
+		t = t.realTy();
 		String key = t.toString();
 		Class<?> c = t2cMap.get(key);
 		if (c == null) {
-			if (t instanceof TFuncType) {
-				c = AsmGenerator.loadFuncTypeClass(((TFuncType) t).getParamTypes(), ((TFuncType) t).getReturnType());
+			if (t instanceof FuncTy) {
+				c = AsmGenerator.loadFuncTypeClass(((FuncTy) t).getParamTypes(), ((FuncTy) t).getReturnType());
 				set(c, t);
 				return c;
 			}
-			if (t.isArrayType()) {
+			if (t.isArray()) {
 				return blue.origami.konoha5.ObjArray.class;
 			}
 			ODebug.trace("undefined type %s", t);
@@ -40,11 +40,11 @@ public class Asm {
 		return c;
 	}
 
-	static Type ti(TType t) {
+	static Type ti(Ty t) {
 		return Type.getType(toClass(t));
 	}
 
-	static Type[] ti(TType[] paramTypes) {
+	static Type[] ti(Ty[] paramTypes) {
 		Type[] p = new Type[paramTypes.length];
 		for (int i = 0; i < paramTypes.length; i++) {
 			p[i] = Type.getType(toClass(paramTypes[i]));
@@ -52,14 +52,14 @@ public class Asm {
 		return p;
 	}
 
-	static String toTypeDesc(TType t) {
+	static String toTypeDesc(Ty t) {
 		return Type.getType(toClass(t)).getDescriptor();
 	}
 
-	static String toTypeDesc(TType ret, TType... paramTypes) {
+	static String toTypeDesc(Ty ret, Ty... paramTypes) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		for (TType t : paramTypes) {
+		for (Ty t : paramTypes) {
 			sb.append(toTypeDesc(t));
 		}
 		sb.append(")");
@@ -72,33 +72,34 @@ public class Asm {
 	// }
 
 	static {
-		set(Object.class, TType.tUntyped);
-		set(Object.class, TType.tVar("a"));
-		set(Object.class, TType.tVar("b"));
-		set(void.class, TType.tVoid);
-		set(boolean.class, TType.tBool);
-		set(char.class, TType.tChar);
-		set(int.class, TType.tInt);
-		set(double.class, TType.tFloat);
-		set(String.class, TType.tString);
-		set(blue.origami.konoha5.Data.class, TType.tData());
-		set(blue.origami.konoha5.Data.class, TType.tData(TArrays.emptyNames));
-		set(blue.origami.konoha5.IntArray.class, TType.tArray(TType.tInt));
+		set(Object.class, Ty.tUntyped);
+		set(Object.class, Ty.tVar("a"));
+		set(Object.class, Ty.tVar("b"));
+		set(void.class, Ty.tVoid);
+		set(boolean.class, Ty.tBool);
+		set(char.class, Ty.tChar);
+		set(int.class, Ty.tInt);
+		set(double.class, Ty.tFloat);
+		set(String.class, Ty.tString);
+		set(blue.origami.konoha5.Data.class, Ty.tData());
+		set(blue.origami.konoha5.Data.class, Ty.tData(TArrays.emptyNames));
+		set(blue.origami.konoha5.IntArray.class, Ty.tImArray(Ty.tInt));
+		set(blue.origami.konoha5.IntArray.class, Ty.tMArray(Ty.tInt));
 
 		// Func
-		set(Func.FuncBool.class, TType.tFunc(TType.tBool));
-		set(Func.FuncBoolVoid.class, TType.tFunc(TType.tVoid, TType.tBool));
-		set(Func.FuncBoolBool.class, TType.tFunc(TType.tBool, TType.tBool));
-		set(Func.FuncBoolInt.class, TType.tFunc(TType.tInt, TType.tBool));
-		set(Func.FuncBoolFloat.class, TType.tFunc(TType.tFloat, TType.tBool));
-		set(Func.FuncBoolStr.class, TType.tFunc(TType.tString, TType.tBool));
+		set(Func.FuncBool.class, Ty.tFunc(Ty.tBool));
+		set(Func.FuncBoolVoid.class, Ty.tFunc(Ty.tVoid, Ty.tBool));
+		set(Func.FuncBoolBool.class, Ty.tFunc(Ty.tBool, Ty.tBool));
+		set(Func.FuncBoolInt.class, Ty.tFunc(Ty.tInt, Ty.tBool));
+		set(Func.FuncBoolFloat.class, Ty.tFunc(Ty.tFloat, Ty.tBool));
+		set(Func.FuncBoolStr.class, Ty.tFunc(Ty.tString, Ty.tBool));
 		//
-		set(Func.FuncInt.class, TType.tFunc(TType.tInt));
-		set(Func.FuncIntVoid.class, TType.tFunc(TType.tVoid, TType.tInt));
-		set(Func.FuncIntBool.class, TType.tFunc(TType.tBool, TType.tInt));
-		set(Func.FuncIntInt.class, TType.tFunc(TType.tInt, TType.tInt));
-		set(Func.FuncIntFloat.class, TType.tFunc(TType.tFloat, TType.tInt));
-		set(Func.FuncIntStr.class, TType.tFunc(TType.tString, TType.tInt));
+		set(Func.FuncInt.class, Ty.tFunc(Ty.tInt));
+		set(Func.FuncIntVoid.class, Ty.tFunc(Ty.tVoid, Ty.tInt));
+		set(Func.FuncIntBool.class, Ty.tFunc(Ty.tBool, Ty.tInt));
+		set(Func.FuncIntInt.class, Ty.tFunc(Ty.tInt, Ty.tInt));
+		set(Func.FuncIntFloat.class, Ty.tFunc(Ty.tFloat, Ty.tInt));
+		set(Func.FuncIntStr.class, Ty.tFunc(Ty.tString, Ty.tInt));
 	}
 
 	public final static Class<?> boxType(Class<?> c) {

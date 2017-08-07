@@ -18,6 +18,7 @@ import blue.origami.transpiler.asm.AsmGenerator;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;
+import blue.origami.transpiler.rule.DataType;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.util.OConsole;
@@ -68,16 +69,19 @@ public class Transpiler extends TEnv {
 		this.add("PlusExpr", new UnaryExpr("+"));
 		this.add("CmplExpr", new UnaryExpr("~"));
 
+		this.add("RecordType", new DataType(false));
+		this.add("MutableRecordType", new DataType(true));
+
 		// type
-		this.add("?", TType.tUntyped);
-		this.add("Bool", TType.tBool);
-		this.add("Int", TType.tInt);
-		this.add("Float", TType.tFloat);
-		this.add("String", TType.tString);
-		this.add("Data", TType.tData());
-		this.addTypeHint(this, "i,j,k,m,n", TType.tInt);
-		this.addTypeHint(this, "x,y,z,w", TType.tFloat);
-		this.addTypeHint(this, "s,t,u,name", TType.tString);
+		this.add("?", Ty.tUntyped);
+		this.add("Bool", Ty.tBool);
+		this.add("Int", Ty.tInt);
+		this.add("Float", Ty.tFloat);
+		this.add("String", Ty.tString);
+		this.add("Data", Ty.tData());
+		this.addTypeHint(this, "i,j,k,m,n", Ty.tInt);
+		this.addTypeHint(this, "x,y,z,w", Ty.tFloat);
+		this.addTypeHint(this, "s,t,u,name", Ty.tString);
 	}
 
 	private void loadLibrary(String file) {
@@ -180,10 +184,10 @@ public class Transpiler extends TEnv {
 		OConsole.println(t);
 		OConsole.endColor();
 		this.generator.setup();
-		TCode code = env.parseCode(env, t).asType(env, TType.tUntyped);
+		TCode code = env.parseCode(env, t).asType(env, Ty.tUntyped);
 		this.generator.emit(env, code);
 		Object result = this.generator.wrapUp();
-		if (code.getType() != TType.tVoid) {
+		if (code.getType() != Ty.tVoid) {
 			OConsole.println("(%s) %s", code.getType(), OConsole.bold("" + result));
 		}
 	}
@@ -209,7 +213,7 @@ public class Transpiler extends TEnv {
 
 	int functionId = 0;
 
-	public Template defineConst(boolean isPublic, String name, TType type, TCode expr) {
+	public Template defineConst(boolean isPublic, String name, Ty type, TCode expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
 		TCodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
@@ -220,8 +224,8 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
-	public Template defineFunction(boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
-			TType returnType, Tree<?> body) {
+	public Template defineFunction(boolean isPublic, String name, String[] paramNames, Ty[] paramTypes, Ty returnType,
+			Tree<?> body) {
 		final TEnv env = this.newEnv();
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final TCodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);

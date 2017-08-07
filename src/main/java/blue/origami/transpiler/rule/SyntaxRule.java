@@ -6,7 +6,7 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.TErrorCode;
 import blue.origami.util.ODebug;
 
@@ -51,13 +51,13 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 	// return env.get(OUntypedType.class);
 	// }
 
-	public TType[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, TType defaultType) {
+	public Ty[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, Ty defaultType) {
 		if (params == null) {
 			return TArrays.emptyTypes;
 		}
 		/* We create a new env for local name hint */
 		TEnv lenv = env.newEnv();
-		TType[] p = new TType[paramNames.length];
+		Ty[] p = new Ty[paramNames.length];
 		if (params.has(_name) && p.length == 1) {
 			p[0] = this.parseParamType(lenv, params, paramNames[0], params.get(_type, null), defaultType);
 			return p;
@@ -70,15 +70,15 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 		return p;
 	}
 
-	public TType parseParamType(TEnv env, Tree<?> param, String name, Tree<?> type, TType defaultType) {
+	public Ty parseParamType(TEnv env, Tree<?> param, String name, Tree<?> type, Ty defaultType) {
 		// Symbol paramTag = param.getTag();
-		TType ty = null;
+		Ty ty = null;
 		if (type != null) {
 			ty = env.parseType(env, type, null);
 		}
 		if (ty == null && name != null) {
 			if (name.endsWith("?")) {
-				ty = TType.tBool;
+				ty = Ty.tBool;
 			} else {
 				TNameHint hint = env.findNameHint(env, name);
 				if (hint != null) {
@@ -89,7 +89,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 		if (ty == null) {
 			if (TNameHint.isShortName(name)) {
 				ODebug.trace("local data variable %s", name);
-				ty = TType.tData().asParameter();
+				ty = Ty.tData().asParameter();
 				env.addTypeHint(env, name, ty);
 			}
 		}
@@ -105,7 +105,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 	}
 
 	// name
-	public TType parseTypeArity(TEnv env, TType ty, Tree<?> param) {
+	public Ty parseTypeArity(TEnv env, Ty ty, Tree<?> param) {
 		if (param.has(_suffix)) {
 			String suffix = param.getStringAt(_suffix, "");
 			// if (ty != null && suffix.equals("?")) {
@@ -114,7 +114,7 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 			// return ty;
 			// }
 			if (ty != null && suffix.equals("*")) {
-				ty = TType.tArray(ty);
+				ty = Ty.tImArray(ty);
 				ODebug.trace("arity %s", ty);
 				return ty;
 			}
@@ -122,11 +122,11 @@ public class SyntaxRule extends LoggerRule implements OSymbols {
 		return ty;
 	}
 
-	public TType[] parseTypes(TEnv env, Tree<?> types) {
+	public Ty[] parseTypes(TEnv env, Tree<?> types) {
 		if (types == null) {
 			return TArrays.emptyTypes;
 		}
-		TType[] p = new TType[types.size()];
+		Ty[] p = new Ty[types.size()];
 		int i = 0;
 		for (Tree<?> sub : types) {
 			p[i] = env.parseType(env, sub, null);

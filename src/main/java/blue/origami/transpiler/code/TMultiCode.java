@@ -4,7 +4,7 @@ import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class TMultiCode extends CodeN {
@@ -39,22 +39,23 @@ public class TMultiCode extends CodeN {
 	}
 
 	@Override
-	public TType getType() {
+	public Ty getType() {
 		if (this.args.length == 0) {
-			return TType.tVoid;
+			return Ty.tVoid;
 		}
 		return this.args[this.args.length - 1].getType();
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType ret) {
+	public TCode asType(TEnv env, Ty ret) {
 		if (this.args.length > 0) {
+			TEnv lenv = env.newEnv();
 			final int last = this.args.length - 1;
 			for (int i = 0; i < last; i++) {
 				final int n = i;
-				this.args[i] = env.catchCode(() -> this.args[n].asType(env, TType.tVoid));
+				this.args[i] = env.catchCode(() -> this.args[n].asType(lenv, Ty.tVoid));
 			}
-			this.args[last] = env.catchCode(() -> this.args[last].asType(env, ret));
+			this.args[last] = env.catchCode(() -> this.args[last].asType(lenv, ret));
 		}
 		return this;
 	}

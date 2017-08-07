@@ -8,6 +8,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.TCode;
+import blue.origami.util.ODebug;
 
 public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	public final Class<?> baseType;
@@ -45,6 +46,7 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 			try {
 				value = Integer.parseInt(text, radix);
 			} catch (NumberFormatException e) {
+				ODebug.trace("radix=%d", radix);
 				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
 				value = 0;
 			}

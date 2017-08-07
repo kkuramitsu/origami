@@ -1,30 +1,30 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TDataType;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TType;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class TDataArrayCode extends TDataCode {
 
-	public TDataArrayCode(TCode... values) {
-		super(TArrays.emptyNames, values);
+	public TDataArrayCode(boolean isMutable, TCode... values) {
+		super(isMutable, TArrays.emptyNames, values);
 	}
 
-	public TDataArrayCode(TDataType dt) {
+	public TDataArrayCode(DataTy dt) {
 		super(dt);
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
-		if (this.isUntyped() || (t.isArrayType() && t.equals(this.getType()))) {
-			TType firstType = t.asArrayInnerType();
+	public TCode asType(TEnv env, Ty t) {
+		if (this.isUntyped() || (t.isArray() && !t.eq(this.getType()))) {
+			Ty firstType = t.asArrayInner();
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
-				TType tt = this.args[i].getType();
+				Ty tt = this.args[i].getType();
 				if (tt.isUntyped()) {
 					return this;
 				}
@@ -35,7 +35,7 @@ public class TDataArrayCode extends TDataCode {
 			if (firstType.isUntyped()) {
 				return this;
 			}
-			this.setType(TType.tArray(firstType));
+			this.setType(this.isMutable() ? Ty.tMArray(firstType) : Ty.tImArray(firstType));
 		}
 		return super.asType(env, t);
 	}

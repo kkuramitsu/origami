@@ -7,7 +7,7 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.util.OLog;
 import blue.origami.util.StringCombinator;
@@ -50,12 +50,12 @@ public class TErrorCode extends RuntimeException implements TCode {
 	}
 
 	@Override
-	public TType getType() {
+	public Ty getType() {
 		return this.dummy.getType();
 	}
 
 	@Override
-	public TCode asType(TEnv env, TType t) {
+	public TCode asType(TEnv env, Ty t) {
 		this.dummy.setType(t);
 		return this;
 	}

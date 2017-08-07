@@ -19,7 +19,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunction;
 import blue.origami.transpiler.TGenerator;
 import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.TType;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.TCode;
@@ -75,10 +75,10 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		if (code.isEmpty() && this.exampleList != null) {
 			ArrayList<TCode> asserts = new ArrayList<>();
 			for (Tree<?> t : this.exampleList) {
-				TCode body = env.parseCode(env, t).asType(env, TType.tBool);
+				TCode body = env.parseCode(env, t).asType(env, Ty.tBool);
 				asserts.add(new TExprCode("assert", body));
 			}
-			code = new TMultiCode(false, asserts.toArray(new TCode[asserts.size()])).asType(env, TType.tVoid);
+			code = new TMultiCode(false, asserts.toArray(new TCode[asserts.size()])).asType(env, Ty.tVoid);
 			this.exampleList = null;
 		}
 		// ODebug.trace("isEmpty: %s %s", code.isEmpty(), code);
@@ -119,7 +119,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	@Override
-	public TCodeTemplate newConstTemplate(TEnv env, String lname, TType ret) {
+	public TCodeTemplate newConstTemplate(TEnv env, String lname, Ty ret) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("F|");
 		sb.append(this.cname);
@@ -130,7 +130,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	@Override
-	public void defineConst(Transpiler env, boolean isPublic, String name, TType type, TCode expr) {
+	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, TCode expr) {
 		AsmGenerator asm = env.get(AsmGenerator.class);
 		if (asm == null) {
 			env.add(AsmGenerator.class, this);
@@ -143,7 +143,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	@Override
-	public TCodeTemplate newFuncTemplate(TEnv env, String lname, TType returnType, TType... paramTypes) {
+	public TCodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes) {
 		// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 		// "(D)D", false);
 		StringBuilder sb = new StringBuilder();
@@ -156,8 +156,8 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	}
 
 	@Override
-	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, TType[] paramTypes,
-			TType returnType, TCode code) {
+	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+			Ty returnType, TCode code) {
 		Method m = new Method(name, Asm.ti(returnType), Asm.ti(paramTypes));
 		GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw);
 		AsmSection sec = new AsmSection(this.cname, mw);
@@ -176,7 +176,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 	// local
 	// static HashMap<Class<?>, TType> c2tMap = new HashMap<>();
 
-	static String nameApply(TType t) {
+	static String nameApply(Ty t) {
 		switch (t.toString()) {
 		case "Bool":
 			return "applyZ";
@@ -190,7 +190,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		return "apply";
 	}
 
-	static Class<?> loadFuncTypeClass(TType[] paramTypes, TType returnType) {
+	static Class<?> loadFuncTypeClass(Ty[] paramTypes, Ty returnType) {
 		String cname1 = "T$" + Asm.classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1, null/* signatrue */, "java/lang/Object",
@@ -223,11 +223,11 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		mv.visitEnd();
 	}
 
-	static Class<?> loadFuncExprClass(TEnv env, String[] fieldNames, TType[] fieldTypes, int start, String[] paramNames,
-			TType[] paramTypes, TType returnType, TCode body) {
+	static Class<?> loadFuncExprClass(TEnv env, String[] fieldNames, Ty[] fieldTypes, int start, String[] paramNames,
+			Ty[] paramTypes, Ty returnType, TCode body) {
 		String cname1 = "C$" + Asm.classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		Class<?> funcType = Asm.toClass(TType.tFunc(returnType, paramTypes));
+		Class<?> funcType = Asm.toClass(Ty.tFunc(returnType, paramTypes));
 		cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, "java/lang/Object",
 				new String[] { Type.getInternalName(funcType) });
 
@@ -240,7 +240,7 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 			Method m = new Method(nameApply(returnType), Asm.ti(returnType), Asm.ti(paramTypes));
 			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw1);
 			AsmSection sec = new AsmSection(cname1, mw);
-			sec.addVariable("this", TType.tFunc(returnType, paramTypes)); // FIXME
+			sec.addVariable("this", Ty.tFunc(returnType, paramTypes)); // FIXME
 			for (int i = 0; i < paramNames.length; i++) {
 				sec.addVariable(TNameHint.safeName(paramNames[i]) + (start + i), paramTypes[i]);
 			}
@@ -261,8 +261,8 @@ public class AsmGenerator extends TGenerator implements Opcodes {
 		String key = tp.toString();
 		Class<?> c = refMap.get(key);
 		if (c == null) {
-			TType returnType = tp.getReturnType();
-			TType[] paramTypes = tp.getParamTypes();
+			Ty returnType = tp.getReturnType();
+			Ty[] paramTypes = tp.getParamTypes();
 			TCode[] p = new TCode[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {

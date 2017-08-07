@@ -19,9 +19,9 @@ public class ScriptTest {
 	// assert(false);
 	// }
 
-	public void testHello() throws Throwable {
-		runScript("/iroha-test/hello.iroha");
-	}
+	// public void testHello() throws Throwable {
+	// runScript("/iroha-test/hello.iroha");
+	// }
 
 	public static void runScript(String file) throws Throwable {
 		String ext = SourcePosition.extractFileExtension(file);

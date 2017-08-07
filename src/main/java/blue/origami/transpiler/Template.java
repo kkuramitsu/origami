@@ -7,16 +7,16 @@ public abstract class Template {
 	// Skeleton
 	protected boolean isGeneric;
 	protected final String name;
-	protected final TType[] paramTypes;
-	protected final TType returnType;
+	protected final Ty[] paramTypes;
+	protected final Ty returnType;
 	// private final String template;
 
-	public Template(String name, TType returnType, TType... paramTypes) {
+	public Template(String name, Ty returnType, Ty... paramTypes) {
 		this.name = name;
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
-		for (TType t : paramTypes) {
-			if (t.isVarType()) {
+		for (Ty t : paramTypes) {
+			if (t.isVar()) {
 				this.isGeneric = true;
 				break;
 			}
@@ -28,7 +28,7 @@ public abstract class Template {
 		return this.name;
 	}
 
-	public TType getReturnType() {
+	public Ty getReturnType() {
 		return this.returnType;
 	}
 
@@ -40,7 +40,7 @@ public abstract class Template {
 		return this.paramTypes.length;
 	}
 
-	public TType[] getParamTypes() {
+	public Ty[] getParamTypes() {
 		return this.paramTypes;
 	}
 
@@ -64,7 +64,7 @@ public abstract class Template {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getName());
-		for (TType t : this.getParamTypes()) {
+		for (Ty t : this.getParamTypes()) {
 			sb.append(":");
 			sb.append(t);
 		}
@@ -73,8 +73,8 @@ public abstract class Template {
 		return sb.toString();
 	}
 
-	public TFuncType getFuncType() {
-		return (TFuncType) TType.tFunc(this.getReturnType(), this.getParamTypes());
+	public FuncTy getFuncType() {
+		return (FuncTy) Ty.tFunc(this.getReturnType(), this.getParamTypes());
 	}
 
 }
