@@ -10,7 +10,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.SugarCode;
 
-public class IndexExpr implements ParseRule, OSymbols {
+public class IndexExpr implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Code recv = env.parseCode(env, t.get(_recv));

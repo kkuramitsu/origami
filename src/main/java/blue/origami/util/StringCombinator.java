@@ -127,5 +127,4 @@ public interface StringCombinator {
 		}
 		return sb.toString();
 	}
-
 }

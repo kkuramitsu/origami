@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
 
-public class ExampleDecl implements ParseRule, OSymbols {
+public class ExampleDecl implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {

@@ -17,7 +17,7 @@ import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TConstTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunction;
-import blue.origami.transpiler.TGenerator;
+import blue.origami.transpiler.Generator;
 import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
@@ -28,7 +28,7 @@ import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.util.ODebug;
 
-public class AsmGenerator extends TGenerator implements Opcodes {
+public class AsmGenerator extends Generator implements Opcodes {
 
 	private ClassWriter cw;
 	String cname;

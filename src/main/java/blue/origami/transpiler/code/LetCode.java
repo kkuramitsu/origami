@@ -2,8 +2,8 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TFunctionContext;
-import blue.origami.transpiler.TFunctionContext.TVariable;
+import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FunctionContext.TVariable;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
@@ -37,7 +37,7 @@ public class LetCode extends Code1 {
 			}
 			this.setType(Ty.tVoid);
 		}
-		TFunctionContext fcx = env.get(TFunctionContext.class);
+		FunctionContext fcx = env.get(FunctionContext.class);
 		assert (fcx != null);
 		if (fcx.isDuplicatedName(this.name, this.declType)) {
 			this.isDuplicated = true;

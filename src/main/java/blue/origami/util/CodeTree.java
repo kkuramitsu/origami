@@ -22,19 +22,19 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 
-public class OTree extends Tree<OTree> {
+public class CodeTree extends Tree<CodeTree> {
 
-	public OTree() {
+	public CodeTree() {
 		super();
 	}
 
-	private OTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
-		super(tag, source, pos, len, size > 0 ? new OTree[size] : null, value);
+	private CodeTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
+		super(tag, source, pos, len, size > 0 ? new CodeTree[size] : null, value);
 	}
 
 	@Override
-	protected OTree dupImpl() {
-		OTree t = new OTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
+	protected CodeTree dupImpl() {
+		CodeTree t = new CodeTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
 				this.getValue());
 		// t.rule = this.rule;
 		return t;
@@ -47,12 +47,12 @@ public class OTree extends Tree<OTree> {
 
 	@Override
 	public Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
-		return new OTree(tag, s, spos, epos - spos, nsubs, value);
+		return new CodeTree(tag, s, spos, epos - spos, nsubs, value);
 	}
 
 	@Override
 	public Object apply(Object parent, int index, Symbol label, Object child) {
-		((OTree) parent).set(index, label, (OTree) child);
+		((CodeTree) parent).set(index, label, (CodeTree) child);
 		return parent;
 	}
 

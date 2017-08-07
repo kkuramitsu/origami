@@ -7,7 +7,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.TNameRef;
 
-public class TFunctionContext {
+public class FunctionContext {
 
 	ArrayList<TVariable> varList = new ArrayList<>();
 
@@ -84,8 +84,8 @@ public class TFunctionContext {
 		@Override
 		public Code nameCode(TEnv env, String name) {
 			// ODebug.trace("capture %s %d", name, this.refLevel);
-			if (this.refLevel > 0 && TFunctionContext.this.fieldMap != null) {
-				TFunctionContext.this.fieldMap.put(this.getName(),
+			if (this.refLevel > 0 && FunctionContext.this.fieldMap != null) {
+				FunctionContext.this.fieldMap.put(this.getName(),
 						new NameCode(this.getName(), this.type, this.refLevel - 1));
 			}
 			return new NameCode(this.getName(), this.type, this.refLevel);

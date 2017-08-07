@@ -7,7 +7,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataRangeCode;
 import blue.origami.transpiler.code.IntCode;
 
-public class RangeExpr implements ParseRule, OSymbols {
+public class RangeExpr implements ParseRule, Symbols {
 	boolean inclusive;
 
 	public RangeExpr() {

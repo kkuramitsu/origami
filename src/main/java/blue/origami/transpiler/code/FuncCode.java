@@ -5,7 +5,7 @@ import java.util.HashMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TFunctionContext;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
@@ -75,10 +75,10 @@ public class FuncCode extends Code1 {
 	public Code asType(TEnv env, Ty t) {
 		if (this.isUntyped()) {
 			TEnv lenv = env.newEnv();
-			TFunctionContext fcx = env.get(TFunctionContext.class);
+			FunctionContext fcx = env.get(FunctionContext.class);
 			if (fcx == null) {
-				fcx = new TFunctionContext();
-				lenv.add(TFunctionContext.class, fcx);
+				fcx = new FunctionContext();
+				lenv.add(FunctionContext.class, fcx);
 			}
 			HashMap<String, Code> fieldMap = fcx.enterScope(new HashMap<>());
 			this.startIndex = fcx.getStartIndex();

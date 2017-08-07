@@ -7,7 +7,7 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 
-public class ArrayType implements ParseRule, OSymbols {
+public class ArrayType implements ParseRule, Symbols {
 	boolean isMutable = true;
 
 	@Override

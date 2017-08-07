@@ -6,7 +6,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataArrayCode;
 
-public class DataSetExpr extends LoggerRule implements OSymbols, ParseRule {
+public class DataSetExpr extends LoggerRule implements Symbols, ParseRule {
 
 	boolean isMutable = true;
 

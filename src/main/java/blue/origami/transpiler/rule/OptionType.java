@@ -7,7 +7,7 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 
-public class OptionType implements ParseRule, OSymbols {
+public class OptionType implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Ty ty = env.parseType(env, t.get(_base), null);

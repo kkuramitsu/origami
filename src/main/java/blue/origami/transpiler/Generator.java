@@ -9,7 +9,7 @@ import java.util.Map;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 
-public class TGenerator {
+public class Generator {
 	protected SourceSection head;
 	protected SourceSection data;
 	protected SourceSection eval;
@@ -144,7 +144,7 @@ public class TGenerator {
 							if (!key.equals(nextNode)) {
 								// System.out.println("Cyclic " + key + " => " +
 								// nextNode);
-								TGenerator.this.crossRefNames.add(nextNode);
+								Generator.this.crossRefNames.add(nextNode);
 							}
 						}
 					}

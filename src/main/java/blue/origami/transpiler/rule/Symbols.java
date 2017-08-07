@@ -18,16 +18,10 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Symbol;
 
-public interface OSymbols {
-
-	public final static Symbol _anno = Symbol.unique("anno");
+public interface Symbols {
 	public final static Symbol _name = Symbol.unique("name");
-	public final static Symbol _alias = Symbol.unique("alias");
 
 	public final static Symbol _value = Symbol.unique("value");
-	public final static Symbol _path = Symbol.unique("path");
-	public final static Symbol _super = Symbol.unique("super");
-	public final static Symbol _impl = Symbol.unique("impl");
 
 	public final static Symbol _body = Symbol.unique("body");
 	public final static Symbol _type = Symbol.unique("type");
@@ -36,14 +30,8 @@ public interface OSymbols {
 	public final static Symbol _param = Symbol.unique("param");
 
 	public final static Symbol _suffix = Symbol.unique("suffix");
-	public final static Symbol _useTypeHint = Symbol.unique("useTypeHint");
-	public final static Symbol _useDynamicType = Symbol.unique("useDynamicType");
-
-	public final static Symbol _throws = Symbol.unique("throws");
 
 	public final static Symbol _base = Symbol.unique("base");
-	public final static Symbol _extends = Symbol.unique("extends");
-	public final static Symbol _with = Symbol.unique("with");
 	public final static Symbol _cond = Symbol.unique("cond");
 	public final static Symbol _msg = Symbol.unique("msg");
 	public final static Symbol _then = Symbol.unique("then");
@@ -61,13 +49,5 @@ public interface OSymbols {
 	public final static Symbol _prefix = Symbol.unique("prefix");
 	public final static Symbol _start = Symbol.unique("start");
 	public final static Symbol _end = Symbol.unique("end");
-
-	public final static Symbol _ExplicitConstructorInvocation = Symbol.unique("ExplicitConstructorInvocation");
-
-	public final static String ApplyFuncName = "apply";
-	// public static final String ConstructorName = "<init>";
-	public final static String FunctionContext = "__func__";
-	public final static String ClassContext = "__class__";
-	public final static String TupleField = "f";
 
 }

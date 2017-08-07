@@ -2,7 +2,7 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TFunctionContext;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.Ty;
@@ -27,7 +27,7 @@ public class LetDecl extends SyntaxRule implements ParseRule {
 		String name = t.getStringAt(_name, "");
 		Code right = env.parseCode(env, t.get(_expr));
 
-		TFunctionContext fcx = env.get(TFunctionContext.class);
+		FunctionContext fcx = env.get(FunctionContext.class);
 		if (fcx == null) { // TopLevel
 			Ty type = t.has(_type) //
 					? env.parseType(env, t.get(_type, null), null)//

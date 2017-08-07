@@ -5,7 +5,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 
-public class ApplyExpr implements ParseRule, OSymbols {
+public class ApplyExpr implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {

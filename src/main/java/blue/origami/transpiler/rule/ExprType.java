@@ -9,7 +9,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.TypeCode;
 
-public class ExprType implements ParseRule, OSymbols {
+public class ExprType implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Code c = env.parseCode(env, t.get(_expr)).asType(env, Ty.tUntyped);

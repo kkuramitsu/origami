@@ -10,7 +10,7 @@ import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.ODebug;
 
-public class SyntaxRule extends LoggerRule implements OSymbols {
+public class SyntaxRule extends LoggerRule implements Symbols {
 
 	final static String[] emptyNames = new String[0];
 

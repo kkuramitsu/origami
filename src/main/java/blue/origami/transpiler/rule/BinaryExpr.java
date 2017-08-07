@@ -5,7 +5,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 
-public class BinaryExpr implements ParseRule, OSymbols {
+public class BinaryExpr implements ParseRule, Symbols {
 
 	final String op;
 

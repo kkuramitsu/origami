@@ -24,18 +24,18 @@ import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.OTree;
+import blue.origami.util.CodeTree;
 
 public class Transpiler extends TEnv {
 	private final OOption options;
 	private final String target;
-	private final TGenerator generator;
+	private final Generator generator;
 
 	public Transpiler(Grammar grammar, String target, OOption options) {
 		super(null);
 		this.target = "/blue/origami/konoha5/" + target + "/";
 		this.options = options;
-		this.generator = target.equals("jvm") ? new AsmGenerator() : new TGenerator();
+		this.generator = target.equals("jvm") ? new AsmGenerator() : new Generator();
 		this.initEnv(grammar);
 		this.loadLibrary("init.kh");
 
@@ -178,8 +178,8 @@ public class Transpiler extends TEnv {
 
 	void emitCode(TEnv env, Source sc) throws Throwable {
 		Parser p = env.get(Parser.class);
-		OTree defaultTree = new OTree();
-		Tree<?> t = (OTree) p.parse(sc, 0, defaultTree, defaultTree);
+		CodeTree defaultTree = new CodeTree();
+		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
 		OConsole.beginColor(OConsole.Blue);
 		OConsole.println(t);
 		OConsole.endColor();
@@ -230,8 +230,8 @@ public class Transpiler extends TEnv {
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final TCodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
 		this.add(name, tp);
-		TFunctionContext fcx = new TFunctionContext();
-		env.add(TFunctionContext.class, fcx);
+		FunctionContext fcx = new FunctionContext();
+		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
 		}
