@@ -16,12 +16,6 @@
 
 package blue.origami.util;
 
-import java.lang.reflect.Method;
-
-import blue.origami.lang.OEnv;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.rule.OFmt;
-
 public class ODebug extends OConsole {
 
 	public static boolean enabled = false;
@@ -114,37 +108,6 @@ public class ODebug extends OConsole {
 
 	public static void FIXME(String s) {
 		println("[FIXME] " + s);
-	}
-
-	// -- assert --
-
-	private static int testCount = 0;
-	private static int passCount = 0;
-
-	public static final Method AssertMethod = OTypeUtils.loadMethod(ODebug.class, "assertTest", boolean.class,
-			String.class);
-
-	public static String assertMessage(OEnv env, SourcePosition s) {
-		return SourcePosition.formatErrorMessage(s, OFmt.assertion_failed);
-	}
-
-	public final static void assertTest(boolean b, String msg) {
-		testCount++;
-		assert (b) : msg;
-		passCount++;
-	}
-
-	public final static int getTestCount() {
-		return testCount;
-	}
-
-	public final static int getPassCount() {
-		return passCount;
-	}
-
-	public final static void resetCount() {
-		testCount = 0;
-		passCount = 0;
 	}
 
 }

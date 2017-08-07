@@ -1,11 +1,5 @@
 package origami;
 
-import blue.origami.OrigamiContext;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
-import blue.origami.nez.peg.SourceGrammar;
-
 //import junit.framework.Assert;
 //import org.junit.Test;
 
@@ -22,12 +16,14 @@ public class ScriptTest {
 	// public void testHello() throws Throwable {
 	// runScript("/iroha-test/hello.iroha");
 	// }
-
-	public static void runScript(String file) throws Throwable {
-		String ext = SourcePosition.extractFileExtension(file);
-		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/" + ext + ".opeg");
-		OrigamiContext env = new OrigamiContext(g);
-		env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
-	}
+	//
+	// public static void runScript(String file) throws Throwable {
+	// String ext = SourcePosition.extractFileExtension(file);
+	// Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/" + ext +
+	// ".opeg");
+	// OrigamiContext env = new OrigamiContext(g);
+	// env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file,
+	// null));
+	// }
 
 }

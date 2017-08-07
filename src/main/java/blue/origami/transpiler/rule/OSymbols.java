@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.rule;
+package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Symbol;
 

@@ -18,7 +18,6 @@ package blue.origami.transpiler.asm;
 
 import java.util.Objects;
 
-import blue.origami.ffi.OAlias;
 import blue.origami.konoha5.Data;
 import blue.origami.konoha5.IntArray;
 import blue.origami.konoha5.IntRange;
@@ -121,24 +120,41 @@ public class APIs {
 	// return ((Number) a).doubleValue();
 	// }
 
-	@OAlias(name = "!")
 	public final static boolean not(boolean a) {
 		return !a;
 	}
 
-	@OAlias(name = "==")
 	public final static boolean eq(boolean a, boolean b) {
 		return a == b;
 	}
 
-	@OAlias(name = "!=")
 	public final static boolean ne(boolean a, boolean b) {
 		return a != b;
 	}
 
+	// -- assert --
+
+	private static int testCount = 0;
+	private static int passCount = 0;
+
 	public final static boolean _assert(boolean a) {
+		testCount++;
 		assert (a);
+		passCount++;
 		return a;
+	}
+
+	public final static int getTestCount() {
+		return testCount;
+	}
+
+	public final static int getPassCount() {
+		return passCount;
+	}
+
+	public final static void resetCount() {
+		testCount = 0;
+		passCount = 0;
 	}
 
 	/* Boolean, conversion */

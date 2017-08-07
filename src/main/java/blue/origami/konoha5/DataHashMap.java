@@ -40,7 +40,7 @@ public class DataHashMap implements DataMap {
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
 		sb.append("{");
-		cnt = StringCombinator.appendField(sb, this, Object.class, cnt);
+		// cnt = StringCombinator.appendField(sb, this, Object.class, cnt);
 		for (int i = 0; i < this.values.length; i++) {
 			if (this.keys[i] != Unused) {
 				if (cnt > 0) {

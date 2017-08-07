@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
-import blue.origami.ocode.OCode;
 import blue.origami.util.OConsole;
 import blue.origami.util.StringCombinator;
 
@@ -52,9 +51,6 @@ public class TLog implements StringCombinator {
 						sb.append(this.delim);
 					}
 					Object o = this.a[i];
-					if (o instanceof OCode) {
-						o = ((OCode) o).getType();
-					}
 					sb.append(o);
 				}
 				return sb.toString();

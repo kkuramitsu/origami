@@ -19,8 +19,8 @@ package blue.origami.util;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.ocode.ErrorCode;
-import blue.origami.rule.OFmt;
+import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.code.TErrorCode;
 
 public class OTree extends Tree<OTree> {
 
@@ -42,7 +42,7 @@ public class OTree extends Tree<OTree> {
 
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
-		throw new ErrorCode(null, this, OFmt.YY0_does_not_exist, "$" + label);
+		throw new TErrorCode(this, TFmt.YY0_does_not_exist, "$" + label);
 	}
 
 	@Override

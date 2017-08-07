@@ -2,7 +2,7 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.rule.OSymbols;
+
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;

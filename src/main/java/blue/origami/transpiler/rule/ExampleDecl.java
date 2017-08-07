@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.rule.OSymbols;
+
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.TCode;
 import blue.origami.transpiler.code.TDeclCode;

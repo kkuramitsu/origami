@@ -16,9 +16,6 @@
 
 package blue.origami.util;
 
-import java.lang.reflect.Field;
-
-import blue.origami.ffi.OAlias;
 import blue.origami.nez.ast.LocaleFormat;
 
 public interface StringCombinator {
@@ -51,28 +48,28 @@ public interface StringCombinator {
 		}
 	}
 
-	public static int appendField(StringBuilder sb, Object o, Class<?> untilClass, int cnt) {
-		if (o == null) {
-			return cnt;
-		}
-		for (Class<?> c = o.getClass(); c != untilClass; c = c.getSuperclass()) {
-			Field[] fs = c.getDeclaredFields();
-			for (Field f : fs) {
-				if (OTypeUtils.isPublic(f) && !OTypeUtils.isStatic(f)) {
-					if (cnt > 0) {
-						sb.append(", ");
-					}
-					OAlias a = f.getAnnotation(OAlias.class);
-					String name = a == null ? f.getName() : a.name();
-					sb.append(name);
-					sb.append(": ");
-					StringCombinator.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
-					cnt++;
-				}
-			}
-		}
-		return cnt;
-	}
+	// public static int appendField(StringBuilder sb, Object o, Class<?>
+	// untilClass, int cnt) {
+	// if (o == null) {
+	// return cnt;
+	// }
+	// for (Class<?> c = o.getClass(); c != untilClass; c = c.getSuperclass()) {
+	// Field[] fs = c.getDeclaredFields();
+	// for (Field f : fs) {
+	// if (OTypeUtils.isPublic(f) && !OTypeUtils.isStatic(f)) {
+	// if (cnt > 0) {
+	// sb.append(", ");
+	// }
+	// String name = f.getName();
+	// sb.append(name);
+	// sb.append(": ");
+	// StringCombinator.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
+	// cnt++;
+	// }
+	// }
+	// }
+	// return cnt;
+	// }
 
 	public static String format(LocaleFormat fmt, Object... args) {
 		return format(fmt.toString(), args);

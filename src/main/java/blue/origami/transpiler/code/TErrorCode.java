@@ -7,9 +7,8 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
-import blue.origami.util.OLog;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 @SuppressWarnings("serial")
@@ -20,7 +19,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 
 	public TErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();
-		this.log = new TLog(s, OLog.Error, fmt, args);
+		this.log = new TLog(s, TLog.Error, fmt, args);
 	}
 
 	public TErrorCode(LocaleFormat fmt, Object... args) {
@@ -29,7 +28,7 @@ public class TErrorCode extends RuntimeException implements TCode {
 
 	public TErrorCode(TCode at, LocaleFormat fmt, Object... args) {
 		super();
-		this.log = new TLog(at.getSource(), OLog.Error, fmt, args);
+		this.log = new TLog(at.getSource(), TLog.Error, fmt, args);
 	}
 
 	public TErrorCode(SourcePosition s, String fmt, Object... args) {

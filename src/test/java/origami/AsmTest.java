@@ -16,16 +16,12 @@
 
 package origami;
 
-import blue.origami.lang.OEnv;
-import blue.origami.ocode.OCode;
-import blue.origami.rule.ScriptAnalysis;
-
 public class AsmTest {
 
-	public Object eval(OEnv env, OCode... codes) throws Throwable {
-		return ScriptAnalysis.eval(env, codes);
-	}
-
+	// public Object eval(OEnv env, OCode... codes) throws Throwable {
+	// return ScriptAnalysis.eval(env, codes);
+	// }
+	//
 	// public void testNull() throws Throwable {
 	// OEnv env = new OrigamiContext();
 	// assert this.eval(env, new NullCode(env)) == null;
