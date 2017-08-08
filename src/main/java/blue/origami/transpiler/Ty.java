@@ -117,6 +117,17 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return new VarTy(name);
 	}
 
+	public static final Ty tVar(char c) {
+		String key = String.valueOf(c);
+		Ty t = typeMap.get(key);
+		if (t == null) {
+			t = new VarTy(key);
+			t.acceptTy(new SimpleTy(key));
+			typeMap.put(key, t);
+		}
+		return t;
+	}
+
 	//
 
 	@Override

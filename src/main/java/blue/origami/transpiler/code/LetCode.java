@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.FunctionContext.TVariable;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
@@ -28,6 +28,10 @@ public class LetCode extends Code1 {
 		return this.declType;
 	}
 
+	public boolean isDuplicated() {
+		return this.isDuplicated;
+	}
+
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
@@ -43,7 +47,7 @@ public class LetCode extends Code1 {
 			this.isDuplicated = true;
 			ODebug.trace("duplicated local name %s", this.name);
 		}
-		TVariable var = fcx.newVariable(this.name, this.declType);
+		Variable var = fcx.newVariable(this.name, this.declType);
 		env.add(this.name, var);
 		return this;
 	}

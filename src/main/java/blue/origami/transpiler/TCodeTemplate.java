@@ -2,9 +2,9 @@ package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
-import blue.origami.transpiler.rule.NameExpr.TNameRef;
+import blue.origami.transpiler.rule.NameExpr.NameInfo;
 
-public class TCodeTemplate extends Template implements TNameRef {
+public class TCodeTemplate extends Template implements NameInfo {
 
 	protected final String template;
 
@@ -38,7 +38,7 @@ public class TCodeTemplate extends Template implements TNameRef {
 	}
 
 	@Override
-	public boolean isNameRef(TEnv env) {
+	public boolean isNameInfo(TEnv env) {
 		return true;
 	}
 

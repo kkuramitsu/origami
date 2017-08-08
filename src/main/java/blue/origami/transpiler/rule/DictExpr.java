@@ -3,17 +3,17 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DataDictCode;
 
-public class DataExpr extends LoggerRule implements Symbols, ParseRule {
+public class DictExpr extends LoggerRule implements Symbols, ParseRule {
 
-	boolean isMutable = true;
+	boolean isMutable;
 
-	public DataExpr() {
-		this(true);
+	public DictExpr() {
+		this(false);
 	}
 
-	public DataExpr(boolean isMutable) {
+	public DictExpr(boolean isMutable) {
 		this.isMutable = isMutable;
 	}
 
@@ -27,7 +27,6 @@ public class DataExpr extends LoggerRule implements Symbols, ParseRule {
 			values[c] = env.parseCode(env, keyvalue.get(_value));
 			c++;
 		}
-		return new DataCode(this.isMutable, names, values);
+		return new DataDictCode(this.isMutable, names, values);
 	}
-
 }

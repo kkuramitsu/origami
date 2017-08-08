@@ -1,6 +1,10 @@
 #!/bin/sh
 # easy install script
 
+if [ -d target ]; then
+	rm -rf target
+fi
+
 mvn package
 
 if [ -e target/origami-*run.jar ]; then

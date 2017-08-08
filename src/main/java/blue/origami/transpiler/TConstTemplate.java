@@ -10,7 +10,7 @@ public class TConstTemplate extends TCodeTemplate {
 	}
 
 	@Override
-	public boolean isNameRef(TEnv env) {
+	public boolean isNameInfo(TEnv env) {
 		return !this.getReturnType().isUntyped();
 	}
 

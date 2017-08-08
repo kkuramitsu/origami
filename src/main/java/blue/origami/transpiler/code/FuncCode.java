@@ -98,7 +98,7 @@ public class FuncCode extends Code1 {
 			// ODebug.trace("FuncCode.asType %s fields=%s %s", this.getType(),
 			// this.fieldMap, this.self());
 		}
-		return this.asExactType(env, t);
+		return this.castType(env, t);
 	}
 
 	@Override

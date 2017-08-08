@@ -2,11 +2,10 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-
 import blue.origami.transpiler.DataTy;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -43,6 +42,7 @@ public class AssignExpr implements ParseRule, Symbols {
 			this.right = right;
 		}
 
+		@Override
 		public Code[] args() {
 			return this.makeArgs(this.recv, this.right);
 		}
@@ -52,9 +52,14 @@ public class AssignExpr implements ParseRule, Symbols {
 			assert (this.isUntyped());
 			this.recv = this.recv.asType(env, Ty.tUntyped);
 			if (this.recv.isDataType()) {
-				TNameHint hint = env.findNameHint(env, this.name);
+				NameHint hint = env.findGlobalNameHint(env, this.name);
 				if (hint == null) {
-					throw new ErrorCode(this.nameTree, TFmt.undefined_name__YY0, this.name);
+					this.right = this.right.asType(env, Ty.tUntyped);
+					Ty ty = this.right.guessType();
+					if (ty.isUntyped()) {
+						throw new ErrorCode(this.right, TFmt.failed_type_inference);
+					}
+					env.addGlobalName(env, this.name, ty);
 				}
 				DataTy dt = (DataTy) this.recv.getType();
 				dt.checkSetField(this.nameTree, this.name);
@@ -82,6 +87,7 @@ public class AssignExpr implements ParseRule, Symbols {
 			this.right = right;
 		}
 
+		@Override
 		public Code[] args() {
 			return this.makeArgs(this.recv, this.index, this.right);
 		}

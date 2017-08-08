@@ -12,16 +12,16 @@ import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.Generator;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TConstTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFunction;
-import blue.origami.transpiler.Generator;
-import blue.origami.transpiler.TNameHint;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.MultiCode;
@@ -162,7 +162,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 		GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw);
 		AsmSection sec = new AsmSection(this.cname, mw);
 		for (int i = 0; i < paramNames.length; i++) {
-			sec.addVariable(TNameHint.safeName(paramNames[i]) + i, paramTypes[i]);
+			sec.addVariable(NameHint.safeName(paramNames[i]) + i, paramTypes[i]);
 		}
 		try {
 			code.emitCode(env, sec);
@@ -242,7 +242,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 			AsmSection sec = new AsmSection(cname1, mw);
 			sec.addVariable("this", Ty.tFunc(returnType, paramTypes)); // FIXME
 			for (int i = 0; i < paramNames.length; i++) {
-				sec.addVariable(TNameHint.safeName(paramNames[i]) + (start + i), paramTypes[i]);
+				sec.addVariable(NameHint.safeName(paramNames[i]) + (start + i), paramTypes[i]);
 			}
 			body.emitCode(env, sec);
 			mw.returnValue();
@@ -266,7 +266,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 			Code[] p = new Code[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {
-				p[i] = new NameCode("a" + i, paramTypes[i], 0);
+				p[i] = new NameCode("a", i, paramTypes[i], 0);
 				paramNames[i] = "a";
 			}
 			Code body = new ExprCode(tp, p);

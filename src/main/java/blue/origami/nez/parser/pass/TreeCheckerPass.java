@@ -117,7 +117,7 @@ public class TreeCheckerPass extends CommonPass {
 
 	@Override
 	public Expression visitNonTerminal(PNonTerminal n, Void a) {
-		Production p = n.getProduction();
+		// Production p = n.getProduction();
 		Typestate innerState = this.typeState(n);
 		// System.out.println("@@@ Production " + n + " inner=" + innerState + "
 		// req=" + this.req);

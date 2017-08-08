@@ -2,11 +2,10 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-
 import blue.origami.transpiler.DataTy;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -31,6 +30,7 @@ public class GetExpr implements ParseRule, Symbols {
 			this.name = nameTree.getString();
 		}
 
+		@Override
 		public Code[] args() {
 			return this.makeArgs(this.recv);
 		}
@@ -40,7 +40,7 @@ public class GetExpr implements ParseRule, Symbols {
 			assert (this.isUntyped());
 			this.recv = this.recv.asType(env, Ty.tUntyped);
 			if (this.recv.isDataType()) {
-				TNameHint hint = env.findNameHint(env, this.name);
+				NameHint hint = env.findGlobalNameHint(env, this.name);
 				if (hint == null) {
 					throw new ErrorCode(this.nameTree, TFmt.undefined_name__YY0, this.name);
 				}

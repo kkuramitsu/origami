@@ -1,11 +1,11 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
-
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TNameHint;
+import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.ODebug;
@@ -80,17 +80,20 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 			if (name.endsWith("?")) {
 				ty = Ty.tBool;
 			} else {
-				TNameHint hint = env.findNameHint(env, name);
+				NameHint hint = env.findNameHint(env, name);
 				if (hint != null) {
 					ty = hint.getType();
+					if (hint.useLocal()) {
+						TLog log = this.reportNotice(null, param, TFmt.YY0_maybe_have_a_YY1, name, hint.getType());
+						env.reportLog(log);
+					}
 				}
 			}
 		}
 		if (ty == null) {
-			if (TNameHint.isShortName(name)) {
-				ODebug.trace("local data variable %s", name);
+			if (NameHint.isOneLetterName(name)) {
 				ty = Ty.tData().asParameter();
-				env.addTypeHint(env, name, ty);
+				env.addNameDecl(env, name, ty);
 			}
 		}
 		ty = this.parseTypeArity(env, ty, param);

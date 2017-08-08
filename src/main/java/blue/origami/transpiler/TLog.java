@@ -80,6 +80,9 @@ public class TLog implements StringCombinator {
 	@Override
 	public void strOut(StringBuilder sb) {
 		String mtype = (this.level == Error ? this.format.error() : this.format.warning());
+		if (this.level == Notice) {
+			mtype = this.format.notice();
+		}
 		SourcePosition.appendFormatMessage(sb, this.s, mtype, this.format, this.args);
 	}
 

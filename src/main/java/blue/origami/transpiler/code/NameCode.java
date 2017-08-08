@@ -1,12 +1,13 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.rule.NameExpr.TNameRef;
+import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.util.ODebug;
 
@@ -17,22 +18,24 @@ public class NameCode extends CommonCode implements ParseRule {
 		return new NameCode(t);
 	}
 
-	private final String lname;
+	private final String name;
+	private final int seq;
 	private final int refLevel;
 
 	public NameCode(Tree<?> nameTree) {
-		this(nameTree.getString(), Ty.tUntyped, 0);
+		this(nameTree.getString(), 0, Ty.tUntyped, 0);
 		this.setSource(nameTree);
 	}
 
-	public NameCode(String name, Ty ty, int refLevel) {
+	public NameCode(String name, int seq, Ty ty, int refLevel) {
 		super(ty);
-		this.lname = name;
+		this.name = name;
+		this.seq = seq;
 		this.refLevel = refLevel;
 	}
 
 	public String getName() {
-		return this.lname;
+		return NameHint.safeName(this.name) + this.seq;
 	}
 
 	public int getRefLevel() {
@@ -41,13 +44,12 @@ public class NameCode extends CommonCode implements ParseRule {
 
 	@Override
 	public Code asType(TEnv env, Ty t) {
-		// ODebug.trace("finding %s %s", this.lname, t);
-		if (this.isUntyped()) {
-			TNameRef ref = env.get(this.lname, TNameRef.class, (e, c) -> e.isNameRef(env) ? e : null);
+		if (this.isUntyped() && !this.isDataType()) {
+			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
-				throw new ErrorCode(this, TFmt.undefined_name__YY0, this.lname);
+				throw new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
 			}
-			return ref.nameCode(env, this.lname).asType(env, t);
+			return ref.nameCode(env, this.name).castType(env, t);
 		}
 		return super.asType(env, t);
 	}
@@ -59,7 +61,7 @@ public class NameCode extends CommonCode implements ParseRule {
 
 	@Override
 	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.lname);
+		return this.getTemplate(env).format(this.name);
 	}
 
 	@Override
@@ -67,14 +69,14 @@ public class NameCode extends CommonCode implements ParseRule {
 		try {
 			sec.pushName(env, this);
 		} catch (Exception e) {
-			ODebug.trace("unfound name %s %d", this.lname, this.refLevel);
+			ODebug.trace("unfound name %s %d", this.name, this.refLevel);
 			ODebug.traceException(e);
 		}
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.lname);
+		sb.append(this.name);
 	}
 
 }

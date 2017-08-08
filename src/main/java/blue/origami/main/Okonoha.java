@@ -11,16 +11,10 @@ public class Okonoha extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		String[] files = options.stringList(ParserOption.InputFiles);
-		// if (options.stringValue(ParserOption.GrammarFile, null) == null) {
-		// if (files.length > 0) {
-		// String ext = SourcePosition.extractFileExtension(files[0]);
-		// options.set(ParserOption.GrammarFile, ext + ".opeg");
-		// }
-		// }
 		String target = options.stringValue(ParserOption.Target, "jvm");
 		Grammar g = this.getGrammar(options, "konoha5.opeg");
 		Transpiler env = new Transpiler(g, target, options);
-		ODebug.setDebug(true);
+		ODebug.setDebug(this.isDebug());
 		for (String file : files) {
 			env.loadScriptFile(file);
 		}

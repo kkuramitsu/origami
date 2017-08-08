@@ -150,7 +150,7 @@ public class Opasm extends OCommand {
 	}
 
 	private void writeData(PAsmInst inst, Field f) {
-		String name = f.getName();
+		// String name = f.getName();
 		try {
 			Object value = f.get(inst);
 			if (value == null) {

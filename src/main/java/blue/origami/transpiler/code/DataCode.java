@@ -1,11 +1,13 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.DataTy;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TNameHint;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class DataCode extends CodeN {
@@ -51,14 +53,22 @@ public class DataCode extends CodeN {
 			for (int i = 0; i < this.args.length; i++) {
 				String key = this.names[i];
 				Code value = this.args[i];
-				TNameHint hint = env.findNameHint(env, key);
+				NameHint hint = env.findGlobalNameHint(env, key);
 				if (hint != null) {
 					value = value.asType(env, hint.getType());
+					if (!hint.equalsName(key) && hint.isLocalOnly()) {
+						env.addGlobalName(env, key, hint.getType());
+					} else {
+						hint.useGlobal();
+					}
 				} else {
 					value = value.asType(env, Ty.tUntyped);
 					Ty ty = value.guessType();
-					// ODebug.trace("undefined symbol %s as %s", key, ty);
-					env.addTypeHint(env, key, ty);
+					if (ty.isUntyped()) {
+						throw new ErrorCode(value, TFmt.failed_type_inference);
+					}
+					ODebug.trace("implicit name definition %s as %s", key, ty);
+					env.addGlobalName(env, key, ty);
 				}
 				if (value.getType().isUntyped()) {
 					return this;

@@ -9,7 +9,7 @@ public class VarTy extends Ty {
 
 	public VarTy(String varName) {
 		this.varName = varName;
-		this.innerTy = Ty.tUntyped;
+		this.innerTy = null;
 	}
 
 	public String getName() {
@@ -18,30 +18,30 @@ public class VarTy extends Ty {
 
 	@Override
 	public boolean isVar() {
-		return this.innerTy.isUntyped();
+		return this.innerTy == null || this.innerTy.isVar();
 	}
 
 	@Override
 	public boolean isOption() {
-		return this.innerTy.isOption();
+		return this.innerTy == null ? false : this.innerTy.isOption();
 	}
 
 	@Override
 	public Ty dupTy(VarDomain dom) {
-		return this.innerTy.isUntyped() ? dom.newVarType(this.varName) : this.innerTy.dupTy(dom);
+		return this.innerTy == null ? dom.newVarType(this.varName) : this.innerTy.dupTy(dom);
 	}
 
 	@Override
 	public Ty realTy() {
-		return this.innerTy.realTy();
+		return this.innerTy == null ? this.tUntyped : this.innerTy.realTy();
 	}
 
 	@Override
 	public boolean acceptTy(Ty t) {
-		if (this == t || this == this.realTy()) {
-			return true;
-		}
-		if (this.innerTy.isUntyped()) {
+		// if (this == t || this == this.realTy()) {
+		// return true;
+		// }
+		if (this.innerTy == null) {
 			ODebug.trace("infer %s as %s", this.varName, t);
 			this.innerTy = t;
 			return true;
@@ -51,7 +51,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.innerTy.isUntyped()) {
+		if (this.innerTy == null) {
 			sb.append(this.varName);
 		} else {
 			StringCombinator.append(sb, this.innerTy);
@@ -60,12 +60,12 @@ public class VarTy extends Ty {
 
 	@Override
 	public String strOut(TEnv env) {
-		return this.innerTy.strOut(env);
+		return this.innerTy.realTy().strOut(env);
 	}
 
 	@Override
 	public boolean isUntyped() {
-		return this.innerTy.isUntyped();
+		return this.innerTy == null || this.innerTy.isUntyped();
 	}
 
 }

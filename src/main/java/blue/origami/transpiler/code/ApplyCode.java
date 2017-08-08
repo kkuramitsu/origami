@@ -35,7 +35,7 @@ public class ApplyCode extends CodeN {
 					}
 				}
 				this.setType(funcType.getReturnType());
-				return super.asExactType(env, t);
+				return super.castType(env, t);
 			}
 			if (this.args[0].isUntyped()) {
 				if (!t.isSpecific()) {
@@ -52,7 +52,7 @@ public class ApplyCode extends CodeN {
 				this.args[0] = this.args[0].asType(env, funcType);
 				if (this.args[0].getType() == funcType) {
 					this.setType(t);
-					return super.asExactType(env, t);
+					return super.castType(env, t);
 				}
 				return this.StillUntyped();
 			}

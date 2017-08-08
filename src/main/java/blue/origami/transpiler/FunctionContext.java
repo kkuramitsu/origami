@@ -5,14 +5,14 @@ import java.util.HashMap;
 
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
-import blue.origami.transpiler.rule.NameExpr.TNameRef;
+import blue.origami.transpiler.rule.NameExpr.NameInfo;
 
 public class FunctionContext {
 
-	ArrayList<TVariable> varList = new ArrayList<>();
+	ArrayList<Variable> varList = new ArrayList<>();
 
 	public boolean isDuplicatedName(String name, Ty declType) {
-		for (TVariable v : this.varList) {
+		for (Variable v : this.varList) {
 			if (name.equals(v.name) && declType.eq(v.type)) {
 				return true;
 			}
@@ -20,8 +20,8 @@ public class FunctionContext {
 		return false;
 	}
 
-	public TVariable newVariable(String name, Ty type) {
-		TVariable v = new TVariable(this.varList.size(), name, type);
+	public Variable newVariable(String name, Ty type) {
+		Variable v = new Variable(this.varList.size(), name, type);
 		this.varList.add(v);
 		return v;
 	}
@@ -35,7 +35,7 @@ public class FunctionContext {
 	public HashMap<String, Code> enterScope(HashMap<String, Code> fieldMap) {
 		HashMap<String, Code> backMap = this.fieldMap;
 		this.fieldMap = fieldMap;
-		for (TVariable v : this.varList) {
+		for (Variable v : this.varList) {
 			v.incRef();
 		}
 		return backMap;
@@ -44,7 +44,7 @@ public class FunctionContext {
 	public HashMap<String, Code> exitScope(HashMap<String, Code> fieldMap) {
 		HashMap<String, Code> backMap = this.fieldMap;
 		this.fieldMap = fieldMap;
-		for (TVariable v : this.varList) {
+		for (Variable v : this.varList) {
 			if (v.refLevel > 0) {
 				v.decRef();
 			}
@@ -52,15 +52,15 @@ public class FunctionContext {
 		return backMap;
 	}
 
-	public class TVariable implements TNameRef {
-		int refLevel = 0;
-		int index;
+	public class Variable implements NameInfo {
 		String name;
+		int seq;
+		int refLevel = 0;
 		Ty type;
 
-		TVariable(int index, String name, Ty type) {
-			this.index = index;
+		Variable(int seq, String name, Ty type) {
 			this.name = name;
+			this.seq = seq;
 			this.type = type;
 		}
 
@@ -73,22 +73,21 @@ public class FunctionContext {
 		}
 
 		public String getName() {
-			return TNameHint.safeName(this.name) + this.index;
+			return this.name;
 		}
 
 		@Override
-		public boolean isNameRef(TEnv env) {
+		public boolean isNameInfo(TEnv env) {
 			return true;
 		}
 
 		@Override
 		public Code nameCode(TEnv env, String name) {
-			// ODebug.trace("capture %s %d", name, this.refLevel);
 			if (this.refLevel > 0 && FunctionContext.this.fieldMap != null) {
 				FunctionContext.this.fieldMap.put(this.getName(),
-						new NameCode(this.getName(), this.type, this.refLevel - 1));
+						new NameCode(this.name, this.seq, this.type, this.refLevel - 1));
 			}
-			return new NameCode(this.getName(), this.type, this.refLevel);
+			return new NameCode(this.name, this.seq, this.type, this.refLevel);
 		}
 	}
 

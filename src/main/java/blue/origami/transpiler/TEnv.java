@@ -400,21 +400,43 @@ interface TEnvApi {
 		return t;
 	}
 
-	public default void addTypeHint(TEnv env, String names, Ty t) {
-		this.addTypeHint(env, names.split(","), t);
+	public default void addNameDecl(TEnv env, String names, Ty t) {
+		this.addNameDecl(env, names.split(","), t);
 	}
 
-	public default void addTypeHint(TEnv env, String[] names, Ty t) {
+	public default void addNameDecl(TEnv env, String[] names, Ty t) {
 		if (!t.isUntyped()) {
-			TNameHint hint = TNameHint.newNameHint(t);
 			for (String n : names) {
-				env().add(TNameHint.shortName(n), hint);
+				NameHint hint = NameHint.newNameDecl(n, t);
+				env().add(NameHint.shortName(n), hint);
 			}
 		}
 	}
 
-	public default TNameHint findNameHint(TEnv env, String name) {
-		return TNameHint.lookupNameHint(env, name);
+	public default void addGlobalName(TEnv env, String name, Ty t) {
+		assert (!t.isUntyped());
+		Transpiler tr = env.getTranspiler();
+		NameHint hint = NameHint.newNameDecl(name, t).useGlobal();
+		tr.add(name, hint);
+	}
+
+	public default NameHint findNameHint(TEnv env, String name) {
+		return NameHint.lookupNameHint(env, false, name);
+	}
+
+	public default NameHint findGlobalNameHint(TEnv env, String name) {
+		NameHint hint = NameHint.lookupNameHint(env.getTranspiler(), true, name);
+		if (hint == null) {
+			hint = NameHint.lookupNameHint(env, false, name);
+		}
+		if (hint != null) {
+			if (!hint.equalsName(name) && hint.isLocalOnly()) {
+				env.addGlobalName(env, name, hint.getType());
+			} else {
+				hint.useGlobal();
+			}
+		}
+		return hint;
 	}
 
 	public default Code parseCode(TEnv env, Tree<?> t) {

@@ -15,6 +15,12 @@ public class Generator {
 	protected SourceSection eval;
 	// private SourceSection body = this.head;
 
+	protected boolean isDebug = false;
+
+	public void setDebug(boolean debug) {
+		this.isDebug = debug;
+	}
+
 	protected void setup() {
 		this.head = new SourceSection();
 		this.data = new SourceSection();
@@ -185,4 +191,5 @@ public class Generator {
 		}
 		this.exampleList.add(t);
 	}
+
 }

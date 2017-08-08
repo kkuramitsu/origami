@@ -3,12 +3,12 @@ package blue.origami.transpiler.code;
 import java.util.Iterator;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.util.StringCombinator;
 
@@ -82,6 +82,18 @@ interface CodeAPI {
 		return self().getType() instanceof DataTy;
 	}
 
+	public default boolean hasErrorCode() {
+		if (this instanceof ErrorCode) {
+			return true;
+		}
+		for (Code c : self()) {
+			if (c.hasErrorCode()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public default int countUntyped(int count) {
 		if (this.isUntyped()) {
 			count++;
@@ -93,10 +105,10 @@ interface CodeAPI {
 	}
 
 	public default Code asType(TEnv env, Ty t) {
-		return asExactType(env, t);
+		return castType(env, t);
 	}
 
-	public default Code asExactType(TEnv env, Ty t) {
+	public default Code castType(TEnv env, Ty t) {
 		Code self = self();
 		Ty f = self.getType();
 		if (self.isUntyped() || t.accept(self)) {
@@ -241,6 +253,11 @@ abstract class CommonCode implements Code {
 			}
 			return this.getTemplate(env).format(p);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return StringCombinator.stringfy(this);
 	}
 
 }

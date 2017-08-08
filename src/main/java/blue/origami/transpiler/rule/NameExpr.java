@@ -12,8 +12,8 @@ public class NameExpr implements ParseRule {
 		return new NameCode(t);
 	}
 
-	public interface TNameRef {
-		public boolean isNameRef(TEnv env);
+	public interface NameInfo {
+		public boolean isNameInfo(TEnv env);
 
 		public Code nameCode(TEnv env, String name);
 	}

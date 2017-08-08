@@ -1,9 +1,9 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TNameHint;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -26,7 +26,7 @@ public class DataType implements ParseRule {
 		int c = 0;
 		for (Tree<?> sub : t) {
 			String name = sub.getString();
-			TNameHint hint = env.findNameHint(env, name);
+			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint == null) {
 				throw new ErrorCode(sub, TFmt.undefined_name__YY0, name);
 			}

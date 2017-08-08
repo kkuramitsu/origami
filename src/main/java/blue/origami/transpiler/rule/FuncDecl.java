@@ -2,11 +2,12 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TFunction;
+import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
-import blue.origami.util.ODebug;
 
 public class FuncDecl extends SyntaxRule implements ParseRule {
 
@@ -24,7 +25,8 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 		if (this.isPublic) {
 			TFunction tf = env.get(name, TFunction.class);
 			if (tf != null) {
-				ODebug.trace("duplicated name %s", name);
+				TLog log = this.reportWarning(null, t.get(_name), TFmt.redefined_name__YY0, name);
+				env.reportLog(log);
 			}
 		}
 		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));

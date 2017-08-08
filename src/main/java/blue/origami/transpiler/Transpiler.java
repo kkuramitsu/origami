@@ -18,16 +18,20 @@ import blue.origami.transpiler.asm.AsmGenerator;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;
+import blue.origami.transpiler.rule.DataExpr;
 import blue.origami.transpiler.rule.DataType;
+import blue.origami.transpiler.rule.DictExpr;
+import blue.origami.transpiler.rule.ListExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
+import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.CodeTree;
+import blue.origami.util.StringCombinator;
 
 public class Transpiler extends TEnv {
-	private final OOption options;
+	final OOption options;
 	private final String target;
 	private final Generator generator;
 
@@ -68,6 +72,9 @@ public class Transpiler extends TEnv {
 		this.add("MinusExpr", new UnaryExpr("-"));
 		this.add("PlusExpr", new UnaryExpr("+"));
 		this.add("CmplExpr", new UnaryExpr("~"));
+		this.add("DataListExpr", new ListExpr(true));
+		this.add("DataDictExpr", new DictExpr(true));
+		this.add("RecordExpr", new DataExpr(false));
 
 		this.add("RecordType", new DataType(false));
 		this.add("MutableRecordType", new DataType(true));
@@ -79,9 +86,9 @@ public class Transpiler extends TEnv {
 		this.add("Float", Ty.tFloat);
 		this.add("String", Ty.tString);
 		this.add("Data", Ty.tData());
-		this.addTypeHint(this, "i,j,k,m,n", Ty.tInt);
-		this.addTypeHint(this, "x,y,z,w", Ty.tFloat);
-		this.addTypeHint(this, "s,t,u,name", Ty.tString);
+		this.addNameDecl(this, "i,j,k,m,n", Ty.tInt);
+		this.addNameDecl(this, "x,y,z,w", Ty.tFloat);
+		this.addNameDecl(this, "s,t,u,name", Ty.tString);
 	}
 
 	private void loadLibrary(String file) {
@@ -176,19 +183,37 @@ public class Transpiler extends TEnv {
 		}
 	}
 
+	boolean isDebug = false;
+
+	public void setDebug(boolean debug) {
+		this.isDebug = debug;
+		this.generator.setDebug(debug);
+	}
+
 	void emitCode(TEnv env, Source sc) throws Throwable {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		OConsole.beginColor(OConsole.Blue);
-		OConsole.println(t);
-		OConsole.endColor();
+		if (this.isDebug) {
+			OConsole.beginColor(OConsole.Blue);
+			OConsole.println(t);
+			OConsole.endColor();
+		}
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped);
 		this.generator.emit(env, code);
 		Object result = this.generator.wrapUp();
 		if (code.getType() != Ty.tVoid) {
-			OConsole.println("(%s) %s", code.getType(), OConsole.bold("" + result));
+			StringBuilder sb = new StringBuilder();
+			sb.append("(");
+			StringCombinator.append(sb, code.getType());
+			sb.append(") ");
+			if (result instanceof String) {
+				StringCombinator.appendQuoted(sb, result);
+			} else {
+				sb.append(OConsole.bold("" + result));
+			}
+			OConsole.println(sb.toString());
 		}
 	}
 
@@ -234,9 +259,17 @@ public class Transpiler extends TEnv {
 		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
+			ODebug.trace("name=%s %s %s", paramNames[i], paramTypes[i], paramTypes[i].isUntyped());
 		}
-		Code code = env.parseCode(env, body);
-		code = code.asType(env, returnType);
+		Code code0 = env.parseCode(env, body);
+		Code code = env.catchCode(() -> code0.asType(env, returnType));
+		char c = 'a';
+		for (int i = 0; i < paramNames.length; i++) {
+			if (paramTypes[i].isUntyped()) {
+				paramTypes[i].acceptTy(Ty.tVar(c++));
+			}
+		}
+		ODebug.trace("returnType=%s hasError=%s", returnType, code.hasErrorCode());
 		int untyped = code.countUntyped(0);
 		if (untyped > 0) {
 			ODebug.trace("untyped node=%d", untyped);
@@ -248,7 +281,7 @@ public class Transpiler extends TEnv {
 
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
-		return prefix + TNameHint.safeName(name);
+		return prefix + NameHint.safeName(name);
 	}
 
 	SourceSection sec = null;
