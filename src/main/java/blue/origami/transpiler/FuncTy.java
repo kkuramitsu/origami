@@ -31,6 +31,11 @@ public class FuncTy extends Ty {
 
 	public static String stringfy(Ty returnType, Ty... paramTypes) {
 		StringBuilder sb = new StringBuilder();
+		stringfy(sb, returnType, paramTypes);
+		return sb.toString();
+	}
+
+	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
 		}
@@ -47,12 +52,20 @@ public class FuncTy extends Ty {
 		}
 		sb.append("->");
 		sb.append(returnType);
-		return sb.toString();
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.name);
+		if (this.name != null) {
+			sb.append(this.name);
+		} else {
+			stringfy(sb, this.getReturnType(), this.getParamTypes());
+		}
+	}
+
+	@Override
+	public String key() {
+		return this.toString();
 	}
 
 	@Override
@@ -61,42 +74,52 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public boolean isVar() {
-		if (!this.returnType.isVar()) {
-			for (Ty t : this.paramTypes) {
-				if (t.isVar()) {
-					return true;
-				}
-			}
-			return false;
-		}
-		return true;
+	public boolean hasVar() {
+		return this.returnType.hasVar() || Ty.hasVar(this.getParamTypes());
 	}
 
 	@Override
 	public Ty dupTy(VarDomain dom) {
-		if (this.isVar()) {
-			return new FuncTy(this.name, this.returnType.dupTy(dom),
+		if (this.name == null && this.hasVar()) {
+			return Ty.tFunc(this.returnType.dupTy(dom),
 					Arrays.stream(this.paramTypes).map(x -> x.dupTy(dom)).toArray(Ty[]::new));
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptTy(Ty t) {
+	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
+		if (t instanceof VarTy) {
+			return (t.acceptTy(false, this, updated));
+		}
 		if (t instanceof FuncTy) {
 			FuncTy ft = (FuncTy) t;
 			if (ft.getParamSize() != this.getParamSize()) {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptTy(ft.paramTypes[i])) {
+				if (!this.paramTypes[i].acceptTy(false, ft.paramTypes[i], updated)) {
 					return false;
 				}
 			}
-			return this.returnType.acceptTy(ft.returnType);
+			return this.returnType.acceptTy(false, ft.returnType, updated);
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isDynamic() {
+		return Ty.isDynamic(this.getParamTypes()) || this.returnType.isDynamic();
+	}
+
+	@Override
+	public Ty nomTy() {
+		if (this.name == null) {
+			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.nomTy()).toArray(Ty[]::new);
+			Ty ret = this.returnType.nomTy();
+			return Ty.tFunc(ret, p);
+		}
+		return this;
 	}
 
 }

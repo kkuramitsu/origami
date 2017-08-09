@@ -1,5 +1,7 @@
 package blue.origami.transpiler;
 
+import java.util.Arrays;
+
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
@@ -20,6 +22,11 @@ public class TCodeTemplate extends Template implements NameInfo {
 	@Override
 	public String getDefined() {
 		return this.template;
+	}
+
+	public void nomAll() {
+		this.paramTypes = Arrays.stream(this.paramTypes).map(x -> x.nomTy()).toArray(Ty[]::new);
+		this.returnType = this.getReturnType().nomTy();
 	}
 
 	@Override

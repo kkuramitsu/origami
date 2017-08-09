@@ -25,7 +25,7 @@ public class VarDomain {
 			if (this.dom[i] == null) {
 				break;
 			}
-			Ty t = this.dom[i].realTy();
+			Ty t = this.dom[i].nomTy();
 			if (t.isUntyped()) {
 				mapCost += CastCode.STUPID;
 			}

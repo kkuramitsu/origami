@@ -9,13 +9,13 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.DSymbol;
+import blue.origami.transpiler.DataTy;
+import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.FuncTy;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CastCode;
@@ -434,7 +434,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 
 		int nextIndex() {
-			return this.varIndex + 1;
+			Class<?> c = Asm.toClass(this.varType);
+			return this.varIndex + (c == double.class || c == long.class ? 2 : 1);
 		}
 
 		VarEntry find(String name) {

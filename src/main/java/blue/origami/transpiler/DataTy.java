@@ -7,6 +7,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class DataTy extends Ty implements StringCombinator {
@@ -22,14 +23,9 @@ public class DataTy extends Ty implements StringCombinator {
 	private static Content Variant = new Variant();
 
 	// Content
-	abstract static class Content implements StringCombinator {
+	abstract static class Content {
 		Ty getInnerTy() {
 			return null;
-		}
-
-		@Override
-		public String toString() {
-			return StringCombinator.stringfy(this);
 		}
 
 		public void checkArray(Tree<?> at, Ty t) {
@@ -44,25 +40,31 @@ public class DataTy extends Ty implements StringCombinator {
 			throw new ErrorCode(at, TFmt.unsupported_operator);
 		}
 
-		public abstract boolean acceptType(DataTy self, DataTy dt);
-
 		public Code getDefaultValue() {
 			return null;
 		}
 
-		public abstract boolean isVarType();
+		public abstract void strOut(DataTy self, StringBuilder sb);
+
+		public abstract boolean hasVar();
+
+		public abstract boolean acceptType(DataTy self, boolean sub, DataTy dt, boolean updated);
+
+		public abstract boolean isDynamic();
+
+		public abstract Ty nomTy(DataTy self);
 
 		public abstract Content dup(VarDomain dom);
 	}
 
 	static class Variant extends Content {
 		@Override
-		public void strOut(StringBuilder sb) {
+		public void strOut(DataTy self, StringBuilder sb) {
 			sb.append("?");
 		}
 
 		@Override
-		public boolean isVarType() {
+		public boolean hasVar() {
 			return true;
 		}
 
@@ -72,15 +74,25 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public boolean acceptType(DataTy self, DataTy dt) {
-			return self == dt;
+		public boolean acceptType(DataTy self, boolean sub, DataTy dt, boolean updated) {
+			return false;
+		}
+
+		@Override
+		public boolean isDynamic() {
+			return true;
+		}
+
+		@Override
+		public Ty nomTy(DataTy ty) {
+			return ty;
 		}
 	}
 
-	static class AtomContent extends Content {
+	abstract class InnerData extends Content {
 		final Ty innerType;
 
-		AtomContent(Ty innerType) {
+		InnerData(Ty innerType) {
 			this.innerType = innerType;
 		}
 
@@ -90,45 +102,21 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public Code getDefaultValue() {
-			return this.innerType.getDefaultValue();
+		public boolean isDynamic() {
+			return this.innerType.isDynamic();
 		}
 
 		@Override
-		public void strOut(StringBuilder sb) {
-			StringCombinator.append(sb, this.innerType);
-		}
-
-		@Override
-		public boolean isVarType() {
-			return this.innerType.isVar();
-		}
-
-		@Override
-		public Content dup(VarDomain dom) {
-			if (this.isVarType()) {
-				return new AtomContent(this.innerType.dupTy(dom));
-			}
-			return this;
-		}
-
-		@Override
-		public boolean acceptType(DataTy self, DataTy dt) {
-			return self.getInnerType().acceptTy(dt.getInnerType());
+		public boolean hasVar() {
+			return this.innerType.hasVar();
 		}
 
 	}
 
-	class ArrayData extends Content {
-		final Ty innerType;
+	class ArrayData extends InnerData {
 
 		ArrayData(Ty innerType) {
-			this.innerType = innerType;
-		}
-
-		@Override
-		Ty getInnerTy() {
-			return this.innerType;
+			super(innerType);
 		}
 
 		@Override
@@ -141,54 +129,48 @@ public class DataTy extends Ty implements StringCombinator {
 
 		@Override
 		public Code getDefaultValue() {
-			return new DataCode(DataTy.this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tMArray(this.innerType));
+			return new DataCode(DataTy.this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tArray(this.innerType));
 		}
 
 		@Override
-		public void strOut(StringBuilder sb) {
-			if (DataTy.this.isImmutable) {
+		public void strOut(DataTy self, StringBuilder sb) {
+			if (self.isImmutable) {
 				sb.append("{");
 			}
 			StringCombinator.append(sb, this.innerType);
 			sb.append("*");
-			if (DataTy.this.isImmutable) {
+			if (self.isImmutable) {
 				sb.append("}");
 			}
 		}
 
 		@Override
-		public String toString() {
-			return StringCombinator.stringfy(this);
-		}
-
-		@Override
-		public boolean isVarType() {
-			return this.innerType.isVar();
-		}
-
-		@Override
 		public Content dup(VarDomain dom) {
-			if (this.isVarType()) {
+			if (this.hasVar()) {
 				return new ArrayData(this.innerType.dupTy(dom));
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(DataTy self, DataTy dt) {
-			return dt.isArray() && self.getInnerType().acceptTy(dt.getInnerType());
+		public boolean acceptType(DataTy self, boolean sub, DataTy dt, boolean updated) {
+			return dt.isArray() && this.innerType.acceptTy(false, dt.getInnerType(), updated);
+		}
+
+		@Override
+		public Ty nomTy(DataTy self) {
+			Ty ty = this.innerType.nomTy();
+			if (ty != this.innerType) {
+				return self.isImmutable ? Ty.tImArray(ty) : Ty.tArray(ty);
+			}
+			return self;
 		}
 
 	}
 
-	class DictData extends ArrayData {
+	class DictData extends InnerData {
 		DictData(Ty innerType) {
 			super(innerType);
-		}
-
-		@Override
-		public void checkArray(Tree<?> at, Ty t) {
-			super.checkDict(at, t);
 		}
 
 		@Override
@@ -197,8 +179,8 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public void strOut(StringBuilder sb) {
-			if (DataTy.this.isMutable) {
+		public void strOut(DataTy self, StringBuilder sb) {
+			if (!self.isImmutable) {
 				sb.append("$");
 			}
 			sb.append("Dict[");
@@ -208,15 +190,24 @@ public class DataTy extends Ty implements StringCombinator {
 
 		@Override
 		public Content dup(VarDomain dom) {
-			if (this.isVarType()) {
+			if (this.hasVar()) {
 				return new DictData(this.innerType.dupTy(dom));
 			}
 			return this;
 		}
 
 		@Override
-		public boolean acceptType(DataTy self, DataTy dt) {
-			return dt.isDict() && self.getInnerType().acceptTy(dt.getInnerType());
+		public boolean acceptType(DataTy self, boolean sub, DataTy dt, boolean updated) {
+			return dt.isDict() && this.innerType.acceptTy(false, dt.getInnerType(), updated);
+		}
+
+		@Override
+		public Ty nomTy(DataTy dt) {
+			Ty ty = this.innerType.nomTy();
+			if (ty != this.innerType) {
+				return dt.isImmutable ? Ty.tImDict(ty) : Ty.tDict(ty);
+			}
+			return dt;
 		}
 
 	}
@@ -235,19 +226,19 @@ public class DataTy extends Ty implements StringCombinator {
 			this.fields = names;
 		}
 
-		@Override
-		public boolean equals(Object o) {
-			if (o instanceof Record) {
-				Record record = (Record) o;
-				for (DSymbol f : record.fields) {
-					if (!this.hasField(f)) {
-						return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		}
+		// @Override
+		// public boolean equals(Object o) {
+		// if (o instanceof Record) {
+		// Record record = (Record) o;
+		// for (DSymbol f : record.fields) {
+		// if (!this.hasField(f)) {
+		// return false;
+		// }
+		// }
+		// return true;
+		// }
+		// return false;
+		// }
 
 		public boolean hasField(DSymbol field) {
 			for (DSymbol f : this.fields) {
@@ -280,7 +271,7 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public void strOut(StringBuilder sb) {
+		public void strOut(DataTy self, StringBuilder sb) {
 			sb.append(DataTy.this.isImmutable ? "[" : "{");
 			int c = 0;
 			for (DSymbol s : this.fields) {
@@ -294,21 +285,22 @@ public class DataTy extends Ty implements StringCombinator {
 		}
 
 		@Override
-		public boolean isVarType() {
-			return this.growing;
+		public boolean hasVar() {
+			return false;
 		}
 
 		@Override
 		public Content dup(VarDomain dom) {
-			if (this.isVarType()) {
+			if (this.hasVar()) {
 				return new Record(this.growing, this.fields);
 			}
 			return this;
 		}
 
+		/* if sub == true self <: dt */
 		@Override
-		public boolean acceptType(DataTy self, DataTy dt) {
-			if (self.content instanceof Record && dt.content instanceof Record) {
+		public boolean acceptType(DataTy self, boolean sub, DataTy dt, boolean updated) {
+			if (dt.content instanceof Record) {
 				Record r1 = (Record) self.content;
 				Record r2 = (Record) dt.content;
 				if (r1.growing || r2.growing) {
@@ -322,6 +314,16 @@ public class DataTy extends Ty implements StringCombinator {
 				return true;
 			}
 			return false;
+		}
+
+		@Override
+		public boolean isDynamic() {
+			return this.growing;
+		}
+
+		@Override
+		public Ty nomTy(DataTy ty) {
+			return ty;
 		}
 
 	}
@@ -341,7 +343,7 @@ public class DataTy extends Ty implements StringCombinator {
 
 	DataTy(boolean isDict, Ty innerType) {
 		this(Variant);
-		this.content = isDict ? new DictData(innerType) : new ArrayData(innerType);
+		this.content = isDict ? new DictData(innerType.nomTy()) : new ArrayData(innerType.nomTy());
 	}
 
 	DataTy(boolean growing, String... names) {
@@ -356,7 +358,7 @@ public class DataTy extends Ty implements StringCombinator {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.content.strOut(sb);
+		this.content.strOut(this, sb);
 	}
 
 	public void checkSetIndex(Tree<?> at, Ty t) {
@@ -437,7 +439,7 @@ public class DataTy extends Ty implements StringCombinator {
 		return this.isImmutable;
 	}
 
-	public Ty asImmutable() {
+	public DataTy asImmutable() {
 		this.isImmutable = true;
 		return this;
 	}
@@ -462,10 +464,6 @@ public class DataTy extends Ty implements StringCombinator {
 	}
 
 	/* TTypeApi */
-
-	public boolean isAtomType() {
-		return this.content instanceof AtomContent;
-	}
 
 	@Override
 	public boolean isArray() {
@@ -494,40 +492,51 @@ public class DataTy extends Ty implements StringCombinator {
 	}
 
 	@Override
-	public boolean isVar() {
-		return this.content.isVarType();
+	public boolean hasVar() {
+		return this.content.hasVar();
 	}
 
 	@Override
 	public Ty dupTy(VarDomain dom) {
-		if (this.isVar()) {
+		if (this.hasVar()) {
 			return new DataTy(this.content.dup(dom));
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptTy(Ty t) {
+	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
+		if (t instanceof VarTy) {
+			return (t.acceptTy(false, this, updated));
+		}
 		if (t instanceof DataTy) {
 			DataTy dt = (DataTy) t;
-			if (dt.isAtomType()) {
-				return this.acceptTy(dt.getInnerType());
-			}
-			return this.content.acceptType(this, dt);
-		}
-		if (t.isSpecific()) {
 			if (this.content instanceof Variant) {
-				this.content = new AtomContent(t);
-				return true;
+				ODebug.TODO("variant type");
 			}
-			return false;
+			return this.content.acceptType(this, sub, dt, updated);
 		}
 		return false;
 	}
 
 	@Override
+	public Ty nomTy() {
+		return this.content.nomTy(this);
+	}
+
+	@Override
+	public boolean isDynamic() {
+		return this.content.isDynamic();
+	}
+
+	@Override
 	public String strOut(TEnv env) {
 		return this.content.toString();
+	}
+
+	@Override
+	public String key() {
+		return this.toString();
 	}
 
 }

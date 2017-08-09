@@ -7,20 +7,15 @@ public abstract class Template {
 	// Skeleton
 	protected boolean isGeneric;
 	protected final String name;
-	protected final Ty[] paramTypes;
-	protected final Ty returnType;
+	protected Ty[] paramTypes;
+	protected Ty returnType;
 	// private final String template;
 
 	public Template(String name, Ty returnType, Ty... paramTypes) {
 		this.name = name;
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
-		for (Ty t : paramTypes) {
-			if (t.isVar()) {
-				this.isGeneric = true;
-				break;
-			}
-		}
+		this.isGeneric = Ty.hasVar(paramTypes) || returnType.hasVar();
 		assert (this.returnType != null) : this;
 	}
 

@@ -92,8 +92,8 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		}
 		if (ty == null) {
 			if (NameHint.isOneLetterName(name)) {
-				ty = Ty.tData().asParameter();
-				env.addNameDecl(env, name, ty);
+				ty = Ty.tVar(name);
+				env.addNameDecl(env, name, ty).useLocal();
 			}
 		}
 		ty = this.parseTypeArity(env, ty, param);

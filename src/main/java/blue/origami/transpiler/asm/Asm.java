@@ -15,14 +15,8 @@ public class Asm {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 	static HashMap<String, Class<?>> t2cMap = new HashMap<>();
 
-	static void set(Class<?> c, Ty t) {
-		String key = t.toString();
-		t2cMap.put(key, c);
-	}
-
 	static Class<?> toClass(Ty t) {
-		t = t.realTy();
-		String key = t.toString();
+		String key = t.key();
 		Class<?> c = t2cMap.get(key);
 		if (c == null) {
 			if (t instanceof FuncTy) {
@@ -71,10 +65,13 @@ public class Asm {
 	// return c2tMap.get(c);
 	// }
 
+	static void set(Class<?> c, Ty t) {
+		t2cMap.put(t.key(), c);
+	}
+
 	static {
 		set(Object.class, Ty.tUntyped);
 		set(Object.class, Ty.tVar("a"));
-		set(Object.class, Ty.tVar("b"));
 		set(void.class, Ty.tVoid);
 		set(boolean.class, Ty.tBool);
 		set(char.class, Ty.tChar);
@@ -84,7 +81,7 @@ public class Asm {
 		set(blue.origami.konoha5.Data.class, Ty.tData());
 		set(blue.origami.konoha5.Data.class, Ty.tData(TArrays.emptyNames));
 		set(blue.origami.konoha5.IntArray.class, Ty.tImArray(Ty.tInt));
-		set(blue.origami.konoha5.IntArray.class, Ty.tMArray(Ty.tInt));
+		set(blue.origami.konoha5.IntArray.class, Ty.tArray(Ty.tInt));
 
 		// Func
 		set(Func.FuncBool.class, Ty.tFunc(Ty.tBool));

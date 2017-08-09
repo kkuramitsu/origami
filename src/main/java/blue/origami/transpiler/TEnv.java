@@ -374,7 +374,7 @@ interface TEnvApi {
 			}
 			if (tsig.startsWith("{") && tsig.endsWith("*}")) {
 				t = checkType(tsig.substring(1, tsig.length() - 2));
-				return Ty.tMArray(t);
+				return Ty.tArray(t);
 			}
 			if (tsig.startsWith("Dict[") && tsig.endsWith("]")) {
 				t = checkType(tsig.substring(5, tsig.length() - 1));
@@ -382,7 +382,7 @@ interface TEnvApi {
 			}
 			if (tsig.startsWith("Dict{") && tsig.endsWith("}")) {
 				t = checkType(tsig.substring(5, tsig.length() - 1));
-				return Ty.tMDict(t);
+				return Ty.tDict(t);
 			}
 			if (tsig.startsWith("Option[") && tsig.endsWith("]")) {
 				t = checkType(tsig.substring(7, tsig.length() - 1));
@@ -400,17 +400,17 @@ interface TEnvApi {
 		return t;
 	}
 
-	public default void addNameDecl(TEnv env, String names, Ty t) {
-		this.addNameDecl(env, names.split(","), t);
+	public default NameHint addNameDecl(TEnv env, String names, Ty t) {
+		return this.addNameDecl(env, names.split(","), t);
 	}
 
-	public default void addNameDecl(TEnv env, String[] names, Ty t) {
-		if (!t.isUntyped()) {
-			for (String n : names) {
-				NameHint hint = NameHint.newNameDecl(n, t);
-				env().add(NameHint.shortName(n), hint);
-			}
+	public default NameHint addNameDecl(TEnv env, String[] names, Ty t) {
+		NameHint hint = null;
+		for (String n : names) {
+			hint = NameHint.newNameDecl(n, t);
+			env().add(NameHint.shortName(n), hint);
 		}
+		return hint;
 	}
 
 	public default void addGlobalName(TEnv env, String name, Ty t) {

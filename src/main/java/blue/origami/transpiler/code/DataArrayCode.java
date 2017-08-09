@@ -35,7 +35,7 @@ public class DataArrayCode extends DataCode {
 			if (firstType.isUntyped()) {
 				return this;
 			}
-			this.setType(this.isMutable() ? Ty.tMArray(firstType) : Ty.tImArray(firstType));
+			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tImArray(firstType));
 		}
 		return super.asType(env, t);
 	}

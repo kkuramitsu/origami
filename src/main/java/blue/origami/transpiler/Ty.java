@@ -25,15 +25,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	private static HashMap<String, Ty> typeMap = new HashMap<>();
 
-	public static final Ty tFunc(Ty returnType, Ty... paramTypes) {
-		String key = FuncTy.stringfy(returnType, paramTypes);
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new FuncTy(key, returnType, paramTypes);
-			typeMap.put(key, t);
-		}
-		return t;
-	}
+	/* DynamicType */
 
 	public static final DataTy tData() {
 		return new DataTy(); // growing
@@ -43,41 +35,59 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return new DataTy(true, names); // dependable
 	}
 
-	public static final DataTy tImArray(Ty innerType) {
-		String key = innerType + "*";
+	public static final VarTy tVar(String name) {
+		return new VarTy(name);
+	}
+
+	/* Data */
+
+	public static final DataTy tImArray(Ty ty) {
+		if (ty.isDynamic()) {
+			return new DataTy(false, ty).asImmutable();
+		}
+		String key = ty + "*";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, innerType).asImmutable();
+			t = new DataTy(false, ty).asImmutable();
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
 	}
 
-	public static final DataTy tMArray(Ty innerType) {
-		String key = "{" + innerType + "*" + "}";
+	public static final DataTy tArray(Ty ty) {
+		if (ty.isDynamic()) {
+			return new DataTy(false, ty);
+		}
+		String key = "{" + ty + "*" + "}";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, innerType);
+			t = new DataTy(false, ty);
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
 	}
 
-	public static final DataTy tImDict(Ty innerType) {
-		String key = "Dict[" + innerType + "]";
+	public static final DataTy tImDict(Ty ty) {
+		if (ty.isDynamic()) {
+			return new DataTy(true, ty).asImmutable();
+		}
+		String key = "Dict'[" + ty + "]";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(true, innerType).asImmutable();
+			t = new DataTy(true, ty).asImmutable();
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
 	}
 
-	public static final DataTy tMDict(Ty innerType) {
-		String key = "$Dict[" + innerType + "]";
+	public static final DataTy tDict(Ty ty) {
+		if (ty.isDynamic()) {
+			return new DataTy(true, ty);
+		}
+		String key = "Dict[" + ty + "]";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(true, innerType);
+			t = new DataTy(true, ty);
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
@@ -93,7 +103,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return (DataTy) t;
 	}
 
-	public static final DataTy tMRecord(String... names) {
+	public static final DataTy tRecord(String... names) {
 		String key = "{" + StringCombinator.joins(names, ",") + "}";
 		Ty t = typeMap.get(key);
 		if (t == null) {
@@ -104,25 +114,28 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static Ty tOption(Ty ty) {
+		if (ty.isDynamic()) {
+			return new OptionTy(ty).nomTy();
+		}
 		String key = ty + "?";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new OptionTy(ty);
+			t = new OptionTy(ty).nomTy();
 			typeMap.put(key, t);
 		}
 		return ty;
 	}
 
-	public static final VarTy tVar(String name) {
-		return new VarTy(name);
-	}
+	/* FuncType */
 
-	public static final Ty tVar(char c) {
-		String key = String.valueOf(c);
+	public static final Ty tFunc(Ty returnType, Ty... paramTypes) {
+		if (Ty.isDynamic(paramTypes) || returnType.isDynamic()) {
+			return new FuncTy(null, returnType, paramTypes);
+		}
+		String key = FuncTy.stringfy(returnType, paramTypes);
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new VarTy(key);
-			t.acceptTy(new SimpleTy(key));
+			t = new FuncTy(key, returnType, paramTypes);
 			typeMap.put(key, t);
 		}
 		return t;
@@ -132,13 +145,50 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	@Override
 	public final boolean equals(Object t) {
-		return this == t;
+		if (t instanceof Ty) {
+			return this.acceptTy(false, (Ty) t, false);
+		}
+		return false;
 	}
 
-	public abstract boolean acceptTy(Ty t);
+	public boolean eq(Ty ty) {
+		return this.acceptTy(false, ty, false);
+	}
 
-	public boolean accept(Code code) {
-		return this.acceptTy(code.getType());
+	public abstract boolean acceptTy(boolean sub, Ty t, boolean updated);
+
+	public final boolean accept(Code code) {
+		return this.acceptTy(true, code.getType(), true);
+	}
+
+	public abstract boolean isDynamic();
+
+	public final static boolean isDynamic(Ty... p) {
+		for (Ty t : p) {
+			if (t.isDynamic()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public abstract Ty nomTy();
+
+	// VarType
+
+	public abstract boolean hasVar();
+
+	public final static boolean hasVar(Ty... p) {
+		for (Ty t : p) {
+			if (t.hasVar()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Ty dupTy(VarDomain dom) {
+		return this;
 	}
 
 	public abstract String strOut(TEnv env);
@@ -165,17 +215,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return hiddenMap.get(tsig);
 	}
 
-	public Ty realTy() {
-		return this;
-	}
-
-	public Ty dupTy(VarDomain dom) {
-		return this;
-	}
-
-	public boolean eq(Ty ty) {
-		return this == ty;
-	}
+	public abstract String key();
 
 	@Override
 	public final String toString() {
@@ -226,12 +266,6 @@ interface TypeApi {
 		return Ty.tUntyped;
 	}
 
-	// VarType
-
-	public default boolean isVar() {
-		return false;
-	}
-
 }
 
 class SimpleTy extends Ty {
@@ -247,8 +281,26 @@ class SimpleTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(Ty t) {
-		return this == t || this == t.realTy();
+	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
+		if (t instanceof VarTy) {
+			return (t.acceptTy(false, this, updated));
+		}
+		return this == t;
+	}
+
+	@Override
+	public boolean hasVar() {
+		return false;
+	}
+
+	@Override
+	public boolean isDynamic() {
+		return false;
+	}
+
+	@Override
+	public Ty nomTy() {
+		return this;
 	}
 
 	@Override
@@ -259,6 +311,11 @@ class SimpleTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append(this.name);
+	}
+
+	@Override
+	public String key() {
+		return this.name;
 	}
 
 }
@@ -315,7 +372,7 @@ class UntypedTy extends SimpleTy {
 	}
 
 	@Override
-	public boolean acceptTy(Ty t) {
+	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
 		return true;
 	}
 

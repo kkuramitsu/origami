@@ -4,12 +4,15 @@ import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class VarTy extends Ty {
+	private static int seq = 0;
 	private String varName;
 	private Ty innerTy;
+	final int id;
 
 	public VarTy(String varName) {
 		this.varName = varName;
 		this.innerTy = null;
+		this.id = seq++;
 	}
 
 	public String getName() {
@@ -17,8 +20,13 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean isVar() {
-		return this.innerTy == null || this.innerTy.isVar();
+	public boolean isUntyped() {
+		return false; // typed as variable types
+	}
+
+	@Override
+	public boolean hasVar() {
+		return this.innerTy == null || this.innerTy.hasVar();
 	}
 
 	@Override
@@ -32,21 +40,41 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public Ty realTy() {
-		return this.innerTy == null ? this.tUntyped : this.innerTy.realTy();
+	public boolean isDynamic() {
+		return this.innerTy == null ? false : this.innerTy.isDynamic();
 	}
 
 	@Override
-	public boolean acceptTy(Ty t) {
-		// if (this == t || this == this.realTy()) {
-		// return true;
-		// }
+	public Ty nomTy() {
+		return this.innerTy == null ? this : this.innerTy.nomTy();
+	}
+
+	@Override
+	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
 		if (this.innerTy == null) {
-			ODebug.trace("infer %s as %s", this.varName, t);
-			this.innerTy = t;
+			if (t instanceof VarTy) {
+				VarTy vt = ((VarTy) t);
+				if (vt.innerTy != null) {
+					return this.acceptTy(sub, vt.innerTy, updated);
+				} else {
+					if (updated) {
+						if (this.id < vt.id) {
+							vt.innerTy = this;
+						}
+						if (this.id > vt.id) {
+							this.innerTy = vt;
+						}
+					}
+					return true;
+				}
+			}
+			if (updated) {
+				ODebug.trace("infer %s as %s", this.varName, t);
+				this.innerTy = t;
+			}
 			return true;
 		}
-		return this.innerTy.acceptTy(t);
+		return this.innerTy.acceptTy(sub, t, updated);
 	}
 
 	@Override
@@ -59,13 +87,17 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public String strOut(TEnv env) {
-		return this.innerTy.realTy().strOut(env);
+	public String key() {
+		if (this.innerTy == null) {
+			return "a";
+		} else {
+			return this.innerTy.key();
+		}
 	}
 
 	@Override
-	public boolean isUntyped() {
-		return this.innerTy == null || this.innerTy.isUntyped();
+	public String strOut(TEnv env) {
+		return this.innerTy.nomTy().strOut(env);
 	}
 
 }

@@ -32,7 +32,7 @@ public class DataDictCode extends DataCode {
 			if (firstType.isUntyped()) {
 				return this.StillUntyped();
 			}
-			this.setType(this.isMutable() ? Ty.tMDict(firstType) : Ty.tImDict(firstType));
+			this.setType(this.isMutable() ? Ty.tDict(firstType) : Ty.tImDict(firstType));
 		}
 		return super.asType(env, t);
 	}
