@@ -8,6 +8,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 abstract class MonadTy extends Ty {
@@ -72,8 +73,14 @@ public class DataTy extends Ty {
 		return this;
 	}
 
-	public Ty asParameter() {
+	public DataTy asParameter() {
 		this.isParameter = true;
+		return this;
+	}
+
+	public DataTy asRecord() {
+		this.growing = false;
+		this.isParameter = false;
 		return this;
 	}
 
@@ -87,23 +94,21 @@ public class DataTy extends Ty {
 		return this;
 	}
 
-	boolean growing;
+	boolean growing = false;
 	DSymbol[] fields;
 
 	DataTy() {
-		this.growing = false;
 		this.fields = new DSymbol[0];
 	}
 
-	DataTy(boolean growing, String... names) {
-		this.growing = growing;
+	DataTy(String... names) {
 		this.fields = Arrays.stream(names).map(x -> DSymbol.unique(x)).toArray(DSymbol[]::new);
 	}
 
-	DataTy(boolean growing, DSymbol[] names) {
-		this.growing = growing;
-		this.fields = names;
-	}
+	// DataTy(boolean growing, DSymbol[] names) {
+	// this.growing = growing;
+	// this.fields = names;
+	// }
 
 	@Override
 	public Code getDefaultValue() {
@@ -119,18 +124,30 @@ public class DataTy extends Ty {
 		return false;
 	}
 
-	public void addField(DSymbol field) {
-		if (this.growing && !this.hasField(field)) {
-			DSymbol[] nf = new DSymbol[this.fields.length + 1];
-			System.arraycopy(this.fields, 0, nf, 0, this.fields.length);
-			nf[this.fields.length] = field;
-			this.fields = nf;
+	public boolean hasFields(DSymbol... fields) {
+		for (DSymbol f : fields) {
+			if (!this.hasField(f)) {
+				return false;
+			}
 		}
+		return true;
 	}
 
-	// @Override
-	// public void checkField(Tree<?> at, String name, boolean ext) {
-	// }
+	private void addField(DSymbol field) {
+		ODebug.trace("DataType: %s + %s", this, field);
+		DSymbol[] nf = new DSymbol[this.fields.length + 1];
+		System.arraycopy(this.fields, 0, nf, 0, this.fields.length);
+		nf[this.fields.length] = field;
+		this.fields = nf;
+	}
+
+	private void addFields(DSymbol... fields) {
+		for (DSymbol f : fields) {
+			if (!this.hasField(f)) {
+				this.addField(f);
+			}
+		}
+	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
@@ -163,31 +180,21 @@ public class DataTy extends Ty {
 		}
 	}
 
+	private boolean isGrowing() {
+		return this.growing || this.isParameter;
+	}
+
 	//
 	public void checkGetField(Tree<?> at, String name) {
 		DSymbol f = DSymbol.unique(name);
 		if (!this.hasField(f)) {
-			if (this.growing || this.isParameter) {
+			if (this.isGrowing()) {
 				this.addField(f);
 			} else {
 				throw new ErrorCode(at, TFmt.undefined_name__YY0_in_YY1, name, this);
 			}
 		}
 	}
-
-	// public void sync(TDataType dt) {
-	// if (this.isParameter) {
-	// if (dt.isMutable) {
-	// this.isMutable = true;
-	// }
-	// if (this.content == EmptyContent) {
-	// this.content = dt.content.clone();
-	// }
-	// for (DSymbol f : dt.getFields()) {
-	// this.addField(f);
-	// }
-	// }
-	// }
 
 	@Override
 	public Ty getInnerTy() {
@@ -206,29 +213,40 @@ public class DataTy extends Ty {
 		return this;
 	}
 
+	// f(b)
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
-		if (t instanceof VarTy) {
-			return (t.acceptTy(false, this, updated));
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+		if (codeTy instanceof VarTy) {
+			if (((VarTy) codeTy).isParameter()) {
+				DataTy pt = Ty.tData().asParameter();
+				pt.addFields(this.fields);
+				return (codeTy.acceptTy(false, pt, updated));
+			}
+			return (codeTy.acceptTy(false, this, updated));
 		}
-		if (t instanceof DataTy) {
-			DataTy dt = (DataTy) t;
-			if (this.growing || dt.growing) {
+		if (codeTy instanceof DataTy) {
+			DataTy dt = (DataTy) codeTy;
+			// f(b) b: isParameter = true;
+			if (dt.isParameter) {
+				if (updated) {
+					dt.addFields(this.fields);
+				}
 				return true;
 			}
-			for (DSymbol f : this.fields) {
-				if (!dt.hasField(f)) {
-					return false;
+			if (dt.hasFields(this.fields)) {
+				if (!sub) {
+					return this.hasFields(dt.fields);
 				}
+				return true;
 			}
-			return true;
+			return false;
 		}
 		return false;
 	}
 
 	@Override
 	public String key() {
-		return this.toString();
+		return "{}";
 	}
 
 	@Override

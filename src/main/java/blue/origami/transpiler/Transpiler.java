@@ -190,15 +190,22 @@ public class Transpiler extends TEnv {
 		this.generator.setDebug(debug);
 	}
 
+	public void show(String msg, Runnable p) {
+		// if (this.isDebug) {
+		OConsole.beginColor(OConsole.Blue);
+		OConsole.print("[" + msg + "] ");
+		p.run();
+		OConsole.endColor();
+		// }
+	}
+
 	void emitCode(TEnv env, Source sc) throws Throwable {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		if (this.isDebug) {
-			OConsole.beginColor(OConsole.Blue);
+		this.show("Tree", () -> {
 			OConsole.println(t);
-			OConsole.endColor();
-		}
+		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
 		this.generator.emit(env, code);
@@ -249,8 +256,8 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
-	public Template defineFunction(boolean isPublic, String name, String[] paramNames, Ty[] paramTypes, Ty returnType,
-			Tree<?> body) {
+	public Template defineFunction(boolean isPublic, String name, VarDomain dom, String[] paramNames, Ty[] paramTypes,
+			Ty returnType, Tree<?> body) {
 		final TEnv env = this.newEnv();
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final TCodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
@@ -259,18 +266,23 @@ public class Transpiler extends TEnv {
 		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
-			ODebug.trace("name=%s %s %s", paramNames[i], paramTypes[i], paramTypes[i].isUntyped());
 		}
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
-		ODebug.trace("returnType=%s hasError=%s", returnType, code.hasErrorCode());
-		int untyped = code.countUntyped(0);
-		if (untyped > 0) {
-			ODebug.trace("untyped node=%d", untyped);
+		// int untyped = code.countUntyped(0);
+		// if (untyped > 0) {
+		// ODebug.trace("untyped node=%d", untyped);
+		// }
+		ODebug.trace("Typed Error=%s %s", code.hasErrorCode(), tp);
+		if (dom != null) {
+			dom.check();
 		}
 		tp.nomAll();
+		this.show("Typed", () -> {
+			OConsole.println("%s %s", lname, tp.getFuncType());
+		});
 		assert (!returnType.isUntyped());
-		this.generator.defineFunction(this, isPublic, lname, paramNames, paramTypes, returnType, code);
+		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}
 

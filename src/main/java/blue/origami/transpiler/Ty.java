@@ -22,7 +22,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tUntyped0 = new UntypedTy("?");
 	public static final Ty tVoid = new SimpleTy("()");
 	public static final Ty tChar = new SimpleTy("char");
-	public static final Ty tThis = null; // FIXME
+	public static final Ty tThis = new SimpleTy("_");
 	public static final Ty tAuto = new SimpleTy("auto");
 
 	private static HashMap<String, Ty> typeMap = new HashMap<>();
@@ -30,11 +30,11 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	/* DynamicType */
 
 	public static final DataTy tData() {
-		return new DataTy(); // growing
+		return new DataTy();
 	}
 
 	public static final DataTy tData(String... names) {
-		return new DataTy(true, names); // dependable
+		return new DataTy(names);
 	}
 
 	public static final VarTy tUntyped() {
@@ -103,7 +103,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		String key = "[" + StringCombinator.joins(names, ",") + "]";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, names).asImmutable();
+			t = new DataTy(names).asImmutable();
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
@@ -113,7 +113,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		String key = "{" + StringCombinator.joins(names, ",") + "}";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, names);
+			t = new DataTy(names);
 			typeMap.put(key, t);
 		}
 		return (DataTy) t;
@@ -143,6 +143,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		if (t == null) {
 			t = new FuncTy(key, returnType, paramTypes);
 			typeMap.put(key, t);
+			// System.out.println(":::::::::: " + key);
 		}
 		return t;
 	}
@@ -169,7 +170,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this.acceptTy(false, ty, false);
 	}
 
-	public abstract boolean acceptTy(boolean sub, Ty t, boolean updated);
+	public abstract boolean acceptTy(boolean sub, Ty codeTy, boolean updated);
 
 	public final boolean accept(Code code) {
 		return this.acceptTy(true, code.getType(), true);
@@ -309,11 +310,11 @@ class SimpleTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
-		if (t instanceof VarTy) {
-			return (t.acceptTy(false, this, updated));
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+		if (codeTy instanceof VarTy) {
+			return (codeTy.acceptTy(false, this, updated));
 		}
-		return this == t;
+		return this == codeTy;
 	}
 
 	@Override
@@ -400,7 +401,7 @@ class UntypedTy extends SimpleTy {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
 		return true;
 	}
 

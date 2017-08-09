@@ -30,14 +30,14 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
-		if (t instanceof OptionTy) {
-			return this.innerTy.acceptTy(sub, ((OptionTy) t).innerTy, updated);
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+		if (codeTy instanceof OptionTy) {
+			return this.innerTy.acceptTy(sub, ((OptionTy) codeTy).innerTy, updated);
 		}
-		if (t instanceof VarTy) {
-			return (t.acceptTy(false, this, updated));
+		if (codeTy instanceof VarTy) {
+			return (codeTy.acceptTy(false, this, updated));
 		}
-		return this.innerTy.acceptTy(sub, t, updated);
+		return this.innerTy.acceptTy(sub, codeTy, updated);
 	}
 
 	@Override

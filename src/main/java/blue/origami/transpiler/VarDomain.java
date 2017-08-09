@@ -41,7 +41,7 @@ public class VarDomain {
 		return mapCost;
 	}
 
-	public void rename(String name) {
+	public void check() {
 		char c = 'a';
 		for (int i = 0; i < this.dom.length; i++) {
 			if (this.dom[i] == null) {
@@ -50,6 +50,9 @@ public class VarDomain {
 			Ty ty = this.dom[i].nomTy();
 			if (ty == this.dom[i]) {
 				this.dom[i].rename(String.valueOf(c++));
+			}
+			if (ty instanceof DataTy) {
+				((DataTy) ty).asRecord();
 			}
 		}
 	}

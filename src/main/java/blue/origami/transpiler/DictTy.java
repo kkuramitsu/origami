@@ -41,12 +41,12 @@ public class DictTy extends MonadTy {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
-		if (t instanceof VarTy) {
-			return (t.acceptTy(false, this, updated));
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+		if (codeTy instanceof VarTy) {
+			return (codeTy.acceptTy(false, this, updated));
 		}
-		if (t instanceof DictTy) {
-			return this.innerType.acceptTy(false, t.getInnerTy(), updated);
+		if (codeTy instanceof DictTy) {
+			return this.innerType.acceptTy(false, codeTy.getInnerTy(), updated);
 		}
 		return false;
 	}

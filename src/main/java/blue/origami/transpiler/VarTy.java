@@ -17,8 +17,13 @@ public class VarTy extends Ty {
 		this.id = seq++;
 	}
 
+	public boolean isParameter() {
+		return (this.varName != null && NameHint.isOneLetterName(this.varName));
+	}
+
 	public String getName() {
-		return this.varName == null ? "_" + this.id : this.varName;
+		return this.varName == null ? "_" + this.id
+				: this.varName /* + this.id */;
 	}
 
 	public void rename(String name) {
@@ -57,7 +62,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public boolean isDynamic() {
-		return this.innerTy == null ? false : this.innerTy.isDynamic();
+		return this.innerTy == null ? true : this.innerTy.isDynamic();
 	}
 
 	@Override
@@ -70,10 +75,10 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
 		if (this.innerTy == null) {
-			if (t instanceof VarTy) {
-				VarTy vt = ((VarTy) t);
+			if (codeTy instanceof VarTy) {
+				VarTy vt = ((VarTy) codeTy);
 				if (vt.innerTy != null) {
 					return this.acceptTy(sub, vt.innerTy, updated);
 				} else {
@@ -89,13 +94,13 @@ public class VarTy extends Ty {
 			}
 			if (updated) {
 				if (this.varName != null) {
-					ODebug.trace("infer %s as %s", this.varName, t);
+					ODebug.trace("infer %s as %s", this.getName(), codeTy);
 				}
-				this.innerTy = t;
+				this.innerTy = codeTy;
 			}
 			return true;
 		}
-		return this.innerTy.acceptTy(sub, t, updated);
+		return this.innerTy.acceptTy(sub, codeTy, updated);
 	}
 
 	@Override

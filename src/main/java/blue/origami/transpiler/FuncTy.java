@@ -2,6 +2,8 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
+import blue.origami.util.StringCombinator;
+
 public class FuncTy extends Ty {
 	protected final String name;
 	protected final Ty[] paramTypes;
@@ -14,7 +16,7 @@ public class FuncTy extends Ty {
 	}
 
 	FuncTy(Ty returnType, Ty... paramTypes) {
-		this(stringfy(returnType, paramTypes), returnType, paramTypes);
+		this(null, returnType, paramTypes);
 	}
 
 	public Ty getReturnType() {
@@ -35,20 +37,17 @@ public class FuncTy extends Ty {
 		return sb.toString();
 	}
 
+	private static Object cap(Ty ty) {
+		return (ty instanceof FuncTy) ? "(" + ty + ")" : ty;
+	}
+
 	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
-		}
-		int c = 0;
-		for (Ty t : paramTypes) {
-			if (c > 0) {
-				sb.append(",");
-			}
-			sb.append(t);
-			c++;
-		}
-		if (paramTypes.length != 1) {
+			StringCombinator.joins(sb, paramTypes, ",", (ty) -> cap(ty));
 			sb.append(")");
+		} else {
+			StringCombinator.joins(sb, paramTypes, ",", (ty) -> cap(ty));
 		}
 		sb.append("->");
 		sb.append(returnType);
@@ -88,12 +87,12 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
-		if (t instanceof VarTy) {
-			return (t.acceptTy(false, this, updated));
+	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+		if (codeTy instanceof VarTy) {
+			return (codeTy.acceptTy(false, this, updated));
 		}
-		if (t instanceof FuncTy) {
-			FuncTy ft = (FuncTy) t;
+		if (codeTy instanceof FuncTy) {
+			FuncTy ft = (FuncTy) codeTy;
 			if (ft.getParamSize() != this.getParamSize()) {
 				return false;
 			}

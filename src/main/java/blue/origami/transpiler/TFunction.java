@@ -9,11 +9,13 @@ public class TFunction extends Template implements NameInfo {
 	protected boolean isPublic = false;
 	protected String[] paramNames;
 	protected Tree<?> body;
+	private VarDomain dom;
 
-	public TFunction(boolean isPublic, String name, Ty returnType, String[] paramNames, Ty[] paramTypes,
+	public TFunction(boolean isPublic, String name, VarDomain dom, Ty returnType, String[] paramNames, Ty[] paramTypes,
 			Tree<?> body) {
 		super(name, returnType, paramTypes);
 		this.isPublic = isPublic;
+		this.dom = dom;
 		this.paramNames = paramNames;
 		this.body = body;
 	}
@@ -69,7 +71,8 @@ public class TFunction extends Template implements NameInfo {
 			Template tp = env.get(sig, Template.class);
 			if (tp == null) {
 				Transpiler tr = env.getTranspiler();
-				tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, p, this.getReturnType(), this.body);
+				tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, p, this.getReturnType(),
+						this.body);
 				env.add(sig, tp);
 			}
 			return tp;
@@ -80,8 +83,8 @@ public class TFunction extends Template implements NameInfo {
 
 	public Template generate(TEnv env) {
 		Transpiler tr = env.getTranspiler();
-		Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
-				this.body);
+		Template tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, this.paramTypes,
+				this.returnType, this.body);
 		this.setExpired();
 		// env.add(this.name, tp); already added in defineFunction
 		return tp;
@@ -107,8 +110,8 @@ public class TFunction extends Template implements NameInfo {
 	public Code nameCode(TEnv env, String name) {
 		if (!this.isExpired()) {
 			Transpiler tr = env.getTranspiler();
-			Template tp = tr.defineFunction(this.isPublic, this.name, this.paramNames, this.paramTypes, this.returnType,
-					this.body);
+			Template tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, this.paramTypes,
+					this.returnType, this.body);
 			this.setExpired();
 			return new FuncRefCode(name, tp);
 		}

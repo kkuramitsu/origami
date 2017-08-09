@@ -521,7 +521,7 @@ interface TEnvApi {
 			return CastCode.SAME;
 		}
 		TConvTemplate conv = env.findTypeMap(env, fromTy, toTy);
-		ODebug.trace("mapcost %s => %s cost=%d", fromTy, fromTy, conv.mapCost());
+		ODebug.trace("mapcost %s => %s cost=%d", fromTy, toTy, conv.mapCost());
 		return conv.mapCost();
 	}
 
