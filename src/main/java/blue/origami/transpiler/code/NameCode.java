@@ -23,7 +23,7 @@ public class NameCode extends CommonCode implements ParseRule {
 	private final int refLevel;
 
 	public NameCode(Tree<?> nameTree) {
-		this(nameTree.getString(), 0, Ty.tUntyped, 0);
+		this(nameTree.getString(), 0, null, 0);
 		this.setSource(nameTree);
 	}
 

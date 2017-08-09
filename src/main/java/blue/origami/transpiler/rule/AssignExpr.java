@@ -1,117 +1,27 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.DataTy;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.transpiler.code.IntCode;
-import blue.origami.transpiler.code.SugarCode;
-import blue.origami.transpiler.rule.GetExpr.TGetCode;
-import blue.origami.transpiler.rule.IndexExpr.TGetIndexCode;
+import blue.origami.transpiler.code.ExprCode;
+import blue.origami.transpiler.code.GetCode;
+import blue.origami.transpiler.code.SetCode;
+import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
 
 public class AssignExpr implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
-		if (left instanceof TGetCode) {
-			return new TSetCode(((TGetCode) left).recv, ((TGetCode) left).nameTree, right);
+		if (left instanceof GetCode) {
+			return new SetCode(((GetCode) left).args()[0], ((GetCode) left).getSource(), right);
 		}
-		if (left instanceof TGetIndexCode) {
-			return new TSetIndexCode(((TGetIndexCode) left).recv, ((TGetIndexCode) left).at,
-					((TGetIndexCode) left).index, right);
+		if (left instanceof GetIndexCode) {
+			return new ExprCode("[]=", ((GetIndexCode) left).recv, ((GetIndexCode) left).index, right);
 		}
 		throw new ErrorCode(t.get(_right), TFmt.no_more_assignment);
-	}
-
-	public static class TSetCode extends SugarCode {
-		Code recv;
-		String name;
-		Tree<?> nameTree;
-		Code right;
-
-		public TSetCode(Code recv, Tree<?> nameTree, Code right) {
-			this.recv = recv;
-			this.nameTree = nameTree;
-			this.name = nameTree.getString();
-			this.right = right;
-		}
-
-		@Override
-		public Code[] args() {
-			return this.makeArgs(this.recv, this.right);
-		}
-
-		@Override
-		public Code asType(TEnv env, Ty t) {
-			assert (this.isUntyped());
-			this.recv = this.recv.asType(env, Ty.tUntyped);
-			if (this.recv.isDataType()) {
-				NameHint hint = env.findGlobalNameHint(env, this.name);
-				if (hint == null) {
-					this.right = this.right.asType(env, Ty.tUntyped);
-					Ty ty = this.right.guessType();
-					if (ty.isUntyped()) {
-						throw new ErrorCode(this.right, TFmt.failed_type_inference);
-					}
-					env.addGlobalName(env, this.name, ty);
-				}
-				DataTy dt = (DataTy) this.recv.getType();
-				dt.checkSetField(this.nameTree, this.name);
-				if (dt.isUntyped()) {
-					return this;
-				}
-				Code code = this.recv.applyMethodCode(env, "setf", new IntCode(DSymbol.id(this.name)), this.right);
-				return code.asType(env, t);
-			}
-			throw new ErrorCode(this.nameTree, TFmt.unsupported_operator);
-		}
-
-	}
-
-	public static class TSetIndexCode extends SugarCode {
-		Code recv;
-		Tree<?> at;
-		Code index;
-		Code right;
-
-		public TSetIndexCode(Code recv, Tree<?> at, Code index, Code right) {
-			this.recv = recv;
-			this.at = at;
-			this.index = index;
-			this.right = right;
-		}
-
-		@Override
-		public Code[] args() {
-			return this.makeArgs(this.recv, this.index, this.right);
-		}
-
-		@Override
-		public Code asType(TEnv env, Ty t) {
-			assert (this.isUntyped());
-			this.recv = this.recv.asType(env, Ty.tUntyped);
-			this.index = this.index.asType(env, Ty.tUntyped);
-			if (this.index.isUntyped()) {
-				return this;
-			}
-			if (this.recv.isDataType()) {
-				DataTy dt = (DataTy) this.recv.getType();
-				this.right = this.right.asType(env, Ty.tUntyped);
-				dt.checkSetIndex(this.at, this.right.getType());
-				if (dt.isUntyped()) {
-					return this;
-				}
-			}
-			Code code = this.recv.applyMethodCode(env, "[]=", this.index, this.right);
-			return code.asType(env, t);
-		}
-
 	}
 
 }

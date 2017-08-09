@@ -10,6 +10,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
@@ -36,6 +37,11 @@ public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
 	public String strOut(TEnv env);
 
 	public void emitCode(TEnv env, TCodeSection sec);
+
+	public final static boolean bSUB = true;
+	public final static boolean bEQ = false;
+	public final static boolean bUPDATE = true;
+	public final static boolean bTEST = false;
 
 }
 
@@ -75,7 +81,7 @@ interface CodeAPI {
 	}
 
 	public default boolean isUntyped() {
-		return self().getType().isUntyped();
+		return Ty.isUntyped(self().getType());
 	}
 
 	public default boolean isDataType() {
@@ -166,7 +172,7 @@ abstract class CommonCode implements Code {
 	}
 
 	protected CommonCode() {
-		this(Ty.tUntyped);
+		this(null);
 	}
 
 	@Override
@@ -198,6 +204,16 @@ abstract class CommonCode implements Code {
 		return TArrays.emptyCodes;
 	}
 
+	public Ty getTypeAt(TEnv env, int index) {
+		assert (index < 0);
+		return null;
+	}
+
+	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+		assert (index < 0);
+		return null;
+	}
+
 	// @Override
 	// public TCode asType(TEnv env, TType t) {
 	// if (this.typed == null) {
@@ -213,7 +229,7 @@ abstract class CommonCode implements Code {
 		this.typed = typed;
 	}
 
-	protected static final Ty AutoType = null;
+	protected static final Ty AutoType = Ty.tAuto;
 
 	@Override
 	public Ty getType() {
@@ -223,6 +239,13 @@ abstract class CommonCode implements Code {
 				return Ty.tVoid;
 			}
 			return a[a.length - 1].getType();
+		}
+		if (this.typed != null) {
+			Ty ty = this.typed.nomTy();
+			if (ty != this.typed) {
+				ODebug.trace("nomTy %s --> %s", this.typed, ty);
+				this.typed = ty;
+			}
 		}
 		return this.typed;
 	}
@@ -271,11 +294,24 @@ abstract class Code1 extends CommonCode {
 	}
 
 	Code1(Code inner) {
-		this(Ty.tUntyped, inner);
+		this(null, inner);
 	}
 
 	public Code getInner() {
 		return this.inner;
+	}
+
+	@Override
+	public Ty getTypeAt(TEnv env, int index) {
+		assert (index == 0);
+		return this.inner.getType();
+	}
+
+	@Override
+	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+		assert (index == 0);
+		this.inner = this.inner.asType(env, ret);
+		return this.inner.getType();
 	}
 
 	@Override
@@ -299,7 +335,7 @@ abstract class CodeN extends CommonCode {
 	}
 
 	public CodeN(Code... args) {
-		this(Ty.tUntyped, args);
+		this(null, args);
 	}
 
 	@Override
@@ -310,6 +346,17 @@ abstract class CodeN extends CommonCode {
 	@Override
 	public Code[] args() {
 		return this.args;
+	}
+
+	@Override
+	public Ty getTypeAt(TEnv env, int index) {
+		return this.args[index].getType();
+	}
+
+	@Override
+	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+		this.args[index] = this.args[index].asType(env, ret);
+		return this.args[index].getType();
 	}
 
 }

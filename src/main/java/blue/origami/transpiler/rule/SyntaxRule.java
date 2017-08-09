@@ -7,6 +7,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.ODebug;
 
@@ -51,26 +52,24 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 	// return env.get(OUntypedType.class);
 	// }
 
-	public Ty[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, Ty defaultType) {
+	public Ty[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, VarDomain dom, Ty defaultType) {
 		if (params == null) {
 			return TArrays.emptyTypes;
 		}
-		/* We create a new env for local name hint */
-		TEnv lenv = env.newEnv();
 		Ty[] p = new Ty[paramNames.length];
 		if (params.has(_name) && p.length == 1) {
-			p[0] = this.parseParamType(lenv, params, paramNames[0], params.get(_type, null), defaultType);
+			p[0] = this.parseParamType(env, params, paramNames[0], params.get(_type, null), dom, defaultType);
 			return p;
 		}
 		int i = 0;
 		for (Tree<?> sub : params) {
-			p[i] = this.parseParamType(lenv, sub, paramNames[i], sub.get(_type, null), defaultType);
+			p[i] = this.parseParamType(env, sub, paramNames[i], sub.get(_type, null), dom, defaultType);
 			i++;
 		}
 		return p;
 	}
 
-	public Ty parseParamType(TEnv env, Tree<?> param, String name, Tree<?> type, Ty defaultType) {
+	public Ty parseParamType(TEnv env, Tree<?> param, String name, Tree<?> type, VarDomain dom, Ty defaultType) {
 		// Symbol paramTag = param.getTag();
 		Ty ty = null;
 		if (type != null) {
@@ -92,8 +91,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		}
 		if (ty == null) {
 			if (NameHint.isOneLetterName(name)) {
-				ty = Ty.tVar(name);
-				env.addNameDecl(env, name, ty).useLocal();
+				ty = dom.newVarType(name);
 			}
 		}
 		ty = this.parseTypeArity(env, ty, param);

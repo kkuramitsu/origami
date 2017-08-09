@@ -9,12 +9,14 @@ import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
+import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.ReturnCode;
+import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 
@@ -207,6 +209,18 @@ public class SourceSection implements TCodeSection {
 
 	@Override
 	public void pushFuncRef(TEnv env, FuncRefCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushGet(TEnv env, GetCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushSet(TEnv env, SetCode code) {
 		// TODO Auto-generated method stub
 
 	}

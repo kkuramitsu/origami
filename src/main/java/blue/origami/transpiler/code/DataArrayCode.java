@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.DataTy;
+import blue.origami.transpiler.ArrayTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
@@ -14,30 +14,38 @@ public class DataArrayCode extends DataCode {
 		super(isMutable, TArrays.emptyNames, values);
 	}
 
-	public DataArrayCode(DataTy dt) {
-		super(dt);
+	public DataArrayCode(ArrayTy dt) {
+		super(dt.isMutable(), dt);
 	}
 
 	@Override
 	public Code asType(TEnv env, Ty t) {
-		if (this.isUntyped() || (t.isArray() && !t.eq(this.getType()))) {
-			Ty firstType = t.asArrayInner();
+		if (this.isUntyped()) {
+			Ty firstType = this.guessInnerType(t);
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
-				Ty tt = this.args[i].getType();
-				if (tt.isUntyped()) {
-					return this;
-				}
-				if (firstType.isUntyped()) {
-					firstType = tt;
-				}
-			}
-			if (firstType.isUntyped()) {
-				return this;
 			}
 			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tImArray(firstType));
+			return this;
 		}
-		return super.asType(env, t);
+		if (t.is((dt) -> dt.isArray())) {
+			Ty ty = t.getInnerTy();
+			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, bUPDATE)) {
+				for (int i = 0; i < this.args.length; i++) {
+					this.args[i] = this.args[i].asType(env, ty);
+				}
+			}
+			this.setType(ty);
+			return this;
+		}
+		return this.castType(env, t);
+	}
+
+	private Ty guessInnerType(Ty t) {
+		if (t.is((dt) -> dt.isArray())) {
+			return t.getInnerTy();
+		}
+		return Ty.tUntyped();
 	}
 
 	@Override

@@ -37,16 +37,26 @@ public class CastCode extends Code1 {
 
 	public static class TConvTemplate extends TCodeTemplate {
 
-		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped, Ty.tUntyped, STUPID, "%s");
+		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped0, Ty.tUntyped0, STUPID, "%s");
 		// fields
-		protected int mapCost;
+		private int mapCost;
 
 		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
 			super(name, returnType, new Ty[] { fromType }, template);
 			this.mapCost = mapCost;
 		}
 
+		public int mapCost() {
+			return this.mapCost;
+		}
+
 	}
+
+	// public static class TVarCastCode extends CastCode {
+	// public TVarCastCode(Ty ret, Code inner) {
+	// super(ret, null, inner);
+	// }
+	// }
 
 	public static class TBoxCode extends CastCode {
 

@@ -10,7 +10,7 @@ import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class LetCode extends Code1 {
-	private Ty declType;
+	private Ty declType; // nullable
 	private String name;
 	private boolean isDuplicated = false;
 
@@ -25,7 +25,7 @@ public class LetCode extends Code1 {
 	}
 
 	public Ty getDeclType() {
-		return this.declType;
+		return this.declType == null ? Ty.tUntyped() : this.declType;
 	}
 
 	public boolean isDuplicated() {
@@ -36,7 +36,7 @@ public class LetCode extends Code1 {
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			this.inner = this.inner.asType(env, this.declType);
-			if (this.declType.isUntyped()) {
+			if (Ty.isUntyped(this.declType)) {
 				this.declType = this.inner.guessType();
 			}
 			this.setType(Ty.tVoid);

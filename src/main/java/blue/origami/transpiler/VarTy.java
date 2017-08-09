@@ -1,5 +1,7 @@
 package blue.origami.transpiler;
 
+import java.util.function.Predicate;
+
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -16,7 +18,11 @@ public class VarTy extends Ty {
 	}
 
 	public String getName() {
-		return this.varName;
+		return this.varName == null ? "_" + this.id : this.varName;
+	}
+
+	public void rename(String name) {
+		this.varName = name;
 	}
 
 	@Override
@@ -25,13 +31,23 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean hasVar() {
-		return this.innerTy == null || this.innerTy.hasVar();
+	public boolean isOption() {
+		return this.innerTy == null ? false : this.innerTy.isOption();
 	}
 
 	@Override
-	public boolean isOption() {
-		return this.innerTy == null ? false : this.innerTy.isOption();
+	public boolean is(Predicate<DataTy> f) {
+		return this.innerTy != null && this.innerTy.is(f);
+	}
+
+	@Override
+	public boolean isVarRef() {
+		return this.innerTy == null || this.innerTy.isVarRef();
+	}
+
+	@Override
+	public boolean hasVar() {
+		return this.innerTy == null || this.innerTy.hasVar();
 	}
 
 	@Override
@@ -49,6 +65,10 @@ public class VarTy extends Ty {
 		return this.innerTy == null ? this : this.innerTy.nomTy();
 	}
 
+	private boolean lt(VarTy vt) {
+		return this.id < vt.id;
+	}
+
 	@Override
 	public boolean acceptTy(boolean sub, Ty t, boolean updated) {
 		if (this.innerTy == null) {
@@ -57,11 +77,10 @@ public class VarTy extends Ty {
 				if (vt.innerTy != null) {
 					return this.acceptTy(sub, vt.innerTy, updated);
 				} else {
-					if (updated) {
-						if (this.id < vt.id) {
+					if (updated && this.id != vt.id) {
+						if (this.lt(vt)) {
 							vt.innerTy = this;
-						}
-						if (this.id > vt.id) {
+						} else {
 							this.innerTy = vt;
 						}
 					}
@@ -69,7 +88,9 @@ public class VarTy extends Ty {
 				}
 			}
 			if (updated) {
-				ODebug.trace("infer %s as %s", this.varName, t);
+				if (this.varName != null) {
+					ODebug.trace("infer %s as %s", this.varName, t);
+				}
 				this.innerTy = t;
 			}
 			return true;
@@ -80,7 +101,7 @@ public class VarTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		if (this.innerTy == null) {
-			sb.append(this.varName);
+			sb.append(this.getName());
 		} else {
 			StringCombinator.append(sb, this.innerTy);
 		}

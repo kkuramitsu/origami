@@ -80,7 +80,7 @@ public class Transpiler extends TEnv {
 		this.add("MutableRecordType", new DataType(true));
 
 		// type
-		this.add("?", Ty.tUntyped);
+		this.add("?", Ty.tUntyped0);
 		this.add("Bool", Ty.tBool);
 		this.add("Int", Ty.tInt);
 		this.add("Float", Ty.tFloat);
@@ -200,7 +200,7 @@ public class Transpiler extends TEnv {
 			OConsole.endColor();
 		}
 		this.generator.setup();
-		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped);
+		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
 		this.generator.emit(env, code);
 		Object result = this.generator.wrapUp();
 		if (code.getType() != Ty.tVoid) {

@@ -16,7 +16,7 @@ public class TCodeTemplate extends Template implements NameInfo {
 	}
 
 	public TCodeTemplate(String template) {
-		this(template, Ty.tUntyped, TArrays.emptyTypes, template);
+		this(template, Ty.tUntyped0, TArrays.emptyTypes, template);
 	}
 
 	@Override

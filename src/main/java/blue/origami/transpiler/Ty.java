@@ -1,6 +1,7 @@
 package blue.origami.transpiler;
 
 import java.util.HashMap;
+import java.util.function.Predicate;
 
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.Code;
@@ -18,10 +19,11 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tString = new StringTy();
 	// public static final TType tData = new TDataType();
 	// Hidden types
-	public static final Ty tUntyped = new UntypedTy("?");
+	public static final Ty tUntyped0 = new UntypedTy("?");
 	public static final Ty tVoid = new SimpleTy("()");
 	public static final Ty tChar = new SimpleTy("char");
 	public static final Ty tThis = null; // FIXME
+	public static final Ty tAuto = new SimpleTy("auto");
 
 	private static HashMap<String, Ty> typeMap = new HashMap<>();
 
@@ -35,62 +37,66 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return new DataTy(true, names); // dependable
 	}
 
+	public static final VarTy tUntyped() {
+		return new VarTy(null);
+	}
+
 	public static final VarTy tVar(String name) {
 		return new VarTy(name);
 	}
 
 	/* Data */
 
-	public static final DataTy tImArray(Ty ty) {
+	public static final ArrayTy tImArray(Ty ty) {
 		if (ty.isDynamic()) {
-			return new DataTy(false, ty).asImmutable();
+			return new ArrayTy(ty).asImmutable();
 		}
 		String key = ty + "*";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, ty).asImmutable();
+			t = new ArrayTy(ty).asImmutable();
 			typeMap.put(key, t);
 		}
-		return (DataTy) t;
+		return (ArrayTy) t;
 	}
 
-	public static final DataTy tArray(Ty ty) {
+	public static final ArrayTy tArray(Ty ty) {
 		if (ty.isDynamic()) {
-			return new DataTy(false, ty);
+			return new ArrayTy(ty);
 		}
 		String key = "{" + ty + "*" + "}";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(false, ty);
+			t = new ArrayTy(ty);
 			typeMap.put(key, t);
 		}
-		return (DataTy) t;
+		return (ArrayTy) t;
 	}
 
-	public static final DataTy tImDict(Ty ty) {
+	public static final DictTy tImDict(Ty ty) {
 		if (ty.isDynamic()) {
-			return new DataTy(true, ty).asImmutable();
+			return new DictTy(ty).asImmutable();
 		}
 		String key = "Dict'[" + ty + "]";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(true, ty).asImmutable();
+			t = new DictTy(ty).asImmutable();
 			typeMap.put(key, t);
 		}
-		return (DataTy) t;
+		return (DictTy) t;
 	}
 
-	public static final DataTy tDict(Ty ty) {
+	public static final DictTy tDict(Ty ty) {
 		if (ty.isDynamic()) {
-			return new DataTy(true, ty);
+			return new DictTy(ty);
 		}
 		String key = "Dict[" + ty + "]";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new DataTy(true, ty);
+			t = new DictTy(ty);
 			typeMap.put(key, t);
 		}
-		return (DataTy) t;
+		return (DictTy) t;
 	}
 
 	public static final DataTy tImRecord(String... names) {
@@ -142,6 +148,14 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	//
+
+	public Ty getInnerTy() {
+		return null;
+	}
+
+	public final static boolean isUntyped(Ty t) {
+		return t == null || t.isUntyped();
+	}
 
 	@Override
 	public final boolean equals(Object t) {
@@ -222,12 +236,16 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return StringCombinator.stringfy(this);
 	}
 
+	public static Ty selfTy(Ty ty, DataTy dt) {
+		return ty == Ty.tThis ? dt : ty;
+	}
+
 }
 
 interface TypeApi {
 
 	public default boolean isUntyped() {
-		return this == Ty.tUntyped;
+		return this == Ty.tUntyped0;
 	}
 
 	public default boolean isVoid() {
@@ -242,6 +260,12 @@ interface TypeApi {
 		return null;
 	}
 
+	// VarType a
+
+	public default boolean isVarRef() {
+		return false;
+	}
+
 	// Option[T]
 
 	public default boolean isOption() {
@@ -250,12 +274,16 @@ interface TypeApi {
 
 	// TDataType
 
+	public default boolean is(Predicate<DataTy> f) {
+		return false;
+	}
+
 	public default boolean isArray() {
 		return false;
 	}
 
 	public default Ty asArrayInner() {
-		return Ty.tUntyped;
+		return Ty.tUntyped0;
 	}
 
 	public default boolean isDict() {
@@ -263,7 +291,7 @@ interface TypeApi {
 	}
 
 	public default Ty asDictInner() {
-		return Ty.tUntyped;
+		return Ty.tUntyped0;
 	}
 
 }

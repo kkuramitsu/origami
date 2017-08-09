@@ -26,6 +26,12 @@ public class DataCode extends CodeN {
 		this.isMutable = !dt.isImmutable();
 	}
 
+	protected DataCode(boolean isMutable, Ty dt) { // DefaultValue
+		super(dt, TArrays.emptyCodes);
+		this.names = TArrays.emptyNames;
+		this.isMutable = isMutable;
+	}
+
 	public String[] getNames() {
 		return this.names;
 	}
@@ -47,7 +53,7 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			DataTy dt = Ty.tData(this.names).asLocal();
 			for (int i = 0; i < this.args.length; i++) {
@@ -62,22 +68,19 @@ public class DataCode extends CodeN {
 						hint.useGlobal();
 					}
 				} else {
-					value = value.asType(env, Ty.tUntyped);
-					Ty ty = value.guessType();
-					if (ty.isUntyped()) {
+					Ty ty = Ty.tUntyped();
+					value = value.asType(env, ty);
+					if (ty == value.getType()) {
 						throw new ErrorCode(value, TFmt.failed_type_inference);
 					}
 					ODebug.trace("implicit name definition %s as %s", key, ty);
 					env.addGlobalName(env, key, ty);
 				}
-				if (value.getType().isUntyped()) {
-					return this;
-				}
 				this.args[i] = value;
 			}
 			this.setType(dt);
 		}
-		return super.asType(env, t);
+		return super.castType(env, ret);
 	}
 
 	@Override

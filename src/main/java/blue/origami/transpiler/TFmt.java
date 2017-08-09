@@ -9,7 +9,7 @@ public enum TFmt implements LocaleFormat {
 	syntax_error, //
 	version, undefined_syntax__YY0, undefined_name__YY0, wrong_number_format_YY0_by_YY1, //
 	unsupported_operator, mixed_array_YY0_YY1, undefined_field_YY0_in_YY1, immutable_data, //
-	no_typing_hint__YY0, undefined_type__YY0, failed_type_inference, undefined_name__YY0__YY1, //
+	no_typing_hint__YY0, undefined_type__YY0, failed_type_inference, undefined_name__YY0_in_YY1, //
 	no_more_assignment, not_function__YY0, hint, YY0_does_not_exist, YY0_maybe_have_a_YY1, //
 	redefined_name__YY0; //
 

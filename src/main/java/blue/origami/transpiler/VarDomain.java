@@ -3,19 +3,24 @@ package blue.origami.transpiler;
 import blue.origami.transpiler.code.CastCode;
 
 public class VarDomain {
-	VarTy[] dom = new VarTy[4];
+	VarTy[] dom;
 
-	Ty newVarType(String name) {
+	public VarDomain(int n) {
+		this.dom = new VarTy[n];
+	}
+
+	public Ty newVarType(String name) {
+		String n = NameHint.safeName(name);
 		for (int i = 0; i < this.dom.length; i++) {
 			if (this.dom[i] == null) {
-				this.dom[i] = Ty.tVar(name);
+				this.dom[i] = Ty.tVar(n);
 				return this.dom[i];
 			}
-			if (name.equals(this.dom[i].getName())) {
+			if (n.equals(this.dom[i].getName())) {
 				return this.dom[i];
 			}
 		}
-		assert (name == null) : "extend the size of dom";
+		assert (n == null) : "extend the size of dom";
 		return null;
 	}
 
@@ -35,4 +40,18 @@ public class VarDomain {
 		}
 		return mapCost;
 	}
+
+	public void rename(String name) {
+		char c = 'a';
+		for (int i = 0; i < this.dom.length; i++) {
+			if (this.dom[i] == null) {
+				break;
+			}
+			Ty ty = this.dom[i].nomTy();
+			if (ty == this.dom[i]) {
+				this.dom[i].rename(String.valueOf(c++));
+			}
+		}
+	}
+
 }

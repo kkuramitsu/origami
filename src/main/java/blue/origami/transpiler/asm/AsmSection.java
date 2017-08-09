@@ -25,14 +25,17 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
+import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.ReturnCode;
+import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.util.ODebug;
@@ -46,7 +49,6 @@ public class AsmSection implements TCodeSection, Opcodes {
 	AsmSection(String cname, GeneratorAdapter mw) {
 		this.cname = cname;
 		this.mBuilder = mw;
-
 	}
 
 	@Override
@@ -580,7 +582,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(Asm.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			} else {
-				Ty t = dt.getInnerType();
+				Ty t = dt.getInnerTy();
 				this.pushArray(env, Asm.ti(t), false, code.args());
 				String desc = String.format("([%s)%s", Type.getDescriptor(Asm.toClass(t)),
 						Type.getDescriptor(Asm.toClass(dt)));
@@ -655,6 +657,27 @@ public class AsmSection implements TCodeSection, Opcodes {
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmGenerator.nameApply(funcType.getReturnType()), desc,
 				true);
 		return;
+	}
+
+	private void emitSugar(TEnv env, Code code, Ty ret) {
+		Code sugar = env.catchCode(() -> code.asType(env, ret));
+		sugar.emitCode(env, this);
+	}
+
+	@Override
+	public void pushGet(TEnv env, GetCode code) {
+		Code recv = code.args()[0];
+		Code name = new IntCode(DSymbol.id(code.getName()));
+		Ty ret = code.getType();
+		this.emitSugar(env, new ExprCode("getf", recv, name, ret.getDefaultValue()), ret);
+	}
+
+	@Override
+	public void pushSet(TEnv env, SetCode code) {
+		Code recv = code.args()[0];
+		Code name = new IntCode(DSymbol.id(code.getName()));
+		Code right = code.args()[1];
+		this.emitSugar(env, new ExprCode("setf", recv, name, right), Ty.tVoid);
 	}
 
 }

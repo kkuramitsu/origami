@@ -300,7 +300,7 @@ interface TEnvApi {
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new TCodeTemplate(name, Ty.tUntyped, TArrays.emptyTypes, value));
+			env().add(name, new TCodeTemplate(name, Ty.tUntyped0, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
@@ -489,7 +489,7 @@ interface TEnvApi {
 		return params;
 	}
 
-	public default Ty parseType(TEnv env, Tree<?> t, Ty defty) {
+	public default Ty parseType(TEnv env, Tree<?> t, Supplier<Ty> def) {
 		if (t != null) {
 			try {
 				Code node = parseCode(env, t);
@@ -498,24 +498,31 @@ interface TEnvApi {
 				}
 				return node.getType();
 			} catch (ErrorCode e) {
-				if (defty == null) {
-					throw e;
-				}
+				throw e;
 			}
 		}
-		return defty;
+		return def.get();
 	}
 
-	public default TConvTemplate findTypeMap(TEnv env, Ty f, Ty t) {
-		String key = f + "->" + t;
+	public default TConvTemplate findTypeMap(TEnv env, Ty fromTy, Ty toTy) {
+		String key = fromTy + "->" + toTy;
 		TConvTemplate tp = env.get(key, TConvTemplate.class);
 		// System.out.printf("FIXME: finding %s %s\n", key, tp);
-		if (tp == null && t == Ty.tVoid) {
+		if (tp == null && toTy == Ty.tVoid) {
 			String format = env.getSymbol("(Void)", "(void)%s");
-			tp = new TConvTemplate("", Ty.tUntyped, Ty.tVoid, CastCode.SAME, format);
+			tp = new TConvTemplate("", Ty.tUntyped0, Ty.tVoid, CastCode.SAME, format);
 			env.getTranspiler().add(key, tp);
 		}
 		return tp == null ? TConvTemplate.Stupid : tp;
+	}
+
+	public default int mapCost(TEnv env, Ty fromTy, Ty toTy) {
+		if (toTy.acceptTy(true, fromTy, false)) {
+			return CastCode.SAME;
+		}
+		TConvTemplate conv = env.findTypeMap(env, fromTy, toTy);
+		ODebug.trace("mapcost %s => %s cost=%d", fromTy, fromTy, conv.mapCost());
+		return conv.mapCost();
 	}
 
 }

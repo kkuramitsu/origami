@@ -16,6 +16,9 @@
 
 package blue.origami.util;
 
+import java.util.List;
+import java.util.function.Function;
+
 import blue.origami.nez.ast.LocaleFormat;
 
 public interface StringCombinator {
@@ -115,16 +118,49 @@ public interface StringCombinator {
 		}
 	}
 
-	public static String joins(String[] names, String delim) {
+	public static <T> String joins(T[] objs, String delim) {
 		StringBuilder sb = new StringBuilder();
-		int c = 0;
-		for (String n : names) {
-			if (c > 0) {
-				sb.append(",");
-			}
-			sb.append(n);
-			c++;
-		}
+		joins(sb, objs, delim);
 		return sb.toString();
 	}
+
+	public static <T> void joins(StringBuilder sb, T[] objs, String delim) {
+		int c = 0;
+		for (T n : objs) {
+			if (c > 0) {
+				sb.append(delim);
+			}
+			StringCombinator.append(sb, n);
+			c++;
+		}
+	}
+
+	public static <T> String joins(T[] objs, String delim, Function<T, Object> map) {
+		StringBuilder sb = new StringBuilder();
+		joins(sb, objs, delim, map);
+		return sb.toString();
+	}
+
+	public static <T> void joins(StringBuilder sb, T[] objs, String delim, Function<T, Object> map) {
+		int c = 0;
+		for (T n : objs) {
+			if (c > 0) {
+				sb.append(delim);
+			}
+			StringCombinator.append(sb, map.apply(n));
+			c++;
+		}
+	}
+
+	public static <T> void joins(StringBuilder sb, List<T> l, String delim, Function<T, Object> map) {
+		int c = 0;
+		for (T n : l) {
+			if (c > 0) {
+				sb.append(delim);
+			}
+			StringCombinator.append(sb, map.apply(n));
+			c++;
+		}
+	}
+
 }

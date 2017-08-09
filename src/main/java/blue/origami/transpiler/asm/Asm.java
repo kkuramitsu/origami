@@ -15,19 +15,20 @@ public class Asm {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 	static HashMap<String, Class<?>> t2cMap = new HashMap<>();
 
-	static Class<?> toClass(Ty t) {
-		String key = t.key();
+	static Class<?> toClass(Ty ty) {
+		ty = ty.nomTy();
+		String key = ty.key();
 		Class<?> c = t2cMap.get(key);
 		if (c == null) {
-			if (t instanceof FuncTy) {
-				c = AsmGenerator.loadFuncTypeClass(((FuncTy) t).getParamTypes(), ((FuncTy) t).getReturnType());
-				set(c, t);
+			if (ty instanceof FuncTy) {
+				c = AsmGenerator.loadFuncTypeClass(((FuncTy) ty).getParamTypes(), ((FuncTy) ty).getReturnType());
+				set(c, ty);
 				return c;
 			}
-			if (t.isArray()) {
+			if (ty.isArray()) {
 				return blue.origami.konoha5.ObjArray.class;
 			}
-			ODebug.trace("undefined type %s", t);
+			ODebug.trace("undefined type %s %s", ty, ty.getClass());
 			// c = Object.class;
 			assert (c != null);
 		}
@@ -70,7 +71,7 @@ public class Asm {
 	}
 
 	static {
-		set(Object.class, Ty.tUntyped);
+		set(Object.class, Ty.tUntyped0);
 		set(Object.class, Ty.tVar("a"));
 		set(void.class, Ty.tVoid);
 		set(boolean.class, Ty.tBool);
