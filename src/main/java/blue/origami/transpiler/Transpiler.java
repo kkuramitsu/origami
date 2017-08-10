@@ -45,6 +45,10 @@ public class Transpiler extends TEnv {
 
 	}
 
+	public Transpiler(Grammar g, String target) {
+		this(g, target, null);
+	}
+
 	private void initEnv(Grammar grammar) {
 		Parser p = grammar.newParser();
 		this.add(Parser.class, p);
@@ -159,6 +163,10 @@ public class Transpiler extends TEnv {
 			this.showThrowable(e);
 			return false;
 		}
+	}
+
+	public void testScriptFile(Source sc) throws Throwable {
+		this.emitCode(this, sc);
 	}
 
 	boolean isVerbose = false;
