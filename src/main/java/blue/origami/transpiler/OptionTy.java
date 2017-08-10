@@ -68,15 +68,15 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
+	public String key() {
+		return this.innerTy + "?";
+	}
+
+	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("Option[");
 		StringCombinator.append(sb, this.innerTy);
 		sb.append("]");
-	}
-
-	@Override
-	public String key() {
-		return this.innerTy + "?";
 	}
 
 }

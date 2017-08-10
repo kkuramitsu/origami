@@ -96,6 +96,7 @@ public class VarTy extends Ty {
 				if (this.varName != null) {
 					ODebug.trace("infer %s as %s", this.getName(), codeTy);
 				}
+				assert !(codeTy instanceof DictTy);
 				this.innerTy = codeTy;
 			}
 			return true;

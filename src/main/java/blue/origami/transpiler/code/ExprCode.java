@@ -75,18 +75,20 @@ public class ExprCode extends CodeN {
 	protected void typeArgs(TEnv env, List<Template> l) {
 		for (int i = 0; i < this.args.length; i++) {
 			Ty pt = this.getCommonParamType(l, i);
+			// ODebug.trace("common[%d] %s", i, pt);
 			this.args[i] = this.args[i].asType(env, pt);
 		}
 	}
 
 	private Ty getCommonParamType(List<Template> l, int n) {
-		Ty t = l.get(0).getParamTypes()[n];
+		Ty ty = l.get(0).getParamTypes()[n];
+		// ODebug.trace("DD %s", l);
 		for (int i = 1; i < l.size(); i++) {
-			if (!t.equals(l.get(i).getParamTypes()[n])) {
+			if (!ty.eq(l.get(i).getParamTypes()[n])) {
 				return Ty.tUntyped();
 			}
 		}
-		return t;
+		return ty;
 	}
 
 	private String msgArgs() {

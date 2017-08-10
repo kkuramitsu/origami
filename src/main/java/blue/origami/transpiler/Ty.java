@@ -119,17 +119,20 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return (DataTy) t;
 	}
 
-	public static Ty tOption(Ty ty) {
+	public static OptionTy tOption(Ty ty) {
+		if (ty instanceof OptionTy) {
+			return (OptionTy) ty;
+		}
 		if (ty.isDynamic()) {
-			return new OptionTy(ty).nomTy();
+			return new OptionTy(ty);
 		}
 		String key = ty + "?";
 		Ty t = typeMap.get(key);
 		if (t == null) {
-			t = new OptionTy(ty).nomTy();
+			t = new OptionTy(ty);
 			typeMap.put(key, t);
 		}
-		return ty;
+		return (OptionTy) t;
 	}
 
 	/* FuncType */
@@ -219,7 +222,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	static HashMap<String, Ty> hiddenMap = null;
 
-	public static Ty getHidden(String tsig) {
+	public static Ty getHidden1(String tsig) {
 		if (hiddenMap == null) {
 			hiddenMap = new HashMap<>();
 			hiddenMap.put("()", tVoid);

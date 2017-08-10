@@ -22,13 +22,16 @@ public class DictTy extends MonadTy {
 
 	@Override
 	public void strOut(StringBuilder sb) {
+		sb.append("Dict");
 		if (!this.isImmutable) {
-			sb.append("$");
+			sb.append("'");
 		}
-		sb.append("Dict[");
+		sb.append("[");
 		StringCombinator.append(sb, this.innerType);
 		sb.append("]");
 	}
+
+	// |?
 
 	@Override
 	public Ty dupTy(VarDomain dom) {
@@ -37,7 +40,6 @@ public class DictTy extends MonadTy {
 			return this.isImmutable ? Ty.tImDict(ty) : Ty.tDict(ty);
 		}
 		return this;
-
 	}
 
 	@Override

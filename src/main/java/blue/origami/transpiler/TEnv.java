@@ -368,25 +368,27 @@ interface TEnvApi {
 				t = checkType(tsig.substring(0, tsig.length() - 1));
 				return Ty.tImArray(t);
 			}
+			if (tsig.endsWith("[]")) {
+				t = checkType(tsig.substring(0, tsig.length() - 2));
+				return Ty.tArray(t);
+			}
 			if (tsig.endsWith("?")) {
 				t = checkType(tsig.substring(0, tsig.length() - 1));
 				return Ty.tOption(t);
 			}
-			if (tsig.startsWith("{") && tsig.endsWith("*}")) {
-				t = checkType(tsig.substring(1, tsig.length() - 2));
-				return Ty.tArray(t);
-			}
-			if (tsig.startsWith("Dict[") && tsig.endsWith("]")) {
-				t = checkType(tsig.substring(5, tsig.length() - 1));
-				return Ty.tImDict(t);
-			}
-			if (tsig.startsWith("Dict{") && tsig.endsWith("}")) {
-				t = checkType(tsig.substring(5, tsig.length() - 1));
-				return Ty.tDict(t);
-			}
-			if (tsig.startsWith("Option[") && tsig.endsWith("]")) {
-				t = checkType(tsig.substring(7, tsig.length() - 1));
-				return Ty.tOption(t);
+			if (tsig.endsWith("]")) {
+				if (tsig.startsWith("Dict[")) {
+					t = checkType(tsig.substring(5, tsig.length() - 1));
+					return Ty.tImDict(t);
+				}
+				if (tsig.startsWith("Dict'[")) {
+					t = checkType(tsig.substring(6, tsig.length() - 1));
+					return Ty.tDict(t);
+				}
+				if (tsig.startsWith("Option[")) {
+					t = checkType(tsig.substring(7, tsig.length() - 1));
+					return Ty.tOption(t);
+				}
 			}
 			int loc = 0;
 			if ((loc = tsig.indexOf("->")) > 0) {
@@ -394,7 +396,7 @@ interface TEnvApi {
 				Ty tt = checkType(tsig.substring(loc + 2));
 				return Ty.tFunc(tt, ft);
 			}
-			t = Ty.getHidden(tsig);
+			t = Ty.getHidden1(tsig);
 		}
 		assert (t != null) : tsig;
 		return t;

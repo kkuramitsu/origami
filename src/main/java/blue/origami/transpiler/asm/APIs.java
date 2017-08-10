@@ -19,6 +19,7 @@ package blue.origami.transpiler.asm;
 import java.util.Objects;
 
 import blue.origami.konoha5.Data;
+import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.IntArray;
 import blue.origami.konoha5.IntRange;
 import blue.origami.konoha5.ObjArray;
@@ -386,6 +387,32 @@ public class APIs {
 	public final static Data setf(Data d, int key, Data def) {
 		d.setf(key, def);
 		return d;
+	}
+
+	// Option
+
+	public final static Object nop(Object o) {
+		return o;
+	}
+
+	public final static Object toobj(Object o) {
+		o.getClass();
+		return o;
+	}
+
+	public final static boolean exist(Object o) {
+		return o != null;
+	}
+
+	public final static int toint(Integer o) {
+		return o.intValue();
+	}
+
+	public final static Object flatMap(Integer o, FuncIntObj f) {
+		if (o != null) {
+			return f.apply(o);
+		}
+		return null;
 	}
 
 }

@@ -6,7 +6,9 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import blue.origami.konoha5.Func;
+import blue.origami.transpiler.ArrayTy;
 import blue.origami.transpiler.FuncTy;
+import blue.origami.transpiler.OptionTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
@@ -20,12 +22,15 @@ public class Asm {
 		String key = ty.key();
 		Class<?> c = t2cMap.get(key);
 		if (c == null) {
+			if (ty instanceof OptionTy) {
+				return Object.class;
+			}
 			if (ty instanceof FuncTy) {
 				c = AsmGenerator.loadFuncTypeClass(((FuncTy) ty).getParamTypes(), ((FuncTy) ty).getReturnType());
 				set(c, ty);
 				return c;
 			}
-			if (ty.isArray()) {
+			if (ty instanceof ArrayTy) {
 				return blue.origami.konoha5.ObjArray.class;
 			}
 			ODebug.trace("undefined type %s %s", ty, ty.getClass());
@@ -83,6 +88,9 @@ public class Asm {
 		set(blue.origami.konoha5.Data.class, Ty.tData(TArrays.emptyNames));
 		set(blue.origami.konoha5.IntArray.class, Ty.tImArray(Ty.tInt));
 		set(blue.origami.konoha5.IntArray.class, Ty.tArray(Ty.tInt));
+
+		set(Integer.class, Ty.tOption(Ty.tInt));
+		set(Double.class, Ty.tArray(Ty.tFloat));
 
 		// Func
 		set(Func.FuncBool.class, Ty.tFunc(Ty.tBool));

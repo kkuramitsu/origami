@@ -18,6 +18,17 @@ false:Bool      = false
 !:Bool:Bool            = S|blue/origami/transpiler/asm/APIs|not
 assert:Bool:Bool       = S|blue/origami/transpiler/asm/APIs|_assert
 
+#Option
+Some:a:a?                = S|blue/origami/transpiler/asm/APIs|nop
+a?--->a                  = S|blue/origami/transpiler/asm/APIs|toobj
+exist:a?:Bool            = S|blue/origami/transpiler/asm/APIs|exist
+flatMap:a?:a->b?:b?      = S|blue/origami/transpiler/asm/APIs|flatMap
+
+Some:Int:Int?            = S|blue/origami/transpiler/asm/APIs|box
+#exist:Int?:Bool         = S|blue/origami/transpiler/asm/APIs|exist
+Int?--->Int              = S|blue/origami/transpiler/asm/APIs|toint
+flatMap:Int?:Int->a?:a?  = S|blue/origami/transpiler/asm/APIs|flatMap
+
 #Int 
 0:Int            = %d
 +:Int:Int        = -
@@ -102,7 +113,7 @@ map:a*:a->b:b*                    = V|blue/origami/konoha5/ObjArray|map
 map:a*:a->Int:Int*                = V|blue/origami/konoha5/ObjArray|map
 filter:a*:a->Bool:a*              = V|blue/origami/konoha5/ObjArray|filter
 
-[]=:{a*}:Int:a:()                 = V|blue/origami/konoha5/ObjArray|seti
+[]=:a[]:Int:a:()                 = V|blue/origami/konoha5/ObjArray|seti
 
 
 # Int*
@@ -114,22 +125,22 @@ map:Int*:Int->Int:Int*            = V|blue/origami/konoha5/IntArray|map
 map:Int*:Int->a:a*                = V|blue/origami/konoha5/IntArray|map
 filter:Int*:Int->Bool:Int*        = V|blue/origami/konoha5/IntArray|filter
 
-# {Int*}
-||:{Int*}:Int                       = V|blue/origami/konoha5/IntArray|size
-[]:{Int*}:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
-[]=:{Int*}:Int:Int:()               = V|blue/origami/konoha5/IntArray|seti
-push:{Int*}:Int:()                  = V|blue/origami/konoha5/IntArray|push
-pop:{Int*}:Int                      = V|blue/origami/konoha5/IntArray|pop
+# Int[]
+||:Int[]:Int                       = V|blue/origami/konoha5/IntArray|size
+[]:Int[]:Int:Int                   = V|blue/origami/konoha5/IntArray|geti
+[]=:Int[]:Int:Int:()               = V|blue/origami/konoha5/IntArray|seti
+push:Int[]:Int:()                  = V|blue/origami/konoha5/IntArray|push
+pop:Int[]:Int                      = V|blue/origami/konoha5/IntArray|pop
 
 # Dict[a]
 ||:Dict[a]:Int                      = V|blue/origami/konoha5/Dict|size
 []:Dict[a]:String:a?                = V|blue/origami/konoha5/Dict|get
 Dict[a]->String*                    = V|blue/origami/konoha5/Dict|keys
 
-# Dict{a}
-||:Dict{a}:Int                      = V|blue/origami/konoha5/Dict|size
-[]:Dict{a}:String:a?                = V|blue/origami/konoha5/Dict|get
-Dict{a}->String*                    = V|blue/origami/konoha5/Dict|keys
-[]=:Dict{a}:String:a:()             = V|blue/origami/konoha5/Dict|set
+# Dict'[a]
+||:Dict'[a]:Int                      = V|blue/origami/konoha5/Dict|size
+[]:Dict'[a]:String:a?                = V|blue/origami/konoha5/Dict|get
+Dict'[a]->String*                    = V|blue/origami/konoha5/Dict|keys
+[]=:Dict'[a]:String:a:()             = V|blue/origami/konoha5/Dict|set
 
 

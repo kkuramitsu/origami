@@ -22,14 +22,8 @@ public class ArrayTy extends MonadTy {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.isImmutable) {
-			sb.append("{");
-		}
 		StringCombinator.append(sb, this.innerType);
-		sb.append("*");
-		if (this.isImmutable) {
-			sb.append("}");
-		}
+		sb.append(this.isImmutable ? "*" : "[]");
 	}
 
 	@Override
