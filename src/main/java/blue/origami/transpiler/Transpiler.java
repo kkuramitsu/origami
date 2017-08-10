@@ -161,6 +161,29 @@ public class Transpiler extends TEnv {
 		}
 	}
 
+	boolean isVerbose = false;
+
+	public void setVerbose(boolean debug) {
+		this.isVerbose = debug;
+		this.generator.setVerbose(debug);
+	}
+
+	public void verbose(String msg, Runnable p) {
+		if (this.isVerbose) {
+			OConsole.beginColor(OConsole.Blue);
+			OConsole.print("[" + msg + "] ");
+			p.run();
+			OConsole.endColor();
+		}
+	}
+
+	public void verboseError(String msg, Runnable p) {
+		OConsole.beginColor(OConsole.Red);
+		OConsole.print("[" + msg + "] ");
+		p.run();
+		OConsole.endColor();
+	}
+
 	void showThrowable(Throwable e) {
 		if (e instanceof Error) {
 			OConsole.exit(1, e);
@@ -171,39 +194,21 @@ public class Transpiler extends TEnv {
 			return;
 		}
 		if (e instanceof ErrorCode) {
-			OConsole.println(OConsole.bold("catching TErrorCode: "));
-			OConsole.beginColor(OConsole.Red);
-			OConsole.println(((ErrorCode) e).getLog());
-			OConsole.endColor();
+			this.verboseError("Error", () -> {
+				OConsole.println(((ErrorCode) e).getLog());
+			});
 		} else {
-			OConsole.println(OConsole.bold("Runtime Exception: " + e));
-			OConsole.beginColor(OConsole.Yellow);
-			e.printStackTrace();
-			OConsole.endColor();
+			this.verboseError("RuntimeException", () -> {
+				e.printStackTrace();
+			});
 		}
-	}
-
-	boolean isDebug = false;
-
-	public void setDebug(boolean debug) {
-		this.isDebug = debug;
-		this.generator.setDebug(debug);
-	}
-
-	public void show(String msg, Runnable p) {
-		// if (this.isDebug) {
-		OConsole.beginColor(OConsole.Blue);
-		OConsole.print("[" + msg + "] ");
-		p.run();
-		OConsole.endColor();
-		// }
 	}
 
 	void emitCode(TEnv env, Source sc) throws Throwable {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		this.show("Tree", () -> {
+		this.verbose("Tree", () -> {
 			OConsole.println(t);
 		});
 		this.generator.setup();
@@ -222,6 +227,14 @@ public class Transpiler extends TEnv {
 			}
 			OConsole.println(sb.toString());
 		}
+	}
+
+	// parsedName
+	// HashSet<String> nameMap = new HashSet<>();
+
+	public void addParsedName1(String name) {
+		// TODO Auto-generated method stub
+
 	}
 
 	// Buffering
@@ -278,7 +291,7 @@ public class Transpiler extends TEnv {
 			dom.check();
 		}
 		tp.nomAll();
-		this.show("Typed", () -> {
+		this.verbose("Typed", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 		});
 		assert (!returnType.isUntyped());

@@ -15,10 +15,14 @@ public class Generator {
 	protected SourceSection eval;
 	// private SourceSection body = this.head;
 
-	protected boolean isDebug = false;
+	protected boolean isVerbose = false;
 
-	public void setDebug(boolean debug) {
-		this.isDebug = debug;
+	public void setVerbose(boolean debug) {
+		this.isVerbose = debug;
+	}
+
+	public boolean isVerbose() {
+		return this.isVerbose;
 	}
 
 	protected void setup() {

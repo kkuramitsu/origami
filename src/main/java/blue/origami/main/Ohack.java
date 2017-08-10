@@ -18,7 +18,12 @@ package blue.origami.main;
 
 public class Ohack extends Okonoha {
 	@Override
-	public boolean isDebug() {
+	public boolean isVerbose() {
 		return true;
+	}
+
+	@Override
+	public boolean isDebug() {
+		return false;
 	}
 }

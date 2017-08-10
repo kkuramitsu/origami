@@ -62,7 +62,7 @@ public class AsmClassLoader extends ClassLoader {
 		if (byteCode == null) {
 			throw new ClassNotFoundException("not found " + cname);
 		}
-		this.dump(cname, byteCode);
+		// this.dump(cname, byteCode);
 		Class<?> c = this.defineClass(cname, byteCode, 0, byteCode.length);
 		return c;
 	}
@@ -71,7 +71,7 @@ public class AsmClassLoader extends ClassLoader {
 	private String dumpDirectory = null;
 
 	void dump(String className, byte[] byteCode) {
-		if (ODebug.enabled && (this.traceMode || this.dumpDirectory != null)) {
+		if (this.traceMode || this.dumpDirectory != null) {
 			int index = className.lastIndexOf('.');
 			String classFileName = className.substring(index + 1) + ".class";
 			if (this.dumpDirectory != null) {

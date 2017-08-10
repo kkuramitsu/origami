@@ -402,6 +402,13 @@ interface TEnvApi {
 		return t;
 	}
 
+	public default void addParsedName(String name) {
+		Transpiler tr = env().getTranspiler();
+		if (!NameHint.isOneLetterName(name)) {
+			tr.addParsedName1(name);
+		}
+	}
+
 	public default NameHint addNameDecl(TEnv env, String names, Ty t) {
 		return this.addNameDecl(env, names.split(","), t);
 	}

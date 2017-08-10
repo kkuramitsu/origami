@@ -15,6 +15,7 @@ public class Okonoha extends OCommand {
 		Grammar g = this.getGrammar(options, "konoha5.opeg");
 		Transpiler env = new Transpiler(g, target, options);
 		ODebug.setDebug(this.isDebug());
+		env.setVerbose(this.isVerbose());
 		for (String file : files) {
 			env.loadScriptFile(file);
 		}
@@ -34,6 +35,10 @@ public class Okonoha extends OCommand {
 				startline = this.linenum;
 			}
 		}
+	}
+
+	public boolean isVerbose() {
+		return false;
 	}
 
 	public boolean isDebug() {

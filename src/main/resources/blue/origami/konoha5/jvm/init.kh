@@ -144,3 +144,7 @@ Dict'[a]->String*                    = V|blue/origami/konoha5/Dict|keys
 []=:Dict'[a]:String:a:()             = V|blue/origami/konoha5/Dict|set
 
 
+# MathLib
+sin:Float:Float                      = S|java/lang/Math|sin
+cos:Float:Float                      = S|java/lang/Math|cos
+tan:Float:Float                      = S|java/lang/Math|tan
