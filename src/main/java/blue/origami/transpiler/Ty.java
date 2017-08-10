@@ -1,7 +1,7 @@
 package blue.origami.transpiler;
 
 import java.util.HashMap;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.Code;
@@ -17,8 +17,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tInt = new IntTy();
 	public static final Ty tFloat = new FloatTy();
 	public static final Ty tString = new StringTy();
-	// public static final TType tData = new TDataType();
-	// Hidden types
+
 	public static final Ty tUntyped0 = new UntypedTy("?");
 	public static final Ty tVoid = new SimpleTy("()");
 	public static final Ty tChar = new SimpleTy("char");
@@ -47,76 +46,49 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	/* Data */
 
+	static Ty reg(String key, Supplier<Ty> sup) {
+		Ty t = typeMap.get(key);
+		if (t == null) {
+			t = sup.get();
+			typeMap.put(key, t);
+		}
+		return t;
+	}
+
 	public static final ArrayTy tImArray(Ty ty) {
 		if (ty.isDynamic()) {
 			return new ArrayTy(ty).asImmutable();
 		}
-		String key = ty + "*";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new ArrayTy(ty).asImmutable();
-			typeMap.put(key, t);
-		}
-		return (ArrayTy) t;
+		return (ArrayTy) reg(ty + "*", () -> new ArrayTy(ty).asImmutable());
 	}
 
 	public static final ArrayTy tArray(Ty ty) {
 		if (ty.isDynamic()) {
 			return new ArrayTy(ty);
 		}
-		String key = "{" + ty + "*" + "}";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new ArrayTy(ty);
-			typeMap.put(key, t);
-		}
-		return (ArrayTy) t;
+		return (ArrayTy) reg(ty + "[]", () -> new ArrayTy(ty));
 	}
 
 	public static final DictTy tImDict(Ty ty) {
 		if (ty.isDynamic()) {
 			return new DictTy(ty).asImmutable();
 		}
-		String key = "Dict'[" + ty + "]";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new DictTy(ty).asImmutable();
-			typeMap.put(key, t);
-		}
-		return (DictTy) t;
+		return (DictTy) reg("Dict'[" + ty + "]", () -> new DictTy(ty).asImmutable());
 	}
 
 	public static final DictTy tDict(Ty ty) {
 		if (ty.isDynamic()) {
 			return new DictTy(ty);
 		}
-		String key = "Dict[" + ty + "]";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new DictTy(ty);
-			typeMap.put(key, t);
-		}
-		return (DictTy) t;
+		return (DictTy) reg("Dict[" + ty + "]", () -> new DictTy(ty));
 	}
 
 	public static final DataTy tImRecord(String... names) {
-		String key = "[" + StringCombinator.joins(names, ",") + "]";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new DataTy(names).asImmutable();
-			typeMap.put(key, t);
-		}
-		return (DataTy) t;
+		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(names).asImmutable());
 	}
 
 	public static final DataTy tRecord(String... names) {
-		String key = "{" + StringCombinator.joins(names, ",") + "}";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new DataTy(names);
-			typeMap.put(key, t);
-		}
-		return (DataTy) t;
+		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(names));
 	}
 
 	public static OptionTy tOption(Ty ty) {
@@ -126,32 +98,25 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		if (ty.isDynamic()) {
 			return new OptionTy(ty);
 		}
-		String key = ty + "?";
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new OptionTy(ty);
-			typeMap.put(key, t);
-		}
-		return (OptionTy) t;
+		return (OptionTy) reg(ty + "?", () -> new OptionTy(ty));
 	}
 
 	/* FuncType */
 
-	public static final Ty tFunc(Ty returnType, Ty... paramTypes) {
+	public static final FuncTy tFunc(Ty returnType, Ty... paramTypes) {
 		if (Ty.isDynamic(paramTypes) || returnType.isDynamic()) {
 			return new FuncTy(null, returnType, paramTypes);
 		}
 		String key = FuncTy.stringfy(returnType, paramTypes);
-		Ty t = typeMap.get(key);
-		if (t == null) {
-			t = new FuncTy(key, returnType, paramTypes);
-			typeMap.put(key, t);
-			// System.out.println(":::::::::: " + key);
-		}
-		return t;
+		return (FuncTy) reg(key, () -> new FuncTy(key, returnType, paramTypes));
 	}
 
 	//
+
+	@Override
+	public Ty type() {
+		return this;
+	}
 
 	public Ty getInnerTy() {
 		return null;
@@ -211,14 +176,14 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	public abstract String strOut(TEnv env);
 
-	public final static boolean hasUntyped(Ty... p) {
-		for (Ty t : p) {
-			if (t.isUntyped()) {
-				return true;
-			}
-		}
-		return false;
-	}
+	// public final static boolean hasUntyped(Ty... p) {
+	// for (Ty t : p) {
+	// if (t.isUntyped()) {
+	// return true;
+	// }
+	// }
+	// return false;
+	// }
 
 	static HashMap<String, Ty> hiddenMap = null;
 
@@ -248,20 +213,34 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 interface TypeApi {
 
-	public default boolean isUntyped() {
-		return this == Ty.tUntyped0;
+	public Ty type();
+
+	public default boolean is(Ty ty) {
+		return type() == ty;
 	}
 
 	public default boolean isVoid() {
-		return this == Ty.tVoid;
+		return type() == Ty.tVoid;
 	}
 
-	public default boolean isSpecific() {
-		return !this.isVoid() && !this.isUntyped();
+	public default boolean isOption() {
+		return type() instanceof OptionTy;
 	}
 
-	public default Code getDefaultValue() {
-		return null;
+	public default boolean isFunc() {
+		return type() instanceof FuncTy;
+	}
+
+	public default boolean isData() {
+		return type() instanceof DataTy;
+	}
+
+	public default boolean isArray() {
+		return type() instanceof ArrayTy;
+	}
+
+	public default boolean isDict() {
+		return type() instanceof DictTy;
 	}
 
 	// VarType a
@@ -270,32 +249,16 @@ interface TypeApi {
 		return false;
 	}
 
-	// Option[T]
-
-	public default boolean isOption() {
-		return false;
+	public default boolean isUntyped() {
+		return this == Ty.tUntyped0;
 	}
 
-	// TDataType
-
-	public default boolean is(Predicate<DataTy> f) {
-		return false;
+	public default boolean isSpecific() {
+		return !this.isVoid() && !this.isUntyped();
 	}
 
-	public default boolean isArray() {
-		return false;
-	}
-
-	public default Ty asArrayInner() {
-		return Ty.tUntyped0;
-	}
-
-	public default boolean isDict() {
-		return false;
-	}
-
-	public default Ty asDictInner() {
-		return Ty.tUntyped0;
+	public default Code getDefaultValue() {
+		return null;
 	}
 
 }

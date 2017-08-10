@@ -2,10 +2,11 @@ package blue.origami.transpiler.code;
 
 import java.util.HashMap;
 
+import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
@@ -15,13 +16,30 @@ public class FuncCode extends Code1 {
 	String[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
+	Tree<?> body;
 	HashMap<String, Code> fieldMap = null;
 
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code inner) {
-		super(inner);
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+		super(body);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
+	}
+
+	public String[] getParamNames() {
+		return this.paramNames;
+	}
+
+	public Ty[] getParamTypes() {
+		return this.paramTypes;
+	}
+
+	public Ty getReturnType() {
+		return this.returnType;
+	}
+
+	public int getStartIndex() {
+		return this.startIndex;
 	}
 
 	public String[] getFieldNames() {
@@ -31,7 +49,7 @@ public class FuncCode extends Code1 {
 		return TArrays.emptyNames;
 	}
 
-	public Code[] getFieldInitCode() {
+	public Code[] getFieldCode() {
 		if (this.fieldMap != null && this.fieldMap.size() > 0) {
 			Code[] p = new Code[this.fieldMap.size()];
 			int c = 0;
@@ -55,24 +73,8 @@ public class FuncCode extends Code1 {
 		return TArrays.emptyTypes;
 	}
 
-	public Ty[] getParamTypes() {
-		return this.paramTypes;
-	}
-
-	public Ty getReturnType() {
-		return this.returnType;
-	}
-
-	public int getStartIndex() {
-		return this.startIndex;
-	}
-
-	public String[] getParamNames() {
-		return this.paramNames;
-	}
-
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			TEnv lenv = env.newEnv();
 			FunctionContext fcx = env.get(FunctionContext.class);
@@ -83,22 +85,17 @@ public class FuncCode extends Code1 {
 			HashMap<String, Code> fieldMap = fcx.enterScope(new HashMap<>());
 			this.startIndex = fcx.getStartIndex();
 			for (int i = 0; i < this.paramNames.length; i++) {
-				// ODebug.trace("name=%s, %s", this.paramNames[i],
-				// this.paramTypes[i]);
 				lenv.add(this.paramNames[i], fcx.newVariable(this.paramNames[i], this.paramTypes[i]));
 			}
 			this.inner = env.catchCode(() -> this.inner.asType(lenv, this.returnType));
 			fieldMap = fcx.exitScope(fieldMap);
-			if (this.returnType.isUntyped()) {
-				assert (!this.returnType.isUntyped());
-				return this;
-			}
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
 			this.fieldMap = fieldMap;
-			// ODebug.trace("FuncCode.asType %s fields=%s %s", this.getType(),
-			// this.fieldMap, this.self());
 		}
-		return this.castType(env, t);
+		if (ret.isFunc()) {
+
+		}
+		return this.castType(env, ret);
 	}
 
 	@Override

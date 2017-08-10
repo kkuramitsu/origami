@@ -630,7 +630,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = AsmGenerator.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(),
 				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
-		Code[] inits = code.getFieldInitCode();
+		Code[] inits = code.getFieldCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();

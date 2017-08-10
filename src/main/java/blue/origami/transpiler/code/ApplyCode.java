@@ -15,15 +15,15 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (!this.isUntyped()) {
-			return this.castType(env, t);
+			return this.castType(env, ret);
 		}
 		this.args[0] = this.args[0].asType(env, Ty.tUntyped());
 		if (this.args[0] instanceof FuncRefCode) {
 			// ODebug.trace("switching to expr %s", this.args[0]);
 			String name = ((FuncRefCode) this.args[0]).name;
-			return new ExprCode(name, TArrays.ltrim(this.args)).asType(env, t);
+			return new ExprCode(name, TArrays.ltrim(this.args)).asType(env, ret);
 		}
 
 		Ty firstType = this.args[0].getType();
@@ -37,7 +37,7 @@ public class ApplyCode extends CodeN {
 				this.args[i + 1] = this.args[i + 1].asType(env, p[i]);
 			}
 			this.setType(funcType.getReturnType());
-			return super.castType(env, t);
+			return super.castType(env, ret);
 		}
 		if (firstType instanceof VarTy) {
 			Ty[] p = new Ty[this.args.length - 1];
@@ -45,9 +45,9 @@ public class ApplyCode extends CodeN {
 				this.args[i] = this.args[i].asType(env, Ty.tUntyped());
 				p[i - 1] = this.args[i].getType();
 			}
-			Ty funcType = Ty.tFunc(t, p);
+			Ty funcType = Ty.tFunc(ret, p);
 			firstType.acceptTy(bSUB, funcType, bUPDATE);
-			this.setType(t);
+			this.setType(ret);
 			return this;
 		}
 		throw new ErrorCode(this.args[0], TFmt.not_function__YY0, this.args[0].getType());

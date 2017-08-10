@@ -19,7 +19,9 @@ package blue.origami.transpiler.asm;
 import java.util.Objects;
 
 import blue.origami.konoha5.Data;
+import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
+import blue.origami.konoha5.Func.FuncIntVoid;
 import blue.origami.konoha5.IntArray;
 import blue.origami.konoha5.IntRange;
 import blue.origami.konoha5.ObjArray;
@@ -406,6 +408,19 @@ public class APIs {
 
 	public final static int toint(Integer o) {
 		return o.intValue();
+	}
+
+	public final static void forEach(Integer o, FuncIntVoid f) {
+		if (o != null) {
+			f.apply(o);
+		}
+	}
+
+	public final static Object map(Integer o, FuncIntInt f) {
+		if (o != null) {
+			return f.applyI(o);
+		}
+		return null;
 	}
 
 	public final static Object flatMap(Integer o, FuncIntObj f) {

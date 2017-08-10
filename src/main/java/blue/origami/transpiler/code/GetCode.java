@@ -23,7 +23,7 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
 			if (recvTy instanceof VarTy) {
@@ -43,11 +43,11 @@ public class GetCode extends Code1 {
 				// IntCode(DSymbol.id(this.name)),
 				// hint.getDefaultValue());
 				// return code.asType(env, hint.getType()).asType(env, t);
-				return this.castType(env, t);
+				return this.castType(env, ret);
 			}
 			throw new ErrorCode(this.getSource(), TFmt.unsupported_operator);
 		}
-		return this.castType(env, t);
+		return this.castType(env, ret);
 	}
 
 	@Override

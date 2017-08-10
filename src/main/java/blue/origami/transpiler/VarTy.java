@@ -1,7 +1,5 @@
 package blue.origami.transpiler;
 
-import java.util.function.Predicate;
-
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -26,6 +24,16 @@ public class VarTy extends Ty {
 				: this.varName /* + this.id */;
 	}
 
+	@Override
+	public Ty type() {
+		return this.innerTy == null ? this : this.innerTy.type();
+	}
+
+	@Override
+	public Ty getInnerTy() {
+		return this.innerTy == null ? this : this.innerTy.getInnerTy();
+	}
+
 	public void rename(String name) {
 		this.varName = name;
 	}
@@ -33,16 +41,6 @@ public class VarTy extends Ty {
 	@Override
 	public boolean isUntyped() {
 		return false; // typed as variable types
-	}
-
-	@Override
-	public boolean isOption() {
-		return this.innerTy == null ? false : this.innerTy.isOption();
-	}
-
-	@Override
-	public boolean is(Predicate<DataTy> f) {
-		return this.innerTy != null && this.innerTy.is(f);
 	}
 
 	@Override

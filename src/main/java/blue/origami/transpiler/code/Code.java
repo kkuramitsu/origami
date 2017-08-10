@@ -7,6 +7,7 @@ import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
@@ -110,21 +111,21 @@ interface CodeAPI {
 		return count;
 	}
 
-	public default Code asType(TEnv env, Ty t) {
-		return castType(env, t);
+	public default Code asType(TEnv env, Ty ret) {
+		return castType(env, ret);
 	}
 
-	public default Code castType(TEnv env, Ty t) {
+	public default Code castType(TEnv env, Ty ret) {
 		Code self = self();
 		Ty f = self.getType();
-		if (self.isUntyped() || t.accept(self)) {
+		if (self.isUntyped() || ret.accept(self)) {
 			return self;
 		}
-		TConvTemplate tt = env.findTypeMap(env, f, t);
+		TConvTemplate tt = env.findTypeMap(env, f, ret);
 		if (tt == TConvTemplate.Stupid) {
-
+			return new ErrorCode(self, TFmt.type_error_YY0_YY1, f, ret);
 		}
-		return new CastCode(t, tt, self);
+		return new CastCode(ret, tt, self);
 	}
 
 	public default Code StillUntyped() {

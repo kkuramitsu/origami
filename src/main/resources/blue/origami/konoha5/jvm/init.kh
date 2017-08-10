@@ -27,6 +27,8 @@ flatMap:a?:a->b?:b?      = S|blue/origami/transpiler/asm/APIs|flatMap
 Some:Int:Int?            = S|blue/origami/transpiler/asm/APIs|box
 #exist:Int?:Bool         = S|blue/origami/transpiler/asm/APIs|exist
 Int?--->Int              = S|blue/origami/transpiler/asm/APIs|toint
+forEach:Int?:Int->():()  = S|blue/origami/transpiler/asm/APIs|forEach
+map:Int?:Int->Int:Int?   = S|blue/origami/transpiler/asm/APIs|map
 flatMap:Int?:Int->a?:a?  = S|blue/origami/transpiler/asm/APIs|flatMap
 
 #Int 

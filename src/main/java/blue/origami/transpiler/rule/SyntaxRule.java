@@ -83,7 +83,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 				if (hint != null) {
 					ty = hint.getType();
 					if (hint.useLocal()) {
-						TLog log = this.reportNotice(null, param, TFmt.YY0_maybe_have_a_YY1, name, hint.getType());
+						TLog log = this.reportNotice(null, param, TFmt.YY0_have_a_YY1_type, name, hint.getType());
 						env.reportLog(log);
 					}
 				}

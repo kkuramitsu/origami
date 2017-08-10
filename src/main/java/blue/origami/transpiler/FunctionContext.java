@@ -11,15 +11,6 @@ public class FunctionContext {
 
 	ArrayList<Variable> varList = new ArrayList<>();
 
-	public boolean isDuplicatedName(String name, Ty declType) {
-		for (Variable v : this.varList) {
-			if (name.equals(v.name) && declType.eq(v.type)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public Variable newVariable(String name, Ty type) {
 		Variable v = new Variable(this.varList.size(), name, type);
 		this.varList.add(v);
@@ -28,6 +19,15 @@ public class FunctionContext {
 
 	public int getStartIndex() {
 		return this.varList.size();
+	}
+
+	public boolean isDuplicatedName(String name, Ty declType) {
+		for (Variable v : this.varList) {
+			if (name.equals(v.name) && declType.eq(v.type)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	HashMap<String, Code> fieldMap = null;

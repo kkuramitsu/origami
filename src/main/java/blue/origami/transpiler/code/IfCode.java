@@ -47,10 +47,10 @@ public class IfCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
-		this.args[1] = this.args[1].asType(env, t);
-		this.args[2] = this.args[2].asType(env, t);
-		return super.asType(env, t);
+	public Code asType(TEnv env, Ty ret) {
+		this.args[1] = this.args[1].asType(env, ret);
+		this.args[2] = this.args[2].asType(env, ret);
+		return super.asType(env, ret);
 	}
 
 	@Override

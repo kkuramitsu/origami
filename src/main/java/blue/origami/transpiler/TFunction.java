@@ -56,29 +56,30 @@ public class TFunction extends Template implements NameInfo {
 
 	@Override
 	public Template update(TEnv env, Code[] params) {
-		Ty[] p = this.getParamTypes();
-		if (Ty.hasUntyped(p)) {
-			p = p.clone();
-			for (int i = 0; i < p.length; i++) {
-				if (p[i].isUntyped()) {
-					p[i] = params[i].getType();
-				}
-				if (p[i].isUntyped()) {
-					return null;
-				}
-			}
-			String sig = getSignature(this.name, p);
-			Template tp = env.get(sig, Template.class);
-			if (tp == null) {
-				Transpiler tr = env.getTranspiler();
-				tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, p, this.getReturnType(),
-						this.body);
-				env.add(sig, tp);
-			}
-			return tp;
-		} else {
-			return this.generate(env);
-		}
+		// Ty[] p = this.getParamTypes();
+		// if (Ty.hasUntyped(p)) {
+		// p = p.clone();
+		// for (int i = 0; i < p.length; i++) {
+		// if (p[i].isUntyped()) {
+		// p[i] = params[i].getType();
+		// }
+		// if (p[i].isUntyped()) {
+		// return null;
+		// }
+		// }
+		// String sig = getSignature(this.name, p);
+		// Template tp = env.get(sig, Template.class);
+		// if (tp == null) {
+		// Transpiler tr = env.getTranspiler();
+		// tp = tr.defineFunction(this.isPublic, this.name, this.dom,
+		// this.paramNames, p, this.getReturnType(),
+		// this.body);
+		// env.add(sig, tp);
+		// }
+		// return tp;
+		// } else {
+		return this.generate(env);
+		// }
 	}
 
 	public Template generate(TEnv env) {

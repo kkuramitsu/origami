@@ -19,7 +19,7 @@ public class SetCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
 			if (recvTy instanceof VarTy) {
@@ -36,11 +36,11 @@ public class SetCode extends CodeN {
 				dt.checkSetField(this.getSource(), this.name);
 				this.asTypeAt(env, 1, Ty.selfTy(hint.getType(), dt));
 				this.setType(Ty.tVoid);
-				return this.castType(env, t);
+				return this.castType(env, ret);
 			}
 			throw new ErrorCode(this.getSource(), TFmt.unsupported_operator);
 		}
-		return this.castType(env, t);
+		return this.castType(env, ret);
 	}
 
 	@Override

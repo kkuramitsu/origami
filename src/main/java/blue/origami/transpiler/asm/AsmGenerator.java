@@ -194,12 +194,13 @@ public class AsmGenerator extends Generator implements Opcodes {
 	}
 
 	static Class<?> loadFuncTypeClass(Ty[] paramTypes, Ty returnType) {
+		Method m = new Method(nameApply(returnType), Asm.ti(returnType), Asm.ti(paramTypes));
+		System.out.println(":::::: " + m.toString());
 		String cname1 = "T$" + Asm.classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1, null/* signatrue */, "java/lang/Object",
 				null);
 
-		Method m = new Method(nameApply(returnType), Asm.ti(returnType), Asm.ti(paramTypes));
 		GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, m, null, null, cw1);
 		mw.endMethod();
 		cw1.visitEnd();

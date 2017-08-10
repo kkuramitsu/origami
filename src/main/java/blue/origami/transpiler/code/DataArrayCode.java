@@ -19,17 +19,17 @@ public class DataArrayCode extends DataCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			Ty firstType = this.guessInnerType(t);
+			Ty firstType = this.guessInnerType(ret);
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
 			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tImArray(firstType));
 			return this;
 		}
-		if (t.is((dt) -> dt.isArray())) {
-			Ty ty = t.getInnerTy();
+		if (ret.isArray()) {
+			Ty ty = ret.getInnerTy();
 			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, bUPDATE)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
@@ -38,11 +38,11 @@ public class DataArrayCode extends DataCode {
 			this.setType(ty);
 			return this;
 		}
-		return this.castType(env, t);
+		return this.castType(env, ret);
 	}
 
 	private Ty guessInnerType(Ty t) {
-		if (t.is((dt) -> dt.isArray())) {
+		if (t.isArray()) {
 			return t.getInnerTy();
 		}
 		return Ty.tUntyped();

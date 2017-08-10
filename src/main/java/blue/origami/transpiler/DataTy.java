@@ -1,7 +1,6 @@
 package blue.origami.transpiler;
 
 import java.util.Arrays;
-import java.util.function.Predicate;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
@@ -194,18 +193,6 @@ public class DataTy extends Ty {
 				throw new ErrorCode(at, TFmt.undefined_name__YY0_in_YY1, name, this);
 			}
 		}
-	}
-
-	@Override
-	public Ty getInnerTy() {
-		return null;
-	}
-
-	/* TTypeApi */
-
-	@Override
-	public boolean is(Predicate<DataTy> f) {
-		return f.test(this);
 	}
 
 	@Override

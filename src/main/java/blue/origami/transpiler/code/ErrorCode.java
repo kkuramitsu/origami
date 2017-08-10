@@ -54,8 +54,8 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
-		this.dummy.setType(t);
+	public Code asType(TEnv env, Ty ret) {
+		this.dummy.setType(ret);
 		return this;
 	}
 

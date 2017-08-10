@@ -43,15 +43,15 @@ public class NameCode extends CommonCode implements ParseRule {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped() && !this.isDataType()) {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
 				throw new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
 			}
-			return ref.nameCode(env, this.name).castType(env, t);
+			return ref.nameCode(env, this.name).castType(env, ret);
 		}
-		return super.asType(env, t);
+		return super.asType(env, ret);
 	}
 
 	@Override

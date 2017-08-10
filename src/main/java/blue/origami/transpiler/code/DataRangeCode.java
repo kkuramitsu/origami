@@ -11,13 +11,13 @@ public class DataRangeCode extends DataArrayCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty t) {
+	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			this.args[0] = this.args[0].asType(env, Ty.tInt);
 			this.args[1] = this.args[1].asType(env, Ty.tInt);
 			this.setType(Ty.tImArray(Ty.tInt));
 		}
-		return super.asType(env, t);
+		return super.asType(env, ret);
 	}
 
 	@Override
