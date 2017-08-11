@@ -52,7 +52,9 @@ public class Generator {
 	}
 
 	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
-		this.data.pushIndentLine(env.format("const", "%1$s %2$s = %3$s", type.strOut(env), name, expr.strOut(env)));
+		this.data.pushIndent("");
+		this.data.push(env, env.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
+		this.data.pushLine("");
 	}
 
 	private String currentFuncName = null;
@@ -98,16 +100,17 @@ public class Generator {
 			params = sb.toString();
 		}
 		SourceSection sec = new SourceSection();
-		env.setCurrentSourceSection(sec);
 		this.secList.add(sec);
 		this.secMap.put(name, sec);
 		this.currentFuncName = name;
-		sec.pushIndentLine(env.format("function", "%1$s %2$s(%3$s) {", returnType.strOut(env), name, params));
+		sec.pushIndent("");
+		sec.push(env, env.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, params);
+		sec.pushLine("");
 		sec.incIndent();
-		sec.pushIndentLine(code.addReturn().strOut(env));
+		code.addReturn().emitCode(env, sec);
 		sec.decIndent();
-		sec.pushIndentLine(env.getSymbol("end function", "end", "}"));
-		env.setCurrentSourceSection(null);
+		sec.pushIndent("");
+		sec.pushLine(env.getSymbol("end function", "end", "}"));
 	}
 
 	HashSet<String> crossRefNames = new HashSet<>();

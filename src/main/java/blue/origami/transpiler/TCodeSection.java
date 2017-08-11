@@ -2,8 +2,8 @@ package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
@@ -22,9 +22,6 @@ import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 
 public interface TCodeSection {
-	public void push(String t);
-
-	public void push(Code t);
 
 	public void pushBool(TEnv env, BoolCode code);
 
@@ -36,7 +33,7 @@ public interface TCodeSection {
 
 	public void pushCast(TEnv env, CastCode code);
 
-	public void pushCall(TEnv env, Code code);
+	public void pushCall(TEnv env, CallCode code);
 
 	public void pushLet(TEnv env, LetCode code);
 

@@ -15,19 +15,30 @@ import blue.origami.transpiler.code.CastCode.TUnboxCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
-public class ExprCode extends CodeN {
+public class ExprCode extends CodeN implements CallCode {
 
 	private String name;
 
 	public ExprCode(Template tp, Code... args) {
 		super(tp.getReturnType(), args);
-		this.setTemplate(tp);
 		this.name = tp.getName();
+		this.setTemplate(tp);
 	}
 
 	public ExprCode(String name, Code... args) {
 		super(args);
 		this.name = name;
+	}
+
+	private Template tp;
+
+	public void setTemplate(Template tp) {
+		this.tp = tp;
+	}
+
+	@Override
+	public Template getTemplate() {
+		return this.tp;
 	}
 
 	@Override

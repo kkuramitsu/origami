@@ -345,16 +345,18 @@ interface TEnvApi {
 		return last == null ? null : new TCodeTemplate(last);
 	}
 
+	public default String fmt(String... keys) {
+		for (int i = 0; i < keys.length - 1; i++) {
+			Template tp = env().get(keys[i], Template.class);
+			if (tp != null) {
+				return tp.getDefined();
+			}
+		}
+		return keys[keys.length - 1];
+	}
+
 	public default String format(String key, String def, Object... args) {
 		return String.format(this.getSymbolOrElse(key, def), args);
-	}
-
-	public default SourceSection getCurrentSourceSection() {
-		return env().getTranspiler().getSourceSection();
-	}
-
-	public default void setCurrentSourceSection(SourceSection sec) {
-		env().getTranspiler().setSourceSection(sec);
 	}
 
 	public default Ty getType(String tsig) {

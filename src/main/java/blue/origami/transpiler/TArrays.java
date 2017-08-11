@@ -4,7 +4,6 @@ import blue.origami.transpiler.code.Code;
 
 public class TArrays {
 	// avoid duplicated empty array;
-	public static final TInst[] emptyInsts = new TInst[0];
 	public static final Ty[] emptyTypes = new Ty[0];
 	public static final Code[] emptyCodes = new Code[0];
 	public static final String[] emptyNames = new String[0];

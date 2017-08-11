@@ -3,13 +3,25 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TCodeTemplate;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class CastCode extends Code1 {
+public class CastCode extends Code1 implements CallCode {
 	public CastCode(Ty ret, TConvTemplate tp, Code inner) {
 		super(ret, inner);
 		this.setTemplate(tp);
+	}
+
+	private Template tp;
+
+	public void setTemplate(Template tp) {
+		this.tp = tp;
+	}
+
+	@Override
+	public Template getTemplate() {
+		return this.tp;
 	}
 
 	@Override

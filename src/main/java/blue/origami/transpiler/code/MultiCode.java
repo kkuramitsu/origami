@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -70,16 +69,6 @@ public class MultiCode extends CodeN {
 	@Override
 	public boolean hasReturn() {
 		return this.args[this.args.length - 1].hasReturn();
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		SourceSection p = env.getCurrentSourceSection();
-		SourceSection sec = p.dup();
-		env.setCurrentSourceSection(sec);
-		sec.pushMulti(env, this);
-		env.setCurrentSourceSection(p);
-		return sec.toString();
 	}
 
 	@Override

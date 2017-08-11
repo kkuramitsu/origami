@@ -176,15 +176,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	public abstract String strOut(TEnv env);
 
-	// public final static boolean hasUntyped(Ty... p) {
-	// for (Ty t : p) {
-	// if (t.isUntyped()) {
-	// return true;
-	// }
-	// }
-	// return false;
-	// }
-
 	static HashMap<String, Ty> hiddenMap = null;
 
 	public static Ty getHidden1(String tsig) {

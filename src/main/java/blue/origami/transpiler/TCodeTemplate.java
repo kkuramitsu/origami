@@ -35,11 +35,6 @@ public class TCodeTemplate extends Template implements NameInfo {
 	}
 
 	@Override
-	public TInst[] getInsts() {
-		return TArrays.emptyInsts;
-	}
-
-	@Override
 	public String toString() {
 		return super.toString() + "=" + this.template;
 	}

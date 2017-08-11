@@ -4,7 +4,6 @@ import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
@@ -50,16 +49,6 @@ public class LetCode extends Code1 {
 		Variable var = fcx.newVariable(this.name, this.declType);
 		env.add(this.name, var);
 		return this;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("let", "%2$s=%3$s");
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.declType.strOut(env), this.name, this.getInner().strOut(env));
 	}
 
 	@Override

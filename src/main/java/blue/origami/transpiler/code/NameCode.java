@@ -5,7 +5,6 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.rule.ParseRule;
@@ -52,16 +51,6 @@ public class NameCode extends CommonCode implements ParseRule {
 			return ref.nameCode(env, this.name).castType(env, ret);
 		}
 		return super.asType(env, ret);
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("varname", "name", "%s");
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.getTemplate(env).format(this.name);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
@@ -69,16 +68,6 @@ public class ErrorCode extends RuntimeException implements Code {
 		this.dummy.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return Template.Null;
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return this.log.toString();
 	}
 
 	@Override

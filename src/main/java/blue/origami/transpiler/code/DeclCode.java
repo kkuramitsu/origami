@@ -16,11 +16,6 @@ public class DeclCode extends CommonCode {
 	}
 
 	@Override
-	public String strOut(TEnv env) {
-		return "";
-	}
-
-	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		// do nothing
 	}

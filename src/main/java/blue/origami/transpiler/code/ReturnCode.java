@@ -2,7 +2,6 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
 public class ReturnCode extends Code1 {
@@ -19,11 +18,6 @@ public class ReturnCode extends Code1 {
 	@Override
 	public Code addReturn() {
 		return this;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("return", "%s");
 	}
 
 	@Override

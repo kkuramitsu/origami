@@ -18,6 +18,7 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.CastCode.TBoxCode;
 import blue.origami.transpiler.code.CastCode.TUnboxCode;
@@ -49,18 +50,6 @@ public class AsmSection implements TCodeSection, Opcodes {
 	AsmSection(String cname, GeneratorAdapter mw) {
 		this.cname = cname;
 		this.mBuilder = mw;
-	}
-
-	@Override
-	public void push(String t) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void push(Code t) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -118,8 +107,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	// I,+,
 	@Override
-	public void pushCall(TEnv env, Code code) {
-		final Template tp = code.getTemplate(env);
+	public void pushCall(TEnv env, CallCode code) {
+		final Template tp = code.getTemplate();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
 			this.pushCall(env, code, def[1]);
@@ -176,7 +165,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 	}
 
-	private void pushCall(TEnv env, Code code, String ext) {
+	private void pushCall(TEnv env, CallCode code, String ext) {
 		Iterator<Code> iter = code.iterator();
 		Code first = iter.next();
 		Code second = iter.next();
@@ -206,7 +195,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			break;
 		}
 		default: {
-			ODebug.trace("undefined %s", code.getTemplate(env).getDefined());
+			ODebug.trace("undefined %s", code.getTemplate().getDefined());
 		}
 		}
 	}

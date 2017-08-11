@@ -51,10 +51,6 @@ public abstract class Template {
 
 	public abstract String format(Object... args);
 
-	public TInst[] getInsts() {
-		return TArrays.emptyInsts;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -69,7 +65,7 @@ public abstract class Template {
 	}
 
 	public FuncTy getFuncType() {
-		return (FuncTy) Ty.tFunc(this.getReturnType(), this.getParamTypes());
+		return Ty.tFunc(this.getReturnType(), this.getParamTypes());
 	}
 
 }

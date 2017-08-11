@@ -1,10 +1,8 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.SourceSection;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
 public class IfCode extends CodeN {
@@ -53,26 +51,8 @@ public class IfCode extends CodeN {
 		return super.asType(env, ret);
 	}
 
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("ifexpr", "(%1$s?%2$s:%3$)");
-	}
-
 	public boolean isStatementStyle() {
 		return this.getType() == Ty.tVoid || this.hasReturn();
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		if (this.isStatementStyle()) {
-			SourceSection p = env.getCurrentSourceSection();
-			SourceSection sec = p.dup();
-			env.setCurrentSourceSection(sec);
-			sec.pushIf(env, this);
-			env.setCurrentSourceSection(p);
-			return sec.toString();
-		}
-		return super.strOut(env);
 	}
 
 	@Override

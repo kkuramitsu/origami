@@ -4,7 +4,6 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.Template;
 import blue.origami.util.StringCombinator;
 
 public class LogCode extends Code1 {
@@ -24,17 +23,6 @@ public class LogCode extends Code1 {
 		this.inner.setSource(t);
 		this.log.setSourcePosition(t);
 		return this;
-	}
-
-	@Override
-	public Template getTemplate(TEnv env) {
-		return env.getTemplate("%s", "%s");
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		env.reportLog(this.log);
-		return this.inner.strOut(env);
 	}
 
 	@Override
