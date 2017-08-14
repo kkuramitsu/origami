@@ -86,4 +86,8 @@ var              = %2$s = %3$s
 assign           = %s = %s
 
 if               = if %s:
+else             = else:
 lambda           = (lambda %s : %s)
+
+array            = [
+end array        = ]

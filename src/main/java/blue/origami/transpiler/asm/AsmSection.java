@@ -9,6 +9,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.DSymbol;
+import blue.origami.transpiler.ArrayTy;
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.TArrays;
@@ -44,10 +45,12 @@ import blue.origami.util.ODebug;
 public class AsmSection implements TCodeSection, Opcodes {
 	private final static String APIs = "blue/origami/transpiler/asm/APIs";
 
+	AsmType ts;
 	String cname;
 	GeneratorAdapter mBuilder; // method writer
 
-	AsmSection(String cname, GeneratorAdapter mw) {
+	AsmSection(AsmType ts, String cname, GeneratorAdapter mw) {
+		this.ts = ts;
 		this.cname = cname;
 		this.mBuilder = mw;
 	}
@@ -76,8 +79,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 	public void pushCast(TEnv env, CastCode code) {
 		Ty f = code.getInner().getType();
 		Ty t = code.getType();
-		Class<?> fc = Asm.toClass(f);
-		Class<?> tc = Asm.toClass(t);
+		Class<?> fc = this.ts.toClass(f);
+		Class<?> tc = this.ts.toClass(t);
 		if (code instanceof TBoxCode) {
 			code.getInner().emitCode(env, this);
 			this.box(tc);
@@ -127,7 +130,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return;
 		case "F":
 		case "GETSTATIC":
-			desc = Asm.toTypeDesc(tp.getReturnType());
+			desc = this.ts.desc(tp.getReturnType());
 			// ODebug.trace("GETSTATIC %s,%s,%s", def[1], def[2], desc);
 			this.mBuilder.visitFieldInsn(GETSTATIC, def[1], def[2], desc);
 			return;
@@ -135,23 +138,23 @@ public class AsmSection implements TCodeSection, Opcodes {
 		case "INVOKESTATIC":
 			// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 			// "(D)D", false);
-			desc = Asm.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
+			desc = this.ts.desc(tp.getReturnType(), tp.getParamTypes());
 			// ODebug.trace("INVOKESTATIC %s,%s,%s", def[1], def[2], desc);
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, def[1], def[2], desc, false);
 			return;
 		case "V":
 		case "INVOKEVIRTUAL":
-			desc = Asm.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, def[1], def[2], desc, false);
 			return;
 		case "I":
 		case "INVOKEINTERFACE":
-			desc = Asm.toTypeDesc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEINTERFACE, def[1], def[2], desc, false);
 			return;
 		case "N":
 		case "INVOKESPECIAL":
-			desc = Asm.toTypeDesc(tp.getReturnType(), tp.getParamTypes());
+			desc = this.ts.desc(tp.getReturnType(), tp.getParamTypes());
 			this.mBuilder.visitMethodInsn(INVOKESPECIAL, def[1], def[2], desc, false);
 			return;
 		case "O":
@@ -425,8 +428,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 
 		int nextIndex() {
-			Class<?> c = Asm.toClass(this.varType);
-			return this.varIndex + (c == double.class || c == long.class ? 2 : 1);
+			return this.varIndex + (AsmType.isDouble(this.varType) ? 2 : 1);
 		}
 
 		VarEntry find(String name) {
@@ -450,7 +452,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushLet(TEnv env, LetCode code) {
 		this.addVariable(code.getName(), code.getDeclType());
-		Type typeDesc = Asm.ti(this.varStack.varType);
+		Type typeDesc = this.ts.ti(this.varStack.varType);
 		code.getInner().emitCode(env, this);
 		this.mBuilder.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), this.varStack.varIndex);
 	}
@@ -460,10 +462,10 @@ public class AsmSection implements TCodeSection, Opcodes {
 		// ODebug.trace("name=%s", code.getName());
 		if (code.getRefLevel() > 0) {
 			this.mBuilder.loadThis();
-			this.mBuilder.getField(Type.getType("L" + this.cname + ";"), code.getName(), Asm.ti(code.getType()));
+			this.mBuilder.getField(Type.getType("L" + this.cname + ";"), code.getName(), this.ts.ti(code.getType()));
 		} else {
 			VarEntry var = this.varStack.find(code.getName());
-			Type typeDesc = (Asm.ti(var.varType));
+			Type typeDesc = (this.ts.ti(var.varType));
 			this.mBuilder.visitVarInsn(typeDesc.getOpcode(ILOAD), var.varIndex);
 		}
 	}
@@ -521,7 +523,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.push(c++);
 			sub.emitCode(env, this);
 			if (boxing) {
-				this.box(Asm.toClass(sub.getType()));
+				this.box(this.ts.toClass(sub.getType()));
 			}
 			this.mBuilder.arrayStore(ty);
 		}
@@ -537,7 +539,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	private void box(Class<?> c) {
 		if (c.isPrimitive()) {
-			Class<?> bc = Asm.boxType(c);
+			Class<?> bc = AsmType.boxType(c);
 			String desc = String.format("(%s)%s", Type.getDescriptor(c), Type.getDescriptor(bc));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "box", desc, false);
 		}
@@ -559,22 +561,22 @@ public class AsmSection implements TCodeSection, Opcodes {
 			for (Code sub : code) {
 				sub.emitCode(env, this);
 			}
-			String desc = String.format("(II)%s", Type.getDescriptor(Asm.toClass(dt)));
+			String desc = String.format("(II)%s", Type.getDescriptor(this.ts.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
 			return;
 		}
 		if (code.isArray()) {
-			DataTy dt = (DataTy) code.getType();
-			if (Asm.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
+			ArrayTy dt = (ArrayTy) code.getType();
+			if (this.ts.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());
-				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(Asm.toClass(dt)));
+				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			} else {
 				Ty t = dt.getInnerTy();
-				this.pushArray(env, Asm.ti(t), false, code.args());
-				String desc = String.format("([%s)%s", Type.getDescriptor(Asm.toClass(t)),
-						Type.getDescriptor(Asm.toClass(dt)));
+				this.pushArray(env, this.ts.ti(t), false, code.args());
+				String desc = String.format("([%s)%s", Type.getDescriptor(this.ts.toClass(t)),
+						Type.getDescriptor(this.ts.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			}
 			// } else if (code.isDict()) {
@@ -606,7 +608,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	public void pushFuncRef(TEnv env, FuncRefCode code) {
 		Template tp = code.getRef();
 		// ODebug.trace("funcref %s %s", code.getType(), tp);
-		Class<?> c = AsmGenerator.loadFuncRefClass(env, tp);
+		Class<?> c = this.ts.loadFuncRefClass(env, tp);
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();
@@ -617,8 +619,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 	public void pushFuncExpr(TEnv env, FuncCode code) {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
-		Class<?> c = AsmGenerator.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(),
-				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
+		Class<?> c = this.ts.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(), code.getParamNames(),
+				code.getParamTypes(), code.getReturnType(), code.getInner());
 		Code[] inits = code.getFieldCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -627,7 +629,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		for (int i = 0; i < fieldNames.length; i++) {
 			this.mBuilder.dup();
 			inits[i].emitCode(env, this);
-			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i], Asm.toTypeDesc(fieldTypes[i]));
+			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i], this.ts.desc(fieldTypes[i]));
 		}
 		ODebug.trace("FuncCode.asType %s", code.getType());
 
@@ -639,10 +641,10 @@ public class AsmSection implements TCodeSection, Opcodes {
 			sub.emitCode(env, this);
 		}
 		FuncTy funcType = (FuncTy) code.args()[0].getType();
-		// String desc = Asm.toTypeDesc(funcType.getReturnType(),
+		// String desc = ts.toTypeDesc(funcType.getReturnType(),
 		// TArrays.join(funcType, funcType.getParamTypes()));
-		String desc = Asm.toTypeDesc(funcType.getReturnType(), funcType.getParamTypes());
-		String cname = Type.getInternalName(Asm.toClass(funcType));
+		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
+		String cname = Type.getInternalName(this.ts.toClass(funcType));
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmGenerator.nameApply(funcType.getReturnType()), desc,
 				true);
 		return;

@@ -5,7 +5,6 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.ErrorCode;
@@ -82,10 +81,11 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 				NameHint hint = env.findNameHint(env, name);
 				if (hint != null) {
 					ty = hint.getType();
-					if (hint.useLocal()) {
-						TLog log = this.reportNotice(null, param, TFmt.YY0_have_a_YY1_type, name, hint.getType());
-						env.reportLog(log);
-					}
+					// if (hint.useLocal()) {
+					// TLog log = this.reportNotice(null, param,
+					// TFmt.YY0_have_a_YY1_type, name, hint.getType());
+					// env.reportLog(log);
+					// }
 				}
 			}
 		}

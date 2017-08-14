@@ -1,6 +1,8 @@
 package blue.origami.transpiler;
 
 import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
@@ -10,14 +12,15 @@ import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
-abstract class MonadTy extends Ty {
+abstract class MutableTy extends Ty {
 	boolean isImmutable;
 	final Ty innerType;
 
-	MonadTy(Ty innerType) {
+	MutableTy(Ty innerType) {
 		this.innerType = innerType;
 	}
 
+	@Override
 	public boolean isImmutable() {
 		return this.isImmutable;
 	}
@@ -63,6 +66,7 @@ public class DataTy extends Ty {
 	boolean isLocal = false;
 	boolean isParameter = false;
 
+	@Override
 	public boolean isImmutable() {
 		return this.isImmutable;
 	}
@@ -237,8 +241,21 @@ public class DataTy extends Ty {
 	}
 
 	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType(this);
+	}
+
+	@Override
 	public String strOut(TEnv env) {
 		return null;
+	}
+
+	public Set<String> names() {
+		TreeSet<String> nameSet = new TreeSet<>();
+		for (DSymbol f : this.fields) {
+			nameSet.add(f.toString());
+		}
+		return nameSet;
 	}
 
 }

@@ -8,24 +8,23 @@ import blue.origami.util.StringCombinator;
 
 public class MultiCode extends CodeN {
 
-	private boolean isBlockExpr;
-
-	public MultiCode(boolean isBlockExpr, Code... nodes) {
+	public MultiCode(Code... nodes) {
 		super(AutoType, nodes);
-		this.setBlockExpr(isBlockExpr);
 	}
 
 	public MultiCode() {
-		this(false, TArrays.emptyCodes);
+		this(TArrays.emptyCodes);
 	}
 
-	public boolean isBlockExpr() {
-		return this.isBlockExpr;
-	}
-
-	public void setBlockExpr(boolean isBlockExpr) {
-		this.isBlockExpr = isBlockExpr;
-	}
+	// private boolean isBlockExpr;
+	//
+	// public boolean isBlockExpr() {
+	// return this.isBlockExpr;
+	// }
+	//
+	// public void setBlockExpr(boolean isBlockExpr) {
+	// this.isBlockExpr = isBlockExpr;
+	// }
 
 	@Override
 	public boolean isEmpty() {

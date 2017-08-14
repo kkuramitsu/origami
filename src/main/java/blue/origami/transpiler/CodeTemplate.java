@@ -6,16 +6,16 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 
-public class TCodeTemplate extends Template implements NameInfo {
+public class CodeTemplate extends Template implements NameInfo {
 
 	protected final String template;
 
-	public TCodeTemplate(String name, Ty returnType, Ty[] paramTypes, String template) {
+	public CodeTemplate(String name, Ty returnType, Ty[] paramTypes, String template) {
 		super(name, returnType, paramTypes);
 		this.template = template;
 	}
 
-	public TCodeTemplate(String template) {
+	public CodeTemplate(String template) {
 		this(template, Ty.tUntyped0, TArrays.emptyTypes, template);
 	}
 

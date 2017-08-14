@@ -32,7 +32,7 @@ public class DataArrayCode extends DataCode {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
 			}
-			this.setType(ty);
+			this.setType(this.isMutable() ? Ty.tArray(ty) : Ty.tImArray(ty));
 			return this;
 		}
 		return this.castType(env, ret);

@@ -3,9 +3,9 @@ package blue.origami.transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 
-public class TConstTemplate extends TCodeTemplate {
+public class ConstTemplate extends CodeTemplate {
 
-	public TConstTemplate(String name, Ty returnType, String template) {
+	public ConstTemplate(String name, Ty returnType, String template) {
 		super(name, returnType, TArrays.emptyTypes, template);
 	}
 
@@ -17,7 +17,6 @@ public class TConstTemplate extends TCodeTemplate {
 	@Override
 	public Code nameCode(TEnv env, String name) {
 		return new ExprCode(this, TArrays.emptyCodes);
-		// return new TNameCode(this.getName(), this.getReturnType());
 	}
 
 }

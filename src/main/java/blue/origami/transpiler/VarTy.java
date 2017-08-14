@@ -121,6 +121,15 @@ public class VarTy extends Ty {
 	}
 
 	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		if (this.innerTy == null) {
+			return codeType.mapType("a");
+		} else {
+			return this.innerTy.mapType(codeType);
+		}
+	}
+
+	@Override
 	public String strOut(TEnv env) {
 		return this.innerTy.nomTy().strOut(env);
 	}

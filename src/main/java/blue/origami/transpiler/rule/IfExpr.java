@@ -14,7 +14,7 @@ public class IfExpr implements ParseRule, Symbols {
 	public Code apply(TEnv env, Tree<?> t) {
 		Code condCode = env.parseCode(env, t.get(_cond)).asType(env, Ty.tBool);
 		Code thenCode = env.parseCode(env, t.get(_then));
-		Code elseCode = t.has(_else) ? env.parseCode(env, t.get(_else)) : new MultiCode(false);
+		Code elseCode = t.has(_else) ? env.parseCode(env, t.get(_else)) : new MultiCode();
 		return new IfCode(condCode, thenCode, elseCode);
 	}
 

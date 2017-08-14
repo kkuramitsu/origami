@@ -4,7 +4,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataArrayCode;
 import blue.origami.util.StringCombinator;
 
-public class ArrayTy extends MonadTy {
+public class ArrayTy extends MutableTy {
 
 	public ArrayTy(Ty innerType) {
 		super(innerType);
@@ -54,6 +54,11 @@ public class ArrayTy extends MonadTy {
 			return this.isImmutable ? Ty.tImArray(ty) : Ty.tArray(ty);
 		}
 		return this;
+	}
+
+	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType(this.isImmutable ? "List" : "List'", this.getInnerTy());
 	}
 
 }

@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
-import blue.origami.transpiler.TCodeTemplate;
+import blue.origami.transpiler.CodeTemplate;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
@@ -47,7 +47,7 @@ public class CastCode extends Code1 implements CallCode {
 	public static final int DOWNCAST = 64;
 	public static final int STUPID = 256;
 
-	public static class TConvTemplate extends TCodeTemplate {
+	public static class TConvTemplate extends CodeTemplate {
 
 		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped0, Ty.tUntyped0, STUPID, "%s");
 		// fields

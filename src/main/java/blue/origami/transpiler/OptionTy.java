@@ -73,6 +73,11 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType("Option", this.innerTy);
+	}
+
+	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("Option[");
 		StringCombinator.append(sb, this.innerTy);

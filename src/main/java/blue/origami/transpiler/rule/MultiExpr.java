@@ -20,6 +20,6 @@ public class MultiExpr implements ParseRule {
 		// if (last >= 0) {
 		// nodes[last] = this.typeExpr(env, t.get(last));
 		// }
-		return new MultiCode(false, nodes);
+		return new MultiCode(nodes);
 	}
 }

@@ -121,4 +121,9 @@ public class FuncTy extends Ty {
 		return this;
 	}
 
+	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType(this);
+	}
+
 }

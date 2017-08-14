@@ -52,7 +52,7 @@ public class IfCode extends CodeN {
 	}
 
 	public boolean isStatementStyle() {
-		return this.getType() == Ty.tVoid || this.hasReturn();
+		return this.getType().isVoid() || this.hasReturn();
 	}
 
 	@Override

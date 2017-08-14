@@ -3,6 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.FuncParam;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
@@ -10,7 +11,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
-public class FuncCode extends Code1 {
+public class FuncCode extends Code1 implements FuncParam {
 
 	int startIndex;
 	String[] paramNames;
@@ -26,10 +27,12 @@ public class FuncCode extends Code1 {
 		this.returnType = returnType;
 	}
 
+	@Override
 	public String[] getParamNames() {
 		return this.paramNames;
 	}
 
+	@Override
 	public Ty[] getParamTypes() {
 		return this.paramTypes;
 	}
@@ -38,6 +41,7 @@ public class FuncCode extends Code1 {
 		return this.returnType;
 	}
 
+	@Override
 	public int getStartIndex() {
 		return this.startIndex;
 	}

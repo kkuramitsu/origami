@@ -4,7 +4,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataDictCode;
 import blue.origami.util.StringCombinator;
 
-public class DictTy extends MonadTy {
+public class DictTy extends MutableTy {
 
 	DictTy(Ty innerType) {
 		super(innerType);
@@ -60,6 +60,11 @@ public class DictTy extends MonadTy {
 			return this.isImmutable ? Ty.tImDict(ty) : Ty.tDict(ty);
 		}
 		return this;
+	}
+
+	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType(this.isImmutable ? "Dict" : "Dict'", this.getInnerTy());
 	}
 
 }

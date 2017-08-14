@@ -300,7 +300,7 @@ interface TEnvApi {
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new TCodeTemplate(name, Ty.tUntyped0, TArrays.emptyTypes, value));
+			env().add(name, new CodeTemplate(name, Ty.tUntyped0, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
@@ -310,9 +310,9 @@ interface TEnvApi {
 				for (int i = 0; i < p.length; i++) {
 					p[i] = this.checkType(tsigs[i]);
 				}
-				env().add(name, new TCodeTemplate(name, ret, p, value));
+				env().add(name, new CodeTemplate(name, ret, p, value));
 			} else {
-				Template t = new TCodeTemplate(name, ret, TArrays.emptyTypes, value);
+				Template t = new CodeTemplate(name, ret, TArrays.emptyTypes, value);
 				env().add(name, t);
 				env().add(key, t);
 			}
@@ -320,7 +320,7 @@ interface TEnvApi {
 	}
 
 	public default String getSymbolOrElse(String key, String def) {
-		TCodeTemplate tp = env().get(key, TCodeTemplate.class);
+		CodeTemplate tp = env().get(key, CodeTemplate.class);
 		return tp == null ? def : tp.template;
 	}
 
@@ -342,7 +342,7 @@ interface TEnvApi {
 			}
 		}
 		String last = keys[keys.length - 1];
-		return last == null ? null : new TCodeTemplate(last);
+		return last == null ? null : new CodeTemplate(last);
 	}
 
 	public default String fmt(String... keys) {

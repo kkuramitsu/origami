@@ -31,7 +31,7 @@ public class Orun extends OCommand {
 				if (checkEmptyInput(input)) {
 					continue;
 				}
-				env.shell("<stdin>", startline, input);
+				env.eval("<stdin>", startline, input);
 				startline = this.linenum;
 			}
 		}

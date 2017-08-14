@@ -35,22 +35,27 @@ public class Transpiler extends TEnv {
 	private final String target;
 	private final Generator generator;
 
-	public Transpiler(Grammar grammar, String target, OOption options) {
+	boolean isFriendly = true;
+
+	public Transpiler(Grammar grammar, Parser p, String target, OOption options) {
 		super(null);
 		this.target = "/blue/origami/konoha5/" + target + "/";
 		this.options = options;
-		this.generator = target.equals("jvm") ? new AsmGenerator() : new Generator();
-		this.initEnv(grammar);
+		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceGenerator(this);
+		this.initEnv(grammar, p);
 		this.loadLibrary("init.kh");
 
+	}
+
+	public Transpiler(Grammar grammar, String target, OOption options) {
+		this(grammar, grammar.newParser(), target, options);
 	}
 
 	public Transpiler(Grammar g, String target) {
 		this(g, target, null);
 	}
 
-	private void initEnv(Grammar grammar) {
-		Parser p = grammar.newParser();
+	private void initEnv(Grammar grammar, Parser p) {
 		this.add(Parser.class, p);
 		this.add(Grammar.class, grammar);
 		// rule
@@ -151,7 +156,11 @@ public class Transpiler extends TEnv {
 		return this.loadScriptFile(ParserSource.newFileSource(path, null));
 	}
 
-	public void shell(String source, int line, String script) {
+	public void eval(String script) {
+		this.eval("<unknown>", 1, script);
+	}
+
+	public void eval(String source, int line, String script) {
 		this.loadScriptFile(ParserSource.newStringSource(source, line, script));
 	}
 
@@ -269,7 +278,7 @@ public class Transpiler extends TEnv {
 	public Template defineConst(boolean isPublic, String name, Ty type, Code expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
-		TCodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
+		CodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
 		this.add(name, tp);
 		this.generator.defineConst(this, isPublic, lname, type, expr);
 		return tp;
@@ -281,7 +290,7 @@ public class Transpiler extends TEnv {
 			Ty returnType, Tree<?> body) {
 		final TEnv env = this.newEnv();
 		final String lname = isPublic ? name : this.getLocalName(name);
-		final TCodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
+		final CodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext();
 		env.add(FunctionContext.class, fcx);
@@ -310,19 +319,6 @@ public class Transpiler extends TEnv {
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + NameHint.safeName(name);
-	}
-
-	SourceSection sec = null;
-
-	public void setSourceSection(SourceSection sec) {
-		this.sec = sec;
-	}
-
-	public SourceSection getSourceSection() {
-		if (this.sec == null) {
-			return new SourceSection();
-		}
-		return this.sec;
 	}
 
 }

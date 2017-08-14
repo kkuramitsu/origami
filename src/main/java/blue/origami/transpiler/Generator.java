@@ -1,20 +1,13 @@
 package blue.origami.transpiler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ExprCode;
+import blue.origami.transpiler.code.MultiCode;
 
-public class Generator {
-	protected SourceSection head;
-	protected SourceSection data;
-	protected SourceSection eval;
-	// private SourceSection body = this.head;
-
+public abstract class Generator {
 	protected boolean isVerbose = false;
 
 	public void setVerbose(boolean debug) {
@@ -25,159 +18,20 @@ public class Generator {
 		return this.isVerbose;
 	}
 
-	protected void setup() {
-		this.head = new SourceSection();
-		this.data = new SourceSection();
-		this.eval = new SourceSection();
-		this.secList = new ArrayList<>();
-		this.secMap = new HashMap<>();
-	}
+	protected abstract void setup();
 
-	protected Object wrapUp() {
-		System.out.println(this.head.toString());
-		System.out.println(this.data.toString());
-		for (SourceSection sec : this.secList) {
-			System.out.println(sec);
-		}
-		return this.eval.toString();
-	}
+	protected abstract Object wrapUp();
 
-	public void emit(TEnv env, Code code) {
-		code.emitCode(env, this.eval);
-	}
+	public abstract void emit(TEnv env, Code code);
 
-	public TCodeTemplate newConstTemplate(TEnv env, String lname, Ty returnType) {
-		String template = env.format("constname", "name", "%s", lname);
-		return new TConstTemplate(lname, returnType, template);
-	}
+	public abstract CodeTemplate newConstTemplate(TEnv env, String lname, Ty ret);
 
-	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
-		this.data.pushIndent("");
-		this.data.push(env, env.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
-		this.data.pushLine("");
-	}
+	public abstract void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr);
 
-	private String currentFuncName = null;
+	public abstract CodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes);
 
-	protected ArrayList<SourceSection> secList = new ArrayList<>();
-	protected HashMap<String, SourceSection> secMap = new HashMap<>();
-
-	public boolean isDefinedSection(String funcName) {
-		return this.secMap.containsKey(funcName);
-	}
-
-	String getCurrentFuncName() {
-		return this.currentFuncName;
-	}
-
-	public TCodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes) {
-		String param = "";
-		if (paramTypes.length > 0) {
-			String delim = env.getSymbolOrElse(",", ",");
-			StringBuilder sb = new StringBuilder();
-			sb.append("%s");
-			for (int i = 1; i < paramTypes.length; i++) {
-				sb.append(delim);
-				sb.append("%s");
-			}
-			param = sb.toString();
-		}
-		String template = env.format("funccall", "%s(%s)", lname, param);
-		return new TCodeTemplate(lname, returnType, paramTypes, template);
-	}
-
-	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, Code code) {
-		String params = "";
-		if (paramTypes.length > 0) {
-			String delim = env.getSymbolOrElse(",", ",");
-			StringBuilder sb = new StringBuilder();
-			sb.append(env.format("param", "%1$s %2$s", paramTypes[0].strOut(env), paramNames[0] + 0));
-			for (int i = 1; i < paramTypes.length; i++) {
-				sb.append(delim);
-				sb.append(env.format("param", "%1$s %2$s", paramTypes[i].strOut(env), paramNames[i] + i));
-			}
-			params = sb.toString();
-		}
-		SourceSection sec = new SourceSection();
-		this.secList.add(sec);
-		this.secMap.put(name, sec);
-		this.currentFuncName = name;
-		sec.pushIndent("");
-		sec.push(env, env.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, params);
-		sec.pushLine("");
-		sec.incIndent();
-		code.addReturn().emitCode(env, sec);
-		sec.decIndent();
-		sec.pushIndent("");
-		sec.pushLine(env.getSymbol("end function", "end", "}"));
-	}
-
-	HashSet<String> crossRefNames = new HashSet<>();
-	HashMap<String, HashSet<String>> depsMap = new HashMap<>();
-
-	protected final void addFunctionDependency(String sour, String dest) {
-		if (sour != null) {
-			HashSet<String> set = this.depsMap.get(sour);
-			if (set == null) {
-				set = new HashSet<>();
-				this.depsMap.put(sour, set);
-			}
-			set.add(dest);
-		}
-	}
-
-	ArrayList<String> sortFuncList(String start) {
-		class TopologicalSorter {
-			private final HashMap<String, HashSet<String>> nodes;
-			private final LinkedList<String> result;
-			private final HashMap<String, Short> visited;
-			private final Short Visiting = 1;
-			private final Short Visited = 2;
-
-			TopologicalSorter(HashMap<String, HashSet<String>> nodes) {
-				this.nodes = nodes;
-				this.result = new LinkedList<>();
-				this.visited = new HashMap<>();
-				for (Map.Entry<String, HashSet<String>> e : this.nodes.entrySet()) {
-					if (this.visited.get(e.getKey()) == null) {
-						this.visit(e.getKey(), e.getValue());
-					}
-				}
-			}
-
-			private void visit(String key, HashSet<String> nextNodes) {
-				this.visited.put(key, this.Visiting);
-				if (nextNodes != null) {
-					for (String nextNode : nextNodes) {
-						Short v = this.visited.get(nextNode);
-						if (v == null) {
-							this.visit(nextNode, this.nodes.get(nextNode));
-						} else if (v == this.Visiting) {
-							if (!key.equals(nextNode)) {
-								// System.out.println("Cyclic " + key + " => " +
-								// nextNode);
-								Generator.this.crossRefNames.add(nextNode);
-							}
-						}
-					}
-				}
-				this.visited.put(key, this.Visited);
-				this.result.add(key);
-			}
-
-			public ArrayList<String> getResult() {
-				return new ArrayList<>(this.result);
-			}
-		}
-		TopologicalSorter sorter = new TopologicalSorter(this.depsMap);
-		ArrayList<String> funcList = sorter.getResult();
-		if (!funcList.contains(start)) {
-			funcList.add(start);
-		}
-		// this.depsMap.clear();
-		return funcList;
-	}
+	public abstract void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+			Ty returnType, Code code);
 
 	protected ArrayList<TFunction> funcList = null;
 
@@ -197,6 +51,28 @@ public class Generator {
 			this.exampleList = new ArrayList<>(0);
 		}
 		this.exampleList.add(t);
+	}
+
+	public Code emitHeader(TEnv env, Code code) {
+		if (this.funcList != null) {
+			for (TFunction f : this.funcList) {
+				if (f.isExpired()) {
+					continue;
+				}
+				f.generate(env);
+			}
+			this.funcList = null;
+		}
+		if (code.isEmpty() && this.exampleList != null) {
+			ArrayList<Code> asserts = new ArrayList<>();
+			for (Tree<?> t : this.exampleList) {
+				Code body = env.parseCode(env, t).asType(env, Ty.tBool);
+				asserts.add(new ExprCode("assert", body));
+			}
+			code = new MultiCode(asserts.toArray(new Code[asserts.size()])).asType(env, Ty.tVoid);
+			this.exampleList = null;
+		}
+		return code;
 	}
 
 }

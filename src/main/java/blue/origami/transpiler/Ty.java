@@ -21,6 +21,8 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tUntyped0 = new UntypedTy("?");
 	public static final Ty tVoid = new SimpleTy("()");
 	public static final Ty tChar = new SimpleTy("char");
+	public static final Ty tInt64 = new SimpleTy("int64");
+	public static final Ty tFloat32 = new SimpleTy("float32");
 	public static final Ty tThis = new SimpleTy("_");
 	public static final Ty tAuto = new SimpleTy("auto");
 
@@ -200,6 +202,8 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return ty == Ty.tThis ? dt : ty;
 	}
 
+	public abstract <C> C mapType(CodeType<C> codeType);
+
 }
 
 interface TypeApi {
@@ -208,6 +212,14 @@ interface TypeApi {
 
 	public default boolean is(Ty ty) {
 		return type() == ty;
+	}
+
+	public default boolean isImmutable() {
+		return true;
+	}
+
+	public default boolean isMmutable() {
+		return !this.isImmutable();
 	}
 
 	public default boolean isVoid() {
@@ -302,6 +314,11 @@ class SimpleTy extends Ty {
 	@Override
 	public String key() {
 		return this.name;
+	}
+
+	@Override
+	public <C> C mapType(CodeType<C> codeType) {
+		return codeType.mapType(this.name);
 	}
 
 }

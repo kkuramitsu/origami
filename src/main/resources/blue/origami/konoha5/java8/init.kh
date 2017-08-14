@@ -1,9 +1,82 @@
 # java8/init.kh
 
-Bool       = boolean
-Int        = int
-Float      = double
-String     = String
+#Syntax
+
+comment          = /*%s*/
+line comment     = //%s
+begin            = {
+end              = }
+;                = ;
+,                = ,
+group            = (%s)
+
+module           = public class %2$s {
+end module       = }
+
+functype         = '''
+@FunctionalInterface
+public interface %3$s {
+  public %2$s apply(%3$s);
+}
+
+'''
+
+const            = private static final %2$s %3$s = %3$s;
+public const     = private static final %2$s %3$s = %3$s;
+
+function         = private static final %2$s %3$s(%3$s) {
+public function  = public static final %2$s %3$s(%3$s) {
+return           = return %s;
+
+if               = if(%s) {
+else             = else {
+while            = while(%s) {
+switch           = switch(%s) {
+case             = case %s : %s
+#default         = default : %s
+
+ifexpr           = (%2$s ? %3$s : %3$s)
+lambda           = (%2$s) -> %3$s
+
+apply            = %s.apply
+funcref          = %3$s::%2$s
+
+array            = Arrays.asList(new %2$s[]{
+end array        = })
+
+class            = class %2$s%3$s {
+end class        = }
+
+class field      = '''
+	private %2$s _%3$s;
+	public %2$s %3$s() { return _%3$s; }
+	public %1$s %3$s(%2$s %3$s) { _%3$s = %3$s; } 
+'''
+
+fieldtype         = '''
+public interface F%3$s {
+	public %2$s %3$s();
+	public %1$s %3$s(%2$s %3$s); 
+}
+
+'''
+
+
+Bool             = boolean
+Int              = int
+Float            = double
+String           = String
+Option[T]        = %s
+T[]              = List<%s>
+T*               = Stream<%s>
+Dict[T]          = TreeMap<String,%s>
+Dict'[T]         = TreeMap<String,%s>
+Data             = HashMap<String,Object>
+
+#Boxed type
+Bool^            = Boolean
+Int^             = Integer
+Float^           = Double
 
 null       = null
 
@@ -56,42 +129,4 @@ Float->Int           = (int)%s
 >:Float:Float:Bool   = %s > %s
 <=:Float:Float:Bool  = %s <= %s
 >=:Float:Float:Bool  = %s >= %s
-
-#Syntax
-
-comment          = // %s
-begin            = {
-end              = }
-;                = ;
-,                = ,
-()               = (%s)
-
-module           = final class $|base| {
-
-functype         = '''
-public interface %2$s <T> {
-  public %1$s apply(%3$s);
-}
-'''
-
-const            = private static final %1$s %2$s = %3$s;
-let              = final %1$s %2$s = %3$s;
-
-function         = private static final %1$s %2$s(%3$s) {
-function1        = public static final <T> %1$s %2$s(%3$s) {
-return           = return %s;
-
-apply            = %s.apply
-funcref          = $|base|::%s
-
-if               = if(%s)
-else if          = else if(%s) {
-while            = while(%s) {
-switch           = switch(%s) {
-case             = case %s : %s
-#default         = default : %s
-ifexpr           = (%1$s ? %2$s : %3$s)
-
-lambda           = (%s) -> %s
-
 
