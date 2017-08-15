@@ -58,11 +58,6 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
-	public String strOut(TEnv env) {
-		return this.innerTy.strOut(env);
-	}
-
-	@Override
 	public boolean isUntyped() {
 		return this.innerTy.isUntyped();
 	}

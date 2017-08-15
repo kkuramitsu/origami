@@ -142,9 +142,9 @@ public class SourceSection extends SourceSectionLib implements TCodeSection {
 
 	@Override
 	public void pushData(TEnv env, DataCode code) {
-		if (code.isArray()) {
+		if (code.isList()) {
 			Ty innTy = code.getType().getInnerTy();
-			this.pushf(env, env.fmt("array", "new %1$s[]{"), this.ts.box(innTy));
+			this.pushf(env, env.fmt("array", "{"), this.ts.box(innTy));
 			int c = 0;
 			String delim = env.getSymbol("delim", ",", ",");
 			for (Code e : code) {
@@ -284,7 +284,11 @@ abstract class SourceSectionLib implements TCodeSection {
 					this.push("%");
 					i++;
 				} else if ('1' <= c && c <= '9') { // %1$s
-					this.push(env, args[c - '1']);
+					int n = c - '1';
+					if (!(n < args.length)) {
+						System.out.printf("n=%s  %d,%s\n", format, n, args.length);
+					}
+					this.push(env, args[n]);
 					i += 3;
 				}
 				start = i + 1;

@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataArrayCode;
+import blue.origami.transpiler.code.DataListCode;
 
 public class ListExpr extends LoggerRule implements Symbols, ParseRule {
 
@@ -25,6 +25,6 @@ public class ListExpr extends LoggerRule implements Symbols, ParseRule {
 			values[c] = env.parseCode(env, sub);
 			c++;
 		}
-		return new DataArrayCode(this.isMutable, values);
+		return new DataListCode(this.isMutable, values);
 	}
 }

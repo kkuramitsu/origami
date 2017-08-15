@@ -1,17 +1,17 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.ArrayTy;
+import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Ty;
 
-public class DataArrayCode extends DataCode {
+public class DataListCode extends DataCode {
 
-	public DataArrayCode(boolean isMutable, Code... values) {
+	public DataListCode(boolean isMutable, Code... values) {
 		super(isMutable, TArrays.emptyNames, values);
 	}
 
-	public DataArrayCode(ArrayTy dt) {
+	public DataListCode(ListTy dt) {
 		super(dt.isMutable(), dt);
 	}
 
@@ -22,7 +22,7 @@ public class DataArrayCode extends DataCode {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
-			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tImArray(firstType));
+			this.setType(this.isMutable() ? Ty.tList(firstType) : Ty.tImList(firstType));
 			return this;
 		}
 		if (ret.isArray()) {
@@ -32,7 +32,7 @@ public class DataArrayCode extends DataCode {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
 			}
-			this.setType(this.isMutable() ? Ty.tArray(ty) : Ty.tImArray(ty));
+			this.setType(this.isMutable() ? Ty.tList(ty) : Ty.tImList(ty));
 			return this;
 		}
 		return this.castType(env, ret);

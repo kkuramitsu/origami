@@ -1,23 +1,24 @@
 package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataArrayCode;
+import blue.origami.transpiler.code.DataListCode;
 import blue.origami.util.StringCombinator;
 
-public class ArrayTy extends MutableTy {
+public class ListTy extends MutableTy {
 
-	public ArrayTy(Ty innerType) {
+	public ListTy(Ty innerType) {
 		super(innerType);
+		assert (innerType != null);
 	}
 
-	public ArrayTy asImmutable() {
+	public ListTy asImmutable() {
 		this.isImmutable = true;
 		return this;
 	}
 
 	@Override
 	public Code getDefaultValue() {
-		return new DataArrayCode(this.isImmutable ? Ty.tImArray(this.innerType) : Ty.tArray(this.innerType));
+		return new DataListCode(this.isImmutable ? Ty.tImList(this.innerType) : Ty.tList(this.innerType));
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class ArrayTy extends MutableTy {
 	public Ty dupTy(VarDomain dom) {
 		Ty ty = this.innerType.dupTy(dom);
 		if (ty != this.innerType) {
-			return this.isImmutable ? Ty.tImArray(ty) : Ty.tArray(ty);
+			return this.isImmutable ? Ty.tImList(ty) : Ty.tList(ty);
 		}
 		return this;
 
@@ -41,7 +42,7 @@ public class ArrayTy extends MutableTy {
 		if (codeTy instanceof VarTy) {
 			return (codeTy.acceptTy(false, this, updated));
 		}
-		if (codeTy instanceof ArrayTy) {
+		if (codeTy instanceof ListTy) {
 			return this.innerType.acceptTy(false, codeTy.getInnerTy(), updated);
 		}
 		return false;
@@ -51,7 +52,7 @@ public class ArrayTy extends MutableTy {
 	public Ty nomTy() {
 		Ty ty = this.innerType.nomTy();
 		if (ty != this.innerType) {
-			return this.isImmutable ? Ty.tImArray(ty) : Ty.tArray(ty);
+			return this.isImmutable ? Ty.tImList(ty) : Ty.tList(ty);
 		}
 		return this;
 	}

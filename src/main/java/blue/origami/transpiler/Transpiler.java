@@ -44,7 +44,7 @@ public class Transpiler extends TEnv {
 		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceGenerator(this);
 		this.initEnv(grammar, p);
 		this.loadLibrary("init.kh");
-
+		this.generator.init();
 	}
 
 	public Transpiler(Grammar grammar, String target, OOption options) {

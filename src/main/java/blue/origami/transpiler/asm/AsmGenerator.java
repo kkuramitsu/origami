@@ -28,6 +28,11 @@ public class AsmGenerator extends Generator implements Opcodes {
 	}
 
 	@Override
+	public void init() {
+		this.ts.initProperties();
+	}
+
+	@Override
 	protected void setup() {
 		this.cname = "C$" + this.ts.seq();
 		this.fieldSec = null;

@@ -40,8 +40,8 @@ public class DataCode extends CodeN {
 		return !this.isMutable;
 	}
 
-	public boolean isArray() {
-		return this instanceof DataArrayCode;
+	public boolean isList() {
+		return this instanceof DataListCode;
 	}
 
 	public boolean isRange() {

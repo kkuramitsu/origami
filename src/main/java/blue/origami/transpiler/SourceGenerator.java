@@ -20,6 +20,11 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
+	public void init() {
+		this.ts.initProperties();
+	}
+
+	@Override
 	protected void setup() {
 		this.head = new SourceSection(this.ts);
 		this.data = new SourceSection(this.ts);

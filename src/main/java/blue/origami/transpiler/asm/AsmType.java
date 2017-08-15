@@ -52,11 +52,12 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		this.reg(Ty.tString, String.class);
 		this.reg(Ty.tData(), blue.origami.konoha5.Data.class);
 		this.reg(Ty.tData(TArrays.emptyNames), blue.origami.konoha5.Data.class);
-		this.reg(Ty.tImArray(Ty.tInt), blue.origami.konoha5.IntArray.class);
-		this.reg(Ty.tArray(Ty.tInt), blue.origami.konoha5.IntArray.class);
+		this.reg(Ty.tImList(Ty.tInt), blue.origami.konoha5.IntArray.class);
+		this.reg(Ty.tList(Ty.tInt), blue.origami.konoha5.IntArray.class);
+		this.reg("List", blue.origami.konoha5.ObjArray.class);
 
 		this.reg(Ty.tOption(Ty.tInt), Integer.class);
-		this.reg(Ty.tArray(Ty.tFloat), Double.class);
+		this.reg(Ty.tList(Ty.tFloat), Double.class);
 
 		// Func
 		this.reg(Ty.tFunc(Ty.tBool), Func.FuncBool.class);
@@ -72,6 +73,13 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		this.reg(Ty.tFunc(Ty.tInt, Ty.tInt), Func.FuncIntInt.class);
 		this.reg(Ty.tFunc(Ty.tFloat, Ty.tInt), Func.FuncIntFloat.class);
 		this.reg(Ty.tFunc(Ty.tString, Ty.tInt), Func.FuncIntStr.class);
+	}
+
+	@Override
+	public Class<?> type(Ty ty) {
+		Class<?> c = ty.mapType(this);
+		assert (c != null) : "undefined type " + ty + " @" + ty.getClass().getName();
+		return c;
 	}
 
 	@Override
@@ -107,7 +115,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	public String unique(Class<?> c) {
+	public String key(Class<?> c) {
 		return Type.getDescriptor(c);
 	}
 
@@ -118,7 +126,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected Class<?> mapDefaultType(String prefix, Class<?> inner) {
+	protected Class<?> mapDefaultType(String prefix, Ty ty, Class<?> inner) {
 		Class<?> c = this.typeMap.get(prefix);
 		assert (c != null) : "undefined " + prefix + "[" + inner + "]";
 		return c;

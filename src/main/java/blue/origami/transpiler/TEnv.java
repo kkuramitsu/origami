@@ -368,11 +368,11 @@ interface TEnvApi {
 		if (t == null) {
 			if (tsig.endsWith("*")) {
 				t = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tImArray(t);
+				return Ty.tImList(t);
 			}
 			if (tsig.endsWith("[]")) {
 				t = checkType(tsig.substring(0, tsig.length() - 2));
-				return Ty.tArray(t);
+				return Ty.tList(t);
 			}
 			if (tsig.endsWith("?")) {
 				t = checkType(tsig.substring(0, tsig.length() - 1));

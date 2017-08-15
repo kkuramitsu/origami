@@ -13,6 +13,6 @@ public class ArrayType implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
-		return new TypeCode(this.isMutable ? Ty.tArray(ty) : Ty.tImArray(ty));
+		return new TypeCode(this.isMutable ? Ty.tList(ty) : Ty.tImList(ty));
 	}
 }

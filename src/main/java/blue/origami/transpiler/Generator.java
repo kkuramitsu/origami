@@ -18,6 +18,8 @@ public abstract class Generator {
 		return this.isVerbose;
 	}
 
+	public abstract void init();
+
 	protected abstract void setup();
 
 	protected abstract Object wrapUp();

@@ -20,15 +20,10 @@ public abstract class CodeType<C> {
 	protected boolean isDyLang;
 
 	public void initProperties() {
-		this.isDyLang = this.env.getSymbolOrElse("Int", null) != null;
+		this.isDyLang = this.env.getSymbolOrElse("Int", null) == null;
 	}
 
-	public C type(Ty ty) {
-		if (!this.isDyLang) {
-			return ty.mapType(this);
-		}
-		return null;
-	}
+	public abstract C type(Ty ty);
 
 	public abstract C[] types(Ty... ty);
 
@@ -61,20 +56,20 @@ public abstract class CodeType<C> {
 
 	protected abstract C mapDefaultType(String name);
 
-	public abstract String unique(C c);
+	public abstract String key(C c);
 
 	public C mapType(String prefix, Ty ty) {
-		C inner = this.type(ty.getInnerTy());
-		String key = prefix + this.unique(inner);
+		C inner = this.type(ty);
+		String key = prefix + this.key(inner);
 		C c = this.typeMap.get(key);
 		if (c == null) {
-			c = this.mapDefaultType(prefix, inner);
+			c = this.mapDefaultType(prefix, ty, inner);
 			this.typeMap.put(key, c);
 		}
 		return c;
 	}
 
-	protected abstract C mapDefaultType(String prefix, C inner);
+	protected abstract C mapDefaultType(String prefix, Ty ty, C inner);
 
 	public final C mapType(FuncTy funcTy) {
 		String key = this.key(funcTy);

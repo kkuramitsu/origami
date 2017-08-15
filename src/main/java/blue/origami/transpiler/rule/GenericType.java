@@ -28,9 +28,9 @@ public class GenericType implements ParseRule, Symbols {
 		case "Dict'":
 			return new TypeCode(Ty.tDict(p[0]));
 		case "Array":
-			return new TypeCode(Ty.tImArray(p[0]));
+			return new TypeCode(Ty.tImList(p[0]));
 		case "Array'":
-			return new TypeCode(Ty.tArray(p[0]));
+			return new TypeCode(Ty.tList(p[0]));
 		}
 		return new ErrorCode(t.get(_base), TFmt.undefined_type__YY0, name);
 	}

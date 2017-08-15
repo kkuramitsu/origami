@@ -68,11 +68,6 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public String strOut(TEnv env) {
-		return env.format(this.name, this.name);
-	}
-
-	@Override
 	public boolean hasVar() {
 		return this.returnType.hasVar() || Ty.hasVar(this.getParamTypes());
 	}

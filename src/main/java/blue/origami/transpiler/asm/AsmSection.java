@@ -9,7 +9,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.DSymbol;
-import blue.origami.transpiler.ArrayTy;
+import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.TArrays;
@@ -565,8 +565,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
 			return;
 		}
-		if (code.isArray()) {
-			ArrayTy dt = (ArrayTy) code.getType();
+		if (code.isList()) {
+			ListTy dt = (ListTy) code.getType();
 			if (this.ts.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());

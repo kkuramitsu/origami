@@ -107,8 +107,7 @@ NameDecl = {
 }
 
 Identifiers = {
-	$(Identifier) 
-	( "," $(Identifier) )* 
+	$(Identifier) ( "," $(Identifier) )* 
 }
 
 /* FuncDecl */
@@ -137,6 +136,12 @@ example FuncDecl&Statement '''
 let f a = a + 1 /*hoge*/
 '''
 
+example FuncDecl&Statement '''
+let fibo n =
+    | 1, 2 => 1
+    | otherwise => fibo(n-1) + fibo(n-2)
+'''
+
 example ConstDecl&Statement '''
 public let f = 1
 '''
@@ -162,7 +167,7 @@ FuncDecl = LetFuncDecl / {
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(":as" Type)? 
-	$body(Block)
+	(( "=" __ ) $body(FuncMatchExpr/Expression)) / $body(Block)
 } / CFuncDecl
                                    
 Params = { 
@@ -187,7 +192,7 @@ LetFuncDecl = {
 	$name(Identifier) 
 	("(" $param(Params) ")" / $param(LetParams)) 
 	$type(":as" Type)? 
-	( "=" __ / &'{') $body(Expression)
+	(( "=" __ ) $body(FuncMatchExpr/Expression)) / $body(Block)
 }
 
 LetParams = { 
@@ -416,15 +421,21 @@ match x
 
 example MatchExpr&Expression '''
 match x 
-  case 1 | 2 if x => "small"
+  case 1 | 2 => "small"
   case (4 to 5) => "big"
   case _ => "unknown"
 '''
 
 example MatchExpr '''
 match x 
-  | [1, 2] => 1
-  | [name, age] => name
+  | 0 => 1 
+  | 1 => 2
+  | 1,2 => {
+    println(x)
+  }
+  | (1 to <5) => x
+  | None => x
+  | otherwise => x
 '''
 
 MatchExpr = { 
@@ -433,35 +444,52 @@ MatchExpr = {
 	#MatchExpr 
 } 
 
+FuncMatchExpr = {
+	$body(Rules)
+	#MatchExpr 
+}
+
 Rules = { 
 	($(RuleExpr) EOS )+
+	$(DefaultRuleExpr)?
 }
 
 RuleExpr = { 
 	( [Cc] 'ase' EOT / '|' _) $expr(CaseExpr) __?
-	([Ii] 'f' EOT $cond(OperatorExpr) __)?
-	("=>" / [Tt] 'hen' EOT ) __? 
+	("=>" / ":" ) __? 
 	$body(Expression) 
 	#CaseExpr
+}
+
+DefaultRuleExpr = {
+	([Dd] 'efault' / [Oo] 'therwise') __? 	
+	("=>" / ":" ) __?
+	$body(Expression)
 }
 
 MatchValue = Constant
 
 MatchValues = {
 	$(MatchValue)
-	('|' _ $(MatchValue))+
+	(( "|" / "," ) $(MatchValue))+
 }
 
 CaseExpr = 
 	AnyCaseExpr
+	/ NoneCaseExpr
 	/ RangeCaseExpr
 	/ ValueCaseExpr
 	/ ListCaseExpr
 	/ DataCaseExpr
 
 AnyCaseExpr = {
-	"_"
+	([Oo] 'therwise' EOT / "_")
 	#AnyCase
+}
+
+NoneCaseExpr = {
+	[Nn] ('one' / 'ull' / 'UIL' ) EOT
+	#NoneCase
 }
 
 RangeCaseExpr = {
@@ -477,22 +505,73 @@ ValueCaseExpr = {
 	($list(MatchValues) / $value(MatchValue))
   	#ValueCase
 }
-  
+
+NameCaseExpr = {
+	$name(Identifier)
+	$suffix(Quantity)?
+	$cond(NameCondExpr)?
+  	#NameCase
+}
+
+NameCondExpr = {
+	'(' 
+	WHEREOP $right(Expression)
+  	')'
+} / ListCaseExpr / DataCaseExpr
+
+WHEREOP = 
+	'=' '='? #WhereEqExpr
+	/ '!=' #WhereNeExpr
+	/ '<'  #WhereLtExpr
+	/ '<=' #WhereLteExpr
+	/ '>'  #WhereGtExpr
+	/ '>=' #WhereGteExpr
+	/ '?'  #WherePredExpr
+	/ '!'  #WhereNotPredExpr
+
+example MatchExpr '''
+match a 
+  | [it(>1), *] => a
+  | [1, a*] => a
+  | [[n,n'(>0)], a*] => a
+  | []
+'''
+
 ListCaseExpr = {
 	"["
-	$(CaseExpr)?
-	("," $(CaseExpr))*
-	(","? "..." #ListMoreCase / #ListCase)
+	$(NameCaseExpr/CaseExpr)?
+	("," $(NameCaseExpr/CaseExpr))*
+	(","? ("..." / "*") #ListMoreCase / #ListCase)
 	"]"
 }
 
+// {left: {left: right}, right: ... }
+
+example MatchExpr '''
+match x 
+  | {left, right, *} => x
+  | {left: {left, right}, right} => x
+  | {name, age(>20), ...} => x
+  | {}
+'''
+
 DataCaseExpr = {
-	"["
-	$(Identifier)?
-	("," $(Identifier))*
-	(","? "..." #DataMoreCase / #DataCase)
-	"]"
+	"{"
+	$(DataNameCaseExpr/NameCaseExpr)?
+	("," $(DataNameCaseExpr/NameCaseExpr))*
+	(","? ("..." / "*") #DataMoreCase / #DataCase)
+	"}"
 }
+
+DataNameCaseExpr = {
+	$name(Identifier)
+	$suffix(Quantity)?
+    ":"
+	$cond(CaseExpr)
+  	#NameCase
+}
+
+
 
 /* Operator */
 
@@ -597,14 +676,6 @@ POSTOP =
 //	/ "++" #PostIncExpr
 //	/ "--" #PostDecExpr
 
-//ASSERTOP = 
-//	'==' #AssertEqExpr
-//	/ '!=' #AssertNeExpr
-//	/ '<'  #AssertLtExpr
-//	/ '<=' #AssertLteExpr
-//	/ '>'  #AssertGtExpr
-//	/ '>=' #AssertGteExpr
-
 Arguments = {  
 	$(Expression)? 
 	( "," $(Expression) )*  
@@ -642,7 +713,7 @@ Constant =
 /* Data */
 
 MutableExpr = {
-	"{" SET #DataListExpr "}"
+	"{" SET ("*" #DataListExpr / #DataArrayExpr) "}"
 } / {
 	"{" DICT #DataDictExpr "}"
 } / {
@@ -650,7 +721,7 @@ MutableExpr = {
 }
 
 ImmutableExpr = RangeExpr / {
-	"[" SET #ListExpr "]"
+	"[" SET ("*" #ListExpr / #ArrayExpr) "]"
 } / {
 	"[" DICT #DictExpr "]"
 } / {
@@ -666,7 +737,7 @@ RangeExpr = {
 	"]"
 }
 
-SET = $(EgExpr) ("," $(EgExpr))* 
+SET = $(EgExpr) (","+ $(EgExpr))* ","*
 
 EgExpr =
 	{ '(' [Ee] ( '.g.' / 'x ' ) _ $(Expression) ")" #ForExampleExpr }

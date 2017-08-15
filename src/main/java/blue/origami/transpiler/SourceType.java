@@ -15,12 +15,20 @@ public class SourceType extends CodeType<String> {
 	}
 
 	@Override
+	public String type(Ty ty) {
+		if (!this.isDyLang) {
+			return ty.mapType(this);
+		}
+		return "";
+	}
+
+	@Override
 	public String[] types(Ty... ty) {
 		return Arrays.stream(ty).map(t -> this.type(t)).toArray(String[]::new);
 	}
 
 	@Override
-	public String unique(String c) {
+	public String key(String c) {
 		return "[" + c + "]";
 	}
 
@@ -30,7 +38,7 @@ public class SourceType extends CodeType<String> {
 	}
 
 	@Override
-	protected String mapDefaultType(String prefix, String inner) {
+	protected String mapDefaultType(String prefix, Ty ty, String inner) {
 		String p = prefix.replace("'", "");
 		String[] keys = { prefix + inner, prefix + "[a]", p + inner, p + "[a]", prefix };
 		return String.format(this.env.getSymbol(keys), inner);

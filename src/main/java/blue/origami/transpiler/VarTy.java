@@ -129,9 +129,4 @@ public class VarTy extends Ty {
 		}
 	}
 
-	@Override
-	public String strOut(TEnv env) {
-		return this.innerTy.nomTy().strOut(env);
-	}
-
 }

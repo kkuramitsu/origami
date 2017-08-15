@@ -115,7 +115,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 			// return ty;
 			// }
 			if (ty != null && suffix.equals("*")) {
-				ty = Ty.tImArray(ty);
+				ty = Ty.tImList(ty);
 				ODebug.trace("arity %s", ty);
 				return ty;
 			}

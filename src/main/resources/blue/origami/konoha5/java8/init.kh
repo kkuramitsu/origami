@@ -10,22 +10,22 @@ end              = }
 ,                = ,
 group            = (%s)
 
-module           = public class %2$s {
+module           = public class %1$s {
 end module       = }
 
 functype         = '''
 @FunctionalInterface
-public interface %3$s {
+public interface %1$s {
   public %2$s apply(%3$s);
 }
 
 '''
 
-const            = private static final %2$s %3$s = %3$s;
-public const     = private static final %2$s %3$s = %3$s;
+const            = private static final %1$s %2$s = %3$s;
+public const     = private static final %1$s %2$s = %3$s;
 
-function         = private static final %2$s %3$s(%3$s) {
-public function  = public static final %2$s %3$s(%3$s) {
+function         = private static final %1$s %2$s(%3$s) {
+public function  = public static final %1$s %2$s(%3$s) {
 return           = return %s;
 
 if               = if(%s) {
@@ -35,28 +35,28 @@ switch           = switch(%s) {
 case             = case %s : %s
 #default         = default : %s
 
-ifexpr           = (%2$s ? %3$s : %3$s)
-lambda           = (%2$s) -> %3$s
+ifexpr           = (%1$s ? %2$s : %3$s)
+lambda           = (%1$s) -> %2$s
 
 apply            = %s.apply
-funcref          = %3$s::%2$s
+funcref          = %2$s::%1$s
 
-array            = Arrays.asList(new %2$s[]{
+array            = Arrays.asList(new %1$s[]{
 end array        = })
 
-class            = class %2$s%3$s {
+class            = class %1$s%2$s {
 end class        = }
 
 class field      = '''
 	private %2$s _%3$s;
 	public %2$s %3$s() { return _%3$s; }
-	public %1$s %3$s(%2$s %3$s) { _%3$s = %3$s; } 
+	public void %3$s(%2$s %3$s) { _%3$s = %3$s; } 
 '''
 
 fieldtype         = '''
 public interface F%3$s {
 	public %2$s %3$s();
-	public %1$s %3$s(%2$s %3$s); 
+	public void %3$s(%2$s %3$s); 
 }
 
 '''
@@ -66,11 +66,13 @@ Bool             = boolean
 Int              = int
 Float            = double
 String           = String
-Option[T]        = %s
-T[]              = List<%s>
-T*               = Stream<%s>
-Dict[T]          = TreeMap<String,%s>
-Dict'[T]         = TreeMap<String,%s>
+Option[a]        = %s
+Array[a]         = %s[]
+Array'[a]        = %s[]
+List[a]          = Stream<%s>
+List'[a]         = List<%s>
+Dict[a]          = TreeMap<String,%s>
+Dict'[a]         = TreeMap<String,%s>
 Data             = HashMap<String,Object>
 
 #Boxed type

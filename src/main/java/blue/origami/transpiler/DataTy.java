@@ -44,12 +44,6 @@ abstract class MutableTy extends Ty {
 		return this.innerType.hasVar();
 	}
 
-	// FIXME
-	@Override
-	public String strOut(TEnv env) {
-		return null;
-	}
-
 	@Override
 	public String key() {
 		return this.toString();
@@ -243,11 +237,6 @@ public class DataTy extends Ty {
 	@Override
 	public <C> C mapType(CodeType<C> codeType) {
 		return codeType.mapType(this);
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return null;
 	}
 
 	public Set<String> names() {

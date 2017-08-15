@@ -13,16 +13,19 @@ import blue.origami.util.StringCombinator;
 public abstract class Ty implements TypeApi, StringCombinator {
 
 	// Core types
+	public static final Ty tVoid = new SimpleTy("()");
 	public static final Ty tBool = new BoolTy();
 	public static final Ty tInt = new IntTy();
 	public static final Ty tFloat = new FloatTy();
 	public static final Ty tString = new StringTy();
 
+	// Hidden Type
 	public static final Ty tUntyped0 = new UntypedTy("?");
-	public static final Ty tVoid = new SimpleTy("()");
-	public static final Ty tChar = new SimpleTy("char");
-	public static final Ty tInt64 = new SimpleTy("int64");
-	public static final Ty tFloat32 = new SimpleTy("float32");
+	public static final Ty tByte = new SimpleTy("Byte");
+	public static final Ty tInt64 = new SimpleTy("Int64");
+	public static final Ty tFloat32 = new SimpleTy("Float32");
+	public static final Ty tChar = new SimpleTy("Char");
+
 	public static final Ty tThis = new SimpleTy("_");
 	public static final Ty tAuto = new SimpleTy("auto");
 
@@ -57,18 +60,18 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return t;
 	}
 
-	public static final ArrayTy tImArray(Ty ty) {
+	public static final ListTy tImList(Ty ty) {
 		if (ty.isDynamic()) {
-			return new ArrayTy(ty).asImmutable();
+			return new ListTy(ty).asImmutable();
 		}
-		return (ArrayTy) reg(ty + "*", () -> new ArrayTy(ty).asImmutable());
+		return (ListTy) reg(ty + "*", () -> new ListTy(ty).asImmutable());
 	}
 
-	public static final ArrayTy tArray(Ty ty) {
+	public static final ListTy tList(Ty ty) {
 		if (ty.isDynamic()) {
-			return new ArrayTy(ty);
+			return new ListTy(ty);
 		}
-		return (ArrayTy) reg(ty + "[]", () -> new ArrayTy(ty));
+		return (ListTy) reg(ty + "[]", () -> new ListTy(ty));
 	}
 
 	public static final DictTy tImDict(Ty ty) {
@@ -176,8 +179,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this;
 	}
 
-	public abstract String strOut(TEnv env);
-
 	static HashMap<String, Ty> hiddenMap = null;
 
 	public static Ty getHidden1(String tsig) {
@@ -239,7 +240,7 @@ interface TypeApi {
 	}
 
 	public default boolean isArray() {
-		return type() instanceof ArrayTy;
+		return type() instanceof ListTy;
 	}
 
 	public default boolean isDict() {
@@ -299,11 +300,6 @@ class SimpleTy extends Ty {
 	@Override
 	public Ty nomTy() {
 		return this;
-	}
-
-	@Override
-	public String strOut(TEnv env) {
-		return env.format(this.name, this.name);
 	}
 
 	@Override
