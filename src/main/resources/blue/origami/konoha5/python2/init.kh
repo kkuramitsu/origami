@@ -10,19 +10,19 @@ null       = None
 
 true       = True
 false      = False
-&:Bool:Bool:Bool = %s and %s
-|:Bool:Bool:Bool = (%s) or (%s)
+&&:Bool:Bool:Bool = %s and %s
+||:Bool:Bool:Bool = %s or %s
 !:Bool:Bool      = not (%s)
 
 #Int
 0:Int            = %d
 +:Int:Int        = +%s
 -:Int:Int        = -%s
-+:Int:Int:Int    = (%s + %s)
--:Int:Int:Int    = (%s - %s)
-*:Int:Int:Int    = (%s * %s)
-/:Int:Int:Int    = (%s // %s)
-%:Int:Int:Int    = (%s % %s)
++:Int:Int:Int    = %s + %s
+-:Int:Int:Int    = %s - %s
+*:Int:Int:Int    = %s * %s
+/:Int:Int:Int    = %s // %s
+%:Int:Int:Int    = %s % %s
 
 ==:Int:Int:Bool  = %s == %s
 !=:Int:Int:Bool  = %s != %s
@@ -31,11 +31,11 @@ false      = False
 <=:Int:Int:Bool  = %s <= %s
 >=:Int:Int:Bool  = %s >= %s
 
-<<:Int:Int:Int   = (%s << %s)
->>:Int:Int:Int   = (%s >> %s)
-&:Int:Int:Int    = (%s & %s)
-|:Int:Int:Int    = (%s | %s)
-^:Int:Int:Int    = (%s ^ %s)
+<<:Int:Int:Int   = %s << %s
+>>:Int:Int:Int   = %s >> %s
+&&:Int:Int:Int   = %s & %s
+||:Int:Int:Int   = %s | %s
+^:Int:Int:Int    = %s ^ %s
 !:Int:Int        = ~%s
 
 # Float

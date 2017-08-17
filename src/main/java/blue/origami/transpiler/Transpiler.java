@@ -71,9 +71,9 @@ public class Transpiler extends TEnv {
 		this.add("LteExpr", new BinaryExpr("<="));
 		this.add("GtExpr", new BinaryExpr(">"));
 		this.add("GteExpr", new BinaryExpr(">="));
-		this.add("AndExpr", new BinaryExpr("&"));
-		this.add("OrExpr", new BinaryExpr("|"));
-		this.add("XorExpr", new BinaryExpr("^"));
+		this.add("AndExpr", new BinaryExpr("&&"));
+		this.add("OrExpr", new BinaryExpr("||"));
+		this.add("XorExpr", new BinaryExpr("^^"));
 		this.add("LShiftExpr", new BinaryExpr("<<"));
 		this.add("RShiftExpr", new BinaryExpr(">>"));
 

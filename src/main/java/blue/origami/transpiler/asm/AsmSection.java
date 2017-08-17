@@ -9,9 +9,9 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.DSymbol;
-import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.FuncTy;
+import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -27,13 +27,16 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.ExistFieldCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
+import blue.origami.transpiler.code.GroupCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.MatchCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.ReturnCode;
@@ -669,6 +672,24 @@ public class AsmSection implements TCodeSection, Opcodes {
 		Code name = new IntCode(DSymbol.id(code.getName()));
 		Code right = code.args()[1];
 		this.emitSugar(env, new ExprCode("setf", recv, name, right), Ty.tVoid);
+	}
+
+	@Override
+	public void pushExistField(TEnv env, ExistFieldCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushMatch(TEnv env, MatchCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushGroup(TEnv env, GroupCode code) {
+		code.getInner().emitCode(env, this);
+
 	}
 
 }

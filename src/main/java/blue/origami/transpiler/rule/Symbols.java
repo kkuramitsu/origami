@@ -33,6 +33,9 @@ public interface Symbols {
 
 	public final static Symbol _base = Symbol.unique("base");
 	public final static Symbol _cond = Symbol.unique("cond");
+	public final static Symbol _where = Symbol.unique("where");
+	public final static Symbol _where2 = Symbol.unique("where2");
+
 	public final static Symbol _msg = Symbol.unique("msg");
 	public final static Symbol _then = Symbol.unique("then");
 	public final static Symbol _else = Symbol.unique("else");

@@ -18,6 +18,11 @@ public class GetCode extends Code1 {
 		this.setSource(nameTree);
 	}
 
+	public GetCode(Code recv, String name, Ty nameTy) {
+		super(nameTy, recv);
+		this.name = name;
+	}
+
 	public String getName() {
 		return this.name;
 	}

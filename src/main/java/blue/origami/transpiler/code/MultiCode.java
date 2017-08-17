@@ -1,5 +1,7 @@
 package blue.origami.transpiler.code;
 
+import java.util.List;
+
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -14,6 +16,10 @@ public class MultiCode extends CodeN {
 
 	public MultiCode() {
 		this(TArrays.emptyCodes);
+	}
+
+	public MultiCode(List<Code> codes) {
+		super(AutoType, codes.toArray(new Code[codes.size()]));
 	}
 
 	// private boolean isBlockExpr;

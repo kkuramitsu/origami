@@ -4,16 +4,20 @@ import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.ExistFieldCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
+import blue.origami.transpiler.code.GroupCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.LogCode;
+import blue.origami.transpiler.code.MatchCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.ReturnCode;
@@ -67,5 +71,15 @@ public interface TCodeSection {
 	public void pushGet(TEnv env, GetCode code);
 
 	public void pushSet(TEnv env, SetCode code);
+
+	public void pushExistField(TEnv env, ExistFieldCode code);
+
+	public default void pushMatch(TEnv env, MatchCode code) {
+		Code desugared = code.desugarIfCode();
+		System.out.println(":::" + desugared);
+		desugared.emitCode(env, this);
+	}
+
+	public void pushGroup(TEnv env, GroupCode code);
 
 }

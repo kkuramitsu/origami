@@ -154,6 +154,7 @@ interface CodeAPI {
 	public default Code applyMethodCode(TEnv env, String name, Code... params) {
 		return new ExprCode(name, TArrays.join(self(), params));
 	}
+
 }
 
 abstract class CommonCode implements Code {

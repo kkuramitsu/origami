@@ -83,21 +83,21 @@ Float^           = Double
 null       = null
 
 # Bool
-true:Bool       = true
-false:Bool      = false
-&:Bool:Bool:Bool = (%s && %s)
-|:Bool:Bool:Bool = (%s || %s)
-!:Bool:Bool      = (!(%s))
+true:Bool         = true
+false:Bool        = false
+&&:Bool:Bool:Bool = %s && %s
+||:Bool:Bool:Bool = %s || %s
+!:Bool:Bool       = !(%s)
 
 #Int 
 0:Int            = %d
 +:Int:Int        = +%s
 -:Int:Int        = -%s
-+:Int:Int:Int    = (%s + %s)
--:Int:Int:Int    = (%s - %s)
-*:Int:Int:Int    = (%s * %s)
-/:Int:Int:Int    = (%s / %s)
-%:Int:Int:Int    = (%s %% %s)
++:Int:Int:Int    = %s + %s
+-:Int:Int:Int    = %s - %s
+*:Int:Int:Int    = %s * %s
+/:Int:Int:Int    = %s / %s
+%:Int:Int:Int    = %s %% %s
 
 ==:Int:Int:Bool  = %s == %s
 !=:Int:Int:Bool  = %s != %s

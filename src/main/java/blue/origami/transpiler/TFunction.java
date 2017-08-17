@@ -108,15 +108,16 @@ public class TFunction extends Template implements NameInfo {
 	}
 
 	@Override
-	public Code nameCode(TEnv env, String name) {
-		if (!this.isExpired()) {
-			Transpiler tr = env.getTranspiler();
-			Template tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, this.paramTypes,
-					this.returnType, this.body);
-			this.setExpired();
-			return new FuncRefCode(name, tp);
-		}
-		return new FuncRefCode(name, this);
+	public Code nameCode() {
+		// if (!this.isExpired()) {
+		// Transpiler tr = env.getTranspiler();
+		// Template tp = tr.defineFunction(this.isPublic, this.name, this.dom,
+		// this.paramNames, this.paramTypes,
+		// this.returnType, this.body);
+		// this.setExpired();
+		// return new FuncRefCode(name, tp);
+		// }
+		return new FuncRefCode(this.name, this);
 	}
 
 }

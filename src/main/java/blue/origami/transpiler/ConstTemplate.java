@@ -15,7 +15,7 @@ public class ConstTemplate extends CodeTemplate {
 	}
 
 	@Override
-	public Code nameCode(TEnv env, String name) {
+	public Code nameCode() {
 		return new ExprCode(this, TArrays.emptyCodes);
 	}
 

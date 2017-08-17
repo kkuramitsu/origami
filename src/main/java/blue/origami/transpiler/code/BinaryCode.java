@@ -6,11 +6,12 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
 import blue.origami.util.ODebug;
+import blue.origami.util.StringCombinator;
 
-public class BinaryCode extends ExprCode {
+public class BinaryCode extends ExprCode implements CodeBuilder {
 
 	public BinaryCode(String name, Code left, Code right) {
-		super(name, left, right);
+		super(name, CodeBuilder.groupfy(left), CodeBuilder.groupfy(right));
 	}
 
 	@Override
@@ -27,6 +28,11 @@ public class BinaryCode extends ExprCode {
 			ODebug.trace("binary typing %s %s", this.args[0].getType(), this.args[1].getType());
 			ty.acceptTy(bSUB, this.args[0].getType(), bUPDATE);
 		}
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		StringCombinator.joins(sb, this.args, this.name);
 	}
 
 }

@@ -506,18 +506,19 @@ ValueCaseExpr = {
   	#ValueCase
 }
 
+// a(>0)(<10)
+
 NameCaseExpr = {
 	$name(Identifier)
 	$suffix(Quantity)?
-	$cond(NameCondExpr)?
+	$where(NameWhereExpr)?
+	$where2(NameWhereExpr)?
   	#NameCase
 }
 
-NameCondExpr = {
-	'(' 
-	WHEREOP $right(Expression)
-  	')'
-} / ListCaseExpr / DataCaseExpr
+NameWhereExpr = {
+	'(' WHEREOP _ $right(Expression) ')'
+}
 
 WHEREOP = 
 	'=' '='? #WhereEqExpr

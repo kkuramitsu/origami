@@ -10,9 +10,11 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.ExistFieldCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
+import blue.origami.transpiler.code.GroupCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
@@ -194,6 +196,17 @@ public class SourceSection extends SourceSectionLib implements TCodeSection {
 	public void pushSet(TEnv env, SetCode code) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void pushExistField(TEnv env, ExistFieldCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushGroup(TEnv env, GroupCode code) {
+		this.pushf(env, env.fmt("group", "%s"), code.getInner());
 	}
 
 }

@@ -2,6 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Ty;
 import blue.origami.util.StringCombinator;
 
 public class GroupCode extends Code1 {
@@ -11,7 +12,12 @@ public class GroupCode extends Code1 {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		// sec.push(this.strOut(env));
+		sec.pushGroup(env, this);
+	}
+
+	public Code asType(TEnv env, Ty ret) {
+		this.inner.asType(env, ret);
+		return this;
 	}
 
 	@Override

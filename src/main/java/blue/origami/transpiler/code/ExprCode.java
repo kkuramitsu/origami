@@ -17,7 +17,7 @@ import blue.origami.util.StringCombinator;
 
 public class ExprCode extends CodeN implements CallCode {
 
-	private String name;
+	protected String name;
 
 	public ExprCode(Template tp, Code... args) {
 		super(tp.getReturnType(), args);
@@ -38,6 +38,9 @@ public class ExprCode extends CodeN implements CallCode {
 
 	@Override
 	public Template getTemplate() {
+		if (this.tp == null) {
+			System.out.println("DEBUG " + this);
+		}
 		return this.tp;
 	}
 
@@ -88,6 +91,8 @@ public class ExprCode extends CodeN implements CallCode {
 			Ty pt = this.getCommonParamType(l, i);
 			// ODebug.trace("common[%d] %s", i, pt);
 			this.args[i] = this.args[i].asType(env, pt);
+			// ODebug.trace("typed[%d] %s %s", i, this.args[i],
+			// this.args[i].getType());
 		}
 	}
 
@@ -186,12 +191,11 @@ public class ExprCode extends CodeN implements CallCode {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("(");
-		for (int i = 0; i < this.args.length; i++) {
-			if (i > 1) {
-				sb.append(" ");
-			}
-			StringCombinator.append(sb, this.args[i]);
+		sb.append(this.name);
+		if (this.args.length > 0) {
+			sb.append(" ");
 		}
+		StringCombinator.joins(sb, this.args, " ");
 		sb.append(")");
 	}
 

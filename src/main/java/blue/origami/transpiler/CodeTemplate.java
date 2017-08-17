@@ -45,8 +45,8 @@ public class CodeTemplate extends Template implements NameInfo {
 	}
 
 	@Override
-	public Code nameCode(TEnv env, String name) {
-		return new FuncRefCode(name, this);
+	public Code nameCode() {
+		return new FuncRefCode(this.name, this);
 	}
 
 }

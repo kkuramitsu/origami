@@ -17,6 +17,14 @@ public class FunctionContext {
 		return v;
 	}
 
+	public int size() {
+		return this.varList.size();
+	}
+
+	public Variable getFirstArgument() {
+		return this.varList.get(0);
+	}
+
 	public int getStartIndex() {
 		return this.varList.size();
 	}
@@ -82,7 +90,7 @@ public class FunctionContext {
 		}
 
 		@Override
-		public Code nameCode(TEnv env, String name) {
+		public Code nameCode() {
 			if (this.refLevel > 0 && FunctionContext.this.fieldMap != null) {
 				FunctionContext.this.fieldMap.put(this.getName(),
 						new NameCode(this.name, this.seq, this.type, this.refLevel - 1));

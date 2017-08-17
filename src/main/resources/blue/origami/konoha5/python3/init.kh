@@ -10,21 +10,21 @@ String     =
 null       = None
 
 # Bool
-true:Bool       = True
-false:Bool      = False
-&:Bool:Bool:Bool = (%s and %s)
-|:Bool:Bool:Bool = (%s or %s)
-!:Bool:Bool      = (not %s)
+true:Bool         = True
+false:Bool        = False
+&&:Bool:Bool:Bool = %s and %s
+||:Bool:Bool:Bool = %s or %s
+!:Bool:Bool       = (not %s)
 
 #Int 
-0:Int            = %d
-+:Int:Int        = +%s
--:Int:Int        = -%s
-+:Int:Int:Int    = (%s + %s)
--:Int:Int:Int    = (%s - %s)
-*:Int:Int:Int    = (%s * %s)
-/:Int:Int:Int    = (%s // %s)
-%:Int:Int:Int    = (%s %% %s)
+0:Int             = %d
++:Int:Int         = +%s
+-:Int:Int         = -%s
++:Int:Int:Int     = %s + %s
+-:Int:Int:Int     = %s - %s
+*:Int:Int:Int     = %s * %s
+/:Int:Int:Int     = %s // %s
+%:Int:Int:Int     = %s %% %s
 
 ==:Int:Int:Bool  = %s == %s
 !=:Int:Int:Bool  = %s != %s
@@ -33,11 +33,11 @@ false:Bool      = False
 <=:Int:Int:Bool  = %s <= %s
 >=:Int:Int:Bool  = %s >= %s
 
-<<:Int:Int:Int   = (%s << %s)
->>:Int:Int:Int   = (%s >> %s)
-&:Int:Int:Int    = (%s & %s)
-|:Int:Int:Int    = (%s | %s)
-^:Int:Int:Int    = (%s ^ %s)
+<<:Int:Int:Int   = %s << %s
+>>:Int:Int:Int   = %s >> %s
+&&:Int:Int:Int   = %s & %s
+||:Int:Int:Int   = %s | %s
+^^:Int:Int:Int   = %s ^ %s
 !:Int:Int        = ~%s
 
 # Float

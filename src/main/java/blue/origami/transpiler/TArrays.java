@@ -1,5 +1,7 @@
 package blue.origami.transpiler;
 
+import java.lang.reflect.Array;
+
 import blue.origami.transpiler.code.Code;
 
 public class TArrays {
@@ -33,4 +35,19 @@ public class TArrays {
 		System.arraycopy(params, 1, p, 0, params.length - 1);
 		return p;
 	}
+
+	public static <T> T[] ltrim2(T[] values) {
+		@SuppressWarnings("unchecked")
+		T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
+		System.arraycopy(values, 1, v, 0, v.length);
+		return v;
+	}
+
+	public static <T> T[] rtrim2(T[] values) {
+		@SuppressWarnings("unchecked")
+		T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
+		System.arraycopy(values, 0, v, 0, v.length);
+		return v;
+	}
+
 }

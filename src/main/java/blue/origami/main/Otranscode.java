@@ -67,11 +67,11 @@ public class Otranscode extends OCommand {
 	}
 
 	public boolean isVerbose() {
-		return false;
+		return true;
 	}
 
 	public boolean isDebug() {
-		return false;
+		return true;
 	}
 
 }

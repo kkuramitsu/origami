@@ -13,8 +13,8 @@ false:Bool      = false
 
 ==:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|eq
 !=:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|ne
-&:Bool:Bool:Bool       = X|band
-|:Bool:Bool:Bool       = X|bor
+&&:Bool:Bool:Bool      = X|band
+||:Bool:Bool:Bool      = X|bor
 !:Bool:Bool            = S|blue/origami/transpiler/asm/APIs|not
 assert:Bool:Bool       = S|blue/origami/transpiler/asm/APIs|_assert
 
@@ -50,9 +50,9 @@ flatMap:Int?:Int->a?:a?  = S|blue/origami/transpiler/asm/APIs|flatMap
 
 <<:Int:Int:Int   = O|ishl
 >>:Int:Int:Int   = O|ishr
-&:Int:Int:Int    = O|iand
-|:Int:Int:Int    = O|ior
-^:Int:Int:Int    = O|ixor
+&&:Int:Int:Int   = O|iand
+||:Int:Int:Int   = O|ior
+^^:Int:Int:Int   = O|ixor
 ~:Int:Int        = S|blue/origami/transpiler/asm/APIs|cmpl
 ||:Int:Int       = S|java/lang/Math|abs
 
@@ -75,7 +75,7 @@ Float->Int             = O|d2i
 <=:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|lte
 >=:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|gte
 ^:Float:Float:Float  = S|java/lang/Math|pow
-||:Float:Int         = S|java/lang/Math|abs
+|x|:Float:Int        = S|java/lang/Math|abs
 
 #String
 char->String           = O|blue/origami/transpiler/asm/APIs|toch
