@@ -9,7 +9,6 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 abstract class MutableTy extends Ty {
@@ -112,6 +111,10 @@ public class DataTy extends Ty {
 		return new DataCode(this.isImmutable ? Ty.tImRecord() : Ty.tRecord());
 	}
 
+	public int size() {
+		return this.fields.length;
+	}
+
 	public boolean hasField(DSymbol field) {
 		for (DSymbol f : this.fields) {
 			if (field == f) {
@@ -131,7 +134,7 @@ public class DataTy extends Ty {
 	}
 
 	private void addField(DSymbol field) {
-		ODebug.trace("DataType: %s + %s", this, field);
+		// ODebug.trace("DataType: %s + %s", this, field);
 		DSymbol[] nf = new DSymbol[this.fields.length + 1];
 		System.arraycopy(this.fields, 0, nf, 0, this.fields.length);
 		nf[this.fields.length] = field;

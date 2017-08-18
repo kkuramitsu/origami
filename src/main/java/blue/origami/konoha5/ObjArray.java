@@ -5,13 +5,13 @@ import blue.origami.konoha5.Func.FuncObjBool;
 import blue.origami.konoha5.Func.FuncObjInt;
 import blue.origami.konoha5.Func.FuncObjObj;
 import blue.origami.konoha5.Func.FuncObjVoid;
+import blue.origami.util.StringCombinator;
 
-public class ObjArray extends Data implements FuncIntObj {
+public class ObjArray implements StringCombinator, FuncIntObj {
 	private Object[] arrays = null;
 	private int size = 0;
 
 	public ObjArray(int capacity) {
-		super(DataMap.Null);
 		this.ensure(capacity);
 	}
 
@@ -74,7 +74,6 @@ public class ObjArray extends Data implements FuncIntObj {
 	}
 
 	public ObjArray(Object[] arrays, int size) {
-		super(DataMap.Null);
 		this.arrays = arrays;
 		this.size = size;
 	}

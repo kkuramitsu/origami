@@ -185,7 +185,9 @@ abstract class CommonCode implements Code {
 
 	@Override
 	public Code setSource(Tree<?> t) {
-		this.at = t;
+		if (this.at == null) {
+			this.at = t;
+		}
 		return this;
 	}
 

@@ -710,11 +710,12 @@ Constant =
 	/ IntExpr
 	/ TrueExpr
 	/ FalseExpr
+	/ NullExpr
 
 /* Data */
 
 MutableExpr = {
-	"{" SET ("*" #DataListExpr / #DataArrayExpr) "}"
+	"{" SET "*"? #DataListExpr "}"
 } / {
 	"{" DICT #DataDictExpr "}"
 } / {
@@ -722,7 +723,7 @@ MutableExpr = {
 }
 
 ImmutableExpr = RangeExpr / {
-	"[" SET ("*" #ListExpr / #ArrayExpr) "]"
+	"[" SET "*"? #ListExpr "]"
 } / {
 	"[" DICT #DictExpr "]"
 } / {
@@ -829,6 +830,7 @@ EXPONENT =
 
 TrueExpr  = { [Tt] 'rue' (&W !W)?  #TrueExpr } _
 FalseExpr = { [Ff] 'alse' (&W !W)? #FalseExpr } _
+NullExpr  = { [Nn] ('ull' / 'one')  (&W !W)? #NullExpr } _
 
 /* Identifier */
 

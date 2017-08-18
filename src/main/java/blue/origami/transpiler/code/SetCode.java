@@ -14,8 +14,17 @@ public class SetCode extends CodeN {
 
 	public SetCode(Code recv, Tree<?> nameTree, Code right) {
 		super(recv, right);
+		// String s = nameTree.getString();
+		// if (s.startsWith(".")) {
+		// s = s.substring(1); // FIXME: bugs in parser
+		// }
+		// this.name = s;
 		this.name = nameTree.getString();
 		this.setSource(nameTree);
+	}
+
+	public String getName() {
+		return this.name;
 	}
 
 	@Override
@@ -51,11 +60,6 @@ public class SetCode extends CodeN {
 	@Override
 	public void strOut(StringBuilder sb) {
 
-	}
-
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

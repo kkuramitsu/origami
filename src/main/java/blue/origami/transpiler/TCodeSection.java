@@ -20,12 +20,15 @@ import blue.origami.transpiler.code.LogCode;
 import blue.origami.transpiler.code.MatchCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.NoneCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 
 public interface TCodeSection {
+
+	public void pushNone(TEnv env, NoneCode code);
 
 	public void pushBool(TEnv env, BoolCode code);
 

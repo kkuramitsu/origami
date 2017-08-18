@@ -80,9 +80,6 @@ public class AsmGenerator extends Generator implements Opcodes {
 		this.cw.visitEnd();
 		byte[] byteCode = this.cw.toByteArray();
 		AsmType.classLoader.set(this.cname, byteCode);
-		if (this.isVerbose()) {
-			AsmType.classLoader.dump(this.cname, byteCode);
-		}
 		try {
 			Class<?> c = AsmType.classLoader.loadClass(this.cname);
 			java.lang.reflect.Method m = c.getMethod(evalName);

@@ -3,6 +3,7 @@ package blue.origami.transpiler;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
@@ -42,11 +43,15 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static final VarTy tUntyped() {
-		return new VarTy(null);
+		return new VarTy(null, null);
+	}
+
+	public static final VarTy tUntyped(Tree<?> s) {
+		return new VarTy(null, s);
 	}
 
 	public static final VarTy tVar(String name) {
-		return new VarTy(name);
+		return new VarTy(name, null);
 	}
 
 	/* Data */

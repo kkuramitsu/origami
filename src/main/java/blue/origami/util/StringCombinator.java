@@ -51,29 +51,6 @@ public interface StringCombinator {
 		}
 	}
 
-	// public static int appendField(StringBuilder sb, Object o, Class<?>
-	// untilClass, int cnt) {
-	// if (o == null) {
-	// return cnt;
-	// }
-	// for (Class<?> c = o.getClass(); c != untilClass; c = c.getSuperclass()) {
-	// Field[] fs = c.getDeclaredFields();
-	// for (Field f : fs) {
-	// if (OTypeUtils.isPublic(f) && !OTypeUtils.isStatic(f)) {
-	// if (cnt > 0) {
-	// sb.append(", ");
-	// }
-	// String name = f.getName();
-	// sb.append(name);
-	// sb.append(": ");
-	// StringCombinator.appendQuoted(sb, OTypeUtils.fieldValue(f, o));
-	// cnt++;
-	// }
-	// }
-	// }
-	// return cnt;
-	// }
-
 	public static String format(LocaleFormat fmt, Object... args) {
 		return format(fmt.toString(), args);
 	}

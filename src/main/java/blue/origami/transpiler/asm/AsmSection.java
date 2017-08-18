@@ -8,7 +8,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import blue.origami.konoha5.DSymbol;
+import blue.origami.konoha5.Data;
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.ListTy;
@@ -28,7 +28,6 @@ import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExistFieldCode;
-import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
@@ -39,6 +38,7 @@ import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MatchCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.NoneCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
@@ -46,7 +46,7 @@ import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.util.ODebug;
 
 public class AsmSection implements TCodeSection, Opcodes {
-	private final static String APIs = "blue/origami/transpiler/asm/APIs";
+	private final static String APIs = Type.getInternalName(APIs.class);
 
 	AsmType ts;
 	String cname;
@@ -56,6 +56,11 @@ public class AsmSection implements TCodeSection, Opcodes {
 		this.ts = ts;
 		this.cname = cname;
 		this.mBuilder = mw;
+	}
+
+	@Override
+	public void pushNone(TEnv env, NoneCode code) {
+		this.mBuilder.visitInsn(ACONST_NULL);
 	}
 
 	@Override
@@ -560,7 +565,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushData(TEnv env, DataCode code) {
 		if (code.isRange()) {
-			DataTy dt = (DataTy) code.getType();
+			ListTy dt = (ListTy) code.getType();
 			for (Code sub : code) {
 				sub.emitCode(env, this);
 			}
@@ -582,25 +587,36 @@ public class AsmSection implements TCodeSection, Opcodes {
 						Type.getDescriptor(this.ts.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
 			}
+			return;
+		}
+		if (code.isDict()) {
 			// } else if (code.isDict()) {
 			//
-		} else {
-			this.pushArray(env, Type.getType(int.class), false, this.symbols(code.getNames()));
-			this.pushArray(env, Type.getType(Object.class), true, code.args());
-			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "data",
-					"([I[Ljava/lang/Object;)Lblue/origami/konoha5/Data;", false);
+			return;
+		}
+		Class<?> c = this.ts.loadDataClass((DataTy) code.getType());
+		String cname = Type.getInternalName(c);
+		this.mBuilder.visitTypeInsn(NEW, cname);
+		this.mBuilder.dup();
+		this.mBuilder.visitMethodInsn(INVOKESPECIAL, cname, "<init>", "()V", false);
+		String[] names = code.getNames();
+		Code[] args = code.args();
+		for (int i = 0; i < names.length; i++) {
+			this.mBuilder.dup();
+			args[i].emitCode(env, this);
+			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, names[i], this.ts.desc(args[i].getType()));
 		}
 	}
 
-	Code[] symbols(String... values) {
-		Code[] v = new Code[values.length];
-		int c = 0;
-		for (String s : values) {
-			v[c] = new IntCode(DSymbol.id(s));
-			c++;
-		}
-		return v;
-	}
+	// Code[] symbols(String... values) {
+	// Code[] v = new Code[values.length];
+	// int c = 0;
+	// for (String s : values) {
+	// v[c] = new IntCode(DSymbol.id(s));
+	// c++;
+	// }
+	// return v;
+	// }
 
 	@Override
 	public void pushError(TEnv env, ErrorCode code) {
@@ -634,7 +650,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			inits[i].emitCode(env, this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i], this.ts.desc(fieldTypes[i]));
 		}
-		ODebug.trace("FuncCode.asType %s", code.getType());
+		// ODebug.trace("FuncCode.asType %s", code.getType());
 
 	}
 
@@ -644,8 +660,6 @@ public class AsmSection implements TCodeSection, Opcodes {
 			sub.emitCode(env, this);
 		}
 		FuncTy funcType = (FuncTy) code.args()[0].getType();
-		// String desc = ts.toTypeDesc(funcType.getReturnType(),
-		// TArrays.join(funcType, funcType.getParamTypes()));
 		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
 		String cname = Type.getInternalName(this.ts.toClass(funcType));
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmGenerator.nameApply(funcType.getReturnType()), desc,
@@ -661,23 +675,40 @@ public class AsmSection implements TCodeSection, Opcodes {
 	@Override
 	public void pushGet(TEnv env, GetCode code) {
 		Code recv = code.args()[0];
-		Code name = new IntCode(DSymbol.id(code.getName()));
-		Ty ret = code.getType();
-		this.emitSugar(env, new ExprCode("getf", recv, name, ret.getDefaultValue()), ret);
+		String desc = this.ts.desc(code.getType(), TArrays.emptyTypes);
+		recv.emitCode(env, this);
+		Class<?> ifield = this.ts.gen(code.getName());
+		Class<?> base = this.ts.toClass(recv.getType());
+		if (base == Data.class) {
+			this.mBuilder.checkCast(Type.getType(ifield));
+		}
+		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ifield), code.getName(), desc, true);
+		// this.mBuilder.visitMethodInsn(INVOKEVIRTUAL,
+		// Type.getInternalName(base), code.getName(), desc, false);
 	}
 
 	@Override
 	public void pushSet(TEnv env, SetCode code) {
 		Code recv = code.args()[0];
-		Code name = new IntCode(DSymbol.id(code.getName()));
 		Code right = code.args()[1];
-		this.emitSugar(env, new ExprCode("setf", recv, name, right), Ty.tVoid);
+		String desc = this.ts.desc(Ty.tVoid, right.getType());
+		recv.emitCode(env, this);
+		Class<?> ifield = this.ts.gen(code.getName());
+		Class<?> base = this.ts.toClass(recv.getType());
+		if (base == Data.class) {
+			this.mBuilder.checkCast(Type.getType(ifield));
+		}
+		right.emitCode(env, this);
+		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ifield), code.getName(), desc, true);
+		// this.mBuilder.visitMethodInsn(INVOKEVIRTUAL,
+		// Type.getInternalName(base), code.getName(), desc, false);
 	}
 
 	@Override
 	public void pushExistField(TEnv env, ExistFieldCode code) {
-		// TODO Auto-generated method stub
-
+		code.getInner().emitCode(env, this);
+		Class<?> ifield = this.ts.gen(code.getName());
+		this.mBuilder.instanceOf(Type.getType(ifield));
 	}
 
 	@Override

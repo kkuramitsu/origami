@@ -13,6 +13,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
+import blue.origami.konoha5.Data;
 import blue.origami.konoha5.Func;
 import blue.origami.transpiler.CodeType;
 import blue.origami.transpiler.DataTy;
@@ -50,8 +51,9 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		this.reg(Ty.tInt, int.class);
 		this.reg(Ty.tFloat, double.class);
 		this.reg(Ty.tString, String.class);
-		this.reg(Ty.tData(), blue.origami.konoha5.Data.class);
-		this.reg(Ty.tData(TArrays.emptyNames), blue.origami.konoha5.Data.class);
+		this.reg("{}", blue.origami.konoha5.Data.class);
+		this.reg("Data$", blue.origami.konoha5.Data.class);
+
 		this.reg(Ty.tImList(Ty.tInt), blue.origami.konoha5.IntArray.class);
 		this.reg(Ty.tList(Ty.tInt), blue.origami.konoha5.IntArray.class);
 		this.reg("List", blue.origami.konoha5.ObjArray.class);
@@ -158,7 +160,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 
 	@Override
 	protected String key(DataTy dataTy) {
-		return dataTy.names().toString();
+		return dataTy.size() == 0 ? "{}" : dataTy.names().toString();
 	}
 
 	@Override
@@ -169,7 +171,6 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1, null/* signatrue */, "java/lang/Object",
 				infs);
-		addDefaultConstructor(cw1);
 		for (String name : names) {
 			Type type = this.ti(this.fieldTy(name));
 			Method getm = new Method(name, type, this.ts(TArrays.emptyTypes));
@@ -183,8 +184,12 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		return loadClass(cname1, cw1);
 	}
 
-	private Class<?> gen(String name) {
-		String cname1 = "D$" + name;
+	String nameFieldClass(String name) {
+		return "D$" + name;
+	}
+
+	Class<?> gen(String name) {
+		String cname1 = this.nameFieldClass(name);
 		return this.reg(cname1, () -> {
 			ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 			cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1, null/* signatrue */, "java/lang/Object",
@@ -205,20 +210,24 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		});
 	}
 
-	private static void addDefaultConstructor(ClassWriter cw1) {
+	private static void addDefaultConstructor(ClassWriter cw1, String superClass) {
 		MethodVisitor mv = cw1.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
 		mv.visitCode();
 		mv.visitVarInsn(ALOAD, 0);
-		mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+		mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false);
 		mv.visitInsn(RETURN);
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
 	}
 
-	private static Class<?> loadClass(String cname1, ClassWriter cw1) {
-		classLoader.set(cname1, cw1.toByteArray());
+	private static void addDefaultConstructor(ClassWriter cw1, Class<?> superClass) {
+		addDefaultConstructor(cw1, Type.getInternalName(superClass));
+	}
+
+	private static Class<?> loadClass(String cname, ClassWriter cw) {
+		classLoader.set(cname, cw.toByteArray());
 		try {
-			return classLoader.loadClass(cname1);
+			return classLoader.loadClass(cname);
 		} catch (ClassNotFoundException e) {
 			ODebug.exit(1, e);
 			return null;
@@ -251,7 +260,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 			FieldNode fn = new FieldNode(ACC_PUBLIC, fieldNames[i], this.desc(fieldTypes[i]), null, null);
 			fn.accept(cw1);
 		}
-		addDefaultConstructor(cw1);
+		addDefaultConstructor(cw1, Object.class);
 		{
 			Method m = new Method(nameApply(returnType), this.ti(returnType), this.ts(paramTypes));
 			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC, m, null, null, cw1);
@@ -297,25 +306,26 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		Set<String> names = dataTy.names();
 		String cname1 = "Data$" + StringCombinator.joins(names.toArray(new String[names.size()]), "");
 		return this.reg(cname1, () -> {
-			String[] infs = names.stream().map(x -> "F$" + x).toArray(String[]::new);
+			Class<?> c = this.toClass(dataTy);
 			ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, "java/lang/Object", infs);
-			addDefaultConstructor(cw1);
+			cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Data.class),
+					new String[] { Type.getInternalName(c) });
+			addDefaultConstructor(cw1, Data.class);
 			for (String name : names) {
 				Ty ty = this.fieldTy(name);
 				Type type = this.ti(ty);
 				FieldNode fn = new FieldNode(ACC_PUBLIC, name, this.desc(ty), null, null);
 				fn.accept(cw1);
 				Method getm = new Method(name, type, this.ts(TArrays.emptyTypes));
-				GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, getm, null, null, cw1);
+				GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_FINAL, getm, null, null, cw1);
 				mw.loadThis();
 				mw.getField(Type.getType("L" + cname1 + ";"), name, type);
 				mw.returnValue();
 				mw.endMethod();
 				Method setm = new Method(name, Type.VOID_TYPE, new Type[] { type });
-				mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, setm, null, null, cw1);
+				mw = new GeneratorAdapter(ACC_PUBLIC + ACC_FINAL, setm, null, null, cw1);
 				mw.loadThis();
-				mw.loadArg(1);
+				mw.loadArg(0);
 				mw.putField(Type.getType("L" + cname1 + ";"), name, type);
 				mw.returnValue();
 				mw.endMethod();
@@ -324,22 +334,6 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 			return loadClass(cname1, cw1);
 		});
 	}
-
-	// static Class<?> loadFuncTypeClass(Ty[] paramTypes, Ty returnType) {
-	// Method m = new Method(nameApply(returnType), Asm.ti(returnType),
-	// Asm.ts(paramTypes));
-	// String cname1 = "T$" + Asm.classLoader.seq();
-	// ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-	// cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1,
-	// null/* signatrue */, "java/lang/Object",
-	// null);
-	//
-	// GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, m,
-	// null, null, cw1);
-	// mw.endMethod();
-	// cw1.visitEnd();
-	// return loadClass(cname1, cw1);
-	// }
 
 	// static
 	private final static Map<Class<?>, Class<?>> boxMap = new HashMap<>();

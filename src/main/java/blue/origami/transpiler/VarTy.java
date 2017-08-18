@@ -1,5 +1,6 @@
 package blue.origami.transpiler;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -8,11 +9,13 @@ public class VarTy extends Ty {
 	private String varName;
 	private Ty innerTy;
 	final int id;
+	private Tree<?> s;
 
-	public VarTy(String varName) {
+	public VarTy(String varName, Tree<?> s) {
 		this.varName = varName;
 		this.innerTy = null;
 		this.id = seq++;
+		this.s = s;
 	}
 
 	public boolean isParameter() {

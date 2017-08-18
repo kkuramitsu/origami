@@ -62,12 +62,7 @@ public class ApplyCode extends CodeN {
 	public void strOut(StringBuilder sb) {
 		StringCombinator.append(sb, this.args[0]);
 		sb.append("(");
-		for (int i = 1; i < this.args.length; i++) {
-			if (i > 1) {
-				sb.append(",");
-			}
-			StringCombinator.append(sb, this.args[i]);
-		}
+		StringCombinator.joins(sb, TArrays.ltrim2(this.args), ",");
 		sb.append(")");
 	}
 

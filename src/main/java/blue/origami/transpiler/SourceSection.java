@@ -20,6 +20,7 @@ import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.NoneCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
@@ -30,6 +31,11 @@ public class SourceSection extends SourceSectionLib implements TCodeSection {
 
 	public SourceSection(SourceType ts) {
 		super(ts);
+	}
+
+	@Override
+	public void pushNone(TEnv env, NoneCode code) {
+		this.push(env.getSymbol("null", "null"));
 	}
 
 	@Override

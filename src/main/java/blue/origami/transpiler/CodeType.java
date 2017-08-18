@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 public abstract class CodeType<C> {
 	protected TEnv env;
-	protected HashMap<String, C> typeMap = new HashMap<>();
+	protected final HashMap<String, C> typeMap = new HashMap<>();
 
 	public CodeType(TEnv env) {
 		this.env = env;

@@ -53,6 +53,7 @@ public class AsmClassLoader extends ClassLoader {
 	private HashMap<String, byte[]> codeMap = new HashMap<>();
 
 	public void set(String cname, byte[] byteCode) {
+		this.dump(cname, byteCode);
 		this.codeMap.put(cname, byteCode);
 	}
 

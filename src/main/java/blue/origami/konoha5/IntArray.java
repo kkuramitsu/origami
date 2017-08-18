@@ -4,13 +4,13 @@ import blue.origami.konoha5.Func.FuncIntBool;
 import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncIntVoid;
+import blue.origami.util.StringCombinator;
 
-public class IntArray extends Data implements FuncIntInt {
+public class IntArray implements StringCombinator, FuncIntInt {
 	private int[] arrays = null;
 	private int size = 0;
 
 	public IntArray(int capacity) {
-		super(DataMap.Null);
 		this.ensure(capacity);
 	}
 
@@ -73,7 +73,6 @@ public class IntArray extends Data implements FuncIntInt {
 	}
 
 	public IntArray(int[] arrays, int size) {
-		super(DataMap.Null);
 		this.arrays = arrays;
 		this.size = size;
 	}

@@ -18,7 +18,6 @@ package blue.origami.transpiler.asm;
 
 import java.util.Objects;
 
-import blue.origami.konoha5.Data;
 import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncIntVoid;
@@ -345,50 +344,6 @@ public class APIs {
 
 	public final static IntArray range(int start, int end) {
 		return new IntRange(start, end);
-	}
-
-	public final static Data data(int[] keys, Object[] values) {
-		return new Data(keys, values);
-	}
-
-	public final static int getf(Data d, int key, int def) {
-		Object v = d.getf(key, null);
-		return v == null ? def : ((Number) v).intValue();
-	}
-
-	public final static Data setf(Data d, int key, int def) {
-		d.setf(key, def);
-		return d;
-	}
-
-	public final static double getf(Data d, int key, double def) {
-		Object v = d.getf(key, null);
-		return v == null ? def : ((Number) v).doubleValue();
-	}
-
-	public final static Data setf(Data d, int key, double def) {
-		d.setf(key, def);
-		return d;
-	}
-
-	public final static String getf(Data d, int key, String def) {
-		Object v = d.getf(key, null);
-		return v == null ? def : (String) v;
-	}
-
-	public final static Data setf(Data d, int key, String def) {
-		d.setf(key, def);
-		return d;
-	}
-
-	public final static Data getf(Data d, int key, Data def) {
-		Object v = d.getf(key, null);
-		return v == null ? def : (Data) v;
-	}
-
-	public final static Data setf(Data d, int key, Data def) {
-		d.setf(key, def);
-		return d;
 	}
 
 	// Option
