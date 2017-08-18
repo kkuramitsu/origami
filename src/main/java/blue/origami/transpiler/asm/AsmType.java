@@ -13,7 +13,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
-import blue.origami.konoha5.Data;
+import blue.origami.konoha5.Data$;
 import blue.origami.konoha5.Func;
 import blue.origami.transpiler.CodeType;
 import blue.origami.transpiler.DataTy;
@@ -51,12 +51,13 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		this.reg(Ty.tInt, int.class);
 		this.reg(Ty.tFloat, double.class);
 		this.reg(Ty.tString, String.class);
-		this.reg("{}", blue.origami.konoha5.Data.class);
-		this.reg("Data$", blue.origami.konoha5.Data.class);
+		this.reg("{}", blue.origami.konoha5.Data$.class);
+		this.reg("Data$", blue.origami.konoha5.Data$.class);
 
-		this.reg(Ty.tImList(Ty.tInt), blue.origami.konoha5.IntArray.class);
-		this.reg(Ty.tList(Ty.tInt), blue.origami.konoha5.IntArray.class);
-		this.reg("List", blue.origami.konoha5.ObjArray.class);
+		this.reg("ListI", blue.origami.konoha5.List$Int.class);
+		this.reg("List'I", blue.origami.konoha5.List$Int.class);
+		this.reg("List", blue.origami.konoha5.List$.class);
+		this.reg("List'", blue.origami.konoha5.List$.class);
 
 		this.reg(Ty.tOption(Ty.tInt), Integer.class);
 		this.reg(Ty.tList(Ty.tFloat), Double.class);
@@ -130,7 +131,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 	@Override
 	protected Class<?> mapDefaultType(String prefix, Ty ty, Class<?> inner) {
 		Class<?> c = this.typeMap.get(prefix);
-		assert (c != null) : "undefined " + prefix + "[" + inner + "]";
+		assert (c != null) : "undefined " + prefix;
 		return c;
 	}
 
@@ -308,9 +309,9 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		return this.reg(cname1, () -> {
 			Class<?> c = this.toClass(dataTy);
 			ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-			cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Data.class),
+			cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Data$.class),
 					new String[] { Type.getInternalName(c) });
-			addDefaultConstructor(cw1, Data.class);
+			addDefaultConstructor(cw1, Data$.class);
 			for (String name : names) {
 				Ty ty = this.fieldTy(name);
 				Type type = this.ti(ty);

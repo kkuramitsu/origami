@@ -5,19 +5,19 @@ import java.lang.reflect.Field;
 import blue.origami.util.OConsole;
 import blue.origami.util.StringCombinator;
 
-public class Data implements StringCombinator, Cloneable {
+public class Data$ implements StringCombinator, Cloneable {
 
 	@Override
-	public Data clone() {
+	public Data$ clone() {
 		Object d = this.newf();
 		Field[] fs = this.getClass().getDeclaredFields();
 		for (Field f : fs) {
 			this.setf(f, this, d);
 		}
-		return (Data) d;
+		return (Data$) d;
 	}
 
-	private Data newf() {
+	private Data$ newf() {
 		try {
 			return this.getClass().newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {

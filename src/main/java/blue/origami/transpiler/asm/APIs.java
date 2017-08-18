@@ -21,9 +21,9 @@ import java.util.Objects;
 import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncIntVoid;
-import blue.origami.konoha5.IntArray;
-import blue.origami.konoha5.IntRange;
-import blue.origami.konoha5.ObjArray;
+import blue.origami.konoha5.List$;
+import blue.origami.konoha5.List$Int;
+import blue.origami.konoha5.Range$Int;
 
 public class APIs {
 	public final static Boolean box(boolean a) {
@@ -319,9 +319,8 @@ public class APIs {
 		}
 	}
 
-	public final static boolean p(String a) {
+	public final static void p(String a) {
 		System.out.println(a);
-		return true;
 	}
 
 	public final static String join(String[] a) {
@@ -334,16 +333,16 @@ public class APIs {
 
 	// Data
 
-	public final static ObjArray array(Object[] values) {
-		return new ObjArray(values, values.length);
+	public final static List$ array(Object[] values) {
+		return new List$(values, values.length);
 	}
 
-	public final static IntArray array(int[] values) {
-		return new IntArray(values, values.length);
+	public final static List$Int array(int[] values) {
+		return new List$Int(values, values.length);
 	}
 
-	public final static IntArray range(int start, int end) {
-		return new IntRange(start, end);
+	public final static List$Int range(int start, int end) {
+		return new Range$Int(start, end);
 	}
 
 	// Option

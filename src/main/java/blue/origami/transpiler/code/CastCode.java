@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.CodeTemplate;
+import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Ty;
@@ -13,6 +13,11 @@ public class CastCode extends Code1 implements CallCode {
 		this.setTemplate(tp);
 	}
 
+	public CastCode(Ty ret, Code inner) {
+		super(ret, inner);
+		this.setTemplate(null);
+	}
+
 	private Template tp;
 
 	public void setTemplate(Template tp) {
@@ -22,6 +27,14 @@ public class CastCode extends Code1 implements CallCode {
 	@Override
 	public Template getTemplate() {
 		return this.tp;
+	}
+
+	@Override
+	public Code asType(TEnv env, Ty ret) {
+		if (this.tp == null) {
+			return this.getInner().castType(env, ret);
+		}
+		return this;
 	}
 
 	@Override

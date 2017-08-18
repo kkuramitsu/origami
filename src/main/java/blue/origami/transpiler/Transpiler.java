@@ -12,6 +12,7 @@ import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
+import blue.origami.nez.parser.ParserCode.ParserErrorException;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.asm.AsmGenerator;
@@ -204,6 +205,12 @@ public class Transpiler extends TEnv {
 	void showThrowable(Throwable e) {
 		if (e instanceof Error) {
 			OConsole.exit(1, e);
+			return;
+		}
+		if (e instanceof ParserErrorException) {
+			this.verboseError("ParserError", () -> {
+				OConsole.println(e);
+			});
 			return;
 		}
 		if (e instanceof InvocationTargetException) {

@@ -64,7 +64,6 @@ public abstract class CodeType<C> {
 		C c = this.typeMap.get(key);
 		if (c == null) {
 			c = this.mapDefaultType(prefix, ty, inner);
-			this.typeMap.put(key, c);
 		}
 		return c;
 	}
@@ -73,6 +72,7 @@ public abstract class CodeType<C> {
 
 	public final C mapType(FuncTy funcTy) {
 		String key = this.key(funcTy);
+		System.out.println(":::::" + key);
 		C c = this.typeMap.get(key);
 		if (c == null) {
 			c = this.gen(funcTy);

@@ -1,5 +1,16 @@
 package blue.origami.konoha5;
 
+import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
+import java.util.function.IntUnaryOperator;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+
 import blue.origami.transpiler.asm.APIs;
 
 public class Func {
@@ -49,8 +60,13 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncObjVoid {
+	public interface FuncObjVoid extends Consumer<Object> {
 		public void apply(Object v);
+
+		@Override
+		public default void accept(Object v) {
+			apply(v);
+		}
 	}
 
 	@FunctionalInterface
@@ -64,8 +80,13 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncIntVoid extends FuncObjVoid {
+	public interface FuncIntVoid extends FuncObjVoid, IntConsumer {
 		public void apply(int v);
+
+		@Override
+		public default void accept(int v) {
+			apply(v);
+		}
 
 		@Override
 		public default void apply(Object v) {
@@ -94,13 +115,25 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncObjObj {
+	public interface FuncObjObj extends Function<Object, Object> {
+		@Override
 		public Object apply(Object v);
 	}
 
 	@FunctionalInterface
-	public interface FuncObjBool extends FuncObjObj {
+	public interface FuncObjObjObj extends BinaryOperator<Object> {
+		@Override
+		public Object apply(Object v, Object v2);
+	}
+
+	@FunctionalInterface
+	public interface FuncObjBool extends FuncObjObj, Predicate<Object> {
 		public boolean applyZ(Object v);
+
+		@Override
+		public default boolean test(Object v) {
+			return applyZ(v);
+		}
 
 		@Override
 		public default Object apply(Object v) {
@@ -109,8 +142,13 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncObjInt extends FuncObjObj {
+	public interface FuncObjInt extends FuncObjObj, ToIntFunction<Object> {
 		public int applyI(Object v);
+
+		@Override
+		public default int applyAsInt(Object v) {
+			return applyI(v);
+		}
 
 		@Override
 		public default Object apply(Object v) {
@@ -170,13 +208,36 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncIntBool {
+	public interface FuncIntBool extends IntPredicate {
 		public boolean applyZ(int v);
+
+		@Override
+		default boolean test(int v) {
+			return applyZ(v);
+		}
+
 	}
 
 	@FunctionalInterface
-	public interface FuncIntInt {
+	public interface FuncIntInt extends IntUnaryOperator {
 		public int applyI(int v);
+
+		@Override
+		default int applyAsInt(int operand) {
+			return applyI(operand);
+		}
+
+	}
+
+	@FunctionalInterface
+	public interface FuncIntIntInt extends IntBinaryOperator {
+		public int applyI(int v, int v2);
+
+		@Override
+		default int applyAsInt(int left, int right) {
+			return applyI(left, right);
+		}
+
 	}
 
 	@FunctionalInterface
@@ -190,7 +251,8 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncIntObj {
+	public interface FuncIntObj extends IntFunction<Object> {
+		@Override
 		public Object apply(int v);
 	}
 

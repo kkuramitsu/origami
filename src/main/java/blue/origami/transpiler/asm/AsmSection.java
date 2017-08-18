@@ -8,7 +8,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
-import blue.origami.konoha5.Data;
+import blue.origami.konoha5.Data$;
 import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.ListTy;
@@ -575,7 +575,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 		if (code.isList()) {
 			ListTy dt = (ListTy) code.getType();
-			if (this.ts.toClass(dt) == blue.origami.konoha5.ObjArray.class) {
+			if (this.ts.toClass(dt) == blue.origami.konoha5.List$.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());
 				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
@@ -679,7 +679,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		recv.emitCode(env, this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		Class<?> base = this.ts.toClass(recv.getType());
-		if (base == Data.class) {
+		if (base == Data$.class) {
 			this.mBuilder.checkCast(Type.getType(ifield));
 		}
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ifield), code.getName(), desc, true);
@@ -695,7 +695,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		recv.emitCode(env, this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		Class<?> base = this.ts.toClass(recv.getType());
-		if (base == Data.class) {
+		if (base == Data$.class) {
 			this.mBuilder.checkCast(Type.getType(ifield));
 		}
 		right.emitCode(env, this);

@@ -123,10 +123,6 @@ interface CodeAPI {
 		return new CastCode(ret, tt, self);
 	}
 
-	public default Code StillUntyped() {
-		return self();
-	}
-
 	public default Ty guessType() {
 		return self().getType();
 	}
