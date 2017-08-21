@@ -13,6 +13,8 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
 
@@ -259,6 +261,16 @@ interface TEnvApi {
 	// }
 
 	public default void defineSymbol(String key, String value) {
+		boolean pure = true;
+		boolean faulty = false;
+		if (key.endsWith("!!")) {
+			key = key.substring(0, key.length() - 2);
+			faulty = true;
+		}
+		if (key.endsWith("@")) {
+			key = key.substring(0, key.length() - 1);
+			pure = false;
+		}
 		int loc = key.indexOf(':');
 		if (loc == -1) {
 			String name = key;
@@ -364,44 +376,55 @@ interface TEnvApi {
 	}
 
 	default Ty checkType(String tsig) {
-		Ty t = this.getType(tsig);
-		if (t == null) {
+		Ty ty = this.getType(tsig);
+		if (ty == null) {
 			if (tsig.endsWith("*")) {
-				t = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tImList(t);
+				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				return Ty.tImList(ty);
 			}
 			if (tsig.endsWith("[]")) {
-				t = checkType(tsig.substring(0, tsig.length() - 2));
-				return Ty.tList(t);
+				ty = checkType(tsig.substring(0, tsig.length() - 2));
+				return Ty.tList(ty);
 			}
 			if (tsig.endsWith("?")) {
-				t = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tOption(t);
+				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				return Ty.tOption(ty);
 			}
 			if (tsig.endsWith("]")) {
-				if (tsig.startsWith("Dict[")) {
-					t = checkType(tsig.substring(5, tsig.length() - 1));
-					return Ty.tImDict(t);
-				}
-				if (tsig.startsWith("Dict'[")) {
-					t = checkType(tsig.substring(6, tsig.length() - 1));
-					return Ty.tDict(t);
-				}
-				if (tsig.startsWith("Option[")) {
-					t = checkType(tsig.substring(7, tsig.length() - 1));
-					return Ty.tOption(t);
-				}
+				int loc = tsig.indexOf('[');
+				ty = checkType(tsig.substring(loc + 1, tsig.length() - 1));
+				return Ty.tMonad(tsig.substring(0, loc), ty);
 			}
 			int loc = 0;
 			if ((loc = tsig.indexOf("->")) > 0) {
-				Ty ft = checkType(tsig.substring(0, loc));
+				int loc2 = tsig.indexOf(',');
 				Ty tt = checkType(tsig.substring(loc + 2));
-				return Ty.tFunc(tt, ft);
+				if (loc2 > 0) {
+					String param = tsig.substring(0, loc);
+					Ty ft1 = checkType(param.substring(0, loc2));
+					Ty ft2 = checkType(param.substring(loc2 + 1));
+					return Ty.tFunc(tt, ft1, ft2);
+				} else {
+					Ty ft = checkType(tsig.substring(0, loc));
+					return Ty.tFunc(tt, ft);
+				}
 			}
-			t = Ty.getHidden1(tsig);
+			ty = getHiddenType(tsig);
 		}
-		assert (t != null) : tsig;
-		return t;
+		assert (ty != null) : "undefined '" + tsig + "'";
+		return ty;
+	}
+
+	static HashMap<String, Ty> hiddenMap = new HashMap<>();
+
+	public static Ty getHiddenType(String tsig) {
+		if (hiddenMap.isEmpty()) {
+			hiddenMap.put("()", Ty.tVoid);
+			hiddenMap.put("char", Ty.tChar);
+			hiddenMap.put("a", Ty.tVar("a"));
+			hiddenMap.put("b", Ty.tVar("b"));
+		}
+		return hiddenMap.get(tsig);
 	}
 
 	public default void addParsedName(String name) {
@@ -515,10 +538,15 @@ interface TEnvApi {
 		return def.get();
 	}
 
-	public default TConvTemplate findTypeMap(TEnv env, Ty fromTy, Ty toTy) {
-		String key = fromTy + "->" + toTy;
-		TConvTemplate tp = env.get(key, TConvTemplate.class);
-		// System.out.printf("FIXME: finding %s %s\n", key, tp);
+	public default Template findTypeMap(TEnv env, Ty fromTy, Ty toTy) {
+		String key = FuncTy.mapKey(fromTy, toTy);
+		Template tp = env.get(key, Template.class);
+		if (tp == null) {
+			tp = fromTy.findMap(env, toTy);
+			if (tp == null) {
+				tp = toTy.findMapFrom(env, fromTy);
+			}
+		}
 		if (tp == null && toTy == Ty.tVoid) {
 			String format = env.getSymbol("(Void)", "(void)%s");
 			tp = new TConvTemplate("", Ty.tUntyped0, Ty.tVoid, CastCode.SAME, format);
@@ -531,8 +559,9 @@ interface TEnvApi {
 		if (toTy.acceptTy(true, fromTy, false)) {
 			return CastCode.SAME;
 		}
-		TConvTemplate conv = env.findTypeMap(env, fromTy, toTy);
-		ODebug.trace("mapcost %s => %s cost=%d", fromTy, toTy, conv.mapCost());
+		Template conv = env.findTypeMap(env, fromTy, toTy);
+		// ODebug.trace("mapcost %s => %s cost=%d", fromTy, toTy,
+		// conv.mapCost());
 		return conv.mapCost();
 	}
 

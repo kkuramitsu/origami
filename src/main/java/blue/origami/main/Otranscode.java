@@ -7,6 +7,7 @@ import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
+import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
 public class Otranscode extends OCommand {
@@ -19,6 +20,7 @@ public class Otranscode extends OCommand {
 		for (String file : files) {
 			this.loadScriptFile(trcc, file);
 		}
+		ODebug.setDebug(this.isDebug());
 		if (files.length == 0 || this.isDebug()) {
 			displayVersion("Konoha5->" + target);
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);

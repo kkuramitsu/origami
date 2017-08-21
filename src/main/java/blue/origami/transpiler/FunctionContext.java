@@ -6,6 +6,7 @@ import java.util.HashMap;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
+import blue.origami.transpiler.type.Ty;
 
 public class FunctionContext {
 

@@ -9,14 +9,10 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.Data$;
-import blue.origami.transpiler.DataTy;
-import blue.origami.transpiler.FuncTy;
-import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
@@ -43,6 +39,10 @@ import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.ListTy;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
 public class AsmSection implements TCodeSection, Opcodes {
@@ -648,7 +648,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		for (int i = 0; i < fieldNames.length; i++) {
 			this.mBuilder.dup();
 			inits[i].emitCode(env, this);
-			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i], this.ts.desc(fieldTypes[i]));
+			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i] + i, this.ts.desc(fieldTypes[i]));
 		}
 		// ODebug.trace("FuncCode.asType %s", code.getType());
 
@@ -666,11 +666,11 @@ public class AsmSection implements TCodeSection, Opcodes {
 				true);
 		return;
 	}
-
-	private void emitSugar(TEnv env, Code code, Ty ret) {
-		Code sugar = env.catchCode(() -> code.asType(env, ret));
-		sugar.emitCode(env, this);
-	}
+	//
+	// private void emitSugar(TEnv env, Code code, Ty ret) {
+	// Code sugar = env.catchCode(() -> code.asType(env, ret));
+	// sugar.emitCode(env, this);
+	// }
 
 	@Override
 	public void pushGet(TEnv env, GetCode code) {

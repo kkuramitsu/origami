@@ -5,10 +5,10 @@ import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
 import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.type.Ty;
 
 public class LetDecl extends SyntaxRule implements ParseRule {
 

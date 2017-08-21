@@ -76,6 +76,18 @@ public class OConsole {
 		}
 	}
 
+	public static void beginBold(StringBuilder sb) {
+		if (isColored) {
+			sb.append("\u001b[1m");
+		}
+	}
+
+	public static void endBold(StringBuilder sb) {
+		if (isColored) {
+			sb.append("\u001b[00m");
+		}
+	}
+
 	public static void beginColor(StringBuilder sb, int c) {
 		if (isColored) {
 			sb.append("\u001b[00;" + c + "m");

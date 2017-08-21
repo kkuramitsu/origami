@@ -1,7 +1,20 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import blue.origami.transpiler.TArrays;
+import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Template;
+import blue.origami.transpiler.Transpiler;
+import blue.origami.transpiler.VarDomain;
+import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.FuncCode;
+import blue.origami.transpiler.code.NameCode;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class FuncTy extends Ty {
@@ -117,8 +130,70 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(CodeType<C> codeType) {
+	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType(this);
+	}
+
+	@Override
+	public Template findMap(TEnv env, Ty ty) {
+		if (ty instanceof FuncTy) {
+			FuncTy toTy = (FuncTy) ty;
+			if (this.getParamSize() == toTy.getParamSize()) {
+				Ty[] fromTys = this.getParamTypes();
+				Ty[] toTys = toTy.getParamTypes();
+				int cost = 0;
+				for (int i = 0; i < fromTys.length; i++) {
+					cost = Math.max(cost, env.mapCost(env, toTys[i], fromTys[i]));
+					if (cost >= CastCode.STUPID) {
+						return null;
+					}
+				}
+				cost = Math.max(cost, env.mapCost(env, this.getReturnType(), toTy.getReturnType()));
+				if (cost < CastCode.STUPID) {
+					return this.genFuncConv(env, this, toTy).setMapCost(cost);
+				}
+			}
+		}
+		return null;
+	}
+
+	public static String mapKey(Ty fromTy, Ty toTy) {
+		StringBuilder sb = new StringBuilder();
+		if (fromTy.isFunc()) {
+			sb.append("(");
+			fromTy.strOut(sb);
+			sb.append(")");
+		} else {
+			fromTy.strOut(sb);
+		}
+		sb.append("->");
+		if (toTy.isFunc()) {
+			sb.append("(");
+			toTy.strOut(sb);
+			sb.append(")");
+		} else {
+			toTy.strOut(sb);
+		}
+		return sb.toString();
+	}
+
+	public Template genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
+		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
+		Transpiler tr = env.getTranspiler();
+		String[] names = { "_f" };
+		Ty[] params = { fromTy };
+
+		Ty[] fromTypes = fromTy.getParamTypes();
+		Ty[] toTypes = toTy.getParamTypes();
+		String[] fnames = TArrays.names(toTypes.length);
+		List<Code> l = new ArrayList<>();
+		l.add(new NameCode("_f"));
+		for (int c = 0; c < toTy.getParamSize(); c++) {
+			l.add(new CastCode(fromTypes[c], new NameCode(String.valueOf((char) c))));
+		}
+		Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
+		body = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);
+		return tr.defineFunction(mapKey(fromTy, toTy), names, params, toTy, body);
 	}
 
 }

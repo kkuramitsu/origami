@@ -1,17 +1,23 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.FuncTy;
+import java.util.List;
+
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.VarTy;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.StringCombinator;
 
 public class ApplyCode extends CodeN {
 	public ApplyCode(Code... values) {
 		super(values);
+	}
+
+	public ApplyCode(List<Code> l) {
+		this(l.toArray(new Code[l.size()]));
 	}
 
 	@Override

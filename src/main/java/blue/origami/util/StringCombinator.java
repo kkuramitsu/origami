@@ -16,8 +16,10 @@
 
 package blue.origami.util;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.BaseStream;
 
 import blue.origami.nez.ast.LocaleFormat;
 
@@ -46,6 +48,19 @@ public interface StringCombinator {
 			sb.append("'");
 			sb.append(o);
 			sb.append("'");
+		} else if (o instanceof BaseStream) {
+			sb.append("[");
+			@SuppressWarnings("unchecked")
+			Iterator<Object> it = ((BaseStream<Object, ?>) o).iterator();
+			int c = 0;
+			while (it.hasNext()) {
+				if (c > 0) {
+					sb.append(",");
+				}
+				appendQuoted(sb, it.next());
+				c++;
+			}
+			sb.append("]");
 		} else {
 			sb.append(o);
 		}

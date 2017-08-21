@@ -2,7 +2,13 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
-public class SourceType extends CodeType<String> {
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.SimpleTy;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.TypeMap;
+
+public class SourceType extends TypeMap<String> {
 
 	SourceSection head;
 

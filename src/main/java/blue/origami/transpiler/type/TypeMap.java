@@ -1,13 +1,16 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-public abstract class CodeType<C> {
+import blue.origami.transpiler.NameHint;
+import blue.origami.transpiler.TEnv;
+
+public abstract class TypeMap<C> {
 	protected TEnv env;
 	protected final HashMap<String, C> typeMap = new HashMap<>();
 
-	public CodeType(TEnv env) {
+	public TypeMap(TEnv env) {
 		this.env = env;
 	}
 
@@ -72,7 +75,6 @@ public abstract class CodeType<C> {
 
 	public final C mapType(FuncTy funcTy) {
 		String key = this.key(funcTy);
-		System.out.println(":::::" + key);
 		C c = this.typeMap.get(key);
 		if (c == null) {
 			c = this.gen(funcTy);

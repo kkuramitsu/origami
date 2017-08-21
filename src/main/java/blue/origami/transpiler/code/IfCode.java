@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.StringCombinator;
 
 public class IfCode extends CodeN {

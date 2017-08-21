@@ -4,11 +4,11 @@ import blue.origami.transpiler.CodeTemplate;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.StringCombinator;
 
 public class CastCode extends Code1 implements CallCode {
-	public CastCode(Ty ret, TConvTemplate tp, Code inner) {
+	public CastCode(Ty ret, Template tp, Code inner) {
 		super(ret, inner);
 		this.setTemplate(tp);
 	}
@@ -32,9 +32,9 @@ public class CastCode extends Code1 implements CallCode {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.tp == null) {
-			return this.getInner().castType(env, ret);
+			return this.getInner().asType(env, this.getType()).castType(env, ret);
 		}
-		return this;
+		return this.castType(env, ret);
 	}
 
 	@Override
@@ -63,25 +63,13 @@ public class CastCode extends Code1 implements CallCode {
 	public static class TConvTemplate extends CodeTemplate {
 
 		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped0, Ty.tUntyped0, STUPID, "%s");
-		// fields
-		private int mapCost;
 
 		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
 			super(name, returnType, new Ty[] { fromType }, template);
-			this.mapCost = mapCost;
-		}
-
-		public int mapCost() {
-			return this.mapCost;
+			this.setMapCost(mapCost);
 		}
 
 	}
-
-	// public static class TVarCastCode extends CastCode {
-	// public TVarCastCode(Ty ret, Code inner) {
-	// super(ret, null, inner);
-	// }
-	// }
 
 	public static class TBoxCode extends CastCode {
 

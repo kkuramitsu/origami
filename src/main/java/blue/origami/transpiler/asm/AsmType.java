@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -15,21 +18,21 @@ import org.objectweb.asm.tree.FieldNode;
 
 import blue.origami.konoha5.Data$;
 import blue.origami.konoha5.Func;
-import blue.origami.transpiler.CodeType;
-import blue.origami.transpiler.DataTy;
-import blue.origami.transpiler.FuncTy;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.TypeMap;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
-public class AsmType extends CodeType<Class<?>> implements Opcodes {
+public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 
 	public AsmType(TEnv env) {
@@ -54,28 +57,43 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 		this.reg("{}", blue.origami.konoha5.Data$.class);
 		this.reg("Data$", blue.origami.konoha5.Data$.class);
 
-		this.reg("ListI", blue.origami.konoha5.List$Int.class);
-		this.reg("List'I", blue.origami.konoha5.List$Int.class);
 		this.reg("List", blue.origami.konoha5.List$.class);
 		this.reg("List'", blue.origami.konoha5.List$.class);
+		this.reg("ListI", blue.origami.konoha5.List$Int.class);
+		this.reg("List'I", blue.origami.konoha5.List$Int.class);
+
+		this.reg("Stream", Stream.class);
+		this.reg("StreamI", IntStream.class);
+		this.reg("StreamD", DoubleStream.class);
+
+		this.reg("Dict", blue.origami.konoha5.Dict$.class);
+		this.reg("Dict'", blue.origami.konoha5.Dict$.class);
 
 		this.reg(Ty.tOption(Ty.tInt), Integer.class);
 		this.reg(Ty.tList(Ty.tFloat), Double.class);
 
 		// Func
-		this.reg(Ty.tFunc(Ty.tBool), Func.FuncBool.class);
+		this.reg("V->I", Func.FuncBool.class);
 		this.reg(Ty.tFunc(Ty.tVoid, Ty.tBool), Func.FuncBoolVoid.class);
 		this.reg(Ty.tFunc(Ty.tBool, Ty.tBool), Func.FuncBoolBool.class);
 		this.reg(Ty.tFunc(Ty.tInt, Ty.tBool), Func.FuncBoolInt.class);
 		this.reg(Ty.tFunc(Ty.tFloat, Ty.tBool), Func.FuncBoolFloat.class);
 		this.reg(Ty.tFunc(Ty.tString, Ty.tBool), Func.FuncBoolStr.class);
 		//
-		this.reg(Ty.tFunc(Ty.tInt), Func.FuncInt.class);
-		this.reg(Ty.tFunc(Ty.tVoid, Ty.tInt), Func.FuncIntVoid.class);
-		this.reg(Ty.tFunc(Ty.tBool, Ty.tInt), Func.FuncIntBool.class);
-		this.reg(Ty.tFunc(Ty.tInt, Ty.tInt), Func.FuncIntInt.class);
-		this.reg(Ty.tFunc(Ty.tFloat, Ty.tInt), Func.FuncIntFloat.class);
-		this.reg(Ty.tFunc(Ty.tString, Ty.tInt), Func.FuncIntStr.class);
+		this.reg("V->I", Func.FuncInt.class);
+		this.reg("I->V", Func.FuncIntVoid.class);
+		this.reg("I->Z", Func.FuncIntBool.class);
+		this.reg("I->I", Func.FuncIntInt.class);
+		this.reg("I->D", Func.FuncIntFloat.class);
+		this.reg("I->O", Func.FuncIntObj.class);
+		this.reg("II->I", Func.FuncIntIntInt.class);
+		//
+		this.reg("V->O", Func.FuncInt.class);
+		this.reg("O->V", Func.FuncIntVoid.class);
+		this.reg("O->Z", Func.FuncIntBool.class);
+		this.reg("O->I", Func.FuncIntFloat.class);
+		this.reg("O->O", Func.FuncIntFloat.class);
+		this.reg("O->O", Func.FuncIntInt.class);
 	}
 
 	@Override
@@ -104,6 +122,11 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 
 	String desc(Ty t) {
 		return this.ti(t).getDescriptor();
+	}
+
+	String descFunc(Ty t) {
+		String s = this.desc(t);
+		return s.length() > 1 ? "O" : s;
 	}
 
 	String desc(Ty ret, Ty... paramTypes) {
@@ -139,9 +162,9 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 	protected String key(FuncTy funcTy) {
 		StringBuilder sb = new StringBuilder();
 		StringCombinator.joins(sb,
-				Arrays.stream(funcTy.getParamTypes()).map(ty -> this.desc(ty)).toArray(String[]::new), "");
+				Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new), "");
 		sb.append("->");
-		sb.append(this.desc(funcTy.getReturnType()));
+		sb.append(this.descFunc(funcTy.getReturnType()));
 		return sb.toString();
 	}
 
@@ -258,7 +281,7 @@ public class AsmType extends CodeType<Class<?>> implements Opcodes {
 				new String[] { Type.getInternalName(funcType) });
 
 		for (int i = 0; i < fieldNames.length; i++) {
-			FieldNode fn = new FieldNode(ACC_PUBLIC, fieldNames[i], this.desc(fieldTypes[i]), null, null);
+			FieldNode fn = new FieldNode(ACC_PUBLIC, fieldNames[i] + i, this.desc(fieldTypes[i]), null, null);
 			fn.accept(cw1);
 		}
 		addDefaultConstructor(cw1, Object.class);

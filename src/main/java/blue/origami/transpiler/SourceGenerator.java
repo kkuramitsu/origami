@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.type.Ty;
 
 public class SourceGenerator extends Generator {
 	protected SourceType ts;

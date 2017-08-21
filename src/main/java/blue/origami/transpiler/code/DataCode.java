@@ -1,12 +1,12 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 

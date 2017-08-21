@@ -5,9 +5,9 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
 public class SyntaxRule extends LoggerRule implements Symbols {

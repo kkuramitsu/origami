@@ -3,13 +3,14 @@ package blue.origami.transpiler.code;
 import java.util.Iterator;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -116,7 +117,7 @@ interface CodeAPI {
 		if (self.isUntyped() || ret.accept(self)) {
 			return self;
 		}
-		TConvTemplate tt = env.findTypeMap(env, f, ret);
+		Template tt = env.findTypeMap(env, f, ret);
 		if (tt == TConvTemplate.Stupid) {
 			return new ErrorCode(self, TFmt.type_error_YY0_YY1, f, ret);
 		}

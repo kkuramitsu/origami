@@ -6,15 +6,15 @@ import java.util.TreeMap;
 import blue.origami.konoha5.Func.FuncStrObj;
 import blue.origami.util.StringCombinator;
 
-public class Dict extends TreeMap<String, Object> implements FuncStrObj, StringCombinator {
+public class Dict$ extends TreeMap<String, Object> implements FuncStrObj, StringCombinator {
 	private static final long serialVersionUID = -827646422601520488L;
 	private boolean isMutable;
 
-	public Dict() {
+	public Dict$() {
 		this(false);
 	}
 
-	public Dict(boolean isMutable) {
+	public Dict$(boolean isMutable) {
 		this.isMutable = true;
 	}
 

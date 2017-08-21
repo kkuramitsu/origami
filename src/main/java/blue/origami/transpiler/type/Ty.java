@@ -1,9 +1,12 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Template;
+import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
@@ -31,6 +34,12 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tAuto = new SimpleTy("auto");
 
 	private static HashMap<String, Ty> typeMap = new HashMap<>();
+
+	static {
+		typeMap.put("Stream", new MonadTy("Stream", tVoid));
+		typeMap.put("Dict", new DictTy("Dict", tVoid));
+		typeMap.put("Dict'", new DictTy("Dict'", tVoid));
+	}
 
 	/* DynamicType */
 
@@ -65,6 +74,20 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return t;
 	}
 
+	public static final boolean isMonad(String name) {
+		return typeMap.get(name) instanceof MonadTy;
+	}
+
+	public static final Ty tMonad(String name, Ty ty) {
+		if (ty.isDynamic()) {
+			return new ListTy(ty).asImmutable();
+		}
+		MonadTy monad = (MonadTy) typeMap.get(name);
+		assert (monad != null) : "undefined " + name;
+		String key = name + "[" + ty.key() + "]";
+		return reg(key, () -> monad.newType(name, ty));
+	}
+
 	public static final ListTy tImList(Ty ty) {
 		if (ty.isDynamic()) {
 			return new ListTy(ty).asImmutable();
@@ -77,20 +100,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 			return new ListTy(ty);
 		}
 		return (ListTy) reg(ty + "[]", () -> new ListTy(ty));
-	}
-
-	public static final DictTy tImDict(Ty ty) {
-		if (ty.isDynamic()) {
-			return new DictTy(ty).asImmutable();
-		}
-		return (DictTy) reg("Dict'[" + ty + "]", () -> new DictTy(ty).asImmutable());
-	}
-
-	public static final DictTy tDict(Ty ty) {
-		if (ty.isDynamic()) {
-			return new DictTy(ty);
-		}
-		return (DictTy) reg("Dict[" + ty + "]", () -> new DictTy(ty));
 	}
 
 	public static final DataTy tImRecord(String... names) {
@@ -154,6 +163,10 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this.acceptTy(true, code.getType(), true);
 	}
 
+	// public abstract boolean isHidden();
+	//
+	// public abstract Ty getMajorType();
+
 	public abstract boolean isDynamic();
 
 	public final static boolean isDynamic(Ty... p) {
@@ -184,19 +197,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this;
 	}
 
-	static HashMap<String, Ty> hiddenMap = null;
-
-	public static Ty getHidden1(String tsig) {
-		if (hiddenMap == null) {
-			hiddenMap = new HashMap<>();
-			hiddenMap.put("()", tVoid);
-			hiddenMap.put("char", tChar);
-			hiddenMap.put("a", Ty.tVar("a"));
-			hiddenMap.put("b", Ty.tVar("b"));
-		}
-		return hiddenMap.get(tsig);
-	}
-
 	public abstract String key();
 
 	@Override
@@ -208,7 +208,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return ty == Ty.tThis ? dt : ty;
 	}
 
-	public abstract <C> C mapType(CodeType<C> codeType);
+	public abstract <C> C mapType(TypeMap<C> codeType);
 
 }
 
@@ -270,56 +270,12 @@ interface TypeApi {
 		return null;
 	}
 
-}
-
-class SimpleTy extends Ty {
-	private String name;
-
-	SimpleTy(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public Code getDefaultValue() {
+	public default Template findMap(TEnv env, Ty toTy) {
 		return null;
 	}
 
-	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
-		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, updated));
-		}
-		return this == codeTy;
-	}
-
-	@Override
-	public boolean hasVar() {
-		return false;
-	}
-
-	@Override
-	public boolean isDynamic() {
-		return false;
-	}
-
-	@Override
-	public Ty nomTy() {
-		return this;
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append(this.name);
-	}
-
-	@Override
-	public String key() {
-		return this.name;
-	}
-
-	@Override
-	public <C> C mapType(CodeType<C> codeType) {
-		return codeType.mapType(this.name);
+	public default Template findMapFrom(TEnv env, Ty fromTy) {
+		return null;
 	}
 
 }

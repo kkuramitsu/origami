@@ -1,13 +1,13 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.DataTy;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
-import blue.origami.transpiler.VarTy;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarTy;
 
 public class SetCode extends CodeN {
 	final String name;

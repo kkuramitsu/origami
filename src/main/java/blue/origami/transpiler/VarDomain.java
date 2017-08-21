@@ -1,6 +1,9 @@
 package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarTy;
 
 public class VarDomain {
 	VarTy[] dom;
@@ -31,7 +34,7 @@ public class VarDomain {
 				break;
 			}
 			Ty t = this.dom[i].nomTy();
-			if (t.isUntyped()) {
+			if (t.isVarRef()) {
 				mapCost += CastCode.STUPID;
 			}
 			if (t == Ty.tBool || t == Ty.tInt || t == Ty.tFloat) {

@@ -1,5 +1,7 @@
 package blue.origami.konoha5;
 
+import java.util.stream.IntStream;
+
 import blue.origami.konoha5.Func.FuncIntVoid;
 import blue.origami.util.StringCombinator;
 
@@ -46,6 +48,11 @@ public class Range$Int extends List$Int implements StringCombinator {
 		for (int i = this.start; i <= this.until; i++) {
 			f.apply(i);
 		}
+	}
+
+	@Override
+	public IntStream stream() {
+		return IntStream.rangeClosed(this.start, this.until);
 	}
 
 }

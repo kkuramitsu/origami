@@ -1,5 +1,6 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.VarDomain;
 import blue.origami.util.StringCombinator;
 
 public class OptionTy extends Ty {
@@ -68,7 +69,7 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(CodeType<C> codeType) {
+	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType("Option", this.innerTy);
 	}
 

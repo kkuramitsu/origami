@@ -139,7 +139,7 @@ public class APIs {
 	private static int testCount = 0;
 	private static int passCount = 0;
 
-	public final static boolean _assert(boolean a) {
+	public final static boolean testAssert(boolean a) {
 		testCount++;
 		assert (a);
 		passCount++;

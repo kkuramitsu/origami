@@ -3,6 +3,7 @@ package blue.origami.transpiler;
 import java.lang.reflect.Array;
 
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.type.Ty;
 
 public class TArrays {
 	// avoid duplicated empty array;
@@ -48,6 +49,14 @@ public class TArrays {
 		T[] v = (T[]) Array.newInstance(values.getClass().getComponentType(), values.length - 1);
 		System.arraycopy(values, 0, v, 0, v.length);
 		return v;
+	}
+
+	public static String[] names(int length) {
+		String[] names = new String[length];
+		for (int c = 0; c < length; c++) {
+			names[c] = String.valueOf((char) c);
+		}
+		return names;
 	}
 
 }

@@ -1,4 +1,4 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -6,6 +6,8 @@ import java.util.TreeSet;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
@@ -238,7 +240,7 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(CodeType<C> codeType) {
+	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType(this);
 	}
 

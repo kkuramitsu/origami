@@ -4,10 +4,10 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.TypeCode;
+import blue.origami.transpiler.type.Ty;
 
 public class DataType implements ParseRule {
 	boolean isMutable = true;

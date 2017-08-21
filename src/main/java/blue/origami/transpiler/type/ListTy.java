@@ -1,5 +1,6 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataListCode;
 import blue.origami.util.StringCombinator;
@@ -58,7 +59,7 @@ public class ListTy extends MutableTy {
 	}
 
 	@Override
-	public <C> C mapType(CodeType<C> codeType) {
+	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType(this.isImmutable ? "List" : "List'", this.getInnerTy());
 	}
 

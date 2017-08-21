@@ -25,6 +25,7 @@ import blue.origami.transpiler.rule.DictExpr;
 import blue.origami.transpiler.rule.ListExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -244,11 +245,9 @@ public class Transpiler extends TEnv {
 			sb.append("(");
 			StringCombinator.append(sb, code.getType());
 			sb.append(") ");
-			if (result instanceof String) {
-				StringCombinator.appendQuoted(sb, result);
-			} else {
-				sb.append(OConsole.bold("" + result));
-			}
+			OConsole.beginBold(sb);
+			StringCombinator.appendQuoted(sb, result);
+			OConsole.endBold(sb);
 			OConsole.println(sb.toString());
 		}
 	}
@@ -292,6 +291,22 @@ public class Transpiler extends TEnv {
 	}
 
 	// FuncDecl
+
+	public Template defineFunction(String name, String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+		final TEnv env = this.newEnv();
+		final String lname = this.generator.safeName(name);
+		final CodeTemplate tp = this.generator.newFuncTemplate(env, lname, returnType, paramTypes);
+		this.add(name, tp);
+		FunctionContext fcx = new FunctionContext();
+		env.add(FunctionContext.class, fcx);
+		for (int i = 0; i < paramNames.length; i++) {
+			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
+		}
+		Code code = env.catchCode(() -> body.asType(env, returnType));
+		tp.nomAll();
+		this.generator.defineFunction(this, false, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
+		return tp;
+	}
 
 	public Template defineFunction(boolean isPublic, String name, VarDomain dom, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Tree<?> body) {

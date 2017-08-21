@@ -1,9 +1,12 @@
 package blue.origami.konoha5;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import blue.origami.konoha5.Func.FuncIntBool;
+import blue.origami.konoha5.Func.FuncIntFloat;
 import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
@@ -95,24 +98,47 @@ public class List$Int implements StringCombinator, FuncIntInt {
 		}
 	}
 
-	private IntStream stream() {
+	public IntStream stream() {
 		return Arrays.stream(this.arrays, this.start, this.end);
 	}
 
-	public List$Int filter(FuncIntBool f) {
-		return new List$Int(this.stream().filter(f).toArray());
+	public static final IntStream downCast(Object o) {
+		if (o instanceof IntStream) {
+			return (IntStream) o;
+		}
+		return ((List$Int) o).stream();
 	}
 
-	public List$Int map(FuncIntInt f) {
-		return new List$Int(this.stream().map(f).toArray());
+	public static final List$Int list(IntStream s) {
+		return new List$Int(s.toArray());
 	}
 
-	public List$ map(FuncIntObj f) {
-		return new List$(this.stream().mapToObj(f).toArray());
+	public static final void forEach(IntStream s, FuncIntVoid f) {
+		s.forEach(f);
 	}
 
-	public int reduce(int acc, FuncIntIntInt f) {
-		return this.stream().reduce(acc, f);
+	public static final IntStream filter(IntStream s, FuncIntBool f) {
+		return s.filter((n) -> f.applyZ(n));
+	}
+
+	public static final IntStream map(IntStream s, FuncIntInt f) {
+		return s.map(f);
+	}
+
+	public static final Stream<Object> map(IntStream s, FuncIntObj f) {
+		return s.mapToObj(f);
+	}
+
+	public static final DoubleStream map(IntStream s, FuncIntFloat f) {
+		return s.mapToDouble(f);
+	}
+
+	public static final IntStream flatMap(IntStream s, FuncIntObj f) {
+		return s.flatMap(x -> downCast(f.apply(x)));
+	}
+
+	public static final int reduce(IntStream s, int acc, FuncIntIntInt f) {
+		return s.reduce(acc, f);
 	}
 
 }

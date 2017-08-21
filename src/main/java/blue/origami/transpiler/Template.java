@@ -1,14 +1,21 @@
 package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.Ty;
 
 public abstract class Template {
 	public final static Template Null = null;
+	protected boolean isPure;
+	protected boolean isFaulty;
+	protected short cost = 0;
+
 	// Skeleton
 	protected boolean isGeneric;
 	protected final String name;
 	protected Ty[] paramTypes;
 	protected Ty returnType;
+
 	// private final String template;
 
 	public Template(String name, Ty returnType, Ty... paramTypes) {
@@ -39,6 +46,33 @@ public abstract class Template {
 		return this.paramTypes;
 	}
 
+	public final boolean isPure() {
+		return this.isPure;
+	}
+
+	public Template asPure(boolean pure) {
+		this.isPure = pure;
+		return this;
+	}
+
+	public final boolean isFaulty() {
+		return this.isFaulty;
+	}
+
+	public Template asFaulty(boolean faulty) {
+		this.isFaulty = faulty;
+		return this;
+	}
+
+	public int mapCost() {
+		return this.cost;
+	}
+
+	public Template setMapCost(int cost) {
+		this.cost = (short) cost;
+		return this;
+	}
+
 	public abstract String getDefined();
 
 	public boolean isExpired() {
@@ -61,6 +95,9 @@ public abstract class Template {
 		}
 		sb.append(":");
 		sb.append(this.getReturnType());
+		if (!this.isPure()) {
+			sb.append("@");
+		}
 		return sb.toString();
 	}
 

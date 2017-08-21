@@ -851,7 +851,7 @@ Type =
 TSUFFIX = 
     / "*"   #ArrayType
     / "?"   #OptionType
-    / "->" $param(PrimaryType) #FuncType
+    / "->" $type(PrimaryType) #FuncType
 
 PrimaryType = 
 	VarType
@@ -898,7 +898,7 @@ UnitType = '[' {
 FuncType = { 
 	"(" $param(TypeParams) ")" 
 	"->" 
-	$base(Type) 
+	$type(Type) 
 	#FuncType 
 }
 

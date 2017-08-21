@@ -13,8 +13,8 @@ import blue.origami.transpiler.Generator;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
 public class AsmGenerator extends Generator implements Opcodes {

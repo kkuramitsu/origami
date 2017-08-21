@@ -1,5 +1,7 @@
 package blue.origami.transpiler;
 
+import blue.origami.transpiler.type.Ty;
+
 public interface FuncParam {
 
 	public String[] getParamNames();

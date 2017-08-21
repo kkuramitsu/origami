@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.type.Ty;
 
 public class NoneCode extends CommonCode implements ValueCode {
 

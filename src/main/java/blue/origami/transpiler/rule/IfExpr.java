@@ -3,10 +3,10 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.type.Ty;
 
 public class IfExpr implements ParseRule, Symbols {
 

@@ -1,6 +1,8 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.NameHint;
+import blue.origami.transpiler.VarDomain;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -124,7 +126,7 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(CodeType<C> codeType) {
+	public <C> C mapType(TypeMap<C> codeType) {
 		if (this.innerTy == null) {
 			return codeType.mapType("a");
 		} else {

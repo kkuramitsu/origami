@@ -7,11 +7,11 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.Ty;
 import blue.origami.transpiler.VarDomain;
-import blue.origami.transpiler.VarTy;
 import blue.origami.transpiler.code.CastCode.TBoxCode;
 import blue.origami.transpiler.code.CastCode.TUnboxCode;
+import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 

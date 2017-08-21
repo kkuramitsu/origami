@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.ListTy;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Ty;
+import blue.origami.transpiler.type.ListTy;
+import blue.origami.transpiler.type.Ty;
 
 public class DataListCode extends DataCode {
 
