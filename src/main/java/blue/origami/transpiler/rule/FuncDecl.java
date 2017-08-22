@@ -5,10 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TFunction;
 import blue.origami.transpiler.TLog;
-import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 
 public class FuncDecl extends SyntaxRule implements ParseRule {
 

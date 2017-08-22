@@ -8,6 +8,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.StringCombinator;
 
@@ -52,7 +53,7 @@ public class ApplyCode extends CodeN {
 				p[i - 1] = this.args[i].getType();
 			}
 			Ty funcType = Ty.tFunc(ret, p);
-			firstType.acceptTy(bSUB, funcType, bUPDATE);
+			firstType.acceptTy(bSUB, funcType, VarLogger.Update);
 			this.setType(ret);
 			return this;
 		}

@@ -7,7 +7,6 @@ import java.util.TreeSet;
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
@@ -169,7 +168,7 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
+	public Ty staticTy() {
 		return this;
 	}
 
@@ -199,26 +198,26 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public Ty dupTy(VarDomain dom) {
+	public Ty dupVarType(VarDomain dom) {
 		return this;
 	}
 
 	// f(b)
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof VarTy) {
 			if (((VarTy) codeTy).isParameter()) {
 				DataTy pt = Ty.tData().asParameter();
 				pt.addFields(this.fields);
-				return (codeTy.acceptTy(false, pt, updated));
+				return (codeTy.acceptTy(false, pt, logs));
 			}
-			return (codeTy.acceptTy(false, this, updated));
+			return (codeTy.acceptTy(false, this, logs));
 		}
 		if (codeTy instanceof DataTy) {
 			DataTy dt = (DataTy) codeTy;
 			// f(b) b: isParameter = true;
 			if (dt.isParameter) {
-				if (updated) {
+				if (logs.isUpdate()) {
 					dt.addFields(this.fields);
 				}
 				return true;

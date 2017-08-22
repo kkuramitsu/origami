@@ -28,6 +28,8 @@ public class ClassType implements ParseRule {
 			case "bool":
 			case "boolean":
 				return Ty.tBool;
+			case "byte":
+				return Ty.tByte;
 			case "char":
 				return Ty.tChar;
 			case "int":

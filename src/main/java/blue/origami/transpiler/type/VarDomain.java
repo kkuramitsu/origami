@@ -1,9 +1,7 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.type.DataTy;
-import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarTy;
 
 public class VarDomain {
 	VarTy[] dom;
@@ -27,13 +25,17 @@ public class VarDomain {
 		return null;
 	}
 
+	public static Ty newVarType(VarDomain dom, String name) {
+		return dom == null ? Ty.tAnyRef : dom.newVarType(name);
+	}
+
 	public int mapCost() {
 		int mapCost = 0;
 		for (int i = 0; i < this.dom.length; i++) {
 			if (this.dom[i] == null) {
 				break;
 			}
-			Ty t = this.dom[i].nomTy();
+			Ty t = this.dom[i].staticTy();
 			if (t.isVarRef()) {
 				mapCost += CastCode.STUPID;
 			}
@@ -50,7 +52,7 @@ public class VarDomain {
 			if (this.dom[i] == null) {
 				break;
 			}
-			Ty ty = this.dom[i].nomTy();
+			Ty ty = this.dom[i].staticTy();
 			if (ty == this.dom[i]) {
 				this.dom[i].rename(String.valueOf(c++));
 			}

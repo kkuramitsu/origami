@@ -8,7 +8,6 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
@@ -86,18 +85,18 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Ty dupTy(VarDomain dom) {
+	public Ty dupVarType(VarDomain dom) {
 		if (this.name == null && this.hasVar()) {
-			return Ty.tFunc(this.returnType.dupTy(dom),
-					Arrays.stream(this.paramTypes).map(x -> x.dupTy(dom)).toArray(Ty[]::new));
+			return Ty.tFunc(this.returnType.dupVarType(dom),
+					Arrays.stream(this.paramTypes).map(x -> x.dupVarType(dom)).toArray(Ty[]::new));
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, updated));
+			return (codeTy.acceptTy(false, this, logs));
 		}
 		if (codeTy instanceof FuncTy) {
 			FuncTy ft = (FuncTy) codeTy;
@@ -105,11 +104,11 @@ public class FuncTy extends Ty {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptTy(false, ft.paramTypes[i], updated)) {
+				if (!this.paramTypes[i].acceptTy(false, ft.paramTypes[i], logs)) {
 					return false;
 				}
 			}
-			return this.returnType.acceptTy(false, ft.returnType, updated);
+			return this.returnType.acceptTy(false, ft.returnType, logs);
 		}
 		return false;
 	}
@@ -120,10 +119,10 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
+	public Ty staticTy() {
 		if (this.name == null) {
-			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.nomTy()).toArray(Ty[]::new);
-			Ty ret = this.returnType.nomTy();
+			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.staticTy()).toArray(Ty[]::new);
+			Ty ret = this.returnType.staticTy();
 			return Ty.tFunc(ret, p);
 		}
 		return this;
@@ -135,23 +134,36 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Template findMap(TEnv env, Ty ty) {
+	public int costMap(TEnv env, Ty ty) {
 		if (ty instanceof FuncTy) {
 			FuncTy toTy = (FuncTy) ty;
 			if (this.getParamSize() == toTy.getParamSize()) {
+				VarLogger logger = new VarLogger();
 				Ty[] fromTys = this.getParamTypes();
 				Ty[] toTys = toTy.getParamTypes();
 				int cost = 0;
 				for (int i = 0; i < fromTys.length; i++) {
-					cost = Math.max(cost, env.mapCost(env, toTys[i], fromTys[i]));
+					cost = Math.max(cost, env.mapCost(env, toTys[i], fromTys[i], logger));
 					if (cost >= CastCode.STUPID) {
-						return null;
+						logger.abort();
+						return CastCode.STUPID;
 					}
 				}
-				cost = Math.max(cost, env.mapCost(env, this.getReturnType(), toTy.getReturnType()));
-				if (cost < CastCode.STUPID) {
-					return this.genFuncConv(env, this, toTy).setMapCost(cost);
-				}
+				cost = Math.max(cost, env.mapCost(env, this.getReturnType(), toTy.getReturnType(), logger));
+				logger.abort();
+				return cost;
+			}
+		}
+		return CastCode.STUPID;
+	}
+
+	@Override
+	public Template findMap(TEnv env, Ty ty) {
+		if (ty instanceof FuncTy) {
+			FuncTy toTy = (FuncTy) ty;
+			int cost = this.costMap(env, ty);
+			if (cost < CastCode.STUPID) {
+				return this.genFuncConv(env, this, toTy).setMapCost(cost);
 			}
 		}
 		return null;

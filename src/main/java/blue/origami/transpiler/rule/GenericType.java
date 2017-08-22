@@ -22,9 +22,9 @@ public class GenericType implements ParseRule, Symbols {
 		case "Option":
 		case "Maybe":
 			return new TypeCode(Ty.tOption(p[0]));
-		case "Array":
+		case "List":
 			return new TypeCode(Ty.tImList(p[0]));
-		case "Array'":
+		case "List'":
 			return new TypeCode(Ty.tList(p[0]));
 		default:
 			if (Ty.isMonad(name)) {

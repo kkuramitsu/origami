@@ -3,10 +3,10 @@ package blue.origami.konoha5;
 import java.util.Map;
 import java.util.TreeMap;
 
-import blue.origami.konoha5.Func.FuncStrObj;
+import blue.origami.konoha5.Func.FuncStrObjVoid;
 import blue.origami.util.StringCombinator;
 
-public class Dict$ extends TreeMap<String, Object> implements FuncStrObj, StringCombinator {
+public class Dict$ extends TreeMap<String, Object> implements StringCombinator {
 	private static final long serialVersionUID = -827646422601520488L;
 	private boolean isMutable;
 
@@ -16,11 +16,6 @@ public class Dict$ extends TreeMap<String, Object> implements FuncStrObj, String
 
 	public Dict$(boolean isMutable) {
 		this.isMutable = true;
-	}
-
-	@Override
-	public Object apply(String key) {
-		return this.get(key);
 	}
 
 	@Override
@@ -50,6 +45,14 @@ public class Dict$ extends TreeMap<String, Object> implements FuncStrObj, String
 
 	public void seti(String key, Object value) {
 		this.put(key, value);
+	}
+
+	public List$ keys() {
+		return new List$(this.keySet().toArray());
+	}
+
+	public void forEach(FuncStrObjVoid f) {
+		this.forEach(f);
 	}
 
 }

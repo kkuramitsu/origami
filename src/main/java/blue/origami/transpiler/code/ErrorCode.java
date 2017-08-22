@@ -80,4 +80,9 @@ public class ErrorCode extends RuntimeException implements Code {
 		StringCombinator.appendQuoted(sb, this.log);
 	}
 
+	@Override
+	public String toString() {
+		return this.log.toString();
+	}
+
 }

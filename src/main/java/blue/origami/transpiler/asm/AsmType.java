@@ -46,14 +46,18 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	void loadType() {
-		this.reg(Ty.tUntyped0, Object.class);
+		// this.reg(Ty.tUntyped0, Object.class);
 		this.reg(Ty.tVar("a"), Object.class);
+		this.reg(Ty.tAnyRef, Object.class);
 		this.reg(Ty.tVoid, void.class);
 		this.reg(Ty.tBool, boolean.class);
 		this.reg(Ty.tChar, char.class);
 		this.reg(Ty.tInt, int.class);
 		this.reg(Ty.tFloat, double.class);
 		this.reg(Ty.tString, String.class);
+
+		this.reg("Option", Object.class);
+
 		this.reg("{}", blue.origami.konoha5.Data$.class);
 		this.reg("Data$", blue.origami.konoha5.Data$.class);
 
@@ -69,18 +73,12 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 		this.reg("Dict", blue.origami.konoha5.Dict$.class);
 		this.reg("Dict'", blue.origami.konoha5.Dict$.class);
 
-		this.reg(Ty.tOption(Ty.tInt), Integer.class);
-		this.reg(Ty.tList(Ty.tFloat), Double.class);
-
 		// Func
-		this.reg("V->I", Func.FuncBool.class);
-		this.reg(Ty.tFunc(Ty.tVoid, Ty.tBool), Func.FuncBoolVoid.class);
-		this.reg(Ty.tFunc(Ty.tBool, Ty.tBool), Func.FuncBoolBool.class);
-		this.reg(Ty.tFunc(Ty.tInt, Ty.tBool), Func.FuncBoolInt.class);
-		this.reg(Ty.tFunc(Ty.tFloat, Ty.tBool), Func.FuncBoolFloat.class);
-		this.reg(Ty.tFunc(Ty.tString, Ty.tBool), Func.FuncBoolStr.class);
-		//
+		this.reg("V->Z", Func.FuncBool.class);
 		this.reg("V->I", Func.FuncInt.class);
+		this.reg("V->D", Func.FuncFloat.class);
+		this.reg("V->O", Func.FuncObj.class);
+
 		this.reg("I->V", Func.FuncIntVoid.class);
 		this.reg("I->Z", Func.FuncIntBool.class);
 		this.reg("I->I", Func.FuncIntInt.class);
@@ -88,12 +86,19 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 		this.reg("I->O", Func.FuncIntObj.class);
 		this.reg("II->I", Func.FuncIntIntInt.class);
 		//
-		this.reg("V->O", Func.FuncInt.class);
-		this.reg("O->V", Func.FuncIntVoid.class);
-		this.reg("O->Z", Func.FuncIntBool.class);
-		this.reg("O->I", Func.FuncIntFloat.class);
-		this.reg("O->O", Func.FuncIntFloat.class);
-		this.reg("O->O", Func.FuncIntInt.class);
+		this.reg("D->V", Func.FuncFloatVoid.class);
+		this.reg("D->Z", Func.FuncFloatBool.class);
+		this.reg("D->I", Func.FuncFloatInt.class);
+		this.reg("D->O", Func.FuncFloatObj.class);
+		this.reg("D->D", Func.FuncFloatFloat.class);
+		this.reg("DD->D", Func.FuncFloatFloatFloat.class);
+		//
+		this.reg("O->V", Func.FuncObjVoid.class);
+		this.reg("O->Z", Func.FuncObjBool.class);
+		this.reg("O->I", Func.FuncObjInt.class);
+		this.reg("O->D", Func.FuncObjFloat.class);
+		this.reg("O->O", Func.FuncObjObj.class);
+		this.reg("OO->O", Func.FuncObjObjObj.class);
 	}
 
 	@Override
@@ -126,7 +131,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	String descFunc(Ty t) {
 		String s = this.desc(t);
-		return s.length() > 1 ? "O" : s;
+		return s.equals("Ljava/lang/Object;") ? "O" : s;
 	}
 
 	String desc(Ty ret, Ty... paramTypes) {

@@ -2,14 +2,13 @@ package blue.origami.transpiler.type;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.VarDomain;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class VarTy extends Ty {
 	private static int seq = 0;
 	private String varName;
-	private Ty innerTy;
+	Ty innerTy;
 	final int id;
 	private Tree<?> s;
 
@@ -44,11 +43,6 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean isUntyped() {
-		return false; // typed as variable types
-	}
-
-	@Override
 	public boolean isVarRef() {
 		return this.innerTy == null || this.innerTy.isVarRef();
 	}
@@ -59,8 +53,8 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public Ty dupTy(VarDomain dom) {
-		return this.innerTy == null ? dom.newVarType(this.varName) : this.innerTy.dupTy(dom);
+	public Ty dupVarType(VarDomain dom) {
+		return this.innerTy == null ? VarDomain.newVarType(dom, this.varName) : this.innerTy.dupVarType(dom);
 	}
 
 	@Override
@@ -69,8 +63,8 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
-		return this.innerTy == null ? this : this.innerTy.nomTy();
+	public Ty staticTy() {
+		return this.innerTy == null ? this : this.innerTy.staticTy();
 	}
 
 	private boolean lt(VarTy vt) {
@@ -78,33 +72,29 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (this.innerTy == null) {
 			if (codeTy instanceof VarTy) {
 				VarTy vt = ((VarTy) codeTy);
 				if (vt.innerTy != null) {
-					return this.acceptTy(sub, vt.innerTy, updated);
+					return this.acceptTy(sub, vt.innerTy, logs);
 				} else {
-					if (updated && this.id != vt.id) {
+					if (this.id != vt.id) {
 						if (this.lt(vt)) {
-							vt.innerTy = this;
+							logs.update(vt, this);
 						} else {
-							this.innerTy = vt;
+							logs.update(this, vt);
 						}
 					}
 					return true;
 				}
 			}
-			if (updated) {
-				if (this.varName != null) {
-					ODebug.trace("infer %s as %s", this.getName(), codeTy);
-				}
-				assert !(codeTy instanceof DictTy);
-				this.innerTy = codeTy;
+			if (logs.update(this, codeTy) && this.varName != null) {
+				ODebug.trace("infer %s as %s", this.getName(), codeTy);
 			}
 			return true;
 		}
-		return this.innerTy.acceptTy(sub, codeTy, updated);
+		return this.innerTy.acceptTy(sub, codeTy, logs);
 	}
 
 	@Override

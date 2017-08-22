@@ -3,7 +3,6 @@ package blue.origami.transpiler.type;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import blue.origami.transpiler.VarDomain;
 import blue.origami.util.OConsole;
 import blue.origami.util.StringCombinator;
 
@@ -46,8 +45,8 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public Ty dupTy(VarDomain dom) {
-		Ty inner = this.innerTy.dupTy(dom);
+	public Ty dupVarType(VarDomain dom) {
+		Ty inner = this.innerTy.dupVarType(dom);
 		if (inner != this.innerTy) {
 			return Ty.tMonad(this.name, inner);
 		}
@@ -60,8 +59,8 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
-		Ty ty = this.innerTy.nomTy();
+	public Ty staticTy() {
+		Ty ty = this.innerTy.staticTy();
 		if (this.innerTy != ty) {
 			return Ty.tMonad(this.name, ty);
 		}
@@ -69,19 +68,14 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof MonadTy && ((MonadTy) codeTy).equalsName(this.name)) {
-			return this.innerTy.acceptTy(false, codeTy.getInnerTy(), updated);
+			return this.innerTy.acceptTy(false, codeTy.getInnerTy(), logs);
 		}
 		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, updated));
+			return (codeTy.acceptTy(false, this, logs));
 		}
 		return false;
-	}
-
-	@Override
-	public boolean isUntyped() {
-		return this.innerTy.isUntyped();
 	}
 
 	@Override

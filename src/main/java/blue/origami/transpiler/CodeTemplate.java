@@ -17,7 +17,7 @@ public class CodeTemplate extends Template implements NameInfo {
 	}
 
 	public CodeTemplate(String template) {
-		this(template, Ty.tUntyped0, TArrays.emptyTypes, template);
+		this(template, Ty.tVoid, TArrays.emptyTypes, template);
 	}
 
 	@Override
@@ -26,8 +26,8 @@ public class CodeTemplate extends Template implements NameInfo {
 	}
 
 	public void nomAll() {
-		this.paramTypes = Arrays.stream(this.paramTypes).map(x -> x.nomTy()).toArray(Ty[]::new);
-		this.returnType = this.getReturnType().nomTy();
+		this.paramTypes = Arrays.stream(this.paramTypes).map(x -> x.staticTy()).toArray(Ty[]::new);
+		this.returnType = this.getReturnType().staticTy();
 	}
 
 	@Override

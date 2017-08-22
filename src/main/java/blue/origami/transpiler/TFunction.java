@@ -5,6 +5,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 
 public class TFunction extends Template implements NameInfo {
 	protected boolean isPublic = false;

@@ -26,6 +26,7 @@ import blue.origami.transpiler.rule.ListExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -91,7 +92,7 @@ public class Transpiler extends TEnv {
 		this.add("MutableRecordType", new DataType(true));
 
 		// type
-		this.add("?", Ty.tUntyped0);
+		// this.add("?", Ty.tUntyped0);
 		this.add("Bool", Ty.tBool);
 		this.add("Int", Ty.tInt);
 		this.add("Float", Ty.tFloat);
@@ -333,7 +334,7 @@ public class Transpiler extends TEnv {
 		this.verbose("Typed", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 		});
-		assert (!returnType.isUntyped());
+		// assert (!returnType.isUntyped());
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}

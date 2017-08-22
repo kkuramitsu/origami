@@ -7,10 +7,13 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.VarDomain;
-import blue.origami.transpiler.code.CastCode.TBoxCode;
-import blue.origami.transpiler.code.CastCode.TUnboxCode;
+import blue.origami.transpiler.code.CastCode.BoxCastCode;
+import blue.origami.transpiler.code.CastCode.FuncCastCode;
+import blue.origami.transpiler.code.CastCode.UnboxCastCode;
+import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
@@ -127,29 +130,31 @@ public class ExprCode extends CodeN implements CallCode {
 	private int checkMapCost(TEnv env, Ty ret, Template tp) {
 		int mapCost = 0;
 		VarDomain dom = null;
+		VarLogger logs = new VarLogger();
 		Ty[] p = tp.getParamTypes();
 		Ty codeRet = tp.getReturnType();
 		if (tp.isGeneric()) {
 			dom = new VarDomain(p.length + 1);
 			Ty[] gp = new Ty[p.length];
 			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupTy(dom);
+				gp[i] = p[i].dupVarType(dom);
 			}
 			p = gp;
-			codeRet = codeRet.dupTy(dom);
+			codeRet = codeRet.dupVarType(dom);
 		}
 		for (int i = 0; i < this.args.length; i++) {
-			mapCost += env.mapCost(env, this.args[i].getType(), p[i]);
+			mapCost += env.mapCost(env, this.args[i].getType(), p[i], logs);
 			if (mapCost >= CastCode.STUPID) {
 				return mapCost;
 			}
 		}
 		if (ret.isSpecific()) {
-			mapCost += env.mapCost(env, codeRet, ret);
+			mapCost += env.mapCost(env, codeRet, ret, logs);
 		}
 		if (dom != null) {
 			mapCost += dom.mapCost();
 		}
+		logs.abort();
 		return mapCost;
 	}
 
@@ -160,14 +165,20 @@ public class ExprCode extends CodeN implements CallCode {
 			VarDomain dom = new VarDomain(p.length + 1);
 			Ty[] gp = new Ty[p.length];
 			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupTy(dom);
+				gp[i] = p[i].dupVarType(dom);
 			}
-			ret = ret.dupTy(dom);
+			ret = ret.dupVarType(dom);
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, gp[i]);
 				if (p[i] instanceof VarTy) {
-					ODebug.trace("must upcast %s => %s", p[i], gp[i]);
-					this.args[i] = new TBoxCode(gp[i], this.args[i]);
+					ODebug.trace("must upcast %s => %s", gp[i], gp[i]);
+					this.args[i] = new BoxCastCode(gp[i], this.args[i]);
+				}
+				if (p[i] instanceof FuncTy && p[i].hasVar()) {
+					Ty anyTy = p[i].dupVarType(null); // AnyRef
+					Template conv = env.findTypeMap(env, gp[i], anyTy);
+					ODebug.trace("must funccast %s => %s :: %s", gp[i], anyTy, conv);
+					this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
 				}
 			}
 			this.setTemplate(tp);
@@ -175,7 +186,13 @@ public class ExprCode extends CodeN implements CallCode {
 			Code result = this;
 			if (tp.getReturnType() instanceof VarTy) {
 				ODebug.trace("must downcast %s => %s", tp.getReturnType(), ret);
-				result = new TUnboxCode(ret, result);
+				result = new UnboxCastCode(ret, result);
+			}
+			if (tp.getReturnType() instanceof FuncTy && tp.getReturnType().hasVar()) {
+				Ty anyTy = tp.getReturnType().dupVarType(null); // AnyRef
+				Template conv = env.findTypeMap(env, ret, anyTy);
+				ODebug.trace("must funccast %s => %s :: %s", anyTy, ret, conv);
+				result = new FuncCastCode(ret, conv, result);
 			}
 			return result.castType(env, t);
 		} else {

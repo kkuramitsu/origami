@@ -81,6 +81,24 @@ Float-->String         = S|blue/origami/transpiler/asm/APIs|toString
 >=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|gte
 println:String:()@     = S|blue/origami/transpiler/asm/APIs|p
 
+## AnyRef
+any==>Bool              = S|blue/origami/transpiler/asm/APIs|unboxZ
+Bool==>any              = S|blue/origami/transpiler/asm/APIs|box
+any==>Int               = S|blue/origami/transpiler/asm/APIs|unboxI
+Int==>any               = S|blue/origami/transpiler/asm/APIs|box
+any==>Float             = S|blue/origami/transpiler/asm/APIs|unboxD
+Float==>any             = S|blue/origami/transpiler/asm/APIs|box
+upcast                  = %s
+cast                    = C
+
+any==>byte              = S|blue/origami/transpiler/asm/APIs|unboxZ
+byte==>any              = S|blue/origami/transpiler/asm/APIs|box
+any==>char              = S|blue/origami/transpiler/asm/APIs|unboxZ
+char==>any              = S|blue/origami/transpiler/asm/APIs|box
+any==>int64             = S|blue/origami/transpiler/asm/APIs|unboxZ
+int64==>any             = S|blue/origami/transpiler/asm/APIs|box
+
+
 
 ## a*, a[], Stream[a]
 
@@ -99,7 +117,7 @@ pop:a[]:a                          = V|blue/origami/konoha5/List|pop
 a[]=>Stream[a]                           = V|blue/origami/konoha5/List$|stream
 Stream[a]=>a[]                           = S|blue/origami/konoha5/List$|list
 
-foreach:Stream[a]:a->():()               = S|blue/origami/konoha5/List$|forEach
+forEach:Stream[a]:a->():()               = S|blue/origami/konoha5/List$|forEach
 filter:Stream[a]:a->Bool:Stream[a]       = S|blue/origami/konoha5/List$|filter
 map:Stream[a]:a->b:Stream[b]             = S|blue/origami/konoha5/List$|map
 map:Stream[a]:a->Int:Stream[Int]         = S|blue/origami/konoha5/List$|map
@@ -122,7 +140,7 @@ pop:Int[]:Int                      = V|blue/origami/konoha5/List$Int|pop
 Int[]=>Stream[Int]                 = V|blue/origami/konoha5/List$Int|stream
 Stream[Int]=>Int[]                 = S|blue/origami/konoha5/List$Int|list
 
-foreach:Stream[Int]:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
+forEach:Stream[Int]:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
 filter:Stream[Int]:Int->Bool:Stream[Int]     = S|blue/origami/konoha5/List$Int|filter
 map:Stream[Int]:Int->a:Stream[a]             = S|blue/origami/konoha5/List$Int|map
 map:Stream[Int]:Int->Int:Stream[Int]         = S|blue/origami/konoha5/List$Int|map
@@ -133,28 +151,25 @@ reduce:Stream[Int]:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|r
 ||:Dict[a]:Int                       = V|blue/origami/konoha5/Dict$|size
 []:Dict[a]:String:a?                 = V|blue/origami/konoha5/Dict$|get
 Dict[a]->String*                     = V|blue/origami/konoha5/Dict$|keys
+forEach:Dict[a]:String,a->():()      = V|blue/origami/konoha5/Dict$|forEach
 
 # Dict'[a]
 ||:Dict'[a]:Int                      = V|blue/origami/konoha5/Dict|size
 []:Dict'[a]:String:a?                = V|blue/origami/konoha5/Dict|get
-Dict'[a]->String*                    = V|blue/origami/konoha5/Dict|keys
 []=:Dict'[a]:String:a:()             = V|blue/origami/konoha5/Dict|set
-
+Dict'[a]->String*                    = V|blue/origami/konoha5/Dict|keys
+forEach:Dict'[a]:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
 
 #Option
-Some:a:a?                = S|blue/origami/transpiler/asm/APIs|nop
-a?--->a                  = S|blue/origami/transpiler/asm/APIs|toobj
-isSome?:a?:Bool          = S|blue/origami/transpiler/asm/APIs|isSome
-isNone?:a?:Bool          = S|blue/origami/transpiler/asm/APIs|isNone
-flatMap:a?:a->b?:b?      = S|blue/origami/transpiler/asm/APIs|flatMap
+Some:a:a?                            = -
+some?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isSome
+none?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isNone
+forEach:Int?:Int->():()              = S|blue/origami/transpiler/asm/APIs|forEach
+map:a?:a->b:b?                       = S|blue/origami/transpiler/asm/APIs|map
+flatMap:a?:a->b?:b?                  = S|blue/origami/transpiler/asm/APIs|flatMap
 
-Some:Int:Int?            = S|blue/origami/transpiler/asm/APIs|box
-#exist:Int?:Bool         = S|blue/origami/transpiler/asm/APIs|exist
-Int?--->Int              = S|blue/origami/transpiler/asm/APIs|toint
-forEach:Int?:Int->():()  = S|blue/origami/transpiler/asm/APIs|forEach
-map:Int?:Int->Int:Int?   = S|blue/origami/transpiler/asm/APIs|map
-flatMap:Int?:Int->a?:a?  = S|blue/origami/transpiler/asm/APIs|flatMap
-
+Some:Int:Int?                        = S|blue/origami/transpiler/asm/APIs|box
+Int?--->Int                          = S|blue/origami/transpiler/asm/APIs|unboxI
 
 # MathLib
 sin:Float:Float                      = S|java/lang/Math|sin

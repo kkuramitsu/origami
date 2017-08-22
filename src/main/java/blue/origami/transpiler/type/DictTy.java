@@ -5,7 +5,7 @@ import blue.origami.transpiler.code.DataDictCode;
 
 public class DictTy extends MonadTy {
 
-	DictTy(String name, Ty innerType) {
+	public DictTy(String name, Ty innerType) {
 		super(name, innerType);
 	}
 

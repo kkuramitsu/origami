@@ -18,15 +18,15 @@ package blue.origami.transpiler.asm;
 
 import java.util.Objects;
 
-import blue.origami.konoha5.Func.FuncIntInt;
-import blue.origami.konoha5.Func.FuncIntObj;
-import blue.origami.konoha5.Func.FuncIntVoid;
+import blue.origami.konoha5.Func.FuncObjObj;
+import blue.origami.konoha5.Func.FuncObjVoid;
 import blue.origami.konoha5.List$;
+import blue.origami.konoha5.List$Float;
 import blue.origami.konoha5.List$Int;
 import blue.origami.konoha5.Range$Int;
 
 public class APIs {
-	public final static Boolean box(boolean a) {
+	public final static Object box(boolean a) {
 		return a;
 	}
 
@@ -34,7 +34,7 @@ public class APIs {
 		return (Boolean) a;
 	}
 
-	public final static Integer box(int a) {
+	public final static Object box(int a) {
 		return a;
 	}
 
@@ -42,7 +42,7 @@ public class APIs {
 		return ((Number) a).intValue();
 	}
 
-	public final static Double box(double a) {
+	public final static Object box(double a) {
 		return a;
 	}
 
@@ -50,77 +50,15 @@ public class APIs {
 		return ((Number) a).doubleValue();
 	}
 
-	public final static String unboxS(Object a) {
-		return (String) a;
+	public final static Object box(long a) {
+		return a;
 	}
 
-	// public final static Long box(long a) {
-	// return a;
-	// }
-	//
-	// public final static long unboxL(Object a) {
-	// return ((Number) a).longValue();
-	// }
+	public final static long unboxL(Object a) {
+		return ((Number) a).longValue();
+	}
 
-	// /* Object */
-	//
-	// // @ODynamic
-	// @OAlias(name = "==")
-	// public final static boolean eq(Object a, Object b) {
-	// return Objects.equals(a, b);
-	// }
-	//
-	// // @ODynamic
-	// @OAlias(name = "!=")
-	// public final static boolean ne(Object a, Object b) {
-	// return !Objects.equals(a, b);
-	// }
-	//
-	// // @ODynamic
-	// @OAlias(name = "size")
-	// public final static int size(Object a) {
-	// if (a == null) {
-	// return 0;
-	// }
-	// return (a.getClass().isArray()) ? Array.getLength(a) : 1;
-	// }
-
-	/* Object, downcast */
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static boolean toboolean(Object a) {
-	// return (Boolean) a;
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static byte tobyte(Object a) {
-	// return ((Number) a).byteValue();
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static short toshort(Object a) {
-	// return ((Number) a).shortValue();
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static int toint(Object a) {
-	// return ((Number) a).intValue();
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static long tolong(Object a) {
-	// return ((Number) a).longValue();
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static float tofloat(Object a) {
-	// return ((Number) a).floatValue();
-	// }
-	//
-	// @OCast(cost = OCast.ANYCAST)
-	// public final static double todouble(Object a) {
-	// return ((Number) a).doubleValue();
-	// }
+	/* Boolean */
 
 	public final static boolean not(boolean a) {
 		return !a;
@@ -139,11 +77,10 @@ public class APIs {
 	private static int testCount = 0;
 	private static int passCount = 0;
 
-	public final static boolean testAssert(boolean a) {
+	public final static void testAssert(boolean a) {
 		testCount++;
 		assert (a);
 		passCount++;
-		return a;
 	}
 
 	public final static int getTestCount() {
@@ -158,8 +95,6 @@ public class APIs {
 		testCount = 0;
 		passCount = 0;
 	}
-
-	/* Boolean, conversion */
 
 	public final static String toString(boolean a) {
 		return String.valueOf(a);
@@ -193,20 +128,6 @@ public class APIs {
 
 	public final static int cmpl(int a) {
 		return ~a;
-	}
-
-	/* int, conversion */
-
-	public final static byte tobyte(int a) {
-		return (byte) a;
-	}
-
-	public final static char tochar(int a) {
-		return (char) a;
-	}
-
-	public final static short toshort(int a) {
-		return (short) a;
 	}
 
 	public final static String toString(int a) {
@@ -248,7 +169,7 @@ public class APIs {
 	/* String */
 
 	public static final int size(String x) {
-		return x == null ? 0 : x.length();
+		return x.length();
 	}
 
 	public static final String get(String x, int n) {
@@ -334,15 +255,19 @@ public class APIs {
 	// Data
 
 	public final static List$ array(Object[] values) {
-		return new List$(values, values.length);
+		return new List$(values);
 	}
 
 	public final static List$Int array(int[] values) {
-		return new List$Int(values, values.length);
+		return new List$Int(values);
 	}
 
 	public final static List$Int range(int start, int end) {
 		return new Range$Int(start, end);
+	}
+
+	public final static List$Float array(double[] values) {
+		return new List$Float(values);
 	}
 
 	// Option
@@ -351,34 +276,29 @@ public class APIs {
 		return o;
 	}
 
-	public final static Object toobj(Object o) {
-		o.getClass();
-		return o;
-	}
-
-	public final static boolean exist(Object o) {
+	public final static boolean isSome(Object o) {
 		return o != null;
 	}
 
-	public final static int toint(Integer o) {
-		return o.intValue();
+	public final static boolean isNone(Object o) {
+		return o == null;
 	}
 
-	public final static void forEach(Integer o, FuncIntVoid f) {
-		if (o != null) {
+	public final static void forEach(Object o, FuncObjVoid f) {
+		if (isSome(o)) {
 			f.apply(o);
 		}
 	}
 
-	public final static Object map(Integer o, FuncIntInt f) {
-		if (o != null) {
-			return f.applyI(o);
+	public final static Object map(Object o, FuncObjObj f) {
+		if (isSome(o)) {
+			return f.apply(o);
 		}
 		return null;
 	}
 
-	public final static Object flatMap(Integer o, FuncIntObj f) {
-		if (o != null) {
+	public final static Object flatMap(Object o, FuncObjObj f) {
+		if (isSome(o)) {
 			return f.apply(o);
 		}
 		return null;

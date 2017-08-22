@@ -7,6 +7,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.transpiler.type.VarTy;
 
 public class SetCode extends CodeN {
@@ -33,7 +34,7 @@ public class SetCode extends CodeN {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
 			if (recvTy instanceof VarTy) {
 				Ty infer = Ty.tData().asParameter();
-				recvTy.acceptTy(bSUB, infer, bUPDATE);
+				recvTy.acceptTy(bSUB, infer, VarLogger.Update);
 				recvTy = infer;
 			}
 			if (recvTy instanceof DataTy) {

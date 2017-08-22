@@ -3,6 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.DictTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.StringCombinator;
 
 public class DataDictCode extends DataCode {
@@ -27,7 +28,7 @@ public class DataDictCode extends DataCode {
 		}
 		if (ret.isDict()) {
 			Ty ty = ret.getInnerTy();
-			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, bUPDATE)) {
+			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, VarLogger.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
 				}

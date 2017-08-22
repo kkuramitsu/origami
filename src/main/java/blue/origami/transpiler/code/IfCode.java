@@ -41,7 +41,7 @@ public class IfCode extends CodeN {
 	@Override
 	public Ty getType() {
 		Ty t = this.args[1].getType();
-		return (t.isUntyped()) ? this.args[2].getType() : t;
+		return (Ty.isUntyped(t)) ? this.args[2].getType() : t;
 	}
 
 	@Override

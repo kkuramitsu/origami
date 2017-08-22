@@ -12,7 +12,7 @@ public class ConstTemplate extends CodeTemplate {
 
 	@Override
 	public boolean isNameInfo(TEnv env) {
-		return !this.getReturnType().isUntyped();
+		return !this.getReturnType().isVoid();
 	}
 
 	@Override

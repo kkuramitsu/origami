@@ -34,9 +34,9 @@ INDENT      = S*
 
 TopLevel =
 	AssumeDecl
+	/ ExampleDecl
 	/ FuncDecl
 	/ ConstDecl
-	/ ExampleDecl
 	/ Expression
 
 /* Common */
@@ -163,11 +163,11 @@ int x = 1
 	/ ( [Dd] 'ef' EOT)
 	
 FuncDecl = LetFuncDecl / {
-	("public" "function" #PublicFuncDecl ) / ("function" #FuncDecl )
+	("public" "function" #PublicFuncDecl  / "function" #FuncDecl )
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(":as" Type)? 
-	(( "=" __ ) $body(FuncMatchExpr/Expression)) / $body(Block)
+	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
 } / CFuncDecl
                                    
 Params = { 
@@ -192,7 +192,7 @@ LetFuncDecl = {
 	$name(Identifier) 
 	("(" $param(Params) ")" / $param(LetParams)) 
 	$type(":as" Type)? 
-	(( "=" __ ) $body(FuncMatchExpr/Expression)) / $body(Block)
+	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
 }
 
 LetParams = { 
@@ -208,7 +208,7 @@ LetParam = {
 }
 
 CFuncDecl = {
-	("public" $type(Type) #PublicFuncDecl ) / ( $type(Type) #FuncDecl )
+	("public" $type(Type) #PublicFuncDecl  /  $type(Type) #FuncDecl )
 	$name(Identifier) 
 	"(" $param(Params) ")" 
 	$body(Block)
@@ -623,7 +623,7 @@ CMPR =
 	/ ">"  #GtExpr
 
 IsaExpr = 
-	ShiftExpr 
+	InfixExpr 
 	{$left ('isa?' _ / 'is?' _ ) #IsaExpr $right(Type) }?
 
 ShiftExpr = 
@@ -634,6 +634,21 @@ SHIFT =
 	"<<"  #LShiftExpr 
 	/ ">>"  #RShiftExpr 
 	/ ">>>" #RShiftExpr
+
+InfixExpr =
+	SumExpr
+	{$left $name(InfixOp) $right(SumExpr) #InfixExpr }*
+
+InfixOp = {
+	INFIXOP #NameExpr
+} _
+
+INFIXOP =
+	'\\' [A-Za-z]+ '?'?  // \in
+	/ [+\-*/%] INFIX
+	/ [<>=!&%^~?]+
+
+INFIX = [+\-*/%<>=!&%^~?]+
 
 SumExpr = 
 	ProdExpr 

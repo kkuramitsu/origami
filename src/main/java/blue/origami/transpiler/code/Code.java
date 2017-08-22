@@ -225,7 +225,7 @@ abstract class CommonCode implements Code {
 			return a[a.length - 1].getType();
 		}
 		if (this.typed != null) {
-			Ty ty = this.typed.nomTy();
+			Ty ty = this.typed.staticTy();
 			if (ty != this.typed) {
 				ODebug.trace("nomTy %s --> %s", this.typed, ty);
 				this.typed = ty;

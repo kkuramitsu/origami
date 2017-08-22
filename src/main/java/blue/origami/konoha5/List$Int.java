@@ -118,7 +118,7 @@ public class List$Int implements StringCombinator, FuncIntInt {
 	}
 
 	public static final IntStream filter(IntStream s, FuncIntBool f) {
-		return s.filter((n) -> f.applyZ(n));
+		return s.filter(f);
 	}
 
 	public static final IntStream map(IntStream s, FuncIntInt f) {

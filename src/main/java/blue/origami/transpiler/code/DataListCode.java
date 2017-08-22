@@ -4,6 +4,7 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.ListTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 
 public class DataListCode extends DataCode {
 
@@ -27,7 +28,7 @@ public class DataListCode extends DataCode {
 		}
 		if (ret.isArray()) {
 			Ty ty = ret.getInnerTy();
-			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, bUPDATE)) {
+			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, VarLogger.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
 				}

@@ -15,6 +15,7 @@ import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
 
@@ -312,7 +313,7 @@ interface TEnvApi {
 				}
 				System.out.println("FIXME: " + key);
 			}
-			env().add(name, new CodeTemplate(name, Ty.tUntyped0, TArrays.emptyTypes, value));
+			env().add(name, new CodeTemplate(name, Ty.tVoid, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tsigs = key.substring(loc + 1).split(":");
@@ -420,7 +421,10 @@ interface TEnvApi {
 	public static Ty getHiddenType(String tsig) {
 		if (hiddenMap.isEmpty()) {
 			hiddenMap.put("()", Ty.tVoid);
+			hiddenMap.put("any", Ty.tAnyRef);
+			hiddenMap.put("byte", Ty.tByte);
 			hiddenMap.put("char", Ty.tChar);
+			hiddenMap.put("int64", Ty.tInt64);
 			hiddenMap.put("a", Ty.tVar("a"));
 			hiddenMap.put("b", Ty.tVar("b"));
 		}
@@ -448,7 +452,6 @@ interface TEnvApi {
 	}
 
 	public default void addGlobalName(TEnv env, String name, Ty t) {
-		assert (!t.isUntyped());
 		Transpiler tr = env.getTranspiler();
 		NameHint hint = NameHint.newNameDecl(name, t).useGlobal();
 		tr.add(name, hint);
@@ -480,6 +483,7 @@ interface TEnvApi {
 			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
 		} catch (ErrorCode e) {
 			e.setSource(t);
+			System.out.println(":::" + t);
 			throw e;
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
@@ -491,6 +495,8 @@ interface TEnvApi {
 			} catch (ClassNotFoundException e) {
 
 			} catch (ErrorCode e) {
+				e.setSource(t);
+				System.out.println(":::" + t);
 				throw e;
 			} catch (Exception e) {
 				ODebug.exit(1, e);
@@ -502,17 +508,6 @@ interface TEnvApi {
 		node.setSource(t);
 		return node;
 	}
-
-	// public default TCode typeExpr(TEnv env, Tree<?> t) {
-	// // if (t == null) {
-	// // return new EmptyCode(env);
-	// // }
-	// return parseCode(env, t);
-	// }
-
-	// public default TCode[] typeParams(TEnv env, Tree<?> t) {
-	// return typeParams(env, t, OSymbols._param);
-	// }
 
 	public default Code[] parseParams(TEnv env, Tree<?> t, Symbol param) {
 		Tree<?> p = t.get(param, null);
@@ -541,28 +536,36 @@ interface TEnvApi {
 	public default Template findTypeMap(TEnv env, Ty fromTy, Ty toTy) {
 		String key = FuncTy.mapKey(fromTy, toTy);
 		Template tp = env.get(key, Template.class);
-		if (tp == null) {
-			tp = fromTy.findMap(env, toTy);
-			if (tp == null) {
-				tp = toTy.findMapFrom(env, fromTy);
-			}
+		if (tp != null) {
+			return tp;
 		}
-		if (tp == null && toTy == Ty.tVoid) {
-			String format = env.getSymbol("(Void)", "(void)%s");
-			tp = new TConvTemplate("", Ty.tUntyped0, Ty.tVoid, CastCode.SAME, format);
+		tp = fromTy.findMap(env, toTy);
+		if (tp != null) {
 			env.getTranspiler().add(key, tp);
+			return tp;
 		}
-		return tp == null ? TConvTemplate.Stupid : tp;
+		tp = toTy.findMapFrom(env, fromTy);
+		if (tp != null) {
+			env.getTranspiler().add(key, tp);
+			return tp;
+		}
+		return TConvTemplate.Stupid;
 	}
 
-	public default int mapCost(TEnv env, Ty fromTy, Ty toTy) {
-		if (toTy.acceptTy(true, fromTy, false)) {
+	public default int mapCost(TEnv env, Ty fromTy, Ty toTy, VarLogger logs) {
+		if (toTy.acceptTy(true, fromTy, logs)) {
 			return CastCode.SAME;
 		}
-		Template conv = env.findTypeMap(env, fromTy, toTy);
-		// ODebug.trace("mapcost %s => %s cost=%d", fromTy, toTy,
-		// conv.mapCost());
-		return conv.mapCost();
+		String key = FuncTy.mapKey(fromTy, toTy);
+		Template tp = env.get(key, Template.class);
+		if (tp != null) {
+			return tp.mapCost();
+		}
+		int cost = fromTy.costMap(env, toTy);
+		if (cost < CastCode.STUPID) {
+			return cost;
+		}
+		return toTy.costMapFrom(env, fromTy);
 	}
 
 }

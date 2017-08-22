@@ -62,7 +62,7 @@ public class CastCode extends Code1 implements CallCode {
 
 	public static class TConvTemplate extends CodeTemplate {
 
-		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tUntyped0, Ty.tUntyped0, STUPID, "%s");
+		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tVoid, Ty.tVoid, STUPID, "%s");
 
 		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
 			super(name, returnType, new Ty[] { fromType }, template);
@@ -71,18 +71,26 @@ public class CastCode extends Code1 implements CallCode {
 
 	}
 
-	public static class TBoxCode extends CastCode {
+	public static class BoxCastCode extends CastCode {
 
-		public TBoxCode(Ty ret, Code inner) {
+		public BoxCastCode(Ty ret, Code inner) {
 			super(ret, null, inner);
 		}
 
 	}
 
-	public static class TUnboxCode extends CastCode {
+	public static class UnboxCastCode extends CastCode {
 
-		public TUnboxCode(Ty ret, Code inner) {
+		public UnboxCastCode(Ty ret, Code inner) {
 			super(ret, null, inner);
+		}
+
+	}
+
+	public static class FuncCastCode extends CastCode {
+
+		public FuncCastCode(Ty ty, Template tp, Code inner) {
+			super(ty, tp, inner);
 		}
 
 	}

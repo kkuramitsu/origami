@@ -1,12 +1,11 @@
 package blue.origami.transpiler.type;
 
-import blue.origami.transpiler.VarDomain;
 import blue.origami.util.StringCombinator;
 
-public class OptionTy extends Ty {
-	private Ty innerTy;
+public class OptionTy extends MonadTy {
 
-	public OptionTy(Ty ty) {
+	public OptionTy(String name, Ty ty) {
+		super(name, ty);
 		this.innerTy = ty;
 		assert !(ty instanceof OptionTy);
 	}
@@ -22,23 +21,24 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
-	public Ty dupTy(VarDomain dom) {
-		Ty inner = this.innerTy.dupTy(dom);
+	public Ty dupVarType(VarDomain dom) {
+		Ty inner = this.innerTy.dupVarType(dom);
 		if (inner != this.innerTy) {
-			return new OptionTy(inner);
+			return Ty.tOption(inner);
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof OptionTy) {
-			return this.innerTy.acceptTy(sub, ((OptionTy) codeTy).innerTy, updated);
+			return this.innerTy.acceptTy(sub, ((OptionTy) codeTy).innerTy, logs);
 		}
 		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, updated));
+			return (codeTy.acceptTy(false, this, logs));
 		}
-		return this.innerTy.acceptTy(sub, codeTy, updated);
+		return false;
+		// return this.innerTy.acceptTy(sub, codeTy, logs);
 	}
 
 	@Override
@@ -47,20 +47,15 @@ public class OptionTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
+	public Ty staticTy() {
 		if (this.innerTy instanceof OptionTy) {
-			return this.innerTy.nomTy();
+			return this.innerTy.staticTy();
 		}
-		Ty ty = this.innerTy.nomTy();
+		Ty ty = this.innerTy.staticTy();
 		if (this.innerTy != ty) {
 			return Ty.tOption(ty);
 		}
 		return this;
-	}
-
-	@Override
-	public boolean isUntyped() {
-		return this.innerTy.isUntyped();
 	}
 
 	@Override

@@ -6,25 +6,27 @@ import java.util.function.Supplier;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
-import blue.origami.transpiler.VarDomain;
 import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.util.StringCombinator;
 
 public abstract class Ty implements TypeApi, StringCombinator {
 
 	// Core types
-	public static final Ty tVoid = new SimpleTy("()");
+	public static final Ty tVoid = new VoidTy();
 	public static final Ty tBool = new BoolTy();
 	public static final Ty tInt = new IntTy();
 	public static final Ty tFloat = new FloatTy();
 	public static final Ty tString = new StringTy();
 
 	// Hidden Type
-	public static final Ty tUntyped0 = new UntypedTy("?");
+	public static final Ty tAnyRef = new AnyRefTy();
 	public static final Ty tByte = new SimpleTy("Byte");
 	public static final Ty tInt64 = new SimpleTy("Int64");
 	public static final Ty tFloat32 = new SimpleTy("Float32");
@@ -36,6 +38,9 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	private static HashMap<String, Ty> typeMap = new HashMap<>();
 
 	static {
+		typeMap.put("Option", new OptionTy("Option", tVoid));
+		typeMap.put("List", new ListTy("List", tVoid));
+		typeMap.put("List'", new ListTy("List'", tVoid));
 		typeMap.put("Stream", new MonadTy("Stream", tVoid));
 		typeMap.put("Dict", new DictTy("Dict", tVoid));
 		typeMap.put("Dict'", new DictTy("Dict'", tVoid));
@@ -79,27 +84,21 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static final Ty tMonad(String name, Ty ty) {
-		if (ty.isDynamic()) {
-			return new ListTy(ty).asImmutable();
-		}
 		MonadTy monad = (MonadTy) typeMap.get(name);
 		assert (monad != null) : "undefined " + name;
+		if (ty.isDynamic()) {
+			return monad.newType(name, ty);
+		}
 		String key = name + "[" + ty.key() + "]";
 		return reg(key, () -> monad.newType(name, ty));
 	}
 
 	public static final ListTy tImList(Ty ty) {
-		if (ty.isDynamic()) {
-			return new ListTy(ty).asImmutable();
-		}
-		return (ListTy) reg(ty + "*", () -> new ListTy(ty).asImmutable());
+		return (ListTy) tMonad("List", ty);
 	}
 
 	public static final ListTy tList(Ty ty) {
-		if (ty.isDynamic()) {
-			return new ListTy(ty);
-		}
-		return (ListTy) reg(ty + "[]", () -> new ListTy(ty));
+		return (ListTy) tMonad("List'", ty);
 	}
 
 	public static final DataTy tImRecord(String... names) {
@@ -111,13 +110,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static OptionTy tOption(Ty ty) {
-		if (ty instanceof OptionTy) {
-			return (OptionTy) ty;
-		}
-		if (ty.isDynamic()) {
-			return new OptionTy(ty);
-		}
-		return (OptionTy) reg(ty + "?", () -> new OptionTy(ty));
+		return (OptionTy) tMonad("Option", ty);
 	}
 
 	/* FuncType */
@@ -142,30 +135,26 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public final static boolean isUntyped(Ty t) {
-		return t == null || t.isUntyped();
+		return t == null;
 	}
 
 	@Override
 	public final boolean equals(Object t) {
 		if (t instanceof Ty) {
-			return this.acceptTy(false, (Ty) t, false);
+			return this.acceptTy(false, (Ty) t, VarLogger.Nop);
 		}
 		return false;
 	}
 
 	public boolean eq(Ty ty) {
-		return this.acceptTy(false, ty, false);
+		return this.acceptTy(false, ty, VarLogger.Nop);
 	}
 
-	public abstract boolean acceptTy(boolean sub, Ty codeTy, boolean updated);
+	public abstract boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs);
 
 	public final boolean accept(Code code) {
-		return this.acceptTy(true, code.getType(), true);
+		return this.acceptTy(true, code.getType(), VarLogger.Update);
 	}
-
-	// public abstract boolean isHidden();
-	//
-	// public abstract Ty getMajorType();
 
 	public abstract boolean isDynamic();
 
@@ -178,7 +167,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return false;
 	}
 
-	public abstract Ty nomTy();
+	public abstract Ty staticTy();
 
 	// VarType
 
@@ -193,7 +182,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return false;
 	}
 
-	public Ty dupTy(VarDomain dom) {
+	public Ty dupVarType(VarDomain dom) {
 		return this;
 	}
 
@@ -258,16 +247,20 @@ interface TypeApi {
 		return false;
 	}
 
-	public default boolean isUntyped() {
-		return this == Ty.tUntyped0;
-	}
-
 	public default boolean isSpecific() {
-		return !this.isVoid() && !this.isUntyped();
+		return !this.isVoid();
 	}
 
 	public default Code getDefaultValue() {
 		return null;
+	}
+
+	public default int costMap(TEnv env, Ty toTy) {
+		return CastCode.STUPID;
+	}
+
+	public default int costMapFrom(TEnv env, Ty fromTy) {
+		return CastCode.STUPID;
 	}
 
 	public default Template findMap(TEnv env, Ty toTy) {
@@ -276,6 +269,29 @@ interface TypeApi {
 
 	public default Template findMapFrom(TEnv env, Ty fromTy) {
 		return null;
+	}
+
+}
+
+class VoidTy extends SimpleTy {
+	VoidTy() {
+		super("()");
+	}
+
+	@Override
+	public Code getDefaultValue() {
+		return new MultiCode();
+	}
+
+	@Override
+	public int costMapFrom(TEnv env, Ty fromTy) {
+		return CastCode.SAME;
+	}
+
+	@Override
+	public Template findMapFrom(TEnv env, Ty fromTy) {
+		String format = env.getSymbol("(Void)", "(void)%s");
+		return new TConvTemplate("", fromTy, Ty.tVoid, CastCode.SAME, format);
 	}
 
 }
@@ -325,6 +341,41 @@ class StringTy extends SimpleTy {
 	}
 }
 
+class AnyRefTy extends SimpleTy {
+
+	AnyRefTy() {
+		super("AnyRef");
+	}
+
+	@Override
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+		return true;
+	}
+
+	@Override
+	public int costMap(TEnv env, Ty toTy) {
+		return CastCode.BESTCAST;
+	}
+
+	@Override
+	public Template findMap(TEnv env, Ty toTy) {
+		String format = env.getSymbol("cast", "(%s)%s");
+		return new TConvTemplate("", this, toTy, CastCode.BESTCAST, format);
+	}
+
+	@Override
+	public int costMapFrom(TEnv env, Ty fromTy) {
+		return CastCode.BESTCAST;
+	}
+
+	@Override
+	public Template findMapFrom(TEnv env, Ty fromTy) {
+		String format = env.getSymbol("upcast", "%s");
+		return new TConvTemplate("", fromTy, Ty.tVoid, CastCode.BESTCAST, format);
+	}
+
+}
+
 class UntypedTy extends SimpleTy {
 
 	UntypedTy(String name) {
@@ -332,7 +383,7 @@ class UntypedTy extends SimpleTy {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		return true;
 	}
 

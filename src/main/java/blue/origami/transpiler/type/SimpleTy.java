@@ -15,9 +15,9 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, boolean updated) {
+	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, updated));
+			return (codeTy.acceptTy(false, this, logs));
 		}
 		return this == codeTy;
 	}
@@ -33,7 +33,7 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
-	public Ty nomTy() {
+	public Ty staticTy() {
 		return this;
 	}
 

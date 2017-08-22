@@ -1,14 +1,21 @@
 package blue.origami.konoha5;
 
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
+import java.util.function.DoubleFunction;
+import java.util.function.DoublePredicate;
 import java.util.function.DoubleSupplier;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.IntBinaryOperator;
 import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
 import java.util.function.IntToDoubleFunction;
 import java.util.function.IntUnaryOperator;
@@ -17,9 +24,8 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
-import blue.origami.transpiler.asm.APIs;
-
 public class Func {
+
 	@FunctionalInterface
 	public interface FuncObj extends Supplier<Object> {
 		public Object apply();
@@ -31,13 +37,8 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncBool extends Supplier<Object>, BooleanSupplier {
+	public interface FuncBool extends BooleanSupplier {
 		public boolean applyZ();
-
-		@Override
-		public default Object get() {
-			return applyZ();
-		}
 
 		@Override
 		public default boolean getAsBoolean() {
@@ -46,13 +47,8 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncInt extends Supplier<Object>, IntSupplier {
+	public interface FuncInt extends IntSupplier {
 		public int applyI();
-
-		@Override
-		public default Object get() {
-			return applyI();
-		}
 
 		@Override
 		public default int getAsInt() {
@@ -61,13 +57,8 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncFloat extends Supplier<Object>, DoubleSupplier {
+	public interface FuncFloat extends DoubleSupplier {
 		public double applyD();
-
-		@Override
-		public default Object get() {
-			return applyD();
-		}
 
 		@Override
 		public default double getAsDouble() {
@@ -85,24 +76,14 @@ public class Func {
 		}
 	}
 
-	@FunctionalInterface
-	public interface FuncBoolVoid extends Consumer<Object> {
-		public void apply(boolean v);
-
-		@Override
-		public default void accept(Object v) {
-			apply(APIs.unboxZ(v));
-		}
-	}
+	// @FunctionalInterface
+	// public interface FuncBoolVoid {
+	// public void apply(boolean v);
+	// }
 
 	@FunctionalInterface
-	public interface FuncIntVoid extends Consumer<Object>, IntConsumer {
+	public interface FuncIntVoid extends IntConsumer {
 		public void apply(int v);
-
-		@Override
-		public default void accept(Object v) {
-			apply(APIs.unboxI(v));
-		}
 
 		@Override
 		public default void accept(int v) {
@@ -111,17 +92,12 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatVoid extends Consumer<Object>, DoubleConsumer {
+	public interface FuncFloatVoid extends DoubleConsumer {
 		public void apply(double v);
 
 		@Override
 		public default void accept(double v) {
 			apply(v);
-		}
-
-		@Override
-		public default void accept(Object v) {
-			apply(APIs.unboxD(v));
 		}
 	}
 
@@ -138,64 +114,41 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncObjBool extends Function<Object, Object>, Predicate<Object> {
+	public interface FuncObjBool extends Predicate<Object> {
 		public boolean applyZ(Object v);
 
 		@Override
 		public default boolean test(Object v) {
 			return applyZ(v);
 		}
-
-		@Override
-		public default Object apply(Object v) {
-			return applyZ(v);
-		}
 	}
 
 	@FunctionalInterface
-	public interface FuncObjInt extends Function<Object, Object>, ToIntFunction<Object> {
+	public interface FuncObjInt extends ToIntFunction<Object> {
 		public int applyI(Object v);
 
 		@Override
 		public default int applyAsInt(Object v) {
 			return applyI(v);
 		}
-
-		@Override
-		public default Object apply(Object v) {
-			return applyI(v);
-		}
 	}
 
 	@FunctionalInterface
-	public interface FuncObjFloat extends Function<Object, Object>, ToDoubleFunction<Object> {
+	public interface FuncObjFloat extends ToDoubleFunction<Object> {
 		public double applyD(Object v);
 
 		@Override
 		public default double applyAsDouble(Object v) {
 			return applyD(v);
 		}
-
-		@Override
-		public default Object apply(Object v) {
-			return applyD(v);
-		}
 	}
 
-	public interface FuncBoolBool extends FuncObjBool {
+	public interface FuncBoolBool {
 		public boolean applyZ(boolean v);
-
-		public default Object apply(boolean v) {
-			return applyZ(v);
-		}
 	}
 
 	public interface FuncBoolInt extends FuncObjInt {
 		public int applyI(boolean v);
-
-		public default Object apply(boolean v) {
-			return applyI(v);
-		}
 	}
 
 	@FunctionalInterface
@@ -204,56 +157,28 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncBoolStr {
-		public String applyS(boolean v);
-	}
-
-	@FunctionalInterface
 	public interface FuncBoolObj {
 		public Object apply(boolean v);
 	}
 
 	@FunctionalInterface
-	public interface FuncIntBool extends Predicate<Object>/* , IntPredicate */ {
+	public interface FuncIntBool extends IntPredicate {
 		public boolean applyZ(int v);
 
-		// @Override
-		// default boolean test(int v) {
-		// return applyZ(v);
-		// }
-
 		@Override
-		default boolean test(Object v) {
-			return applyZ(APIs.unboxI(v));
+		default boolean test(int v) {
+			return applyZ(v);
 		}
-
 	}
 
 	@FunctionalInterface
-	public interface FuncIntInt
-			extends IntUnaryOperator, Function<Object, Object>, IntFunction<Object>, ToIntFunction<Object> {
+	public interface FuncIntInt extends IntUnaryOperator {
 		public int applyI(int v);
 
 		@Override
 		default int applyAsInt(int operand) {
 			return applyI(operand);
 		}
-
-		@Override
-		default int applyAsInt(Object v) {
-			return applyI(APIs.unboxI(v));
-		}
-
-		@Override
-		default Object apply(int v) {
-			return applyI(v);
-		}
-
-		@Override
-		default Object apply(Object v) {
-			return applyI(APIs.unboxI(v));
-		}
-
 	}
 
 	@FunctionalInterface
@@ -268,28 +193,12 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncIntFloat
-			extends IntToDoubleFunction, Function<Object, Object>, IntFunction<Object>, ToDoubleFunction<Object> {
+	public interface FuncIntFloat extends IntToDoubleFunction {
 		public double applyD(int v);
 
 		@Override
 		default double applyAsDouble(int v) {
 			return applyD(v);
-		}
-
-		@Override
-		default double applyAsDouble(Object v) {
-			return applyD(APIs.unboxI(v));
-		}
-
-		@Override
-		default Object apply(int v) {
-			return applyD(v);
-		}
-
-		@Override
-		default Object apply(Object v) {
-			return applyD(APIs.unboxI(v));
 		}
 	}
 
@@ -300,53 +209,61 @@ public class Func {
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatBool {
-		public boolean apply(double v);
+	public interface FuncFloatBool extends DoublePredicate {
+		public boolean applyZ(double v);
+
+		@Override
+		default boolean test(double value) {
+			return applyZ(value);
+		}
+
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatInt {
-		public int apply(double v);
+	public interface FuncFloatInt extends DoubleToIntFunction {
+		public int applyI(double v);
+
+		@Override
+		default int applyAsInt(double value) {
+			return applyI(value);
+		}
+
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatFloat {
-		public float apply(double v);
+	public interface FuncFloatFloat extends DoubleUnaryOperator {
+		public double applyD(double v);
+
+		@Override
+		default double applyAsDouble(double v) {
+			return applyD(v);
+		}
+
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatStr {
-		public String apply(double v);
+	public interface FuncFloatFloatFloat extends DoubleBinaryOperator {
+		public double applyD(double v, double v2);
+
+		@Override
+		default double applyAsDouble(double left, double right) {
+			return applyD(left, right);
+		}
+
 	}
 
 	@FunctionalInterface
-	public interface FuncFloatObj {
+	public interface FuncFloatObj extends DoubleFunction<Object> {
+		@Override
 		public Object apply(double v);
 	}
 
-	@FunctionalInterface
-	public interface FuncStrBool {
-		public boolean apply(String v);
-	}
+	public interface FuncStrObjVoid extends BiConsumer<String, Object> {
+		public void apply(String key, Object value);
 
-	@FunctionalInterface
-	public interface FuncStrInt {
-		public int apply(String v);
+		@Override
+		default void accept(String key, Object value) {
+			apply(key, value);
+		}
 	}
-
-	@FunctionalInterface
-	public interface FuncStrFloat {
-		public float apply(String v);
-	}
-
-	@FunctionalInterface
-	public interface FuncStrStr {
-		public String apply(String v);
-	}
-
-	@FunctionalInterface
-	public interface FuncStrObj {
-		public Object apply(String v);
-	}
-
 }

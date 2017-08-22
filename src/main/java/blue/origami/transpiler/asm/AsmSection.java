@@ -17,8 +17,8 @@ import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.CastCode.TBoxCode;
-import blue.origami.transpiler.code.CastCode.TUnboxCode;
+import blue.origami.transpiler.code.CastCode.BoxCastCode;
+import blue.origami.transpiler.code.CastCode.UnboxCastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
@@ -89,12 +89,12 @@ public class AsmSection implements TCodeSection, Opcodes {
 		Ty t = code.getType();
 		Class<?> fc = this.ts.toClass(f);
 		Class<?> tc = this.ts.toClass(t);
-		if (code instanceof TBoxCode) {
+		if (code instanceof BoxCastCode) {
 			code.getInner().emitCode(env, this);
 			this.box(tc);
 			return;
 		}
-		if (code instanceof TUnboxCode) {
+		if (code instanceof UnboxCastCode) {
 			code.getInner().emitCode(env, this);
 			this.unbox(tc);
 			return;
@@ -134,7 +134,8 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 		String desc = null;
 		switch (def[0]) {
-		case "-": // NOP
+		case "-":
+		case "%s": // NOP
 			return;
 		case "F":
 		case "GETSTATIC":
@@ -171,6 +172,9 @@ public class AsmSection implements TCodeSection, Opcodes {
 				this.mBuilder.visitInsn(op);
 				return;
 			}
+		case "C":
+			this.mBuilder.checkCast(this.ts.ti(code.getType()));
+			return;
 		default:
 			ODebug.trace("undefined call %s %s", tp.getDefined(), code.getClass().getName());
 		}
