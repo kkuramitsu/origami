@@ -22,7 +22,7 @@ public abstract class Template {
 		this.name = name;
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
-		this.isGeneric = Ty.hasVar(paramTypes) /* || returnType.hasVar() */;
+		this.isGeneric = Ty.hasVar(paramTypes);
 		assert (this.returnType != null) : this;
 	}
 

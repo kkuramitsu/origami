@@ -1,5 +1,6 @@
 package blue.origami.transpiler;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.type.Ty;
@@ -16,8 +17,8 @@ public class ConstTemplate extends CodeTemplate {
 	}
 
 	@Override
-	public Code nameCode() {
-		return new ExprCode(this, TArrays.emptyCodes);
+	public Code newCode(Tree<?> s) {
+		return new ExprCode(this, TArrays.emptyCodes).setSource(s);
 	}
 
 }

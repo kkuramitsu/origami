@@ -13,7 +13,7 @@ public class DataDictCode extends DataCode {
 	}
 
 	public DataDictCode(DictTy dt) {
-		super(dt.isMutable(), dt);
+		super(dt);
 	}
 
 	@Override

@@ -29,9 +29,9 @@ public final class FuncRefCode extends CommonCode {
 		sb.append(this.name);
 	}
 
-	@Override
-	public Code applyCode(TEnv env, Code... params) {
-		return new ExprCode(this.name, params);
-	}
+	// @Override
+	// public Code applyCode(TEnv env, Code... params) {
+	// return new ExprCode(this.name, params);
+	// }
 
 }

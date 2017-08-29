@@ -5,6 +5,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TFunction;
 import blue.origami.transpiler.TLog;
+import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
 import blue.origami.transpiler.type.Ty;
@@ -21,15 +22,17 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 		VarDomain dom = new VarDomain(paramNames.length + 1);
 		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), dom, null);
 		Ty returnType = env.parseType(env, t.get(_type, null), () -> dom.newVarType("ret"));
-		if (this.isPublic) {
+		Transpiler tr = env.getTranspiler();
+		if (this.isPublic && !tr.isShellMode()) {
 			TFunction tf = env.get(name, TFunction.class);
 			if (tf != null) {
 				TLog log = this.reportWarning(null, t.get(_name), TFmt.redefined_name__YY0, name);
 				env.reportLog(log);
 			}
 		}
+
 		TFunction tf = new TFunction(this.isPublic, name, dom, returnType, paramNames, paramTypes, t.get(_body, null));
-		env.getTranspiler().addFunction(name, tf);
+		env.getTranspiler().addFunction(env, name, tf);
 		return new DeclCode();
 	}
 

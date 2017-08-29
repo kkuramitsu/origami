@@ -280,7 +280,9 @@ interface TEnvApi {
 					Ty f = this.checkType(key.substring(0, loc));
 					Ty t = this.checkType(key.substring(loc + 4));
 					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, CastCode.BADCONV, value));
+					Template tp = new TConvTemplate(name, f, t, CastCode.BADCONV, value);
+					env().add(name, tp);
+					tp.asFaulty(faulty);
 					return;
 				}
 				if ((loc = key.indexOf("-->")) > 0) {
@@ -323,11 +325,16 @@ interface TEnvApi {
 				for (int i = 0; i < p.length; i++) {
 					p[i] = this.checkType(tsigs[i]);
 				}
-				env().add(name, new CodeTemplate(name, ret, p, value));
+				Template tp = new CodeTemplate(name, ret, p, value);
+				env().add(name, tp);
+				tp.asFaulty(faulty);
+				tp.asFaulty(pure);
 			} else {
-				Template t = new CodeTemplate(name, ret, TArrays.emptyTypes, value);
-				env().add(name, t);
-				env().add(key, t);
+				Template tp = new CodeTemplate(name, ret, TArrays.emptyTypes, value);
+				env().add(name, tp);
+				env().add(key, tp);
+				tp.asFaulty(faulty);
+				tp.asFaulty(pure);
 			}
 		}
 	}

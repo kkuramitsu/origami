@@ -33,6 +33,6 @@ public class DataType implements ParseRule {
 			names[c] = name;
 			c++;
 		}
-		return new TypeCode(this.isMutable ? Ty.tRecord(names) : Ty.tImRecord(names));
+		return new TypeCode(this.isMutable ? Ty.tData(names) : Ty.tRecord(names));
 	}
 }

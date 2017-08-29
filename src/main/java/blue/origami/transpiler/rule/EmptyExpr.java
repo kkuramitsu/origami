@@ -5,15 +5,10 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.MultiCode;
 
-public class MultiExpr implements ParseRule {
+public class EmptyExpr implements ParseRule {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
-		Code[] nodes = new Code[t.size()];
-		int last = t.size();
-		for (int i = 0; i < last; i++) {
-			nodes[i] = env.parseCode(env, t.get(i));
-		}
-		return new MultiCode(nodes);
+		return new MultiCode();
 	}
 }

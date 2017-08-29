@@ -73,28 +73,23 @@ public class VarTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (this.innerTy == null) {
-			if (codeTy instanceof VarTy) {
-				VarTy vt = ((VarTy) codeTy);
-				if (vt.innerTy != null) {
-					return this.acceptTy(sub, vt.innerTy, logs);
-				} else {
-					if (this.id != vt.id) {
-						if (this.lt(vt)) {
-							logs.update(vt, this);
-						} else {
-							logs.update(this, vt);
-						}
-					}
-					return true;
-				}
+		if (this.innerTy != null) {
+			return this.innerTy.acceptTy(sub, codeTy, logs);
+		}
+		if (codeTy instanceof VarTy) {
+			VarTy vt = ((VarTy) codeTy);
+			if (vt.innerTy != null) {
+				return this.acceptTy(sub, vt.innerTy, logs);
 			}
-			if (logs.update(this, codeTy) && this.varName != null) {
-				ODebug.trace("infer %s as %s", this.getName(), codeTy);
+			if (this.id != vt.id) {
+				return this.lt(vt) ? logs.update(vt, this) : logs.update(this, vt);
 			}
 			return true;
 		}
-		return this.innerTy.acceptTy(sub, codeTy, logs);
+		if (logs.update(this, codeTy) && this.varName != null) {
+			ODebug.trace("infer %s as %s", this.getName(), codeTy);
+		}
+		return true;
 	}
 
 	@Override

@@ -6,49 +6,12 @@ import java.util.TreeSet;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.util.StringCombinator;
-
-abstract class MutableTy extends Ty {
-	boolean isImmutable;
-	final Ty innerType;
-
-	MutableTy(Ty innerType) {
-		this.innerType = innerType;
-	}
-
-	@Override
-	public boolean isImmutable() {
-		return this.isImmutable;
-	}
-
-	public boolean isMutable() {
-		return !this.isImmutable;
-	}
-
-	@Override
-	public Ty getInnerTy() {
-		return this.innerType;
-	}
-
-	@Override
-	public boolean isDynamic() {
-		return this.innerType.isDynamic();
-	}
-
-	@Override
-	public boolean hasVar() {
-		return this.innerType.hasVar();
-	}
-
-	@Override
-	public String key() {
-		return this.toString();
-	}
-}
 
 public class DataTy extends Ty {
 	public final static boolean Mutable = false;
@@ -61,8 +24,17 @@ public class DataTy extends Ty {
 	boolean isParameter = false;
 
 	@Override
-	public boolean isImmutable() {
-		return this.isImmutable;
+	public boolean isMutable() {
+		return !this.isImmutable;
+	}
+
+	@Override
+	public Ty returnTy(TEnv env) {
+		if (this.isMutable()) {
+			String[] names = Arrays.stream(this.fields).map(s -> s.toString()).toArray(String[]::new);
+			return Ty.tRecord(names);
+		}
+		return this;
 	}
 
 	public DataTy asImmutable() {
@@ -109,7 +81,7 @@ public class DataTy extends Ty {
 
 	@Override
 	public Code getDefaultValue() {
-		return new DataCode(this.isImmutable ? Ty.tImRecord() : Ty.tRecord());
+		return new DataCode(this.isImmutable ? Ty.tRecord() : Ty.tData());
 	}
 
 	public int size() {

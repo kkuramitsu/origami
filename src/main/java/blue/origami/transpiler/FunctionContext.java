@@ -3,6 +3,7 @@ package blue.origami.transpiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
@@ -91,12 +92,12 @@ public class FunctionContext {
 		}
 
 		@Override
-		public Code nameCode() {
+		public Code newCode(Tree<?> s) {
 			if (this.refLevel > 0 && FunctionContext.this.fieldMap != null) {
 				FunctionContext.this.fieldMap.put(this.getName(),
-						new NameCode(this.name, this.seq, this.type, this.refLevel - 1));
+						new NameCode(this.name, this.seq, this.type, this.refLevel - 1).setSource(s));
 			}
-			return new NameCode(this.name, this.seq, this.type, this.refLevel);
+			return new NameCode(this.name, this.seq, this.type, this.refLevel).setSource(s);
 		}
 	}
 

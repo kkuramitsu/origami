@@ -66,7 +66,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	@Override
 	public Code setSource(Tree<?> t) {
 		this.dummy.setSource(t);
-		this.log.setSourcePosition(t);
+		this.log.setSource(t);
 		return this;
 	}
 

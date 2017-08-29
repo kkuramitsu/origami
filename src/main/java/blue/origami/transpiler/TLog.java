@@ -64,12 +64,12 @@ public class TLog implements StringCombinator {
 		return args;
 	}
 
-	public void setSourcePosition(SourcePosition s) {
+	public void setSource(SourcePosition s) {
 		if (this.s == SourcePosition.UnknownPosition && s != null) {
 			this.s = s;
 		}
 		if (this.prev != null) {
-			this.prev.setSourcePosition(s);
+			this.prev.setSource(s);
 		}
 	}
 

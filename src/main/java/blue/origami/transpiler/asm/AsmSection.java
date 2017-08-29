@@ -24,6 +24,7 @@ import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExistFieldCode;
+import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
@@ -112,7 +113,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			code.getInner().emitCode(env, this);
 			return;
 		}
-		ODebug.trace("calling cast %s => %s %s", f, t, code.getInner());
+		// ODebug.trace("calling cast %s => %s %s", f, t, code.getInner());
 		this.pushCall(env, code);
 	}
 
@@ -209,10 +210,29 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.mark(mergeLabel);
 			break;
 		}
+		case "orElse": {
+			Label elseLabel = this.mBuilder.newLabel();
+			Label mergeLabel = this.mBuilder.newLabel();
+			first.emitCode(env, this);
+			this.mBuilder.dup();
+			this.emitAsType(env, new ExprCode("some?", new EmptyAsmCode(first.getType())), Ty.tBool);
+			this.mBuilder.visitJumpInsn(IFNE, elseLabel);
+			this.emitAsType(env, new CastCode(second.getType(), new EmptyAsmCode(first.getType())), second.getType());
+			this.mBuilder.goTo(mergeLabel);
+			this.mBuilder.mark(elseLabel);
+			this.mBuilder.pop();
+			second.emitCode(env, this);
+			this.mBuilder.mark(mergeLabel);
+			break;
+		}
 		default: {
 			ODebug.trace("undefined %s", code.getTemplate().getDefined());
 		}
 		}
+	}
+
+	private void emitAsType(TEnv env, Code tempCode, Ty ret) {
+		tempCode.asType(env, ret).emitCode(env, this);
 	}
 
 	static HashMap<String, Integer> opMap = new HashMap<>();
@@ -579,17 +599,19 @@ public class AsmSection implements TCodeSection, Opcodes {
 		}
 		if (code.isList()) {
 			ListTy dt = (ListTy) code.getType();
-			if (this.ts.toClass(dt) == blue.origami.konoha5.List$.class) {
+			Class<?> c = this.ts.toClass(dt);
+			this.mBuilder.push(code.isMutable());
+			if (c == blue.origami.konoha5.List$.class) {
 				Type ty = Type.getType(Object.class);
 				this.pushArray(env, ty, true, code.args());
-				String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
+				String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
+				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 			} else {
 				Ty t = dt.getInnerTy();
 				this.pushArray(env, this.ts.ti(t), false, code.args());
-				String desc = String.format("([%s)%s", Type.getDescriptor(this.ts.toClass(t)),
+				String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
 						Type.getDescriptor(this.ts.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "array", desc, false);
+				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 			}
 			return;
 		}

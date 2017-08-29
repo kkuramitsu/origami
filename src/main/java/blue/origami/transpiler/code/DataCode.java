@@ -20,16 +20,10 @@ public class DataCode extends CodeN {
 		this.isMutable = isMutable;
 	}
 
-	public DataCode(DataTy dt) { // DefaultValue
+	public DataCode(Ty dt) { // DefaultValue
 		super(dt, TArrays.emptyCodes);
 		this.names = TArrays.emptyNames;
-		this.isMutable = !dt.isImmutable();
-	}
-
-	protected DataCode(boolean isMutable, Ty dt) { // DefaultValue
-		super(dt, TArrays.emptyCodes);
-		this.names = TArrays.emptyNames;
-		this.isMutable = isMutable;
+		this.isMutable = dt.isMutable();
 	}
 
 	public String[] getNames() {
@@ -37,7 +31,7 @@ public class DataCode extends CodeN {
 	}
 
 	public boolean isMutable() {
-		return !this.isMutable;
+		return this.isMutable;
 	}
 
 	public boolean isList() {
@@ -90,14 +84,16 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.args[0]);
+		// StringCombinator.append(sb, this.args[0]);
 		sb.append(this.isMutable() ? "{" : "[");
 		for (int i = 0; i < this.args.length; i++) {
 			if (i > 0) {
 				sb.append(",");
 			}
-			sb.append(this.names[i]);
-			sb.append(":");
+			if (this.names.length > 0) {
+				sb.append(this.names[i]);
+				sb.append(":");
+			}
 			StringCombinator.append(sb, this.args[i]);
 		}
 		sb.append(this.isMutable() ? "}" : "]");

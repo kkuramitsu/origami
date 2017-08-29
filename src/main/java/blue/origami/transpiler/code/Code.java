@@ -114,7 +114,7 @@ interface CodeAPI {
 	public default Code castType(TEnv env, Ty ret) {
 		Code self = self();
 		Ty f = self.getType();
-		if (self.isUntyped() || ret.accept(self)) {
+		if (/* self.isUntyped()|| */ ret.accept(self)) {
 			return self;
 		}
 		Template tt = env.findTypeMap(env, f, ret);
@@ -122,6 +122,14 @@ interface CodeAPI {
 			return new ErrorCode(self, TFmt.type_error_YY0_YY1, f, ret);
 		}
 		return new CastCode(ret, tt, self);
+	}
+
+	public default Code bind(Ty ret) {
+		return ExprCode.option(ret.isMutable() ? "bindM" : "bind", self());
+	}
+
+	public default Code returnType(TEnv env, Ty ret) {
+		return asType(env, self().getType().returnTy(env)).asType(env, ret);
 	}
 
 	public default Ty guessType() {
@@ -181,9 +189,9 @@ abstract class CommonCode implements Code {
 	}
 
 	@Override
-	public Code setSource(Tree<?> t) {
+	public Code setSource(Tree<?> s) {
 		if (this.at == null) {
-			this.at = t;
+			this.at = s;
 		}
 		return this;
 	}

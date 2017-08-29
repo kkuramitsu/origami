@@ -3,6 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.ArrayList;
 import java.util.List;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
@@ -21,6 +22,20 @@ import blue.origami.util.StringCombinator;
 public class ExprCode extends CodeN implements CallCode {
 
 	protected String name;
+	private Template tp;
+
+	public ExprCode(Tree<?> name, Code... args) {
+		super(args);
+		this.name = name.getString();
+		this.tp = null;
+		this.setSource(name);
+	}
+
+	public ExprCode(String name, Code... args) {
+		super(args);
+		this.name = name;
+		this.tp = null;
+	}
 
 	public ExprCode(Template tp, Code... args) {
 		super(tp.getReturnType(), args);
@@ -28,22 +43,13 @@ public class ExprCode extends CodeN implements CallCode {
 		this.setTemplate(tp);
 	}
 
-	public ExprCode(String name, Code... args) {
-		super(args);
-		this.name = name;
-	}
-
-	private Template tp;
-
 	public void setTemplate(Template tp) {
 		this.tp = tp;
 	}
 
 	@Override
 	public Template getTemplate() {
-		if (this.tp == null) {
-			System.out.println("DEBUG " + this);
-		}
+		assert (this.tp != null);
 		return this.tp;
 	}
 
@@ -60,11 +66,11 @@ public class ExprCode extends CodeN implements CallCode {
 			env.findList(this.name, Template.class, l,
 					(tt) -> !tt.isExpired() && tt.getParamSize() == this.args.length);
 			if (l.size() == 0) {
-				env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
-				throw new ErrorCode("undefined %s%s%s", this.name, this.msgArgs(), this.msgHint(l));
+				this.typeArgs(env, l);
+				return this.asUnfound(env, l);
 			}
 			if (l.size() == 1) {
-				return this.setTemplateAsType(env, l.get(0).update(env, this.args), ret);
+				return this.asMatched(env, l.get(0).update(env, this.args), ret);
 			}
 			this.typeArgs(env, l);
 			Template selected = l.get(0);
@@ -81,12 +87,25 @@ public class ExprCode extends CodeN implements CallCode {
 					}
 				}
 			}
-			if (mapCost >= CastCode.STUPID) {
-				throw new ErrorCode("mismatched %s%s%s", this.name, this.msgArgs(), this.msgHint(l));
+			if (mapCost >= this.maxCost()) {
+				return this.asMismatched(env, l);
 			}
-			return this.setTemplateAsType(env, selected.update(env, this.args), ret);
+			return this.asMatched(env, selected.update(env, this.args), ret);
 		}
 		return super.castType(env, ret);
+	}
+
+	public int maxCost() {
+		return CastCode.BADCONV;
+	}
+
+	protected Code asUnfound(TEnv env, List<Template> l) {
+		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
+		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), this.msgHint(l));
+	}
+
+	protected Code asMismatched(TEnv env, List<Template> l) {
+		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), this.msgHint(l));
 	}
 
 	protected void typeArgs(TEnv env, List<Template> l) {
@@ -100,14 +119,14 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	private Ty getCommonParamType(List<Template> l, int n) {
-		Ty ty = l.get(0).getParamTypes()[n];
+		// Ty ty = l.get(0).getParamTypes()[n];
 		// ODebug.trace("DD %s", l);
-		for (int i = 1; i < l.size(); i++) {
-			if (!ty.eq(l.get(i).getParamTypes()[n])) {
-				return Ty.tUntyped();
-			}
-		}
-		return ty;
+		// for (int i = 1; i < l.size(); i++) {
+		// if (!ty.eq(l.get(i).getParamTypes()[n])) {
+		return Ty.tUntyped();
+		// }
+		// }
+		// return ty;
 	}
 
 	private String msgArgs() {
@@ -144,7 +163,9 @@ public class ExprCode extends CodeN implements CallCode {
 		}
 		for (int i = 0; i < this.args.length; i++) {
 			mapCost += env.mapCost(env, this.args[i].getType(), p[i], logs);
-			if (mapCost >= CastCode.STUPID) {
+			// ODebug.trace("mapCost=%d %s %s", mapCost, this.args[i].getType(),
+			// p[i]);
+			if (mapCost >= this.maxCost()) {
 				return mapCost;
 			}
 		}
@@ -158,7 +179,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return mapCost;
 	}
 
-	private Code setTemplateAsType(TEnv env, Template tp, Ty t) {
+	private Code asMatched(TEnv env, Template tp, Ty t) {
 		Ty[] p = tp.getParamTypes();
 		Ty ret = tp.getReturnType();
 		if (tp.isGeneric()) {
@@ -214,6 +235,33 @@ public class ExprCode extends CodeN implements CallCode {
 		}
 		StringCombinator.joins(sb, this.args, " ");
 		sb.append(")");
+	}
+
+	public static ExprCode option(String name, Code... args) {
+		return new OptionExprCode(name, args);
+	}
+
+}
+
+class OptionExprCode extends ExprCode implements CallCode {
+
+	OptionExprCode(String name, Code... code) {
+		super(name, code);
+	}
+
+	@Override
+	public int maxCost() {
+		return CastCode.CAST;
+	}
+
+	@Override
+	protected Code asUnfound(TEnv env, List<Template> l) {
+		return this.args[0];
+	}
+
+	@Override
+	protected Code asMismatched(TEnv env, List<Template> l) {
+		return this.args[0];
 	}
 
 }

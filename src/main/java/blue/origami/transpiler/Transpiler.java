@@ -263,7 +263,7 @@ public class Transpiler extends TEnv {
 
 	// Buffering
 
-	public void addFunction(String name, TFunction f) {
+	public void addFunction(TEnv env, String name, TFunction f) {
 		this.add(name, f);
 		this.generator.addFunction(name, f);
 	}
@@ -342,6 +342,16 @@ public class Transpiler extends TEnv {
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + NameHint.safeName(name);
+	}
+
+	private boolean shellMode = false;
+
+	public boolean isShellMode() {
+		return this.shellMode;
+	}
+
+	public void setShellMode(boolean shellMode) {
+		this.shellMode = shellMode;
 	}
 
 }

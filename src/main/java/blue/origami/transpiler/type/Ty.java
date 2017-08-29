@@ -52,9 +52,9 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return new DataTy();
 	}
 
-	public static final DataTy tData(String... names) {
-		return new DataTy(names);
-	}
+	// public static final DataTy tData(String... names) {
+	// return new DataTy(names);
+	// }
 
 	public static final VarTy tUntyped() {
 		return new VarTy(null, null);
@@ -101,11 +101,11 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return (ListTy) tMonad("List'", ty);
 	}
 
-	public static final DataTy tImRecord(String... names) {
+	public static final DataTy tRecord(String... names) {
 		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(names).asImmutable());
 	}
 
-	public static final DataTy tRecord(String... names) {
+	public static final DataTy tData(String... names) {
 		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(names));
 	}
 
@@ -186,6 +186,14 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this;
 	}
 
+	public boolean isMutable() {
+		return false;
+	}
+
+	public Ty returnTy(TEnv env) {
+		return this;
+	}
+
 	public abstract String key();
 
 	@Override
@@ -209,14 +217,6 @@ interface TypeApi {
 		return type() == ty;
 	}
 
-	public default boolean isImmutable() {
-		return true;
-	}
-
-	public default boolean isMmutable() {
-		return !this.isImmutable();
-	}
-
 	public default boolean isVoid() {
 		return type() == Ty.tVoid;
 	}
@@ -233,7 +233,7 @@ interface TypeApi {
 		return type() instanceof DataTy;
 	}
 
-	public default boolean isArray() {
+	public default boolean isList() {
 		return type() instanceof ListTy;
 	}
 

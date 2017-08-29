@@ -8,12 +8,12 @@ import blue.origami.transpiler.type.VarLogger;
 
 public class DataListCode extends DataCode {
 
-	public DataListCode(boolean isMutable, Code... values) {
-		super(isMutable, TArrays.emptyNames, values);
+	public DataListCode(ListTy dt) {
+		super(dt);
 	}
 
-	public DataListCode(ListTy dt) {
-		super(dt.isMutable(), dt);
+	public DataListCode(boolean isMutable, Code... values) {
+		super(isMutable, TArrays.emptyNames, values);
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class DataListCode extends DataCode {
 			this.setType(this.isMutable() ? Ty.tList(firstType) : Ty.tImList(firstType));
 			return this;
 		}
-		if (ret.isArray()) {
+		if (ret.isList()) {
 			Ty ty = ret.getInnerTy();
 			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, VarLogger.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
@@ -40,7 +40,7 @@ public class DataListCode extends DataCode {
 	}
 
 	private Ty guessInnerType(Ty t) {
-		if (t.isArray()) {
+		if (t.isList()) {
 			return t.getInnerTy();
 		}
 		return Ty.tUntyped();

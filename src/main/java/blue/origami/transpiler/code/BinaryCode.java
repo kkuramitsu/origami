@@ -2,6 +2,7 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.type.Ty;
@@ -10,6 +11,10 @@ import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class BinaryCode extends ExprCode implements CodeBuilder {
+
+	public BinaryCode(Tree<?> name, Code left, Code right) {
+		super(name, CodeBuilder.groupfy(left), CodeBuilder.groupfy(right));
+	}
 
 	public BinaryCode(String name, Code left, Code right) {
 		super(name, CodeBuilder.groupfy(left), CodeBuilder.groupfy(right));

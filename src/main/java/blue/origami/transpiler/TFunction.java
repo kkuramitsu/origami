@@ -34,7 +34,6 @@ public class TFunction extends Template implements NameInfo {
 
 	@Override
 	public String getDefined() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -44,10 +43,6 @@ public class TFunction extends Template implements NameInfo {
 
 	public String[] getParamNames() {
 		return this.paramNames;
-	}
-
-	public Code getCode(TEnv env) {
-		return env.parseCode(env, this.body).asType(env, this.returnType);
 	}
 
 	@Override
@@ -89,7 +84,6 @@ public class TFunction extends Template implements NameInfo {
 		Template tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, this.paramTypes,
 				this.returnType, this.body);
 		this.setExpired();
-		// env.add(this.name, tp); already added in defineFunction
 		return tp;
 	}
 
@@ -106,20 +100,12 @@ public class TFunction extends Template implements NameInfo {
 
 	@Override
 	public boolean isNameInfo(TEnv env) {
-		return this.isExpired();
+		return !this.isExpired();
 	}
 
 	@Override
-	public Code nameCode() {
-		// if (!this.isExpired()) {
-		// Transpiler tr = env.getTranspiler();
-		// Template tp = tr.defineFunction(this.isPublic, this.name, this.dom,
-		// this.paramNames, this.paramTypes,
-		// this.returnType, this.body);
-		// this.setExpired();
-		// return new FuncRefCode(name, tp);
-		// }
-		return new FuncRefCode(this.name, this);
+	public Code newCode(Tree<?> s) {
+		return new FuncRefCode(this.name, this).setSource(s);
 	}
 
 }

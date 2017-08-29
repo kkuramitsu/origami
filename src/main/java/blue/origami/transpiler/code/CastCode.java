@@ -57,7 +57,6 @@ public class CastCode extends Code1 implements CallCode {
 	public static final int BESTCONV = 8;
 	public static final int CONV = 12;
 	public static final int BADCONV = 64;
-	public static final int DOWNCAST = 64;
 	public static final int STUPID = 256;
 
 	public static class TConvTemplate extends CodeTemplate {

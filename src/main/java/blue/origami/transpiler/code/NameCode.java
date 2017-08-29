@@ -21,9 +21,9 @@ public class NameCode extends CommonCode implements ParseRule {
 	private final int seq;
 	private final int refLevel;
 
-	public NameCode(Tree<?> nameTree) {
-		this(nameTree.getString(), 0, null, 0);
-		this.setSource(nameTree);
+	public NameCode(Tree<?> name) {
+		this(name.getString(), 0, null, 0);
+		this.setSource(name);
 	}
 
 	public NameCode(String name) {
@@ -49,12 +49,45 @@ public class NameCode extends CommonCode implements ParseRule {
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
+			if (ref != null) {
+				return ref.newCode(this.getSource()).castType(env, ret);
+			}
+			return this.parseNames(env, this.name, ret);
+		}
+		return super.asType(env, ret);
+	}
+
+	Code parseNames(TEnv env, String name, Ty ret) {
+		Code mul = null;
+		for (int i = 0; i < name.length(); i++) {
+			String var = this.parseName(name, i);
+			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
 				throw new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
 			}
-			return ref.nameCode().castType(env, ret);
+			mul = this.mul(mul, ref.newCode(this.getSource()));
 		}
-		return super.asType(env, ret);
+		return mul.asType(env, ret);
+	}
+
+	private String parseName(String name, int index) {
+		int end = index + 1;
+		while (end < name.length()) {
+			char c = name.charAt(end);
+			if (Character.isDigit(c) || c == '\'') {
+				end++;
+			} else {
+				break;
+			}
+		}
+		return name.substring(index, end);
+	}
+
+	private Code mul(Code left, Code right) {
+		if (left == null) {
+			return right;
+		}
+		return new BinaryCode("*", left, right);
 	}
 
 	@Override

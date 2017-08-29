@@ -21,7 +21,7 @@ public class LogCode extends Code1 {
 	@Override
 	public Code setSource(Tree<?> t) {
 		this.inner.setSource(t);
-		this.log.setSourcePosition(t);
+		this.log.setSource(t);
 		return this;
 	}
 

@@ -14,20 +14,9 @@ import blue.origami.konoha5.Func.FuncIntVoid;
 import blue.origami.util.StringCombinator;
 
 public class List$Int implements StringCombinator, FuncIntInt {
-	private int[] arrays = null;
-	private int start = 0;
-	private int end = 0;
-
-	public List$Int(int[] arrays, int size) {
-		this.arrays = arrays;
-		this.end = size;
-	}
-
-	public List$Int(int[] arrays) {
-		this.arrays = arrays;
-		this.start = 0;
-		this.end = arrays.length;
-	}
+	protected int[] arrays = null;
+	protected int start = 0;
+	protected int end = 0;
 
 	public List$Int(int[] arrays, int start, int end) {
 		this.arrays = arrays;
@@ -35,8 +24,35 @@ public class List$Int implements StringCombinator, FuncIntInt {
 		this.end = end;
 	}
 
+	public List$Int(int[] arrays, int size) {
+		this(arrays, 0, size);
+	}
+
+	public List$Int(int[] arrays) {
+		this(arrays, 0, arrays.length);
+	}
+
 	public List$Int(int capacity) {
 		this.ensure(capacity);
+	}
+
+	public List$Int bind() {
+		return this;
+	}
+
+	public Object bindOption(Object o) {
+		if (o instanceof List$Int) {
+			return ((List$Int) o).bind();
+		}
+		return o;
+	}
+
+	public List$Int ltrim(int shift) {
+		return new List$Int(this.arrays, this.start + shift, this.end);
+	}
+
+	public List$Int rtrim(int shift) {
+		return new List$Int(this.arrays, this.start, this.end - shift);
 	}
 
 	@Override
@@ -47,7 +63,7 @@ public class List$Int implements StringCombinator, FuncIntInt {
 	@Override
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
-		sb.append("[");
+		sb.append(this instanceof ListM$Int ? "{" : "[");
 		for (int i = this.start; i < this.end; i++) {
 			if (cnt > 0) {
 				sb.append(", ");
@@ -55,7 +71,7 @@ public class List$Int implements StringCombinator, FuncIntInt {
 			sb.append(this.arrays[i]);
 			cnt++;
 		}
-		sb.append("]");
+		sb.append(this instanceof ListM$Int ? "}" : "]");
 	}
 
 	private void ensure(int capacity) {
@@ -66,17 +82,6 @@ public class List$Int implements StringCombinator, FuncIntInt {
 			System.arraycopy(this.arrays, 0, na, 0, this.arrays.length);
 			this.arrays = na;
 		}
-	}
-
-	public List$Int push(int v) {
-		this.ensure(this.end);
-		this.arrays[this.end++] = v;
-		return this;
-	}
-
-	public int pop() {
-		this.end--;
-		return this.arrays[this.end];
 	}
 
 	public int size() {
@@ -91,8 +96,18 @@ public class List$Int implements StringCombinator, FuncIntInt {
 		this.arrays[this.start + index] = value;
 	}
 
+	public List$Int push(int v) {
+		this.ensure(this.end);
+		this.arrays[this.end++] = v;
+		return this;
+	}
+
+	public int pop() {
+		this.end--;
+		return this.arrays[this.end];
+	}
+
 	public void forEach(FuncIntVoid f) {
-		// Arrays.stream(this.arrays, this.start, this.end).forEach(f);
 		for (int i = this.start; i < this.end; i++) {
 			f.apply(this.arrays[i]);
 		}
@@ -102,15 +117,23 @@ public class List$Int implements StringCombinator, FuncIntInt {
 		return Arrays.stream(this.arrays, this.start, this.end);
 	}
 
+	public static final List$Int newArray(boolean isMutable, int[] arrays) {
+		return isMutable ? new ListM$Int(arrays) : new List$Int(arrays);
+	}
+
+	public static final List$Int list(IntStream s) {
+		return new List$Int(s.toArray());
+	}
+
+	public static final ListM$Int listM(IntStream s) {
+		return new ListM$Int(s.toArray());
+	}
+
 	public static final IntStream downCast(Object o) {
 		if (o instanceof IntStream) {
 			return (IntStream) o;
 		}
 		return ((List$Int) o).stream();
-	}
-
-	public static final List$Int list(IntStream s) {
-		return new List$Int(s.toArray());
 	}
 
 	public static final void forEach(IntStream s, FuncIntVoid f) {
@@ -139,6 +162,50 @@ public class List$Int implements StringCombinator, FuncIntInt {
 
 	public static final int reduce(IntStream s, int acc, FuncIntIntInt f) {
 		return s.reduce(acc, f);
+	}
+
+}
+
+class ListM$Int extends List$Int {
+
+	private List$Int imm = null;
+
+	public ListM$Int(int[] arrays, int start, int end) {
+		super(arrays, start, end);
+	}
+
+	public ListM$Int(int[] arrays, int end) {
+		super(arrays, end);
+	}
+
+	public ListM$Int(int[] arrays) {
+		super(arrays);
+	}
+
+	@Override
+	public List$Int bind() {
+		if (this.imm == null) {
+			this.imm = new List$Int(this.arrays, this.start, this.end);
+		}
+		return this.imm;
+	}
+
+	@Override
+	public void seti(int index, int value) {
+		this.imm = null;
+		super.seti(index, value);
+	}
+
+	@Override
+	public List$Int push(int v) {
+		this.imm = null;
+		return super.push(v);
+	}
+
+	@Override
+	public int pop() {
+		this.imm = null;
+		return super.pop();
 	}
 
 }

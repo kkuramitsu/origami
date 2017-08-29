@@ -17,7 +17,7 @@ public class BinaryExpr implements ParseRule, Symbols {
 	public Code apply(TEnv env, Tree<?> t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
-		return new BinaryCode(this.op, left, right);
+		return new BinaryCode(this.op, left, right).setSource(t.get(_right));
 	}
 
 }

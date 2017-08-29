@@ -2,6 +2,7 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
+import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
@@ -46,8 +47,8 @@ public class CodeTemplate extends Template implements NameInfo {
 	}
 
 	@Override
-	public Code nameCode() {
-		return new FuncRefCode(this.name, this);
+	public Code newCode(Tree<?> s) {
+		return new FuncRefCode(this.name, this).setSource(s);
 	}
 
 }

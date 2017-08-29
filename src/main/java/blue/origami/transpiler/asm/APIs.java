@@ -276,12 +276,44 @@ public class APIs {
 		return o;
 	}
 
+	public final static Object none(String msg) {
+		return new NullPointerException(msg);
+	}
+
 	public final static boolean isSome(Object o) {
-		return o != null;
+		return !(o instanceof RuntimeException);
 	}
 
 	public final static boolean isNone(Object o) {
-		return o == null;
+		return o instanceof RuntimeException;
+	}
+
+	public final static Object unwrap(Object o) {
+		if (o instanceof RuntimeException) {
+			throw (RuntimeException) o;
+		}
+		return o;
+	}
+
+	public final static boolean unwrapZ(Object o) {
+		if (o instanceof RuntimeException) {
+			throw (RuntimeException) o;
+		}
+		return unboxZ(o);
+	}
+
+	public final static int unwrapI(Object o) {
+		if (o instanceof RuntimeException) {
+			throw (RuntimeException) o;
+		}
+		return unboxI(o);
+	}
+
+	public final static double unwrapD(Object o) {
+		if (o instanceof RuntimeException) {
+			throw (RuntimeException) o;
+		}
+		return unboxD(o);
 	}
 
 	public final static void forEach(Object o, FuncObjVoid f) {

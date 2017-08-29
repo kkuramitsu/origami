@@ -15,12 +15,16 @@ public class Otranscode extends OCommand {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		String[] files = options.stringList(ParserOption.InputFiles);
-		String target = options.stringValue(ParserOption.Target, "Konoha5");
+		String target = options.stringValue(ParserOption.Target, "jvm");
 		Transpiler[] trcc = this.newTranspiler(target, options);
 		for (String file : files) {
 			this.loadScriptFile(trcc, file);
 		}
 		ODebug.setDebug(this.isDebug());
+		Arrays.stream(trcc).forEach(tr -> {
+			tr.setShellMode(true);
+			tr.setVerbose(true);
+		});
 		if (files.length == 0 || this.isDebug()) {
 			displayVersion("Konoha5->" + target);
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
