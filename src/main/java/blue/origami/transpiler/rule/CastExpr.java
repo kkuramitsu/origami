@@ -13,12 +13,15 @@ public class CastExpr implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Code expr = env.parseCode(env, t.get(_expr));
-		// if (t.has(_type)) {
 		Tree<?> type = t.get(_type);
-		Ty ty = env.parseType(env, type, () -> {
-			throw new ErrorCode(type, TFmt.undefined_type__YY0, type.getString());
-		});
-		return new CastCode(ty, expr);
+		String name = type.getString();
+		// switch (name) {
+		// case "Mutable":
+		// new MutableCode(expr).setSource(type);
 		// }
+		Ty ty = env.parseType(env, type, () -> {
+			throw new ErrorCode(type, TFmt.undefined_type__YY0, name);
+		});
+		return new CastCode(ty, expr).setSource(type);
 	}
 }

@@ -70,6 +70,23 @@ public class CastCode extends Code1 implements CallCode {
 
 	}
 
+	public static class MutableCode extends CastCode {
+
+		public MutableCode(Code inner) {
+			super(null, inner);
+		}
+
+		// @Override
+		// public Code asType(TEnv env, Ty ret) {
+		// if (this.isUntyped()) {
+		// Ty ty = this.asTypeAt(env, 0, ret);
+		// Ty mut = ty.toMutable();
+		// }
+		// return ty;
+		// }
+
+	}
+
 	public static class BoxCastCode extends CastCode {
 
 		public BoxCastCode(Ty ret, Code inner) {

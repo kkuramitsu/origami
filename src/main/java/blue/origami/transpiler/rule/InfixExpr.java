@@ -9,9 +9,10 @@ public class InfixExpr implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
+		Tree<?> name = t.get(_name);
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
-		return new BinaryCode(t.get(_name), left, right);
+		return new BinaryCode(name.getString(), left, right).setSource(name);
 	}
 
 }

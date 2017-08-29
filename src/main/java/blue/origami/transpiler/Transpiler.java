@@ -23,6 +23,7 @@ import blue.origami.transpiler.rule.DataExpr;
 import blue.origami.transpiler.rule.DataType;
 import blue.origami.transpiler.rule.DictExpr;
 import blue.origami.transpiler.rule.ListExpr;
+import blue.origami.transpiler.rule.RangeExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
@@ -85,6 +86,7 @@ public class Transpiler extends TEnv {
 		this.add("PlusExpr", new UnaryExpr("+"));
 		this.add("CmplExpr", new UnaryExpr("~"));
 		this.add("DataListExpr", new ListExpr(true));
+		this.add("RangeUntilExpr", new RangeExpr(false));
 		this.add("DataDictExpr", new DictExpr(true));
 		this.add("RecordExpr", new DataExpr(false));
 

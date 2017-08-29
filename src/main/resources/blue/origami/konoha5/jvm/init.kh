@@ -135,8 +135,8 @@ bind:Int*?:Int*?                   = S|blue/origami/konoha5/List$Int|bindOption
 
 Int*->Stream[Int]                  = V|blue/origami/konoha5/List$Int|stream
 Stream[Int]->Int*                  = S|blue/origami/konoha5/List$Int|list
-bind:Stream[Int]:a*                = S|blue/origami/konoha5/List$|list
-bindM:Stream[Int]:a[]              = S|blue/origami/konoha5/List$|listM
+bind:Stream[Int]:Int*              = S|blue/origami/konoha5/List$Int|list
+bindM:Stream[Int]:Int[]            = S|blue/origami/konoha5/List$Int|listM
 
 ||:Int[]:Int                       = V|blue/origami/konoha5/List$Int|size
 []:Int[]:Int:Int                   = V|blue/origami/konoha5/List$Int|geti

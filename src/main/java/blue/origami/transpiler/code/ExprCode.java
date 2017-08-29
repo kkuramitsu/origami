@@ -3,7 +3,6 @@ package blue.origami.transpiler.code;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
@@ -23,13 +22,6 @@ public class ExprCode extends CodeN implements CallCode {
 
 	protected String name;
 	private Template tp;
-
-	public ExprCode(Tree<?> name, Code... args) {
-		super(args);
-		this.name = name.getString();
-		this.tp = null;
-		this.setSource(name);
-	}
 
 	public ExprCode(String name, Code... args) {
 		super(args);
