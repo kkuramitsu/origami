@@ -87,7 +87,7 @@ public class SourceType extends TypeMap<String> {
 	}
 
 	Ty box(Ty ty) {
-		String key = ty.key() + "^";
+		String key = ty.toString() + "^";
 		String t = this.env.getSymbolOrElse(key, null);
 		if (t != null) {
 			return new SimpleTy(key);

@@ -101,14 +101,14 @@ public class VarTy extends Ty {
 		}
 	}
 
-	@Override
-	public String key() {
-		if (this.innerTy == null) {
-			return "a";
-		} else {
-			return this.innerTy.key();
-		}
-	}
+	// @Override
+	// public String key() {
+	// if (this.innerTy == null) {
+	// return "a";
+	// } else {
+	// return this.innerTy.key();
+	// }
+	// }
 
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {

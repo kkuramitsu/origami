@@ -89,7 +89,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		if (ty.isDynamic()) {
 			return monad.newType(name, ty);
 		}
-		String key = name + "[" + ty.key() + "]";
+		String key = name + "[" + ty + "]";
 		return reg(key, () -> monad.newType(name, ty));
 	}
 
@@ -194,7 +194,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this;
 	}
 
-	public abstract String key();
+	// public abstract String key();
 
 	@Override
 	public final String toString() {
@@ -206,6 +206,10 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public abstract <C> C mapType(TypeMap<C> codeType);
+
+	public static Ty tTag(Ty inner, String... names) {
+		return new TagTy(inner, names);
+	}
 
 }
 
@@ -255,16 +259,16 @@ interface TypeApi {
 		return null;
 	}
 
-	public default int costMap(TEnv env, Ty toTy) {
+	public default int costMapTo(TEnv env, Ty toTy) {
 		return CastCode.STUPID;
+	}
+
+	public default Template findMapTo(TEnv env, Ty toTy) {
+		return null;
 	}
 
 	public default int costMapFrom(TEnv env, Ty fromTy) {
 		return CastCode.STUPID;
-	}
-
-	public default Template findMap(TEnv env, Ty toTy) {
-		return null;
 	}
 
 	public default Template findMapFrom(TEnv env, Ty fromTy) {
@@ -353,12 +357,12 @@ class AnyRefTy extends SimpleTy {
 	}
 
 	@Override
-	public int costMap(TEnv env, Ty toTy) {
+	public int costMapTo(TEnv env, Ty toTy) {
 		return CastCode.BESTCAST;
 	}
 
 	@Override
-	public Template findMap(TEnv env, Ty toTy) {
+	public Template findMapTo(TEnv env, Ty toTy) {
 		String format = env.getSymbol("cast", "(%s)%s");
 		return new TConvTemplate("", this, toTy, CastCode.BESTCAST, format);
 	}

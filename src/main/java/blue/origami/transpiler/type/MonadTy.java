@@ -90,11 +90,6 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public String key() {
-		return this.name + "[" + this.innerTy.key() + "]";
-	}
-
-	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType(this.name, this.innerTy);
 	}

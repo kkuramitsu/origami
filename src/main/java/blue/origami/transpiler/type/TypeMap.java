@@ -44,7 +44,7 @@ public abstract class TypeMap<C> {
 	}
 
 	protected void reg(Ty t, C c) {
-		this.typeMap.put(t.key(), c);
+		this.typeMap.put(t.toString(), c);
 	}
 
 	// public abstract String unique(C c);

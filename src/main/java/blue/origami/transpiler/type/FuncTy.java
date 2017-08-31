@@ -75,11 +75,6 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public String key() {
-		return this.toString();
-	}
-
-	@Override
 	public boolean hasVar() {
 		return this.returnType.hasVar() || Ty.hasVar(this.getParamTypes());
 	}
@@ -134,7 +129,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public int costMap(TEnv env, Ty ty) {
+	public int costMapTo(TEnv env, Ty ty) {
 		if (ty instanceof FuncTy) {
 			FuncTy toTy = (FuncTy) ty;
 			if (this.getParamSize() == toTy.getParamSize()) {
@@ -158,10 +153,10 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Template findMap(TEnv env, Ty ty) {
+	public Template findMapTo(TEnv env, Ty ty) {
 		if (ty instanceof FuncTy) {
 			FuncTy toTy = (FuncTy) ty;
-			int cost = this.costMap(env, ty);
+			int cost = this.costMapTo(env, ty);
 			if (cost < CastCode.STUPID) {
 				return this.genFuncConv(env, this, toTy).setMapCost(cost);
 			}

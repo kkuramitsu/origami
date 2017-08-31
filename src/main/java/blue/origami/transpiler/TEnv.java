@@ -546,7 +546,7 @@ interface TEnvApi {
 		if (tp != null) {
 			return tp;
 		}
-		tp = fromTy.findMap(env, toTy);
+		tp = fromTy.findMapTo(env, toTy);
 		if (tp != null) {
 			env.getTranspiler().add(key, tp);
 			return tp;
@@ -568,7 +568,7 @@ interface TEnvApi {
 		if (tp != null) {
 			return tp.mapCost();
 		}
-		int cost = fromTy.costMap(env, toTy);
+		int cost = fromTy.costMapTo(env, toTy);
 		if (cost < CastCode.STUPID) {
 			return cost;
 		}

@@ -43,11 +43,6 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
-	public String key() {
-		return this.name;
-	}
-
-	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType(this.name);
 	}
