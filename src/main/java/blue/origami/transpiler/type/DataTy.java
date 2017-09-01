@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 import blue.origami.konoha5.DSymbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
@@ -29,7 +28,7 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public Ty returnTy(TEnv env) {
+	public Ty toImmutable() {
 		if (this.isMutable()) {
 			String[] names = Arrays.stream(this.fields).map(s -> s.toString()).toArray(String[]::new);
 			return Ty.tRecord(names);
@@ -73,11 +72,6 @@ public class DataTy extends Ty {
 	DataTy(String... names) {
 		this.fields = Arrays.stream(names).map(x -> DSymbol.unique(x)).toArray(DSymbol[]::new);
 	}
-
-	// DataTy(boolean growing, DSymbol[] names) {
-	// this.growing = growing;
-	// this.fields = names;
-	// }
 
 	@Override
 	public Code getDefaultValue() {

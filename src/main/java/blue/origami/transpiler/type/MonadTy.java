@@ -3,7 +3,6 @@ package blue.origami.transpiler.type;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import blue.origami.transpiler.TEnv;
 import blue.origami.util.OConsole;
 import blue.origami.util.StringCombinator;
 
@@ -33,16 +32,13 @@ public class MonadTy extends Ty {
 
 	@Override
 	public boolean isMutable() {
-		return this.name.endsWith("'");
+		return this.name.endsWith("'") || this.getInnerTy().isMutable();
 	}
 
 	@Override
-	public Ty returnTy(TEnv env) {
-		if (this.isMutable()) {
-			String name = this.name.substring(0, this.name.length() - 1);
-			return Ty.tMonad(name, this.getInnerTy());
-		}
-		return this;
+	public Ty toImmutable() {
+		String name = this.isMutable() ? this.name.substring(0, this.name.length() - 1) : this.name;
+		return Ty.tMonad(name, this.getInnerTy().toImmutable());
 	}
 
 	@Override

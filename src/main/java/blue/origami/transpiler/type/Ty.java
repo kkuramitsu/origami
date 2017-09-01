@@ -1,5 +1,6 @@
 package blue.origami.transpiler.type;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
@@ -123,6 +124,11 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return (FuncTy) reg(key, () -> new FuncTy(key, returnType, paramTypes));
 	}
 
+	public static Ty tTag(Ty inner, String... names) {
+		Arrays.sort(names);
+		return new TagTy(inner, names);
+	}
+
 	//
 
 	@Override
@@ -190,9 +196,13 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return false;
 	}
 
-	public Ty returnTy(TEnv env) {
+	public Ty toImmutable() {
 		return this;
 	}
+
+	// public Ty returnTy(TEnv env) {
+	// return this;
+	// }
 
 	// public abstract String key();
 
@@ -206,10 +216,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public abstract <C> C mapType(TypeMap<C> codeType);
-
-	public static Ty tTag(Ty inner, String... names) {
-		return new TagTy(inner, names);
-	}
 
 }
 

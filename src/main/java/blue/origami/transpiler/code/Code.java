@@ -128,10 +128,6 @@ interface CodeAPI {
 		return ExprCode.option(ret.isMutable() ? "bindM" : "bind", self());
 	}
 
-	public default Code returnType(TEnv env, Ty ret) {
-		return asType(env, self().getType().returnTy(env)).asType(env, ret);
-	}
-
 	public default Ty guessType() {
 		return self().getType();
 	}
