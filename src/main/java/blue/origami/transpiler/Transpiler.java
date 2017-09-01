@@ -324,10 +324,6 @@ public class Transpiler extends TEnv {
 		}
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
-		// int untyped = code.countUntyped(0);
-		// if (untyped > 0) {
-		// ODebug.trace("untyped node=%d", untyped);
-		// }
 		ODebug.trace("Typed Error=%s %s", code.hasErrorCode(), tp);
 		if (dom != null) {
 			dom.check();

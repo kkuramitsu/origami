@@ -54,7 +54,7 @@ public class TArrays {
 	public static String[] names(int length) {
 		String[] names = new String[length];
 		for (int c = 0; c < length; c++) {
-			names[c] = String.valueOf((char) c);
+			names[c] = String.valueOf((char) ('a' + c));
 		}
 		return names;
 	}

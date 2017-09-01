@@ -544,15 +544,18 @@ interface TEnvApi {
 		String key = FuncTy.mapKey(fromTy, toTy);
 		Template tp = env.get(key, Template.class);
 		if (tp != null) {
+			// ODebug.trace("found %s => %s %s", fromTy, toTy, tp);
 			return tp;
 		}
 		tp = fromTy.findMapTo(env, toTy);
 		if (tp != null) {
+			// ODebug.trace("builtin %s => %s %s", fromTy, toTy, tp);
 			env.getTranspiler().add(key, tp);
 			return tp;
 		}
 		tp = toTy.findMapFrom(env, fromTy);
 		if (tp != null) {
+			// ODebug.trace("builtin %s => %s %s", fromTy, toTy, tp);
 			env.getTranspiler().add(key, tp);
 			return tp;
 		}

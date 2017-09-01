@@ -27,7 +27,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tString = new StringTy();
 
 	// Hidden Type
-	public static final Ty tAnyRef = new AnyRefTy();
+	public static final Ty tAnyRef = new AnyTy();
 	public static final Ty tByte = new SimpleTy("Byte");
 	public static final Ty tInt64 = new SimpleTy("Int64");
 	public static final Ty tFloat32 = new SimpleTy("Float32");
@@ -159,7 +159,8 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public abstract boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs);
 
 	public final boolean accept(Code code) {
-		return this.acceptTy(true, code.getType(), VarLogger.Update);
+		Ty codeTy = code.getType();
+		return this == codeTy || this.acceptTy(true, codeTy, VarLogger.Update);
 	}
 
 	public abstract boolean isDynamic();
@@ -349,41 +350,6 @@ class StringTy extends SimpleTy {
 	public Code getDefaultValue() {
 		return new StringCode("");
 	}
-}
-
-class AnyRefTy extends SimpleTy {
-
-	AnyRefTy() {
-		super("AnyRef");
-	}
-
-	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		return true;
-	}
-
-	@Override
-	public int costMapTo(TEnv env, Ty toTy) {
-		return CastCode.BESTCAST;
-	}
-
-	@Override
-	public Template findMapTo(TEnv env, Ty toTy) {
-		String format = env.getSymbol("cast", "(%s)%s");
-		return new TConvTemplate("", this, toTy, CastCode.BESTCAST, format);
-	}
-
-	@Override
-	public int costMapFrom(TEnv env, Ty fromTy) {
-		return CastCode.BESTCAST;
-	}
-
-	@Override
-	public Template findMapFrom(TEnv env, Ty fromTy) {
-		String format = env.getSymbol("upcast", "%s");
-		return new TConvTemplate("", fromTy, Ty.tVoid, CastCode.BESTCAST, format);
-	}
-
 }
 
 class UntypedTy extends SimpleTy {

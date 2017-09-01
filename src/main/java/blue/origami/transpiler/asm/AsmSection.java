@@ -44,6 +44,7 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.ListTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.ODebug;
 
 public class AsmSection implements TCodeSection, Opcodes {
@@ -109,11 +110,14 @@ public class AsmSection implements TCodeSection, Opcodes {
 			}
 			return;
 		}
-		if (f.equals(t)) {
+		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
+		// code.getTemplate());
+		if (t.acceptTy(true, f, VarLogger.Nop)) {
 			code.getInner().emitCode(env, this);
 			return;
 		}
-		// ODebug.trace("calling cast %s => %s %s", f, t, code.getInner());
+		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
+		// code.getTemplate());
 		this.pushCall(env, code);
 	}
 

@@ -196,7 +196,11 @@ public class FuncTy extends Ty {
 		List<Code> l = new ArrayList<>();
 		l.add(new NameCode("_f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {
-			l.add(new CastCode(fromTypes[c], new NameCode(String.valueOf((char) c))));
+			Code p = new NameCode(String.valueOf((char) ('a' + c)));
+			Template tp = env.findTypeMap(env, toTypes[c], fromTypes[c]);
+			// ODebug.trace(":::::::: %s => %s %s", toTypes[c], fromTypes[c],
+			// tp);
+			l.add(new CastCode(fromTypes[c], p));
 		}
 		Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
 		body = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);

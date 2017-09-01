@@ -114,14 +114,15 @@ interface CodeAPI {
 	public default Code castType(TEnv env, Ty ret) {
 		Code self = self();
 		Ty f = self.getType();
-		if (/* self.isUntyped()|| */ ret.accept(self)) {
+		if (ret.accept(self)) {
+			// ODebug.trace("unnecessary cast %s => %s", f, ret);
 			return self;
 		}
-		Template tt = env.findTypeMap(env, f, ret);
-		if (tt == TConvTemplate.Stupid) {
+		Template tp = env.findTypeMap(env, f, ret);
+		if (tp == TConvTemplate.Stupid) {
 			return new ErrorCode(self, TFmt.type_error_YY0_YY1, f, ret);
 		}
-		return new CastCode(ret, tt, self);
+		return new CastCode(ret, tp, self);
 	}
 
 	public default Code bind(Ty ret) {
