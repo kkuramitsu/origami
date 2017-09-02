@@ -1,5 +1,9 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Template;
+import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.util.StringCombinator;
 
 public class OptionTy extends MonadTy {
@@ -7,7 +11,7 @@ public class OptionTy extends MonadTy {
 	public OptionTy(String name, Ty ty) {
 		super(name, ty);
 		this.innerTy = ty;
-		assert !(ty instanceof OptionTy);
+		// assert !(ty instanceof OptionTy);
 	}
 
 	@Override
@@ -69,5 +73,29 @@ public class OptionTy extends MonadTy {
 		StringCombinator.append(sb, this.innerTy);
 		sb.append("]");
 	}
+
+	@Override
+	public int costMapTo(TEnv env, Ty ty) {
+		if (ty.isOption()) {
+			if (this.getInnerTy().isAnyRef() || ty.getInnerTy().isAnyRef()) {
+				return CastCode.BESTCAST;
+			}
+		}
+		return CastCode.STUPID;
+	}
+
+	@Override
+	public Template findMapTo(TEnv env, Ty ty) {
+		if (ty.isOption()) {
+			if (this.getInnerTy().isAnyRef() || ty.getInnerTy().isAnyRef()) {
+				return new TConvTemplate("anycast", this, ty, CastCode.BESTCAST, "%s");
+			}
+		}
+		return null;
+	}
+
+	// let f = conv(Option[a] x, f: a->b) : Option[b] {
+	// \x x.map(f)
+	// }
 
 }

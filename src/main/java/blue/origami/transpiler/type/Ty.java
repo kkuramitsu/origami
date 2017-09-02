@@ -232,6 +232,10 @@ interface TypeApi {
 		return type() == Ty.tVoid;
 	}
 
+	public default boolean isAnyRef() {
+		return type() instanceof AnyTy;
+	}
+
 	public default boolean isOption() {
 		return type() instanceof OptionTy;
 	}

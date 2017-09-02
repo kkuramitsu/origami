@@ -328,13 +328,13 @@ interface TEnvApi {
 				Template tp = new CodeTemplate(name, ret, p, value);
 				env().add(name, tp);
 				tp.asFaulty(faulty);
-				tp.asFaulty(pure);
+				tp.asPure(pure);
 			} else {
 				Template tp = new CodeTemplate(name, ret, TArrays.emptyTypes, value);
 				env().add(name, tp);
 				env().add(key, tp);
 				tp.asFaulty(faulty);
-				tp.asFaulty(pure);
+				tp.asPure(pure);
 			}
 		}
 	}
@@ -386,23 +386,6 @@ interface TEnvApi {
 	default Ty checkType(String tsig) {
 		Ty ty = this.getType(tsig);
 		if (ty == null) {
-			if (tsig.endsWith("*")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tImList(ty);
-			}
-			if (tsig.endsWith("[]")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 2));
-				return Ty.tList(ty);
-			}
-			if (tsig.endsWith("?")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tOption(ty);
-			}
-			if (tsig.endsWith("]")) {
-				int loc = tsig.indexOf('[');
-				ty = checkType(tsig.substring(loc + 1, tsig.length() - 1));
-				return Ty.tMonad(tsig.substring(0, loc), ty);
-			}
 			int loc = 0;
 			if ((loc = tsig.indexOf("->")) > 0) {
 				int loc2 = tsig.indexOf(',');
@@ -416,6 +399,23 @@ interface TEnvApi {
 					Ty ft = checkType(tsig.substring(0, loc));
 					return Ty.tFunc(tt, ft);
 				}
+			}
+			if (tsig.endsWith("*")) {
+				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				return Ty.tImList(ty);
+			}
+			if (tsig.endsWith("[]")) {
+				ty = checkType(tsig.substring(0, tsig.length() - 2));
+				return Ty.tList(ty);
+			}
+			if (tsig.endsWith("?")) {
+				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				return Ty.tOption(ty);
+			}
+			if (tsig.endsWith("]")) {
+				loc = tsig.indexOf('[');
+				ty = checkType(tsig.substring(loc + 1, tsig.length() - 1));
+				return Ty.tMonad(tsig.substring(0, loc), ty);
 			}
 			ty = getHiddenType(tsig);
 		}

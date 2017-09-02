@@ -65,7 +65,7 @@ public class CastCode extends Code1 implements CallCode {
 
 	public static class TConvTemplate extends CodeTemplate {
 
-		public static final TConvTemplate Stupid = new TConvTemplate("", Ty.tVoid, Ty.tVoid, STUPID, "%s");
+		public static final TConvTemplate Stupid = new TConvTemplate("stupid", Ty.tVoid, Ty.tVoid, STUPID, "%s");
 
 		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
 			super(name, returnType, new Ty[] { fromType }, template);
@@ -79,15 +79,6 @@ public class CastCode extends Code1 implements CallCode {
 		public MutableCode(Code inner) {
 			super(null, inner);
 		}
-
-		// @Override
-		// public Code asType(TEnv env, Ty ret) {
-		// if (this.isUntyped()) {
-		// Ty ty = this.asTypeAt(env, 0, ret);
-		// Ty mut = ty.toMutable();
-		// }
-		// return ty;
-		// }
 
 	}
 
