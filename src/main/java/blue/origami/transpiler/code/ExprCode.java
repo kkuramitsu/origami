@@ -77,11 +77,11 @@ public class ExprCode extends CodeN implements CallCode {
 
 	protected Code asUnfound(TEnv env, List<Template> l) {
 		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
-		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), this.msgHint(l));
+		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), msgHint(l));
 	}
 
 	protected Code asMismatched(TEnv env, List<Template> l) {
-		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), this.msgHint(l));
+		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(l));
 	}
 
 	protected void typeArgs(TEnv env, List<Template> l) {
@@ -122,49 +122,55 @@ public class ExprCode extends CodeN implements CallCode {
 		return " \t" + TFmt.hint + " " + sb;
 	}
 
-	private Code asMatched(TEnv env, Template tp, Ty t) {
-		Ty[] p = tp.getParamTypes();
-		Ty ret = tp.getReturnType();
-		if (tp.isGeneric()) {
-			VarDomain dom = new VarDomain(p.length + 1);
-			Ty[] gp = new Ty[p.length];
-			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupVarType(dom);
+	private Code asMatched(TEnv env, Template defined, Ty t) {
+		Ty[] dParamTypes = defined.getParamTypes();
+		Ty dRetType = defined.getReturnType();
+		if (defined.isGeneric()) {
+			VarDomain dom = new VarDomain(dParamTypes.length + 1);
+			Ty[] gParamTypes = new Ty[dParamTypes.length];
+			for (int i = 0; i < dParamTypes.length; i++) {
+				gParamTypes[i] = dParamTypes[i].dupVar(dom);
 			}
-			ret = ret.dupVarType(dom);
+			dRetType = dRetType.dupVar(dom);
 			for (int i = 0; i < this.args.length; i++) {
-				this.args[i] = this.args[i].asType(env, gp[i]);
-				if (p[i] instanceof VarTy) {
-					ODebug.trace("must upcast %s => %s", gp[i], gp[i]);
-					this.args[i] = new BoxCastCode(gp[i], this.args[i]);
+				this.args[i] = this.args[i].asType(env, gParamTypes[i]);
+				if (dParamTypes[i] instanceof VarTy) {
+					ODebug.trace("must upcast %s => %s", gParamTypes[i], gParamTypes[i]);
+					this.args[i] = new BoxCastCode(gParamTypes[i], this.args[i]);
 				}
-				if (p[i] instanceof FuncTy && p[i].hasVar()) {
-					Ty anyTy = p[i].dupVarType(null); // AnyRef
-					Template conv = env.findTypeMap(env, gp[i], anyTy);
-					ODebug.trace("must funccast %s => %s :: %s", gp[i], anyTy, conv);
+				if (dParamTypes[i] instanceof FuncTy && dParamTypes[i].hasVar()) {
+					Ty anyTy = dParamTypes[i].dupVar(null); // AnyRef
+					Template conv = env.findTypeMap(env, gParamTypes[i], anyTy);
+					ODebug.trace("must funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
 					this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
 				}
 			}
-			this.setTemplate(tp);
-			this.setType(ret);
-			Code result = this;
-			if (tp.getReturnType() instanceof VarTy) {
-				ODebug.trace("must downcast %s => %s", tp.getReturnType(), ret);
-				result = new UnboxCastCode(ret, result);
+			if (defined.isMutation()) {
+				this.args[0].getType().hasMutation(true);
 			}
-			if (tp.getReturnType() instanceof FuncTy && tp.getReturnType().hasVar()) {
-				Ty anyTy = tp.getReturnType().dupVarType(null); // AnyRef
-				Template conv = env.findTypeMap(env, ret, anyTy);
-				ODebug.trace("must funccast %s => %s :: %s", anyTy, ret, conv);
-				result = new FuncCastCode(ret, conv, result);
+			this.setTemplate(defined);
+			this.setType(dRetType);
+			Code result = this;
+			if (defined.getReturnType() instanceof VarTy) {
+				ODebug.trace("must downcast %s => %s", defined.getReturnType(), dRetType);
+				result = new UnboxCastCode(dRetType, result);
+			}
+			if (defined.getReturnType() instanceof FuncTy && defined.getReturnType().hasVar()) {
+				Ty anyTy = defined.getReturnType().dupVar(null); // AnyRef
+				Template conv = env.findTypeMap(env, dRetType, anyTy);
+				ODebug.trace("must funccast %s => %s :: %s", anyTy, dRetType, conv);
+				result = new FuncCastCode(dRetType, conv, result);
 			}
 			return result.castType(env, t);
 		} else {
 			for (int i = 0; i < this.args.length; i++) {
-				this.args[i] = this.args[i].asType(env, p[i]);
+				this.args[i] = this.args[i].asType(env, dParamTypes[i]);
 			}
-			this.setTemplate(tp);
-			this.setType(ret);
+			if (defined.isMutation()) {
+				this.args[0].getType().hasMutation(true);
+			}
+			this.setTemplate(defined);
+			this.setType(dRetType);
 			return this.castType(env, t);
 		}
 	}

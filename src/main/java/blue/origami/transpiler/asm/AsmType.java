@@ -3,7 +3,6 @@ package blue.origami.transpiler.asm;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -194,9 +193,9 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	@Override
 	protected Class<?> gen(DataTy dataTy) {
-		Set<String> names = dataTy.names();
+		String[] names = dataTy.names();
 		String cname1 = "D$" + this.seq();
-		String[] infs = names.stream().map(x -> Type.getInternalName(this.gen(x))).toArray(String[]::new);
+		String[] infs = Arrays.stream(names).map(x -> Type.getInternalName(this.gen(x))).toArray(String[]::new);
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		cw1.visit(V1_8, ACC_PUBLIC + +ACC_ABSTRACT + ACC_INTERFACE, cname1, null/* signatrue */, "java/lang/Object",
 				infs);
@@ -332,8 +331,8 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	Class<?> loadDataClass(DataTy dataTy) {
-		Set<String> names = dataTy.names();
-		String cname1 = "Data$" + StringCombinator.joins(names.toArray(new String[names.size()]), "");
+		String[] names = dataTy.names();
+		String cname1 = "Data$" + StringCombinator.joins(names, "");
 		return this.reg(cname1, () -> {
 			Class<?> c = this.toClass(dataTy);
 			ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);

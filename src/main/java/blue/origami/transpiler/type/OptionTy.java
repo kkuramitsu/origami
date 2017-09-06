@@ -25,8 +25,8 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public Ty dupVarType(VarDomain dom) {
-		Ty inner = this.innerTy.dupVarType(dom);
+	public Ty dupVar(VarDomain dom) {
+		Ty inner = this.innerTy.dupVar(dom);
 		if (inner != this.innerTy) {
 			return Ty.tOption(inner);
 		}
@@ -35,27 +35,18 @@ public class OptionTy extends MonadTy {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof OptionTy) {
-			return this.innerTy.acceptTy(sub, ((OptionTy) codeTy).innerTy, logs);
+		if (codeTy.isOption()) {
+			return this.innerTy.acceptTy(sub, codeTy.getInnerTy(), logs);
 		}
-		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, logs));
-		}
-		return false;
-		// return this.innerTy.acceptTy(sub, codeTy, logs);
+		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return this.innerTy.isDynamic();
-	}
-
-	@Override
-	public Ty staticTy() {
-		if (this.innerTy instanceof OptionTy) {
-			return this.innerTy.staticTy();
+	public Ty finalTy() {
+		if (this.innerTy.isOption()) {
+			return this.innerTy.real().finalTy();
 		}
-		Ty ty = this.innerTy.staticTy();
+		Ty ty = this.innerTy.finalTy();
 		if (this.innerTy != ty) {
 			return Ty.tOption(ty);
 		}

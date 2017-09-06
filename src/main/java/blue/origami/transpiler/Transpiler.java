@@ -355,6 +355,9 @@ public class Transpiler extends TEnv {
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, ret));
 		tp.asError(code.hasErrorCode());
+		if (ret != returnType) {
+			ret.toImmutable();
+		}
 		ODebug.trace("Typed Error=%s %s", code.hasErrorCode(), tp);
 		tp.nomAll();
 		this.verbose("Typed", () -> {

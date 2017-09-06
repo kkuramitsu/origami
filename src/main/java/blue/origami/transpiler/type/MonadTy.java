@@ -15,6 +15,11 @@ public class MonadTy extends Ty {
 		this.innerTy = ty;
 	}
 
+	@Override
+	public boolean isNonMemo() {
+		return this.innerTy.isNonMemo();
+	}
+
 	public Ty newType(String name, Ty ty) {
 		try {
 			Constructor<?> c = this.getClass().getConstructor(String.class, Ty.class);
@@ -52,8 +57,8 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public Ty dupVarType(VarDomain dom) {
-		Ty inner = this.innerTy.dupVarType(dom);
+	public Ty dupVar(VarDomain dom) {
+		Ty inner = this.innerTy.dupVar(dom);
 		if (inner != this.innerTy) {
 			return Ty.tMonad(this.name, inner);
 		}
@@ -61,13 +66,8 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return this.innerTy.isDynamic();
-	}
-
-	@Override
-	public Ty staticTy() {
-		Ty ty = this.innerTy.staticTy();
+	public Ty finalTy() {
+		Ty ty = this.innerTy.finalTy();
 		if (this.innerTy != ty) {
 			return Ty.tMonad(this.name, ty);
 		}
@@ -76,13 +76,10 @@ public class MonadTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof MonadTy && ((MonadTy) codeTy).equalsName(this.name)) {
+		if (codeTy.isMonad(this.name)) {
 			return this.innerTy.acceptTy(false, codeTy.getInnerTy(), logs);
 		}
-		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, logs));
-		}
-		return false;
+		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	@Override

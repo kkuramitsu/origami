@@ -12,6 +12,11 @@ public class TagTy extends Ty {
 	}
 
 	@Override
+	public boolean isNonMemo() {
+		return false;
+	}
+
+	@Override
 	public Ty getInnerTy() {
 		return this.innerTy;
 	}
@@ -27,8 +32,8 @@ public class TagTy extends Ty {
 	}
 
 	@Override
-	public Ty dupVarType(VarDomain dom) {
-		Ty inner = this.innerTy.dupVarType(dom);
+	public Ty dupVar(VarDomain dom) {
+		Ty inner = this.innerTy.dupVar(dom);
 		if (inner != this.innerTy) {
 			return Ty.tTag(inner, this.names);
 		}
@@ -36,13 +41,8 @@ public class TagTy extends Ty {
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return this.innerTy.isDynamic();
-	}
-
-	@Override
-	public Ty staticTy() {
-		Ty ty = this.innerTy.staticTy();
+	public Ty finalTy() {
+		Ty ty = this.innerTy.finalTy();
 		if (this.innerTy != ty) {
 			return Ty.tTag(ty, this.names);
 		}
@@ -54,10 +54,7 @@ public class TagTy extends Ty {
 		if (codeTy instanceof TagTy && this.innerTy.acceptTy(sub, codeTy.getInnerTy(), logs)) {
 			return this.matchTags(sub, ((TagTy) codeTy).names);
 		}
-		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, logs));
-		}
-		return false;
+		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	public boolean matchTags(boolean sub, String[] names) {

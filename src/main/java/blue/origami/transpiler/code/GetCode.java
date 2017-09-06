@@ -1,14 +1,13 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
+import blue.origami.transpiler.type.FlowDataTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.transpiler.type.VarTy;
 
 public class GetCode extends Code1 {
 	final String name;
@@ -32,23 +31,14 @@ public class GetCode extends Code1 {
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
-			if (recvTy instanceof VarTy) {
-				Ty infer = Ty.tData().asParameter();
+			if (recvTy.isVar()) {
+				Ty infer = new FlowDataTy();
 				recvTy.acceptTy(bSUB, infer, VarLogger.Update);
 				recvTy = infer;
 			}
-			if (recvTy instanceof DataTy) {
-				NameHint hint = env.findGlobalNameHint(env, this.name);
-				if (hint == null) {
-					throw new ErrorCode(this.getSource(), TFmt.undefined_name__YY0, this.name);
-				}
-				DataTy dt = (DataTy) recvTy;
-				dt.checkGetField(this.getSource(), this.name);
-				this.setType(Ty.selfTy(hint.getType(), dt));
-				// Code code = this.recv.applyMethodCode(env, "getf", new
-				// IntCode(DSymbol.id(this.name)),
-				// hint.getDefaultValue());
-				// return code.asType(env, hint.getType()).asType(env, t);
+			if (recvTy.isData()) {
+				DataTy dt = (DataTy) recvTy.real();
+				this.setType(dt.fieldTy(env, this.getSource(), this.name));
 				return this.castType(env, ret);
 			}
 			throw new ErrorCode(this.getSource(), TFmt.unsupported_operator);

@@ -11,7 +11,6 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
@@ -230,13 +229,13 @@ abstract class CommonCode implements Code {
 			}
 			return a[a.length - 1].getType();
 		}
-		if (this.typed != null) {
-			Ty ty = this.typed.staticTy();
-			if (ty != this.typed) {
-				ODebug.trace("nomTy %s --> %s", this.typed, ty);
-				this.typed = ty;
-			}
-		}
+		// if (this.typed != null) {
+		// Ty ty = this.typed.staticTy();
+		// if (ty != this.typed) {
+		// ODebug.trace("nomTy %s --> %s", this.typed, ty);
+		// this.typed = ty;
+		// }
+		// }
 		return this.typed;
 	}
 

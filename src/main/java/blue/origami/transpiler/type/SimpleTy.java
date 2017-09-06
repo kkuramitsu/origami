@@ -10,13 +10,18 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
+	public boolean isNonMemo() {
+		return false;
+	}
+
+	@Override
 	public Code getDefaultValue() {
 		return null;
 	}
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof VarTy) {
+		if (codeTy.isVar()) {
 			return (codeTy.acceptTy(false, this, logs));
 		}
 		return this == codeTy;
@@ -25,16 +30,6 @@ public class SimpleTy extends Ty {
 	@Override
 	public boolean hasVar() {
 		return false;
-	}
-
-	@Override
-	public boolean isDynamic() {
-		return false;
-	}
-
-	@Override
-	public Ty staticTy() {
-		return this;
 	}
 
 	@Override

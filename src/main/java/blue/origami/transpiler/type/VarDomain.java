@@ -39,7 +39,7 @@ public class VarDomain {
 	}
 
 	public Ty resolvedAt(int index) {
-		return this.dom[index].staticTy();
+		return this.dom[index].finalTy();
 	}
 
 	public int mapCost() {
@@ -48,8 +48,8 @@ public class VarDomain {
 			if (this.dom[i] == null) {
 				break;
 			}
-			Ty t = this.dom[i].staticTy();
-			if (t.isVarRef()) {
+			Ty t = this.dom[i].finalTy();
+			if (t.hasVar()) {
 				mapCost += CastCode.STUPID;
 			}
 			if (t == Ty.tBool || t == Ty.tInt || t == Ty.tFloat) {
@@ -65,12 +65,9 @@ public class VarDomain {
 			if (this.dom[i] == null) {
 				break;
 			}
-			Ty ty = this.dom[i].staticTy();
+			Ty ty = this.dom[i].finalTy();
 			if (ty == this.dom[i]) {
 				this.dom[i].rename(String.valueOf(c++));
-			}
-			if (ty instanceof DataTy) {
-				((DataTy) ty).asRecord();
 			}
 		}
 	}

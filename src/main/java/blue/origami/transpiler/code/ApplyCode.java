@@ -9,7 +9,6 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.StringCombinator;
 
 public class ApplyCode extends CodeN {
@@ -34,8 +33,8 @@ public class ApplyCode extends CodeN {
 		}
 
 		Ty firstType = this.args[0].getType();
-		if (firstType instanceof FuncTy) {
-			FuncTy funcType = (FuncTy) firstType;
+		if (firstType.isFunc()) {
+			FuncTy funcType = (FuncTy) firstType.real();
 			Ty[] p = funcType.getParamTypes();
 			if (p.length + 1 != this.args.length) {
 				throw new ErrorCode("mismatched parameter size %d %d", p.length, this.args.length);
@@ -46,7 +45,7 @@ public class ApplyCode extends CodeN {
 			this.setType(funcType.getReturnType());
 			return super.castType(env, ret);
 		}
-		if (firstType instanceof VarTy) {
+		if (firstType.isVar()) {
 			Ty[] p = new Ty[this.args.length - 1];
 			for (int i = 1; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, Ty.tUntyped());

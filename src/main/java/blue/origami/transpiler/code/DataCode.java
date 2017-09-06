@@ -49,7 +49,7 @@ public class DataCode extends CodeN {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			DataTy dt = Ty.tData(this.names).asLocal();
+			DataTy dt = Ty.tData(this.names);
 			for (int i = 0; i < this.args.length; i++) {
 				String key = this.names[i];
 				Code value = this.args[i];

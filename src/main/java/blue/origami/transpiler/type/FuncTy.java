@@ -31,6 +31,11 @@ public class FuncTy extends Ty {
 		this(null, returnType, paramTypes);
 	}
 
+	@Override
+	public boolean isNonMemo() {
+		return TArrays.testSomeTrue(t -> t.isNonMemo(), this.getParamTypes()) || this.getReturnType().isNonMemo();
+	}
+
 	public Ty getReturnType() {
 		return this.returnType;
 	}
@@ -49,17 +54,17 @@ public class FuncTy extends Ty {
 		return sb.toString();
 	}
 
-	private static Object cap(Ty ty) {
-		return (ty instanceof FuncTy) ? "(" + ty + ")" : ty;
+	private static String group(Ty ty) {
+		return (ty.isFunc()) ? "(" + ty + ")" : ty.toString();
 	}
 
 	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
-			StringCombinator.joins(sb, paramTypes, ",", (ty) -> cap(ty));
+			StringCombinator.joins(sb, paramTypes, ",", (ty) -> group(ty));
 			sb.append(")");
 		} else {
-			StringCombinator.joins(sb, paramTypes, ",", (ty) -> cap(ty));
+			StringCombinator.joins(sb, paramTypes, ",", (ty) -> group(ty));
 		}
 		sb.append("->");
 		sb.append(returnType);
@@ -76,48 +81,40 @@ public class FuncTy extends Ty {
 
 	@Override
 	public boolean hasVar() {
-		return this.returnType.hasVar() || Ty.hasVar(this.getParamTypes());
+		return this.returnType.hasVar() || TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
 	}
 
 	@Override
-	public Ty dupVarType(VarDomain dom) {
+	public Ty dupVar(VarDomain dom) {
 		if (this.name == null && this.hasVar()) {
-			return Ty.tFunc(this.returnType.dupVarType(dom),
-					Arrays.stream(this.paramTypes).map(x -> x.dupVarType(dom)).toArray(Ty[]::new));
+			return Ty.tFunc(this.returnType.dupVar(dom),
+					Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new));
 		}
 		return this;
 	}
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof VarTy) {
-			return (codeTy.acceptTy(false, this, logs));
-		}
-		if (codeTy instanceof FuncTy) {
-			FuncTy ft = (FuncTy) codeTy;
-			if (ft.getParamSize() != this.getParamSize()) {
+		if (codeTy.isFunc()) {
+			FuncTy funcTy = (FuncTy) codeTy.real();
+			if (funcTy.getParamSize() != this.getParamSize()) {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptTy(false, ft.paramTypes[i], logs)) {
+				if (!this.paramTypes[i].acceptTy(false, funcTy.paramTypes[i], logs)) {
 					return false;
 				}
 			}
-			return this.returnType.acceptTy(false, ft.returnType, logs);
+			return this.returnType.acceptTy(false, funcTy.returnType, logs);
 		}
-		return false;
+		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return Ty.isDynamic(this.getParamTypes()) || this.returnType.isDynamic();
-	}
-
-	@Override
-	public Ty staticTy() {
+	public Ty finalTy() {
 		if (this.name == null) {
-			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.staticTy()).toArray(Ty[]::new);
-			Ty ret = this.returnType.staticTy();
+			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.finalTy()).toArray(Ty[]::new);
+			Ty ret = this.returnType.finalTy();
 			return Ty.tFunc(ret, p);
 		}
 		return this;
@@ -130,8 +127,8 @@ public class FuncTy extends Ty {
 
 	@Override
 	public int costMapTo(TEnv env, Ty ty) {
-		if (ty instanceof FuncTy) {
-			FuncTy toTy = (FuncTy) ty;
+		if (ty.isFunc()) {
+			FuncTy toTy = (FuncTy) ty.real();
 			if (this.getParamSize() == toTy.getParamSize()) {
 				VarLogger logger = new VarLogger();
 				Ty[] fromTys = this.getParamTypes();
@@ -154,8 +151,8 @@ public class FuncTy extends Ty {
 
 	@Override
 	public Template findMapTo(TEnv env, Ty ty) {
-		if (ty instanceof FuncTy) {
-			FuncTy toTy = (FuncTy) ty;
+		if (ty.isFunc()) {
+			FuncTy toTy = (FuncTy) ty.real();
 			int cost = this.costMapTo(env, ty);
 			if (cost < CastCode.STUPID) {
 				return this.genFuncConv(env, this, toTy).setMapCost(cost);

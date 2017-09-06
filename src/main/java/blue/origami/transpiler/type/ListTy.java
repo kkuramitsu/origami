@@ -5,6 +5,8 @@ import blue.origami.transpiler.code.DataListCode;
 import blue.origami.util.StringCombinator;
 
 public class ListTy extends MonadTy {
+	public static String ImmutableName = "List";
+	public static String MutableName = "List'";
 
 	public ListTy(String name, Ty innerType) {
 		super(name, innerType);

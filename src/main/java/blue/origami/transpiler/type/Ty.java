@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.BoolCode;
@@ -36,16 +37,16 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	public static final Ty tThis = new SimpleTy("_");
 	public static final Ty tAuto = new SimpleTy("auto");
 
-	private static HashMap<String, Ty> typeMap = new HashMap<>();
+	private static HashMap<String, Ty> typeMemoMap = new HashMap<>();
 
 	static {
-		typeMap.put("Option", new OptionTy("Option", tVoid));
-		typeMap.put("List", new ListTy("List", tVoid));
-		typeMap.put("List'", new ListTy("List'", tVoid));
-		typeMap.put("Stream", new MonadTy("Stream", tVoid));
-		typeMap.put("Stream'", new MonadTy("Stream'", tVoid));
-		typeMap.put("Dict", new DictTy("Dict", tVoid));
-		typeMap.put("Dict'", new DictTy("Dict'", tVoid));
+		typeMemoMap.put("Option", new OptionTy("Option", tVoid));
+		typeMemoMap.put("List", new ListTy("List", tVoid));
+		typeMemoMap.put("List'", new ListTy("List'", tVoid));
+		typeMemoMap.put("Stream", new MonadTy("Stream", tVoid));
+		typeMemoMap.put("Stream'", new MonadTy("Stream'", tVoid));
+		typeMemoMap.put("Dict", new DictTy("Dict", tVoid));
+		typeMemoMap.put("Dict'", new DictTy("Dict'", tVoid));
 	}
 
 	/* DynamicType */
@@ -72,23 +73,25 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	/* Data */
 
+	public abstract boolean isNonMemo();
+
 	static Ty reg(String key, Supplier<Ty> sup) {
-		Ty t = typeMap.get(key);
+		Ty t = typeMemoMap.get(key);
 		if (t == null) {
 			t = sup.get();
-			typeMap.put(key, t);
+			typeMemoMap.put(key, t);
 		}
 		return t;
 	}
 
-	public static final boolean isMonad(String name) {
-		return typeMap.get(name) instanceof MonadTy;
+	public static final boolean isDefinedMonad(String name) {
+		return typeMemoMap.get(name) instanceof MonadTy;
 	}
 
 	public static final Ty tMonad(String name, Ty ty) {
-		MonadTy monad = (MonadTy) typeMap.get(name);
+		MonadTy monad = (MonadTy) typeMemoMap.get(name);
 		assert (monad != null) : "undefined " + name;
-		if (ty.isDynamic()) {
+		if (!ty.isNonMemo()) {
 			return monad.newType(name, ty);
 		}
 		String key = name + "[" + ty + "]";
@@ -104,11 +107,11 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static final DataTy tRecord(String... names) {
-		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(names).asImmutable());
+		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(false, names));
 	}
 
 	public static final DataTy tData(String... names) {
-		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(names));
+		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(true, names));
 	}
 
 	public static OptionTy tOption(Ty ty) {
@@ -118,7 +121,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	/* FuncType */
 
 	public static final FuncTy tFunc(Ty returnType, Ty... paramTypes) {
-		if (Ty.isDynamic(paramTypes) || returnType.isDynamic()) {
+		if (TArrays.testSomeTrue(t -> t.isNonMemo(), paramTypes) || returnType.isNonMemo()) {
 			return new FuncTy(null, returnType, paramTypes);
 		}
 		String key = FuncTy.stringfy(returnType, paramTypes);
@@ -132,6 +135,10 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	//
 
+	public final static boolean isUntyped(Ty t) {
+		return t == null;
+	}
+
 	@Override
 	public Ty real() {
 		return this;
@@ -139,10 +146,6 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	public Ty getInnerTy() {
 		return null;
-	}
-
-	public final static boolean isUntyped(Ty t) {
-		return t == null;
 	}
 
 	@Override
@@ -157,40 +160,25 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this.acceptTy(false, ty, VarLogger.Nop);
 	}
 
-	public abstract boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs);
-
 	public final boolean accept(Code code) {
 		Ty codeTy = code.getType();
 		return this == codeTy || this.acceptTy(true, codeTy, VarLogger.Update);
 	}
 
-	public abstract boolean isDynamic();
+	public abstract boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs);
 
-	public final static boolean isDynamic(Ty... p) {
-		for (Ty t : p) {
-			if (t.isDynamic()) {
-				return true;
-			}
+	protected boolean acceptVarTy(boolean sub, Ty codeTy, VarLogger logs) {
+		if (codeTy.isVar()) {
+			return (codeTy.acceptTy(false, this, logs));
 		}
 		return false;
 	}
 
-	public abstract Ty staticTy();
-
-	// VarType
+	// public abstract Ty staticTy();
 
 	public abstract boolean hasVar();
 
-	public final static boolean hasVar(Ty... p) {
-		for (Ty t : p) {
-			if (t.hasVar()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Ty dupVarType(VarDomain dom) {
+	public Ty dupVar(VarDomain dom) {
 		return this;
 	}
 
@@ -202,20 +190,22 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		return this;
 	}
 
-	// public Ty returnTy(TEnv env) {
-	// return this;
-	// }
+	public void hasMutation(boolean b) {
 
-	// public abstract String key();
+	}
+
+	public Ty finalTy() {
+		return this;
+	}
 
 	@Override
 	public final String toString() {
 		return StringCombinator.stringfy(this);
 	}
 
-	public static Ty selfTy(Ty ty, DataTy dt) {
-		return ty == Ty.tThis ? dt : ty;
-	}
+	// public static Ty selfTy(Ty ty, DataTy dt) {
+	// return ty == Ty.tThis ? dt : ty;
+	// }
 
 	public abstract <C> C mapType(TypeMap<C> codeType);
 
@@ -231,6 +221,10 @@ interface TypeApi {
 
 	public default boolean isVoid() {
 		return real() == Ty.tVoid;
+	}
+
+	public default boolean isVar() {
+		return real() instanceof VarTy;
 	}
 
 	public default boolean isAnyRef() {
@@ -257,9 +251,11 @@ interface TypeApi {
 		return real() instanceof DictTy;
 	}
 
-	// VarType a
-
-	public default boolean isVarRef() {
+	public default boolean isMonad(String name) {
+		Ty ty = real();
+		if (ty instanceof MonadTy) {
+			return ((MonadTy) ty).equalsName(name);
+		}
 		return false;
 	}
 

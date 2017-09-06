@@ -19,6 +19,11 @@ public class VarTy extends Ty {
 		this.s = s;
 	}
 
+	@Override
+	public boolean isNonMemo() {
+		return true;
+	}
+
 	public boolean isParameter() {
 		return (this.varName != null && NameHint.isOneLetterName(this.varName));
 	}
@@ -38,33 +43,31 @@ public class VarTy extends Ty {
 		return this.innerTy == null ? this : this.innerTy.getInnerTy();
 	}
 
+	@Override
+	public Ty toImmutable() {
+		if (this.innerTy != null) {
+			this.innerTy = this.innerTy.toImmutable();
+		}
+		return this;
+	}
+
 	public void rename(String name) {
 		this.varName = name;
 	}
 
 	@Override
-	public boolean isVarRef() {
-		return this.innerTy == null || this.innerTy.isVarRef();
-	}
-
-	@Override
 	public boolean hasVar() {
-		return this.innerTy == null || this.innerTy.hasVar();
+		return this.isVar() || this.innerTy == null || this.innerTy.hasVar();
 	}
 
 	@Override
-	public Ty dupVarType(VarDomain dom) {
-		return this.innerTy == null ? VarDomain.newVarType(dom, this.varName) : this.innerTy.dupVarType(dom);
+	public Ty dupVar(VarDomain dom) {
+		return this.innerTy == null ? VarDomain.newVarType(dom, this.varName) : this.innerTy.dupVar(dom);
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return this.innerTy == null ? true : this.innerTy.isDynamic();
-	}
-
-	@Override
-	public Ty staticTy() {
-		return this.innerTy == null ? this : this.innerTy.staticTy();
+	public Ty finalTy() {
+		return this.innerTy == null ? this : this.innerTy.finalTy();
 	}
 
 	private boolean lt(VarTy vt) {
@@ -76,13 +79,13 @@ public class VarTy extends Ty {
 		if (this.innerTy != null) {
 			return this.innerTy.acceptTy(sub, codeTy, logs);
 		}
-		if (codeTy instanceof VarTy) {
-			VarTy vt = ((VarTy) codeTy);
-			if (vt.innerTy != null) {
-				return this.acceptTy(sub, vt.innerTy, logs);
+		if (codeTy.isVar()) {
+			VarTy varTy = (VarTy) codeTy.real();
+			if (varTy.innerTy != null) {
+				return this.acceptTy(sub, varTy.innerTy, logs);
 			}
-			if (this.id != vt.id) {
-				return this.lt(vt) ? logs.update(vt, this) : logs.update(this, vt);
+			if (this.id != varTy.id) {
+				return this.lt(varTy) ? logs.update(varTy, this) : logs.update(this, varTy);
 			}
 			return true;
 		}

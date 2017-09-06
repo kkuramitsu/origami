@@ -27,7 +27,7 @@ public class GenericType implements ParseRule, Symbols {
 		case "List'":
 			return new TypeCode(Ty.tList(p[0]));
 		default:
-			if (Ty.isMonad(name)) {
+			if (Ty.isDefinedMonad(name)) {
 				return new TypeCode(Ty.tMonad(name, p[0]));
 			}
 		}

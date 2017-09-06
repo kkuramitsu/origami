@@ -6,6 +6,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
+import blue.origami.transpiler.type.FlowStateTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
@@ -90,7 +91,7 @@ public class TFunction extends Template implements NameInfo {
 		Ty[] p = this.getParamTypes().clone();
 		for (int i = 0; i < p.length; i++) {
 			if (p[i].isAnyRef()) {
-				p[i] = params[i];
+				p[i] = FlowStateTy.flowTy(params[i]);
 			}
 		}
 		Transpiler tr = env.getTranspiler();

@@ -8,6 +8,11 @@ public class EnumTy extends Ty {
 	String name;
 	String[] names;
 
+	@Override
+	public boolean isNonMemo() {
+		return false;
+	}
+
 	public boolean isBool() {
 		return this.names.length <= 2;
 	}
@@ -30,19 +35,14 @@ public class EnumTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof EnumTy) {
-			return ((EnumTy) codeTy).name.equals(this.name);
+		if (codeTy.real() == this) {
+			return true;
 		}
-		return false;
+		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	@Override
-	public boolean isDynamic() {
-		return false;
-	}
-
-	@Override
-	public Ty staticTy() {
+	public Ty finalTy() {
 		return this;
 	}
 

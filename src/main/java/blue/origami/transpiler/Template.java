@@ -10,10 +10,12 @@ import blue.origami.util.ODebug;
 
 public abstract class Template {
 	public final static Template Null = null;
+
+	protected short cost = 0;
+
 	protected boolean isPure;
 	protected boolean isFaulty;
 	protected boolean isError;
-	protected short cost = 0;
 
 	// Skeleton
 	protected boolean isGeneric;
@@ -27,7 +29,7 @@ public abstract class Template {
 		this.name = name;
 		this.returnType = returnType;
 		this.paramTypes = paramTypes;
-		this.isGeneric = Ty.hasVar(paramTypes);
+		this.isGeneric = TArrays.testSomeTrue(t -> t.hasVar(), paramTypes);
 		assert (this.returnType != null) : this;
 	}
 
@@ -49,6 +51,13 @@ public abstract class Template {
 
 	public Ty[] getParamTypes() {
 		return this.paramTypes;
+	}
+
+	public boolean isMutation() {
+		if (this.paramTypes.length > 0) {
+			return this.paramTypes[0].isMutable();
+		}
+		return false;
 	}
 
 	public FuncTy getFuncType() {
@@ -101,10 +110,6 @@ public abstract class Template {
 		return this;
 	}
 
-	// public Template generate(TEnv env, Code[] params) {
-	// return this;
-	// }
-
 	public abstract String format(Object... args);
 
 	@Override
@@ -151,10 +156,10 @@ public abstract class Template {
 			dom = new VarDomain(p.length + 1);
 			Ty[] gp = new Ty[p.length];
 			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupVarType(dom);
+				gp[i] = p[i].dupVar(dom);
 			}
 			p = gp;
-			codeRet = codeRet.dupVarType(dom);
+			codeRet = codeRet.dupVar(dom);
 		}
 		for (int i = 0; i < params.length; i++) {
 			mapCost += env.mapCost(env, params[i], p[i], logs);
