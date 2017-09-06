@@ -1,13 +1,18 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.Code;
+import java.util.List;
+
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarLogger;
+import blue.origami.util.ODebug;
 
 public abstract class Template {
 	public final static Template Null = null;
 	protected boolean isPure;
 	protected boolean isFaulty;
+	protected boolean isError;
 	protected short cost = 0;
 
 	// Skeleton
@@ -46,6 +51,10 @@ public abstract class Template {
 		return this.paramTypes;
 	}
 
+	public FuncTy getFuncType() {
+		return Ty.tFunc(this.returnType, this.paramTypes);
+	}
+
 	public final boolean isPure() {
 		return this.isPure;
 	}
@@ -64,6 +73,15 @@ public abstract class Template {
 		return this;
 	}
 
+	public final boolean isError() {
+		return this.isError;
+	}
+
+	public Template asError(boolean error) {
+		this.isError = error;
+		return this;
+	}
+
 	public int mapCost() {
 		return this.cost;
 	}
@@ -79,9 +97,13 @@ public abstract class Template {
 		return false;
 	}
 
-	public Template update(TEnv env, Code[] params) {
+	public Template generate(TEnv env, Ty[] params) {
 		return this;
 	}
+
+	// public Template generate(TEnv env, Code[] params) {
+	// return this;
+	// }
 
 	public abstract String format(Object... args);
 
@@ -101,8 +123,55 @@ public abstract class Template {
 		return sb.toString();
 	}
 
-	public FuncTy getFuncType() {
-		return Ty.tFunc(this.getReturnType(), this.getParamTypes());
+	public static Template select(TEnv env, List<Template> founds, Ty ret, Ty[] p, int maxCost) {
+		Template selected = founds.get(0);
+		int mapCost = match(env, selected, ret, p, maxCost);
+		ODebug.trace("cost=%d,%s", mapCost, selected);
+		for (int i = 1; i < founds.size(); i++) {
+			if (mapCost > 0) {
+				Template next = founds.get(i);
+				int nextCost = match(env, next, ret, p, maxCost);
+				ODebug.trace("nextcost=%d,%s", nextCost, next);
+				if (nextCost < mapCost) {
+					mapCost = nextCost;
+					selected = next;
+				}
+			}
+		}
+		return (mapCost >= maxCost) ? null : selected;
+	}
+
+	static int match(TEnv env, Template tp, Ty ret, Ty[] params, int maxCost) {
+		int mapCost = 0;
+		VarDomain dom = null;
+		VarLogger logs = new VarLogger();
+		Ty[] p = tp.getParamTypes();
+		Ty codeRet = tp.getReturnType();
+		if (tp.isGeneric()) {
+			dom = new VarDomain(p.length + 1);
+			Ty[] gp = new Ty[p.length];
+			for (int i = 0; i < p.length; i++) {
+				gp[i] = p[i].dupVarType(dom);
+			}
+			p = gp;
+			codeRet = codeRet.dupVarType(dom);
+		}
+		for (int i = 0; i < params.length; i++) {
+			mapCost += env.mapCost(env, params[i], p[i], logs);
+			// ODebug.trace("mapCost=%d %s %s", mapCost, this.args[i].getType(),
+			// p[i]);
+			if (mapCost >= maxCost) {
+				return mapCost;
+			}
+		}
+		if (ret.isSpecific()) {
+			mapCost += env.mapCost(env, codeRet, ret, logs);
+		}
+		if (dom != null) {
+			mapCost += dom.mapCost();
+		}
+		logs.abort();
+		return mapCost;
 	}
 
 }

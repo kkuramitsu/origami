@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import blue.origami.transpiler.TCodeSection;
@@ -13,7 +13,6 @@ import blue.origami.transpiler.code.CastCode.UnboxCastCode;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.transpiler.type.VarLogger;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
@@ -35,14 +34,14 @@ public class ExprCode extends CodeN implements CallCode {
 		this.setTemplate(tp);
 	}
 
-	public void setTemplate(Template tp) {
-		this.tp = tp;
-	}
-
 	@Override
 	public Template getTemplate() {
 		assert (this.tp != null);
 		return this.tp;
+	}
+
+	public void setTemplate(Template tp) {
+		this.tp = tp;
 	}
 
 	@Override
@@ -53,36 +52,21 @@ public class ExprCode extends CodeN implements CallCode {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			// final Code[] params = this.args;
-			List<Template> l = new ArrayList<>(8);
-			env.findList(this.name, Template.class, l,
-					(tt) -> !tt.isExpired() && tt.getParamSize() == this.args.length);
-			if (l.size() == 0) {
-				this.typeArgs(env, l);
-				return this.asUnfound(env, l);
+			List<Template> founds = env.findTemplates(this.name, this.args.length);
+			this.typeArgs(env, founds);
+			Ty[] p = Arrays.stream(this.args).map(c -> c.getType()).toArray(Ty[]::new);
+			if (founds.size() == 0) {
+				return this.asUnfound(env, founds);
 			}
-			if (l.size() == 1) {
-				return this.asMatched(env, l.get(0).update(env, this.args), ret);
+			if (founds.size() == 1) {
+				return this.asMatched(env, founds.get(0).generate(env, p), ret);
 			}
-			this.typeArgs(env, l);
-			Template selected = l.get(0);
-			int mapCost = this.checkMapCost(env, ret, selected);
-			ODebug.trace("cost=%d,%s", mapCost, selected);
-			for (int i = 1; i < l.size(); i++) {
-				if (mapCost > 0) {
-					Template next = l.get(i);
-					int nextCost = this.checkMapCost(env, ret, next);
-					ODebug.trace("nextcost=%d,%s", nextCost, next);
-					if (nextCost < mapCost) {
-						mapCost = nextCost;
-						selected = next;
-					}
-				}
+			this.typeArgs(env, founds);
+			Template selected = Template.select(env, founds, ret, p, this.maxCost());
+			if (selected == null) {
+				return this.asMismatched(env, founds);
 			}
-			if (mapCost >= this.maxCost()) {
-				return this.asMismatched(env, l);
-			}
-			return this.asMatched(env, selected.update(env, this.args), ret);
+			return this.asMatched(env, selected.generate(env, p), ret);
 		}
 		return super.castType(env, ret);
 	}
@@ -129,46 +113,13 @@ public class ExprCode extends CodeN implements CallCode {
 		return sb.toString();
 	}
 
-	private String msgHint(List<Template> l) {
+	static String msgHint(List<Template> l) {
 		StringBuilder sb = new StringBuilder();
 		StringCombinator.joins(sb, l, ", ", tp -> tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
 			return "";
 		}
 		return " \t" + TFmt.hint + " " + sb;
-	}
-
-	private int checkMapCost(TEnv env, Ty ret, Template tp) {
-		int mapCost = 0;
-		VarDomain dom = null;
-		VarLogger logs = new VarLogger();
-		Ty[] p = tp.getParamTypes();
-		Ty codeRet = tp.getReturnType();
-		if (tp.isGeneric()) {
-			dom = new VarDomain(p.length + 1);
-			Ty[] gp = new Ty[p.length];
-			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupVarType(dom);
-			}
-			p = gp;
-			codeRet = codeRet.dupVarType(dom);
-		}
-		for (int i = 0; i < this.args.length; i++) {
-			mapCost += env.mapCost(env, this.args[i].getType(), p[i], logs);
-			// ODebug.trace("mapCost=%d %s %s", mapCost, this.args[i].getType(),
-			// p[i]);
-			if (mapCost >= this.maxCost()) {
-				return mapCost;
-			}
-		}
-		if (ret.isSpecific()) {
-			mapCost += env.mapCost(env, codeRet, ret, logs);
-		}
-		if (dom != null) {
-			mapCost += dom.mapCost();
-		}
-		logs.abort();
-		return mapCost;
 	}
 
 	private Code asMatched(TEnv env, Template tp, Ty t) {

@@ -10,7 +10,7 @@ public class Range$Int extends List$Int implements StringCombinator {
 	final int until;
 
 	public Range$Int(int start, int until) {
-		super(0);
+		super(new int[0]);
 		this.start = start;
 		this.until = until;
 	}

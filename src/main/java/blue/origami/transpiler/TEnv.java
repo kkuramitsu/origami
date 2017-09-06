@@ -1,5 +1,6 @@
 package blue.origami.transpiler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -576,6 +577,12 @@ interface TEnvApi {
 			return cost;
 		}
 		return toTy.costMapFrom(env, fromTy);
+	}
+
+	public default List<Template> findTemplates(String name, int paramSize) {
+		List<Template> l = new ArrayList<>(8);
+		env().findList(name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == paramSize);
+		return l;
 	}
 
 }

@@ -29,6 +29,19 @@ public class VarDomain {
 		return dom == null ? Ty.tAnyRef : dom.newVarType(name);
 	}
 
+	public int size() {
+		for (int i = 0; i < this.dom.length; i++) {
+			if (this.dom[i] == null) {
+				return i;
+			}
+		}
+		return this.dom.length;
+	}
+
+	public Ty resolvedAt(int index) {
+		return this.dom[index].staticTy();
+	}
+
 	public int mapCost() {
 		int mapCost = 0;
 		for (int i = 0; i < this.dom.length; i++) {

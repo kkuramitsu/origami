@@ -43,6 +43,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 		typeMap.put("List", new ListTy("List", tVoid));
 		typeMap.put("List'", new ListTy("List'", tVoid));
 		typeMap.put("Stream", new MonadTy("Stream", tVoid));
+		typeMap.put("Stream'", new MonadTy("Stream'", tVoid));
 		typeMap.put("Dict", new DictTy("Dict", tVoid));
 		typeMap.put("Dict'", new DictTy("Dict'", tVoid));
 	}
@@ -132,7 +133,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	//
 
 	@Override
-	public Ty type() {
+	public Ty real() {
 		return this;
 	}
 
@@ -222,38 +223,38 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 interface TypeApi {
 
-	public Ty type();
+	public Ty real();
 
 	public default boolean is(Ty ty) {
-		return type() == ty;
+		return real() == ty;
 	}
 
 	public default boolean isVoid() {
-		return type() == Ty.tVoid;
+		return real() == Ty.tVoid;
 	}
 
 	public default boolean isAnyRef() {
-		return type() instanceof AnyTy;
+		return real() instanceof AnyTy;
 	}
 
 	public default boolean isOption() {
-		return type() instanceof OptionTy;
+		return real() instanceof OptionTy;
 	}
 
 	public default boolean isFunc() {
-		return type() instanceof FuncTy;
+		return real() instanceof FuncTy;
 	}
 
 	public default boolean isData() {
-		return type() instanceof DataTy;
+		return real() instanceof DataTy;
 	}
 
 	public default boolean isList() {
-		return type() instanceof ListTy;
+		return real() instanceof ListTy;
 	}
 
 	public default boolean isDict() {
-		return type() instanceof DictTy;
+		return real() instanceof DictTy;
 	}
 
 	// VarType a

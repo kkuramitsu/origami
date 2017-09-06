@@ -46,7 +46,7 @@ public abstract class Generator implements CodeBuilder {
 		return name;
 	}
 
-	public abstract CodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes);
+	public abstract CodeTemplate newFuncTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes);
 
 	public abstract void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code);

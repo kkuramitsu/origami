@@ -9,19 +9,17 @@ import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarDomain;
 
 public class FuncDecl extends SyntaxRule implements ParseRule {
 
-	boolean isPublic = true;
+	boolean isPublic = false;
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		String name = t.getStringAt(_name, null);
 		String[] paramNames = this.parseParamNames(env, t.get(_param, null));
-		VarDomain dom = new VarDomain(paramNames.length + 1);
-		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), dom, null);
-		Ty returnType = env.parseType(env, t.get(_type, null), () -> dom.newVarType("ret"));
+		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), null);
+		Ty returnType = this.parseReturnType(env, name, t.get(_type, null), Ty.tAnyRef);
 		Transpiler tr = env.getTranspiler();
 		if (this.isPublic && !tr.isShellMode()) {
 			TFunction tf = env.get(name, TFunction.class);
@@ -30,9 +28,8 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 				env.reportLog(log);
 			}
 		}
-
-		TFunction tf = new TFunction(this.isPublic, name, dom, returnType, paramNames, paramTypes, t.get(_body, null));
-		env.getTranspiler().addFunction(env, name, tf);
+		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
+		tr.addFunction(env, name, tf);
 		return new DeclCode();
 	}
 

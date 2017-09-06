@@ -1,25 +1,32 @@
 package blue.origami.transpiler;
 
+import java.util.HashMap;
+
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarDomain;
+import blue.origami.util.ODebug;
 
 public class TFunction extends Template implements NameInfo {
+	static int seq = 0;
+	private int id;
 	protected boolean isPublic = false;
 	protected String[] paramNames;
 	protected Tree<?> body;
-	private VarDomain dom;
+	// private VarDomain dom;
 
-	public TFunction(boolean isPublic, String name, VarDomain dom, Ty returnType, String[] paramNames, Ty[] paramTypes,
-			Tree<?> body) {
+	public TFunction(boolean isPublic, String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Tree<?> body) {
 		super(name, returnType, paramTypes);
+		this.id = seq++;
 		this.isPublic = isPublic;
-		this.dom = dom;
 		this.paramNames = paramNames;
 		this.body = body;
+	}
+
+	public boolean isPublic() {
+		return this.isPublic;
 	}
 
 	@Override
@@ -37,10 +44,6 @@ public class TFunction extends Template implements NameInfo {
 		return null;
 	}
 
-	public boolean isPublic() {
-		return this.isPublic;
-	}
-
 	public String[] getParamNames() {
 		return this.paramNames;
 	}
@@ -48,47 +51,64 @@ public class TFunction extends Template implements NameInfo {
 	@Override
 	public String format(Object... args) {
 		return null;
-		// return String.format(this.template, args);
 	}
 
-	@Override
-	public Template update(TEnv env, Code[] params) {
-		// Ty[] p = this.getParamTypes();
-		// if (Ty.hasUntyped(p)) {
-		// p = p.clone();
-		// for (int i = 0; i < p.length; i++) {
-		// if (p[i].isUntyped()) {
-		// p[i] = params[i].getType();
-		// }
-		// if (p[i].isUntyped()) {
-		// return null;
-		// }
-		// }
-		// String sig = getSignature(this.name, p);
-		// Template tp = env.get(sig, Template.class);
-		// if (tp == null) {
-		// Transpiler tr = env.getTranspiler();
-		// tp = tr.defineFunction(this.isPublic, this.name, this.dom,
-		// this.paramNames, p, this.getReturnType(),
-		// this.body);
-		// env.add(sig, tp);
-		// }
-		// return tp;
-		// } else {
-		return this.generate(env);
-		// }
+	// let add(a, b) =
+	// a[0] + b[0]
+
+	// let reverse(a) =
+	// dup = {}
+	// [0 to < |a|].forEach(\i dup.push(a[|a|-1-i]))
+	// dup
+
+	// let f(n) =
+	// a = {}
+	// reverse(a)
+
+	boolean hasAnyRef() {
+		for (Ty t : this.getParamTypes()) {
+			if (t.isAnyRef()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public Template generate(TEnv env) {
 		Transpiler tr = env.getTranspiler();
-		Template tp = tr.defineFunction(this.isPublic, this.name, this.dom, this.paramNames, this.paramTypes,
+		Template tp = tr.defineFunction(this.isPublic, this.name, this.id, this.paramNames, this.paramTypes,
 				this.returnType, this.body);
 		this.setExpired();
 		return tp;
 	}
 
-	static String getSignature(String name, Ty[] p) {
+	@Override
+	public Template generate(TEnv env, Ty[] params) {
+		if (!this.hasAnyRef()) {
+			return this.generate(env);
+		}
+		Ty[] p = this.getParamTypes().clone();
+		for (int i = 0; i < p.length; i++) {
+			if (p[i].isAnyRef()) {
+				p[i] = params[i];
+			}
+		}
+		Transpiler tr = env.getTranspiler();
+		String key = sigkey(this.name, this.id, p);
+		Template tp = getGenerated(key);
+		ODebug.trace("sigkey=%s %s", key, tp);
+		if (tp == null) {
+			tp = tr.defineFunction(this.isPublic, this.name, this.id, this.paramNames, p, this.getReturnType(),
+					this.body);
+			setGenerated(key, tp);
+		}
+		return tp;
+
+	}
+
+	static String sigkey(String name, int id, Ty[] p) {
 		StringBuilder sb = new StringBuilder();
+		sb.append(id);
 		sb.append("#");
 		sb.append(name);
 		for (Ty t : p) {
@@ -96,6 +116,16 @@ public class TFunction extends Template implements NameInfo {
 			sb.append(t);
 		}
 		return sb.toString();
+	}
+
+	static HashMap<String, Template> sigkeyMap = new HashMap<>();
+
+	static Template getGenerated(String sigkey) {
+		return sigkeyMap.get(sigkey);
+	}
+
+	static void setGenerated(String sigkey, Template tp) {
+		sigkeyMap.put(sigkey, tp);
 	}
 
 	@Override

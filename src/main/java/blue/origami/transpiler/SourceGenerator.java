@@ -78,7 +78,7 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
-	public CodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeTemplate newFuncTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");
@@ -91,7 +91,7 @@ public class SourceGenerator extends Generator {
 			param = sb.toString();
 		}
 		String template = env.format("funccall", "%s(%s)", lname, param);
-		return new CodeTemplate(lname, returnType, paramTypes, template);
+		return new CodeTemplate(sname, returnType, paramTypes, template);
 	}
 
 	@Override

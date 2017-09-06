@@ -29,8 +29,8 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public Ty type() {
-		return this.innerTy == null ? this : this.innerTy.type();
+	public Ty real() {
+		return this.innerTy == null ? this : this.innerTy.real();
 	}
 
 	@Override

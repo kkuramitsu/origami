@@ -8,4 +8,5 @@ public interface CallCode extends Code {
 	public default boolean hasTemplate() {
 		return this.getTemplate() != null;
 	}
+
 }

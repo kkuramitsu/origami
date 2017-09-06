@@ -1,8 +1,12 @@
 package blue.origami.transpiler.code;
 
+import java.util.List;
+
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Template;
+import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
 public final class FuncRefCode extends CommonCode {
@@ -10,13 +14,48 @@ public final class FuncRefCode extends CommonCode {
 	Template template;
 
 	public FuncRefCode(String name, Template tp) {
-		super(Ty.tFunc(tp.getReturnType(), tp.getParamTypes()));
+		super(tp.getFuncType());
 		this.name = name;
 		this.template = tp;
 	}
 
 	public Template getRef() {
 		return this.template;
+	}
+
+	@Override
+	public Code asType(TEnv env, Ty ret) {
+		if (ret.isFunc()) {
+			FuncTy funcTy = (FuncTy) ret.real();
+			List<Template> l = env.findTemplates(this.name, funcTy.getParamSize());
+			if (l.size() == 0) {
+				return this.asUnfound(env, l, funcTy);
+			}
+			if (l.size() == 1) {
+				return this.asMatched(env, l.get(0).generate(env, funcTy.getParamTypes()), ret);
+			}
+			Template selected = Template.select(env, l, funcTy.getReturnType(), funcTy.getParamTypes(), 0);
+			if (selected == null) {
+				return this.asMismatched(env, l, funcTy);
+			}
+			return this.asMatched(env, selected.generate(env, funcTy.getParamTypes()), ret);
+		}
+		return super.castType(env, ret);
+	}
+
+	private Code asMatched(TEnv env, Template selected, Ty ret) {
+		this.template = selected;
+		this.setType(selected.getFuncType());
+		return this.castType(env, ret);
+	}
+
+	private Code asUnfound(TEnv env, List<Template> l, FuncTy funcTy) {
+		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
+		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, "", ExprCode.msgHint(l));
+	}
+
+	private Code asMismatched(TEnv env, List<Template> l, FuncTy funcTy) {
+		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, "", ExprCode.msgHint(l));
 	}
 
 	@Override
@@ -28,10 +67,5 @@ public final class FuncRefCode extends CommonCode {
 	public void strOut(StringBuilder sb) {
 		sb.append(this.name);
 	}
-
-	// @Override
-	// public Code applyCode(TEnv env, Code... params) {
-	// return new ExprCode(this.name, params);
-	// }
 
 }

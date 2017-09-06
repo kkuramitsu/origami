@@ -117,7 +117,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 	}
 
 	@Override
-	public CodeTemplate newFuncTemplate(TEnv env, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeTemplate newFuncTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 		// "(D)D", false);
 		StringBuilder sb = new StringBuilder();
@@ -126,7 +126,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 		sb.append("|");
 		sb.append(lname);
 		String template = sb.toString();
-		return new CodeTemplate(lname, returnType, paramTypes, template);
+		return new CodeTemplate(sname, returnType, paramTypes, template);
 	}
 
 	@Override
