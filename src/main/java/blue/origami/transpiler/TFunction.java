@@ -42,13 +42,14 @@ public class TFunction extends Template implements NameInfo {
 			this.returnType = ret;
 			Code code = env.typeBody(this.name, this.paramNames, pats, ret, dom, this.body);
 			boolean isAbstract = code.hasSome(c -> c.isAbstract());
-			dom.rename();
+			dom.reset();
+			pats = dom.dupParamTypes(pats);
+			ret = dom.dupRetType(ret);
 			this.paramTypes = Arrays.stream(pats).map(t -> t.finalTy()).toArray(Ty[]::new);
 			this.returnType = ret.finalTy();
+
 			// ODebug.trace(":::: abstract=%s %s ", isAbstract,
 			// this.getFuncType());
-			// System.out.println(":::::::" + this.name + "," + isAbstract + "
-			// ::: " + this.getFuncType());
 			if (!isAbstract && this.generated == null) {
 				Transpiler tr = env.getTranspiler();
 				this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,

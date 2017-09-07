@@ -21,7 +21,9 @@ String     = String
 <:a:a:Bool   =
 <=:a:a:Bool  = 
 
-|a|:Int      = 
+||:Int         = 
+[]:b[]:Int:b   =
+[]=:b[]:Int:b:()   =
 
 # Bool
 true:Bool       = true

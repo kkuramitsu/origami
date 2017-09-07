@@ -5,24 +5,24 @@ import blue.origami.transpiler.code.CastCode;
 
 public class VarDomain {
 	private VarTy[] dom;
+	private String[] names;
 	private int len = 0;
 
 	private VarDomain(int n) {
 		this.dom = new VarTy[n];
+		this.names = new String[n];
 		this.len = 0;
 	}
 
 	public <T> VarDomain(T[] a) {
-		this(a.length + 1);
+		this(a.length + 4);
 	}
 
-	public static Ty newVarTy(VarDomain dom, String name) {
-		return dom == null ? Ty.tAnyRef : dom.newVarTy(name);
-	}
-
-	public VarTy newVarTy() {
-		VarTy ty = Ty.tVar(String.valueOf((char) ('a' + this.len)));
+	private VarTy newVarTy(String name, int id) {
+		String var = String.valueOf((char) ('a' + this.len));
+		VarTy ty = this.useMemo ? var(this.len) : new VarTy(var, id);
 		this.dom[this.len] = ty;
+		this.names[this.len] = name == null ? var : name;
 		this.len++;
 		return ty;
 	}
@@ -31,41 +31,32 @@ public class VarDomain {
 		Ty[] p = paramTypes.clone();
 		for (int i = 0; i < paramTypes.length; i++) {
 			if (p[i].isAnyRef()) {
-				p[i] = this.newVarTy();
+				p[i] = this.newVarTy(null, -1);
 			}
 		}
 		return p;
 	}
 
 	public Ty retType(Ty retType) {
-		return retType.isAnyRef() ? this.newVarTy() : retType;
+		return retType.isAnyRef() ? this.newVarTy(null, Integer.MAX_VALUE) : retType;
 	}
 
 	public Ty resolvedAt(int index) {
 		return this.dom[index].finalTy();
 	}
 
-	public void rename() {
-		char c = 'a';
-		for (int i = 0; i < this.len; i++) {
-			Ty ty = this.dom[i].finalTy();
-			if (ty == this.dom[i]) {
-				this.dom[i].rename(String.valueOf(c++));
-			}
-		}
+	public static Ty newVarTy(VarDomain dom, String name) {
+		return dom == null ? Ty.tAnyRef : dom.newVarTy(name);
 	}
 
 	public Ty newVarTy(String name) {
 		String n = NameHint.safeName(name);
 		for (int i = 0; i < this.len; i++) {
-			if (n.equals(this.dom[i].getName())) {
+			if (this.names[i].equals(n)) {
 				return this.dom[i];
 			}
 		}
-		VarTy ty = Ty.tVar(n);
-		this.dom[this.len] = ty;
-		this.len++;
-		return ty;
+		return this.newVarTy(name, -1);
 	}
 
 	public Ty[] dupParamTypes(Ty[] dParamTypes, Ty[] codeTy) {
@@ -87,6 +78,10 @@ public class VarDomain {
 		return gParamTypes;
 	}
 
+	public Ty[] dupParamTypes(Ty[] dParamTypes) {
+		return this.dupParamTypes(dParamTypes, null);
+	}
+
 	public Ty dupRetType(Ty ret) {
 		return ret.dupVar(this);
 	}
@@ -103,6 +98,20 @@ public class VarDomain {
 			}
 		}
 		return mapCost;
+	}
+
+	private boolean useMemo = false;
+
+	public void reset() {
+		this.len = 0;
+		this.useMemo = true;
+	}
+
+	static VarTy[] memoed = { new VarTy("a", 0), new VarTy("b", 1), new VarTy("c", 2), new VarTy("d", 3),
+			new VarTy("e", 4), new VarTy("f", 5), };
+
+	public static VarTy var(int n) {
+		return memoed[n];
 	}
 
 }

@@ -143,6 +143,8 @@ public abstract class Template {
 
 	public static Template select(TEnv env, List<Template> founds, Ty ret, Ty[] p, int maxCost) {
 		Template selected = null;
+		// ODebug.trace("unselected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
+		// p));
 		int mapCost = maxCost - 1;
 		for (int i = 0; i < founds.size(); i++) {
 			Template next = founds.get(i);
@@ -156,12 +158,14 @@ public abstract class Template {
 				break;
 			}
 		}
-		if (TArrays.testSomeTrue(t -> t.isVar(), p)) {
+		// ODebug.trace("selected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
+		// p));
+		if (TArrays.testSomeTrue(t -> t.hasVar(), p)) {
 			Template abst = founds.get(founds.size() - 1);
 			if (abst != selected && abst.isAbstract()) {
 				int nextCost = match(env, abst, ret, p, maxCost);
+				ODebug.trace("ABST cost=%d,%s,%s", mapCost, nextCost, abst);
 				if (nextCost == mapCost) {
-					ODebug.trace("abstcost=%d,%s", nextCost, abst);
 					return abst;
 				}
 			}
@@ -192,9 +196,9 @@ public abstract class Template {
 			mapCost += env.mapCost(env, codeRet, ret, logs);
 		}
 		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
-		if (dom != null) {
-			mapCost += dom.mapCost();
-		}
+		// if (dom != null) {
+		// mapCost += dom.mapCost();
+		// }
 		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		logs.abort();
 		return mapCost;

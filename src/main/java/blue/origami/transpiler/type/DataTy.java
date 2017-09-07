@@ -5,6 +5,7 @@ import java.util.TreeSet;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.NameHint;
+import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -49,6 +50,9 @@ public class DataTy extends Ty {
 	}
 
 	public String[] names() {
+		if (this.fields == null) {
+			return TArrays.emptyNames;
+		}
 		return this.fields.toArray(new String[this.fields.size()]);
 	}
 
@@ -58,6 +62,9 @@ public class DataTy extends Ty {
 	}
 
 	public int size() {
+		if (this.fields == null) {
+			return 0;
+		}
 		return this.fields.size();
 	}
 
@@ -80,22 +87,6 @@ public class DataTy extends Ty {
 		}
 		throw new ErrorCode(s, TFmt.undefined_name__YY0_in_YY1, name, this);
 	}
-
-	// private void addField(DSymbol field) {
-	// // ODebug.trace("DataType: %s + %s", this, field);
-	// DSymbol[] nf = new DSymbol[this.fields.length + 1];
-	// System.arraycopy(this.fields, 0, nf, 0, this.fields.length);
-	// nf[this.fields.length] = field;
-	// this.fields = nf;
-	// }
-	//
-	// private void addFields(DSymbol... fields) {
-	// for (DSymbol f : fields) {
-	// if (!this.hasField(f)) {
-	// this.addField(f);
-	// }
-	// }
-	// }
 
 	@Override
 	public void strOut(StringBuilder sb) {

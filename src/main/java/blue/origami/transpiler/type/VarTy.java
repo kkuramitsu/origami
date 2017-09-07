@@ -1,27 +1,20 @@
 package blue.origami.transpiler.type;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.NameHint;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class VarTy extends Ty {
-	private static int seq = 0;
+	private static int seq = 27;
 	private String varName;
 	Ty innerTy;
 	final int id;
-	private Tree<?> s;
 
-	public VarTy(String varName, Tree<?> s) {
+	public VarTy(String varName, int id) {
 		this.varName = varName;
 		this.innerTy = null;
-		this.id = seq++;
-		this.s = s;
-	}
-
-	@Override
-	public boolean isNonMemo() {
-		return true;
+		this.id = id < 0 ? seq++ : id;
+		assert (seq > 0);
 	}
 
 	public boolean isParameter() {
@@ -29,8 +22,15 @@ public class VarTy extends Ty {
 	}
 
 	public String getName() {
-		return this.varName == null ? "_" + this.id
-				: this.varName /* + this.id */;
+		if (this.varName == null) {
+			return "_" + this.id;
+		}
+		return this.id < 27 ? this.varName : this.varName + "#" + this.id;
+	}
+
+	@Override
+	public boolean isNonMemo() {
+		return this.id > 26;
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class VarTy extends Ty {
 	}
 
 	private boolean lt(VarTy vt) {
-		return this.id < vt.id;
+		return this.id > vt.id;
 	}
 
 	@Override

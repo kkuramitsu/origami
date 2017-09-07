@@ -28,6 +28,7 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMap;
+import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
@@ -46,7 +47,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	void loadType() {
 		// this.reg(Ty.tUntyped0, Object.class);
-		this.reg(Ty.tVar("a"), Object.class);
+		this.reg(new VarTy("a", 0), Object.class);
 		this.reg(Ty.tAnyRef, Object.class);
 		this.reg(Ty.tVoid, void.class);
 		this.reg(Ty.tBool, boolean.class);

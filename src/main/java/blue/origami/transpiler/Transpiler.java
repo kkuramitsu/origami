@@ -28,6 +28,7 @@ import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -327,9 +328,6 @@ public class Transpiler extends TEnv {
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
 		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
-		if (dom != null) {
-			dom.rename();
-		}
 		tp.nomAll();
 		this.verbose("Typed", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
@@ -341,7 +339,7 @@ public class Transpiler extends TEnv {
 
 	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Tree<?> body) {
-		final Ty ret = (returnType.isAnyRef()) ? Ty.tVar("ret") : returnType;
+		final Ty ret = (returnType.isAnyRef()) ? new VarTy("ret", Integer.MAX_VALUE) : returnType;
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, ret, paramTypes);
 		this.add(name, tp);

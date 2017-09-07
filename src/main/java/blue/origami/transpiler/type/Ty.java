@@ -60,16 +60,16 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	// }
 
 	public static final VarTy tUntyped() {
-		return new VarTy(null, null);
+		return new VarTy(null, -1);
 	}
 
 	public static final VarTy tUntyped(Tree<?> s) {
-		return new VarTy(null, s);
+		return new VarTy(null, -1);
 	}
 
-	public static final VarTy tVar(String name) {
-		return new VarTy(name, null);
-	}
+	// public static final VarTy tVar(String name) {
+	// return new VarTy(name, null);
+	// }
 
 	/* Data */
 

@@ -18,6 +18,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
 
@@ -434,9 +435,9 @@ interface TEnvApi {
 			hiddenMap.put("byte", Ty.tByte);
 			hiddenMap.put("char", Ty.tChar);
 			hiddenMap.put("int64", Ty.tInt64);
-			hiddenMap.put("a", Ty.tVar("a"));
-			hiddenMap.put("b", Ty.tVar("b"));
-			hiddenMap.put("c", Ty.tVar("c"));
+			hiddenMap.put("a", VarDomain.var(0));
+			hiddenMap.put("b", new VarTy("b", 1));
+			hiddenMap.put("c", new VarTy("c", 2));
 		}
 		return hiddenMap.get(tsig);
 	}
