@@ -13,14 +13,15 @@ import blue.origami.util.ODebug;
 
 public class TFunction extends Template implements NameInfo {
 	static int seq = 0;
-	private int id;
+	private int funcId;
 	protected boolean isPublic = false;
 	protected String[] paramNames;
 	protected Tree<?> body;
+	private Template generated = null;
 
 	public TFunction(boolean isPublic, String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Tree<?> body) {
 		super(name, returnType, paramTypes);
-		this.id = seq++;
+		this.funcId = seq++;
 		this.isPublic = isPublic;
 		this.paramNames = paramNames;
 		this.body = body;
@@ -34,31 +35,38 @@ public class TFunction extends Template implements NameInfo {
 	public void used(TEnv env) {
 		if (this.isUnused()) {
 			super.used(env);
-			VarDomain dom = new VarDomain(this.paramNames.length + 1);
+			VarDomain dom = new VarDomain(this.paramNames);
 			Ty[] pats = dom.paramTypes(this.paramNames, this.paramTypes);
 			Ty ret = dom.retType(this.returnType);
 			this.paramTypes = pats;
 			this.returnType = ret;
 			Code code = env.typeBody(this.name, this.paramNames, pats, ret, dom, this.body);
-			this.isAbstract = code.hasSome(c -> c.isAbstract());
+			boolean isAbstract = code.hasSome(c -> c.isAbstract());
 			dom.rename();
 			this.paramTypes = Arrays.stream(pats).map(t -> t.finalTy()).toArray(Ty[]::new);
 			this.returnType = ret.finalTy();
-			ODebug.trace(":::: abstract=%s %s ", this.isAbstract, this.getFuncType());
-			System.out.println(":::::::" + this.name + "," + this.isAbstract + " ::: " + this.getFuncType());
+			// ODebug.trace(":::: abstract=%s %s ", isAbstract,
+			// this.getFuncType());
+			// System.out.println(":::::::" + this.name + "," + isAbstract + "
+			// ::: " + this.getFuncType());
+			if (!isAbstract && this.generated == null) {
+				Transpiler tr = env.getTranspiler();
+				this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
+						this.paramTypes, this.returnType, code);
+				ODebug.trace("generating %s", this.generated);
+				this.setExpired();
+			}
 		}
 	}
 
-	private boolean isAbstract = false;
-
 	@Override
 	public boolean isAbstract() {
-		return this.isAbstract;
+		return this.generated == null;
 	}
 
 	@Override
 	public boolean isExpired() {
-		return this.paramNames == null;
+		return this.generated != null;
 	}
 
 	void setExpired() {
@@ -68,7 +76,7 @@ public class TFunction extends Template implements NameInfo {
 
 	@Override
 	public String getDefined() {
-		return null;
+		return this.generated == null ? "" : this.generated.getDefined();
 	}
 
 	public String[] getParamNames() {
@@ -103,7 +111,7 @@ public class TFunction extends Template implements NameInfo {
 
 	public Template generate(TEnv env) {
 		Transpiler tr = env.getTranspiler();
-		Template tp = tr.defineFunction(this.isPublic, this.name, this.id, this.paramNames, this.paramTypes,
+		Template tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, this.paramTypes,
 				this.returnType, this.body);
 		this.setExpired();
 		return tp;
@@ -112,17 +120,17 @@ public class TFunction extends Template implements NameInfo {
 	@Override
 	public Template generate(TEnv env, Ty[] params) {
 		this.used(env);
-		if (!this.isAbstract) {
-			return this.generate(env);
+		if (!this.isAbstract()) {
+			return this.generated;
 		}
 		VarDomain dom = new VarDomain(this.getParamNames());
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Transpiler tr = env.getTranspiler();
-		String key = sigkey(this.name, this.id, p);
+		String key = sigkey(this.name, this.funcId, p);
 		Template tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
-			tp = tr.defineFunction(this.isPublic, this.name, this.id, this.paramNames, p, this.getReturnType(),
+			tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, this.getReturnType(),
 					this.body);
 			setGenerated(key, tp);
 			tp.used(env);

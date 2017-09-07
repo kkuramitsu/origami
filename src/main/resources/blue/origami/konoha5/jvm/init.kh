@@ -7,13 +7,21 @@ Int64      = long
 Float      = double
 String     = String
 
-# Interface
-+:a:a:a                =
--:a:a:a                =
+# Type Inference
++:a:a:a      =
+-:a:a:a      =
+*:a:b:c      =
+/:a:b:c      =
+%:a:b:c      =
 
 ==:a:a:Bool  =
 !=:a:a:Bool  = 
+>:a:a:Bool   =
+>=:a:a:Bool  = 
+<:a:a:Bool   =
+<=:a:a:Bool  = 
 
+|a|:Int      = 
 
 # Bool
 true:Bool       = true

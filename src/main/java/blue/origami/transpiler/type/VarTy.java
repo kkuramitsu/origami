@@ -100,7 +100,11 @@ public class VarTy extends Ty {
 		if (this.innerTy == null) {
 			sb.append(this.getName());
 		} else {
+			sb.append("|");
+			sb.append(this.getName());
+			sb.append("=");
 			StringCombinator.append(sb, this.innerTy);
+			sb.append("|");
 		}
 	}
 

@@ -436,6 +436,7 @@ interface TEnvApi {
 			hiddenMap.put("int64", Ty.tInt64);
 			hiddenMap.put("a", Ty.tVar("a"));
 			hiddenMap.put("b", Ty.tVar("b"));
+			hiddenMap.put("c", Ty.tVar("c"));
 		}
 		return hiddenMap.get(tsig);
 	}

@@ -12,7 +12,7 @@ public class FuncExpr extends SyntaxRule implements ParseRule {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		String[] paramNames = this.parseParamNames(env, t.get(_param, null));
-		VarDomain dom = new VarDomain(paramNames.length + 1);
+		VarDomain dom = new VarDomain(paramNames);
 		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), dom);
 		Ty returnType = this.parseReturnType(env, t.get(_type, null), dom);
 		Code body = env.parseCode(env, t.get(_body, null));

@@ -109,13 +109,14 @@ interface CodeAPI {
 		return castType(env, ret);
 	}
 
-	public default Code castType(TEnv env, Ty ret) {
+	public default Code castType(TEnv env, Ty ret0) {
 		Code self = self();
-		if (ret.accept(self)) {
+		if (ret0.accept(self)) {
 			// ODebug.trace("unnecessary cast %s => %s", f, ret);
 			return self;
 		}
 		Ty f = self.getType();
+		Ty ret = ret0;
 		Template tp = env.findTypeMap(env, f, ret);
 		if (tp == TConvTemplate.Stupid) {
 			new Exception().printStackTrace();

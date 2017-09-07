@@ -40,8 +40,7 @@ public class IfCode extends CodeN {
 
 	@Override
 	public Ty getType() {
-		Ty t = this.args[1].getType();
-		return (Ty.isUntyped(t)) ? this.args[2].getType() : t;
+		return (this.args[1].isError()) ? this.args[2].getType() : this.args[1].getType();
 	}
 
 	@Override
@@ -49,7 +48,7 @@ public class IfCode extends CodeN {
 		this.args[0] = this.args[0].asType(env, Ty.tBool);
 		this.args[1] = this.args[1].asType(env, ret);
 		this.args[2] = this.args[2].asType(env, ret);
-		return super.asType(env, ret);
+		return super.castType(env, ret);
 	}
 
 	public boolean isStatementStyle() {

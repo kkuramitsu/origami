@@ -156,7 +156,7 @@ public abstract class Template {
 				break;
 			}
 		}
-		if (TArrays.testAllTrue(t -> t.isVar(), p)) {
+		if (TArrays.testSomeTrue(t -> t.isVar(), p)) {
 			Template abst = founds.get(founds.size() - 1);
 			if (abst != selected && abst.isAbstract()) {
 				int nextCost = match(env, abst, ret, p, maxCost);

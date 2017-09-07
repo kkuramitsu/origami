@@ -131,12 +131,9 @@ public class ExprCode extends CodeN implements CallCode {
 		Ty[] dParamTypes = defined.getParamTypes();
 		Ty dRetType0 = defined.getReturnType();
 		if (defined.isGeneric()) {
-			VarDomain dom = new VarDomain(dParamTypes.length + 1);
-			Ty[] gParamTypes = new Ty[dParamTypes.length];
-			for (int i = 0; i < dParamTypes.length; i++) {
-				gParamTypes[i] = dParamTypes[i].dupVar(dom);
-			}
-			Ty dRetType = dRetType0.dupVar(dom);
+			VarDomain dom = new VarDomain(dParamTypes);
+			Ty[] gParamTypes = dom.dupParamTypes(dParamTypes, null);
+			Ty dRetType = dom.dupRetType(dRetType0);
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, gParamTypes[i]);
 				if (!defined.isAbstract()) {

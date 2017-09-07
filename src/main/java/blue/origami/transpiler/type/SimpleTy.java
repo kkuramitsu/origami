@@ -24,7 +24,7 @@ public class SimpleTy extends Ty {
 		if (codeTy.isVar()) {
 			return (codeTy.acceptTy(false, this, logs));
 		}
-		return this == codeTy;
+		return this == codeTy.real();
 	}
 
 	@Override

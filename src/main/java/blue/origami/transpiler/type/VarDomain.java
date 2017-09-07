@@ -7,13 +7,13 @@ public class VarDomain {
 	private VarTy[] dom;
 	private int len = 0;
 
-	public VarDomain(int n) {
+	private VarDomain(int n) {
 		this.dom = new VarTy[n];
 		this.len = 0;
 	}
 
 	public <T> VarDomain(T[] a) {
-		this(a.length);
+		this(a.length + 1);
 	}
 
 	public static Ty newVarTy(VarDomain dom, String name) {

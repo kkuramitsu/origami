@@ -367,6 +367,19 @@ public class Transpiler extends TEnv {
 		return tp;
 	}
 
+	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
+			Ty returnType, Code body) {
+		final String lname = isPublic ? name : this.getLocalName(name);
+		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
+		this.add(name, tp);
+		tp.asError(body.hasSome(c -> c.isError()));
+		this.verbose("Typed", () -> {
+			OConsole.println("%s %s", lname, tp.getFuncType());
+		});
+		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), body);
+		return tp;
+	}
+
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + NameHint.safeName(name);
