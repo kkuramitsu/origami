@@ -38,7 +38,8 @@ public class VarDomain {
 	}
 
 	public Ty retType(Ty retType) {
-		return retType.isAnyRef() ? this.newVarTy(null, Integer.MAX_VALUE) : retType;
+		return retType.isAnyRef()
+				? this.newVarTy(null, -1/* Integer.MAX_VALUE */) : retType;
 	}
 
 	public Ty resolvedAt(int index) {
@@ -50,13 +51,13 @@ public class VarDomain {
 	}
 
 	public Ty newVarTy(String name) {
-		String n = NameHint.safeName(name);
+		String n = this.useMemo ? name : NameHint.safeName(name);
 		for (int i = 0; i < this.len; i++) {
 			if (this.names[i].equals(n)) {
 				return this.dom[i];
 			}
 		}
-		return this.newVarTy(name, -1);
+		return this.newVarTy(n, -1);
 	}
 
 	public Ty[] dupParamTypes(Ty[] dParamTypes, Ty[] codeTy) {

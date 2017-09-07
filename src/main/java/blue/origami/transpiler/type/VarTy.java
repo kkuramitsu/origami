@@ -62,7 +62,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.innerTy == null ? VarDomain.newVarTy(dom, this.varName) : this.innerTy.dupVar(dom);
+		return this.innerTy == null ? VarDomain.newVarTy(dom, this.getName()) : this.innerTy.dupVar(dom);
 	}
 
 	@Override
@@ -76,6 +76,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+		// ODebug.trace("%s %s", this, codeTy);
 		if (this.innerTy != null) {
 			return this.innerTy.acceptTy(sub, codeTy, logs);
 		}

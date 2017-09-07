@@ -47,9 +47,7 @@ public class TFunction extends Template implements NameInfo {
 			ret = dom.dupRetType(ret);
 			this.paramTypes = Arrays.stream(pats).map(t -> t.finalTy()).toArray(Ty[]::new);
 			this.returnType = ret.finalTy();
-
-			// ODebug.trace(":::: abstract=%s %s ", isAbstract,
-			// this.getFuncType());
+			ODebug.trace(":::: abstract=%s %s ret=%s", isAbstract, this.getFuncType(), code.getType());
 			if (!isAbstract && this.generated == null) {
 				Transpiler tr = env.getTranspiler();
 				this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,

@@ -24,7 +24,6 @@ public class DataDictCode extends DataCode {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
 			this.setType(this.isMutable() ? Ty.tMonad("Dict'", firstType) : Ty.tMonad("Dict", firstType));
-			return this;
 		}
 		if (ret.isDict()) {
 			Ty ty = ret.getInnerTy();
@@ -34,7 +33,6 @@ public class DataDictCode extends DataCode {
 				}
 			}
 			this.setType(ty);
-			return this;
 		}
 		return this.castType(env, ret);
 	}
