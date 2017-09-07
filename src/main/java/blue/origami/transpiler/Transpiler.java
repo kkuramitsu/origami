@@ -326,9 +326,9 @@ public class Transpiler extends TEnv {
 		}
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
-		ODebug.trace("Typed Error=%s %s", code.hasErrorCode(), tp);
+		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
 		if (dom != null) {
-			dom.check();
+			dom.rename();
 		}
 		tp.nomAll();
 		this.verbose("Typed", () -> {
@@ -354,11 +354,11 @@ public class Transpiler extends TEnv {
 		}
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, ret));
-		tp.asError(code.hasErrorCode());
+		tp.asError(code.hasSome(c -> c.isError()));
 		if (ret != returnType) {
 			ret.toImmutable();
 		}
-		ODebug.trace("Typed Error=%s %s", code.hasErrorCode(), tp);
+		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
 		tp.nomAll();
 		this.verbose("Typed", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());

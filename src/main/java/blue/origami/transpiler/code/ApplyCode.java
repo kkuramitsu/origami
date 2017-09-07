@@ -28,7 +28,7 @@ public class ApplyCode extends CodeN {
 		this.args[0] = this.args[0].asType(env, Ty.tUntyped());
 		if (this.args[0] instanceof FuncRefCode) {
 			// ODebug.trace("switching to expr %s", this.args[0]);
-			String name = ((FuncRefCode) this.args[0]).name;
+			String name = ((FuncRefCode) this.args[0]).getName();
 			return new ExprCode(name, TArrays.ltrim(this.args)).asType(env, ret);
 		}
 

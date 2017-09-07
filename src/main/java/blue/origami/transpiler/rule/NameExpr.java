@@ -17,6 +17,8 @@ public class NameExpr implements ParseRule {
 	public interface NameInfo {
 		public boolean isNameInfo(TEnv env);
 
+		public void used(TEnv env);
+
 		public Code newCode(Tree<?> s);
 	}
 

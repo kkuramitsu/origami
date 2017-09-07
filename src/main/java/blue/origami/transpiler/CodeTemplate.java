@@ -26,6 +26,11 @@ public class CodeTemplate extends Template implements NameInfo {
 		return this.template;
 	}
 
+	@Override
+	public boolean isAbstract() {
+		return this.template.length() == 0;
+	}
+
 	public void nomAll() {
 		this.paramTypes = Arrays.stream(this.paramTypes).map(x -> x.finalTy()).toArray(Ty[]::new);
 		this.returnType = this.getReturnType().finalTy();

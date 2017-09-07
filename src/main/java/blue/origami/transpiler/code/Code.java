@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TArrays;
@@ -80,30 +81,28 @@ interface CodeAPI {
 		return Ty.isUntyped(self().getType());
 	}
 
-	public default boolean isDataType() {
-		return self().getType() instanceof DataTy;
+	public default boolean isAbstract() {
+		return false;
 	}
 
-	public default boolean hasErrorCode() {
-		if (this instanceof ErrorCode) {
+	public default boolean isError() {
+		return self() instanceof ErrorCode;
+	}
+
+	public default boolean hasSome(Predicate<Code> f) {
+		if (f.test(self())) {
 			return true;
 		}
 		for (Code c : self()) {
-			if (c.hasErrorCode()) {
+			if (c.hasSome(f)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public default int countUntyped(int count) {
-		if (this.isUntyped()) {
-			count++;
-		}
-		for (Code c : self()) {
-			count = c.countUntyped(count);
-		}
-		return count;
+	public default boolean isDataType() {
+		return self().getType() instanceof DataTy;
 	}
 
 	public default Code asType(TEnv env, Ty ret) {
@@ -112,11 +111,11 @@ interface CodeAPI {
 
 	public default Code castType(TEnv env, Ty ret) {
 		Code self = self();
-		Ty f = self.getType();
 		if (ret.accept(self)) {
 			// ODebug.trace("unnecessary cast %s => %s", f, ret);
 			return self;
 		}
+		Ty f = self.getType();
 		Template tp = env.findTypeMap(env, f, ret);
 		if (tp == TConvTemplate.Stupid) {
 			new Exception().printStackTrace();
@@ -131,14 +130,6 @@ interface CodeAPI {
 
 	public default Ty guessType() {
 		return self().getType();
-	}
-
-	public default Code goingOut() {
-		Ty t = self().getType();
-		if (t instanceof DataTy) {
-			// t.asLocal();
-		}
-		return self();
 	}
 
 	public default boolean hasReturn() {
@@ -160,8 +151,8 @@ interface CodeAPI {
 }
 
 abstract class CommonCode implements Code {
-	Tree<?> at;
-	Ty typed;
+	private Tree<?> at;
+	private Ty typed;
 
 	protected CommonCode(Ty t) {
 		this.at = null;
@@ -229,13 +220,6 @@ abstract class CommonCode implements Code {
 			}
 			return a[a.length - 1].getType();
 		}
-		// if (this.typed != null) {
-		// Ty ty = this.typed.staticTy();
-		// if (ty != this.typed) {
-		// ODebug.trace("nomTy %s --> %s", this.typed, ty);
-		// this.typed = ty;
-		// }
-		// }
 		return this.typed;
 	}
 

@@ -18,8 +18,8 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 	public Code apply(TEnv env, Tree<?> t) {
 		String name = t.getStringAt(_name, null);
 		String[] paramNames = this.parseParamNames(env, t.get(_param, null));
-		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null), null);
-		Ty returnType = this.parseReturnType(env, name, t.get(_type, null), Ty.tAnyRef);
+		Ty[] paramTypes = this.parseParamTypes(env, paramNames, t.get(_param, null));
+		Ty returnType = this.parseReturnType(env, name, t.get(_type, null));
 		Transpiler tr = env.getTranspiler();
 		if (this.isPublic && !tr.isShellMode()) {
 			TFunction tf = env.get(name, TFunction.class);

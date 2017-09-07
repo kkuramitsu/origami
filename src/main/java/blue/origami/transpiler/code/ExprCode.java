@@ -45,6 +45,11 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	@Override
+	public boolean isAbstract() {
+		return this.tp.isAbstract();
+	}
+
+	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		sec.pushCall(env, this);
 	}
@@ -77,11 +82,11 @@ public class ExprCode extends CodeN implements CallCode {
 
 	protected Code asUnfound(TEnv env, List<Template> l) {
 		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
-		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), msgHint(l));
+		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
 	protected Code asMismatched(TEnv env, List<Template> l) {
-		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(l));
+		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
 	protected void typeArgs(TEnv env, List<Template> l) {
@@ -113,7 +118,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return sb.toString();
 	}
 
-	static String msgHint(List<Template> l) {
+	static String msgHint(TEnv env, List<Template> l) {
 		StringBuilder sb = new StringBuilder();
 		StringCombinator.joins(sb, l, ", ", tp -> tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
@@ -124,25 +129,27 @@ public class ExprCode extends CodeN implements CallCode {
 
 	private Code asMatched(TEnv env, Template defined, Ty t) {
 		Ty[] dParamTypes = defined.getParamTypes();
-		Ty dRetType = defined.getReturnType();
+		Ty dRetType0 = defined.getReturnType();
 		if (defined.isGeneric()) {
 			VarDomain dom = new VarDomain(dParamTypes.length + 1);
 			Ty[] gParamTypes = new Ty[dParamTypes.length];
 			for (int i = 0; i < dParamTypes.length; i++) {
 				gParamTypes[i] = dParamTypes[i].dupVar(dom);
 			}
-			dRetType = dRetType.dupVar(dom);
+			Ty dRetType = dRetType0.dupVar(dom);
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, gParamTypes[i]);
-				if (dParamTypes[i] instanceof VarTy) {
-					ODebug.trace("must upcast %s => %s", gParamTypes[i], gParamTypes[i]);
-					this.args[i] = new BoxCastCode(gParamTypes[i], this.args[i]);
-				}
-				if (dParamTypes[i] instanceof FuncTy && dParamTypes[i].hasVar()) {
-					Ty anyTy = dParamTypes[i].dupVar(null); // AnyRef
-					Template conv = env.findTypeMap(env, gParamTypes[i], anyTy);
-					ODebug.trace("must funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
-					this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
+				if (!defined.isAbstract()) {
+					if (dParamTypes[i] instanceof VarTy) {
+						ODebug.trace("must upcast %s => %s", gParamTypes[i], gParamTypes[i]);
+						this.args[i] = new BoxCastCode(gParamTypes[i], this.args[i]);
+					}
+					if (dParamTypes[i] instanceof FuncTy && dParamTypes[i].hasVar()) {
+						Ty anyTy = dParamTypes[i].dupVar(null); // AnyRef
+						Template conv = env.findTypeMap(env, gParamTypes[i], anyTy);
+						ODebug.trace("must funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
+						this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
+					}
 				}
 			}
 			if (defined.isMutation()) {
@@ -151,15 +158,17 @@ public class ExprCode extends CodeN implements CallCode {
 			this.setTemplate(defined);
 			this.setType(dRetType);
 			Code result = this;
-			if (defined.getReturnType() instanceof VarTy) {
-				ODebug.trace("must downcast %s => %s", defined.getReturnType(), dRetType);
-				result = new UnboxCastCode(dRetType, result);
-			}
-			if (defined.getReturnType() instanceof FuncTy && defined.getReturnType().hasVar()) {
-				Ty anyTy = defined.getReturnType().dupVar(null); // AnyRef
-				Template conv = env.findTypeMap(env, dRetType, anyTy);
-				ODebug.trace("must funccast %s => %s :: %s", anyTy, dRetType, conv);
-				result = new FuncCastCode(dRetType, conv, result);
+			if (!defined.isAbstract()) {
+				if (defined.getReturnType() instanceof VarTy) {
+					ODebug.trace("must downcast %s => %s", defined.getReturnType(), dRetType);
+					result = new UnboxCastCode(dRetType, result);
+				}
+				if (defined.getReturnType() instanceof FuncTy && defined.getReturnType().hasVar()) {
+					Ty anyTy = defined.getReturnType().dupVar(null); // AnyRef
+					Template conv = env.findTypeMap(env, dRetType, anyTy);
+					ODebug.trace("must funccast %s => %s :: %s", anyTy, dRetType, conv);
+					result = new FuncCastCode(dRetType, conv, result);
+				}
 			}
 			return result.castType(env, t);
 		} else {
@@ -170,7 +179,7 @@ public class ExprCode extends CodeN implements CallCode {
 				this.args[0].getType().hasMutation(true);
 			}
 			this.setTemplate(defined);
-			this.setType(dRetType);
+			this.setType(dRetType0);
 			return this.castType(env, t);
 		}
 	}

@@ -16,13 +16,13 @@ public abstract class Template {
 	protected boolean isPure;
 	protected boolean isFaulty;
 	protected boolean isError;
+	protected boolean isUsed;
 
 	// Skeleton
 	protected boolean isGeneric;
 	protected final String name;
 	protected Ty[] paramTypes;
 	protected Ty returnType;
-
 	// private final String template;
 
 	public Template(String name, Ty returnType, Ty... paramTypes) {
@@ -41,6 +41,10 @@ public abstract class Template {
 		return this.returnType;
 	}
 
+	public boolean isAbstract() {
+		return true;
+	}
+
 	public boolean isGeneric() {
 		return this.isGeneric;
 	}
@@ -51,6 +55,14 @@ public abstract class Template {
 
 	public Ty[] getParamTypes() {
 		return this.paramTypes;
+	}
+
+	public void used(TEnv env) {
+		this.isUsed = true;
+	}
+
+	public final boolean isUnused() {
+		return !this.isUsed;
 	}
 
 	public boolean isMutation() {
@@ -107,6 +119,7 @@ public abstract class Template {
 	}
 
 	public Template generate(TEnv env, Ty[] params) {
+		this.used(env);
 		return this;
 	}
 
@@ -129,17 +142,27 @@ public abstract class Template {
 	}
 
 	public static Template select(TEnv env, List<Template> founds, Ty ret, Ty[] p, int maxCost) {
-		Template selected = founds.get(0);
-		int mapCost = match(env, selected, ret, p, maxCost);
-		ODebug.trace("cost=%d,%s", mapCost, selected);
-		for (int i = 1; i < founds.size(); i++) {
-			if (mapCost > 0) {
-				Template next = founds.get(i);
-				int nextCost = match(env, next, ret, p, maxCost);
-				ODebug.trace("nextcost=%d,%s", nextCost, next);
-				if (nextCost < mapCost) {
-					mapCost = nextCost;
-					selected = next;
+		Template selected = null;
+		int mapCost = maxCost - 1;
+		for (int i = 0; i < founds.size(); i++) {
+			Template next = founds.get(i);
+			int nextCost = match(env, next, ret, p, maxCost);
+			ODebug.trace("cost=%d,%s", nextCost, next);
+			if (nextCost < mapCost) {
+				mapCost = nextCost;
+				selected = next;
+			}
+			if (mapCost == 0) {
+				break;
+			}
+		}
+		if (TArrays.testAllTrue(t -> t.isVar(), p)) {
+			Template abst = founds.get(founds.size() - 1);
+			if (abst != selected && abst.isAbstract()) {
+				int nextCost = match(env, abst, ret, p, maxCost);
+				if (nextCost == mapCost) {
+					ODebug.trace("abstcost=%d,%s", nextCost, abst);
+					return abst;
 				}
 			}
 		}
@@ -153,28 +176,26 @@ public abstract class Template {
 		Ty[] p = tp.getParamTypes();
 		Ty codeRet = tp.getReturnType();
 		if (tp.isGeneric()) {
-			dom = new VarDomain(p.length + 1);
-			Ty[] gp = new Ty[p.length];
-			for (int i = 0; i < p.length; i++) {
-				gp[i] = p[i].dupVar(dom);
-			}
-			p = gp;
-			codeRet = codeRet.dupVar(dom);
+			dom = new VarDomain(p);
+			p = dom.dupParamTypes(p, null);
+			codeRet = dom.dupRetType(codeRet);
 		}
 		for (int i = 0; i < params.length; i++) {
 			mapCost += env.mapCost(env, params[i], p[i], logs);
-			// ODebug.trace("mapCost=%d %s %s", mapCost, this.args[i].getType(),
-			// p[i]);
+			// ODebug.trace("mapCost=%d %s => %s", mapCost, params[i], p[i]);
 			if (mapCost >= maxCost) {
+				logs.abort();
 				return mapCost;
 			}
 		}
 		if (ret.isSpecific()) {
 			mapCost += env.mapCost(env, codeRet, ret, logs);
 		}
+		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		if (dom != null) {
 			mapCost += dom.mapCost();
 		}
+		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		logs.abort();
 		return mapCost;
 	}

@@ -1,13 +1,14 @@
 package blue.origami.transpiler;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
-import blue.origami.transpiler.type.FlowStateTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
 public class TFunction extends Template implements NameInfo {
@@ -16,7 +17,6 @@ public class TFunction extends Template implements NameInfo {
 	protected boolean isPublic = false;
 	protected String[] paramNames;
 	protected Tree<?> body;
-	// private VarDomain dom;
 
 	public TFunction(boolean isPublic, String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Tree<?> body) {
 		super(name, returnType, paramTypes);
@@ -28,6 +28,32 @@ public class TFunction extends Template implements NameInfo {
 
 	public boolean isPublic() {
 		return this.isPublic;
+	}
+
+	@Override
+	public void used(TEnv env) {
+		if (this.isUnused()) {
+			super.used(env);
+			VarDomain dom = new VarDomain(this.paramNames.length + 1);
+			Ty[] pats = dom.paramTypes(this.paramNames, this.paramTypes);
+			Ty ret = dom.retType(this.returnType);
+			this.paramTypes = pats;
+			this.returnType = ret;
+			Code code = env.typeBody(this.name, this.paramNames, pats, ret, dom, this.body);
+			this.isAbstract = code.hasSome(c -> c.isAbstract());
+			dom.rename();
+			this.paramTypes = Arrays.stream(pats).map(t -> t.finalTy()).toArray(Ty[]::new);
+			this.returnType = ret.finalTy();
+			ODebug.trace(":::: abstract=%s %s ", this.isAbstract, this.getFuncType());
+			System.out.println(":::::::" + this.name + "," + this.isAbstract + " ::: " + this.getFuncType());
+		}
+	}
+
+	private boolean isAbstract = false;
+
+	@Override
+	public boolean isAbstract() {
+		return this.isAbstract;
 	}
 
 	@Override
@@ -85,15 +111,12 @@ public class TFunction extends Template implements NameInfo {
 
 	@Override
 	public Template generate(TEnv env, Ty[] params) {
-		if (!this.hasAnyRef()) {
+		this.used(env);
+		if (!this.isAbstract) {
 			return this.generate(env);
 		}
-		Ty[] p = this.getParamTypes().clone();
-		for (int i = 0; i < p.length; i++) {
-			if (p[i].isAnyRef()) {
-				p[i] = FlowStateTy.flowTy(params[i]);
-			}
-		}
+		VarDomain dom = new VarDomain(this.getParamNames());
+		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Transpiler tr = env.getTranspiler();
 		String key = sigkey(this.name, this.id, p);
 		Template tp = getGenerated(key);
@@ -102,9 +125,9 @@ public class TFunction extends Template implements NameInfo {
 			tp = tr.defineFunction(this.isPublic, this.name, this.id, this.paramNames, p, this.getReturnType(),
 					this.body);
 			setGenerated(key, tp);
+			tp.used(env);
 		}
 		return tp;
-
 	}
 
 	static String sigkey(String name, int id, Ty[] p) {

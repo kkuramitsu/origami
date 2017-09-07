@@ -9,6 +9,7 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.StringCombinator;
 
 public class FuncCode extends Code1 implements FuncParam {
@@ -17,14 +18,20 @@ public class FuncCode extends Code1 implements FuncParam {
 	String[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
+	VarDomain dom;
 	Tree<?> body;
 	HashMap<String, Code> fieldMap = null;
 
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, VarDomain dom, Code body) {
 		super(body);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
+		this.dom = dom;
+	}
+
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+		this(paramNames, paramTypes, returnType, null, body);
 	}
 
 	@Override

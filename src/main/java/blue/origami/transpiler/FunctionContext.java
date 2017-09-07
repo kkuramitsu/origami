@@ -104,6 +104,11 @@ public class FunctionContext {
 		public String toString() {
 			return String.format("[%s, %s :: %s, %s]", this.name, this.seq, this.type, this.refLevel);
 		}
+
+		@Override
+		public void used(TEnv env) {
+
+		}
 	}
 
 }

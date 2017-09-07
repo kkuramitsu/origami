@@ -10,13 +10,17 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
 public final class FuncRefCode extends CommonCode {
-	String name;
-	Template template;
+	private String name;
+	private Template template;
 
 	public FuncRefCode(String name, Template tp) {
 		super(tp.getFuncType());
 		this.name = name;
 		this.template = tp;
+	}
+
+	public String getName() {
+		return this.name;
 	}
 
 	public Template getRef() {
@@ -40,6 +44,10 @@ public final class FuncRefCode extends CommonCode {
 			}
 			return this.asMatched(env, selected.generate(env, funcTy.getParamTypes()), ret);
 		}
+		if (this.isUntyped()) {
+			this.template.used(env);
+			this.setType(this.template.getFuncType());
+		}
 		return super.castType(env, ret);
 	}
 
@@ -51,11 +59,11 @@ public final class FuncRefCode extends CommonCode {
 
 	private Code asUnfound(TEnv env, List<Template> l, FuncTy funcTy) {
 		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
-		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, "", ExprCode.msgHint(l));
+		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 
 	private Code asMismatched(TEnv env, List<Template> l, FuncTy funcTy) {
-		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, "", ExprCode.msgHint(l));
+		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 
 	@Override

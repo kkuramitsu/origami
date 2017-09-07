@@ -62,7 +62,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.innerTy == null ? VarDomain.newVarType(dom, this.varName) : this.innerTy.dupVar(dom);
+		return this.innerTy == null ? VarDomain.newVarTy(dom, this.varName) : this.innerTy.dupVar(dom);
 	}
 
 	@Override

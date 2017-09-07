@@ -16,6 +16,7 @@ import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
@@ -583,6 +584,25 @@ interface TEnvApi {
 		List<Template> l = new ArrayList<>(8);
 		env().findList(name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == paramSize);
 		return l;
+	}
+
+	public default Code typeBody(String name, String[] pnames, Ty[] pats, Ty ret, VarDomain dom, Tree<?> body) {
+		boolean dyn = ret.hasVar();
+		final TEnv env = env().newEnv();
+		// final CodeTemplate tp = this.generator.newFuncTemplate(this, name,
+		// name, ret, pats);
+		// env.add(name, tp);
+		FunctionContext fcx = new FunctionContext();
+		env.add(FunctionContext.class, fcx);
+		for (int i = 0; i < pnames.length; i++) {
+			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
+		}
+		Code code0 = env.parseCode(env, body);
+		Code code = env.catchCode(() -> code0.asType(env, ret));
+		if (dyn) {
+			ret.toImmutable();
+		}
+		return code;
 	}
 
 }

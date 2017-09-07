@@ -4,52 +4,98 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.CastCode;
 
 public class VarDomain {
-	VarTy[] dom;
+	private VarTy[] dom;
+	private int len = 0;
 
 	public VarDomain(int n) {
 		this.dom = new VarTy[n];
+		this.len = 0;
 	}
 
-	public Ty newVarType(String name) {
-		String n = NameHint.safeName(name);
-		for (int i = 0; i < this.dom.length; i++) {
-			if (this.dom[i] == null) {
-				this.dom[i] = Ty.tVar(n);
-				return this.dom[i];
-			}
-			if (n.equals(this.dom[i].getName())) {
-				return this.dom[i];
-			}
-		}
-		assert (n == null) : "extend the size of dom";
-		return null;
+	public <T> VarDomain(T[] a) {
+		this(a.length);
 	}
 
-	public static Ty newVarType(VarDomain dom, String name) {
-		return dom == null ? Ty.tAnyRef : dom.newVarType(name);
+	public static Ty newVarTy(VarDomain dom, String name) {
+		return dom == null ? Ty.tAnyRef : dom.newVarTy(name);
 	}
 
-	public int size() {
-		for (int i = 0; i < this.dom.length; i++) {
-			if (this.dom[i] == null) {
-				return i;
+	public VarTy newVarTy() {
+		VarTy ty = Ty.tVar(String.valueOf((char) ('a' + this.len)));
+		this.dom[this.len] = ty;
+		this.len++;
+		return ty;
+	}
+
+	public Ty[] paramTypes(String[] names, Ty[] paramTypes) {
+		Ty[] p = paramTypes.clone();
+		for (int i = 0; i < paramTypes.length; i++) {
+			if (p[i].isAnyRef()) {
+				p[i] = this.newVarTy();
 			}
 		}
-		return this.dom.length;
+		return p;
+	}
+
+	public Ty retType(Ty retType) {
+		return retType.isAnyRef() ? this.newVarTy() : retType;
 	}
 
 	public Ty resolvedAt(int index) {
 		return this.dom[index].finalTy();
 	}
 
+	public void rename() {
+		char c = 'a';
+		for (int i = 0; i < this.len; i++) {
+			Ty ty = this.dom[i].finalTy();
+			if (ty == this.dom[i]) {
+				this.dom[i].rename(String.valueOf(c++));
+			}
+		}
+	}
+
+	public Ty newVarTy(String name) {
+		String n = NameHint.safeName(name);
+		for (int i = 0; i < this.len; i++) {
+			if (n.equals(this.dom[i].getName())) {
+				return this.dom[i];
+			}
+		}
+		VarTy ty = Ty.tVar(n);
+		this.dom[this.len] = ty;
+		this.len++;
+		return ty;
+	}
+
+	public Ty[] dupParamTypes(Ty[] dParamTypes, Ty[] codeTy) {
+		Ty[] gParamTypes = new Ty[dParamTypes.length];
+		for (int i = 0; i < dParamTypes.length; i++) {
+			gParamTypes[i] = dParamTypes[i].dupVar(this);
+			if (codeTy != null) {
+				gParamTypes[i].acceptTy(true, codeTy[i], VarLogger.Update);
+			}
+		}
+		if (codeTy != null) {
+			for (int i = 0; i < dParamTypes.length; i++) {
+				gParamTypes[i].acceptTy(true, codeTy[i], VarLogger.Update);
+			}
+			for (int i = 0; i < dParamTypes.length; i++) {
+				gParamTypes[i] = gParamTypes[i].finalTy();
+			}
+		}
+		return gParamTypes;
+	}
+
+	public Ty dupRetType(Ty ret) {
+		return ret.dupVar(this);
+	}
+
 	public int mapCost() {
 		int mapCost = 0;
-		for (int i = 0; i < this.dom.length; i++) {
-			if (this.dom[i] == null) {
-				break;
-			}
+		for (int i = 0; i < this.len; i++) {
 			Ty t = this.dom[i].finalTy();
-			if (t.hasVar()) {
+			if (t == this.dom[i]) {
 				mapCost += CastCode.STUPID;
 			}
 			if (t == Ty.tBool || t == Ty.tInt || t == Ty.tFloat) {
@@ -57,19 +103,6 @@ public class VarDomain {
 			}
 		}
 		return mapCost;
-	}
-
-	public void check() {
-		char c = 'a';
-		for (int i = 0; i < this.dom.length; i++) {
-			if (this.dom[i] == null) {
-				break;
-			}
-			Ty ty = this.dom[i].finalTy();
-			if (ty == this.dom[i]) {
-				this.dom[i].rename(String.valueOf(c++));
-			}
-		}
 	}
 
 }

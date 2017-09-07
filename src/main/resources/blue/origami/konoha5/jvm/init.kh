@@ -7,6 +7,14 @@ Int64      = long
 Float      = double
 String     = String
 
+# Interface
++:a:a:a                =
+-:a:a:a                =
+
+==:a:a:Bool  =
+!=:a:a:Bool  = 
+
+
 # Bool
 true:Bool       = true
 false:Bool      = false
