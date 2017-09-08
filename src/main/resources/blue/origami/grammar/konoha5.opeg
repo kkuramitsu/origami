@@ -159,6 +159,8 @@ int x = 1
 "function" =
 	( [Ff] 'unction' EOT)
 	/ ( [Ff] 'unc' EOT)
+	/ ( [Ff] 'un' EOT)
+	/ ( [Ff] 'n' EOT)
 	/ ( [Dd] 'efun' EOT)
 	/ ( [Dd] 'ef' EOT)
 
@@ -166,7 +168,7 @@ FuncDecl = LetFuncDecl / {
 	("public" "function" #PublicFuncDecl  / "function" #FuncDecl )
 	$name(Identifier)
 	"(" $param(Params) ")"
-	$type(":as" Type)?
+	$type(( ":as" / "->" ) Type)?
 	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
 } / CFuncDecl
 
@@ -227,6 +229,7 @@ ConstDecl = CConstDecl / {
 	$suffix(Quantity)?
 	(":as" $type(Type))?
 	"=" $expr(Expression)
+  ";"?
 }
 
 CConstDecl = {
@@ -234,6 +237,7 @@ CConstDecl = {
 	$name(Identifier)
 	$suffix(Quantity)?
 	"=" $expr(Expression)
+  ";"?
 }
 
 example ExampleDecl '''
@@ -312,6 +316,7 @@ LetDecl = {
 	$suffix(Quantity)?
 	(":as" $type(Type))?
 	"=" $expr(Expression)
+  ";"?
 	#LetDecl
 }
 
@@ -325,12 +330,14 @@ IfStmt = {
 ReturnStmt = {
 	[Rr] 'eturn' EOT
 	$expr(Expression)?
+  ";"?
 	#ReturnStmt
 }
 
 AssertStmt = {
 	[Aa] 'ssert' EOT
 	$expr(Expression)
+  ";"?
 	#AssertStmt
 }
 
@@ -489,15 +496,18 @@ AnyCaseExpr = {
 }
 
 NoneCaseExpr = {
-	[Nn] ('one' / 'ull' / 'UIL' ) EOT
+	[Nn] ('one' / 'ull' / 'UIL' / 'il' ) EOT
 	#NoneCase
 }
 
 RangeCaseExpr = {
 	"("
 	$start(MatchValue)
-	[Tt] 'o' _
-	("<" #RangeUntilCase / #RangeCase)
+  ( [Tt] 'o' _
+	  ("<" #RangeUntilCase / #RangeCase)
+	/ '..'
+	  ("<" #RangeUntilCase / "." #RangeCase)
+	)
 	$end(MatchValue)
 	")"
 }
@@ -625,7 +635,7 @@ CMPR =
 
 IsaExpr =
 	InfixExpr
-	{$left ('isa?' _ / 'is?' _ ) #IsaExpr $right(Type) }?
+	{$left ('isa' '?'? _ / 'is' '?'? _ ) #IsaExpr $right(Type) }?
 
 ShiftExpr =
 	SumExpr
@@ -846,7 +856,7 @@ EXPONENT =
 
 TrueExpr  = { [Tt] 'rue' (&W !W)?  #TrueExpr } _
 FalseExpr = { [Ff] 'alse' (&W !W)? #FalseExpr } _
-NullExpr  = { [Nn] ('ull' / 'one')  (&W !W)? #NullExpr } _
+NullExpr  = { [Nn] ('ull' / 'one' / 'il')  (&W !W)? #NullExpr } _
 
 /* Identifier */
 
@@ -873,7 +883,8 @@ PrimaryType =
 	VarType
 	/ { [Tt] 'ypeof' EOT $expr(Expression) #ExprType }
 	/ {'@' $name(Identifier) $type(PrimaryType) #MType }
-	/ {('Maybe' EOT / 'Option' EOT) _ $base(Type) #OptionType }
+	/ {('Maybe' EOT / 'Option' 'al'? EOT) _ $base(Type) #OptionType }
+  / {'Option' 'al'? _ "<" $base(Type) _ '>' _ #OptionType }
 	/ { '_' #ClassType } _
 	/ ClassType
 	/ FuncType
