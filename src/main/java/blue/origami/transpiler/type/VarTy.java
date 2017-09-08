@@ -6,26 +6,27 @@ import blue.origami.util.StringCombinator;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
-	private String varName;
-	Ty innerTy;
+	private String name;
+	Ty resolvedTy;
 	final int id;
+	boolean hasMutation = true;
 
 	public VarTy(String varName, int id) {
-		this.varName = varName;
-		this.innerTy = null;
+		this.name = varName;
+		this.resolvedTy = null;
 		this.id = id < 0 ? seq++ : id;
 		assert (seq > 0);
 	}
 
 	public boolean isParameter() {
-		return (this.varName != null && NameHint.isOneLetterName(this.varName));
+		return (this.name != null && NameHint.isOneLetterName(this.name));
 	}
 
 	public String getName() {
-		if (this.varName == null) {
-			return "_" + this.id;
+		if (this.name == null) {
+			return "#" + this.id;
 		}
-		return this.id < 27 ? this.varName : this.varName + "#" + this.id;
+		return this.id < 27 ? this.name : this.name + "#" + this.id;
 	}
 
 	@Override
@@ -35,39 +36,40 @@ public class VarTy extends Ty {
 
 	@Override
 	public Ty real() {
-		return this.innerTy == null ? this : this.innerTy.real();
+		return this.resolvedTy == null ? this : this.resolvedTy.real();
 	}
 
 	@Override
 	public Ty getInnerTy() {
-		return this.innerTy == null ? this : this.innerTy.getInnerTy();
+		return this.resolvedTy == null ? this : this.resolvedTy.getInnerTy();
+	}
+
+	@Override
+	public void hasMutation(boolean b) {
+		this.hasMutation = b;
 	}
 
 	@Override
 	public Ty toImmutable() {
-		if (this.innerTy != null) {
-			this.innerTy = this.innerTy.toImmutable();
+		if (this.resolvedTy != null) {
+			this.resolvedTy = this.resolvedTy.toImmutable();
 		}
 		return this;
 	}
 
-	public void rename(String name) {
-		this.varName = name;
-	}
-
 	@Override
 	public boolean hasVar() {
-		return this.isVar() || this.innerTy == null || this.innerTy.hasVar();
+		return this.isVar() || this.resolvedTy == null || this.resolvedTy.hasVar();
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.innerTy == null ? VarDomain.newVarTy(dom, this.getName()) : this.innerTy.dupVar(dom);
+		return this.resolvedTy == null ? VarDomain.newVarTy(dom, this.getName()) : this.resolvedTy.dupVar(dom);
 	}
 
 	@Override
 	public Ty finalTy() {
-		return this.innerTy == null ? this : this.innerTy.finalTy();
+		return this.resolvedTy == null ? this : this.resolvedTy.finalTy();
 	}
 
 	private boolean lt(VarTy vt) {
@@ -77,20 +79,20 @@ public class VarTy extends Ty {
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		// ODebug.trace("%s %s", this, codeTy);
-		if (this.innerTy != null) {
-			return this.innerTy.acceptTy(sub, codeTy, logs);
+		if (this.resolvedTy != null) {
+			return this.resolvedTy.acceptTy(sub, codeTy, logs);
 		}
 		if (codeTy.isVar()) {
 			VarTy varTy = (VarTy) codeTy.real();
-			if (varTy.innerTy != null) {
-				return this.acceptTy(sub, varTy.innerTy, logs);
+			if (varTy.resolvedTy != null) {
+				return this.acceptTy(sub, varTy.resolvedTy, logs);
 			}
 			if (this.id != varTy.id) {
 				return this.lt(varTy) ? logs.update(varTy, this) : logs.update(this, varTy);
 			}
 			return true;
 		}
-		if (logs.update(this, codeTy) && this.varName != null) {
+		if (logs.update(this, codeTy) && this.name != null) {
 			ODebug.trace("infer %s as %s", this.getName(), codeTy);
 		}
 		return true;
@@ -98,32 +100,23 @@ public class VarTy extends Ty {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.innerTy == null) {
+		if (this.resolvedTy == null) {
 			sb.append(this.getName());
 		} else {
 			sb.append("|");
 			sb.append(this.getName());
 			sb.append("=");
-			StringCombinator.append(sb, this.innerTy);
+			StringCombinator.append(sb, this.resolvedTy);
 			sb.append("|");
 		}
 	}
 
-	// @Override
-	// public String key() {
-	// if (this.innerTy == null) {
-	// return "a";
-	// } else {
-	// return this.innerTy.key();
-	// }
-	// }
-
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
-		if (this.innerTy == null) {
+		if (this.resolvedTy == null) {
 			return codeType.mapType("a");
 		} else {
-			return this.innerTy.mapType(codeType);
+			return this.resolvedTy.mapType(codeType);
 		}
 	}
 

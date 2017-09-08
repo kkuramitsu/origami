@@ -107,10 +107,12 @@ public abstract class Ty implements TypeApi, StringCombinator {
 	}
 
 	public static final DataTy tRecord(String... names) {
+		Arrays.sort(names);
 		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(false, names));
 	}
 
 	public static final DataTy tData(String... names) {
+		Arrays.sort(names);
 		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(true, names));
 	}
 

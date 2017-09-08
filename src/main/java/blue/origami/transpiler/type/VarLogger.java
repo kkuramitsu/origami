@@ -12,7 +12,7 @@ public class VarLogger {
 		VarTy varTy;
 
 		VarLog(VarTy v) {
-			this.prevTy = v.innerTy;
+			this.prevTy = v.resolvedTy;
 			this.varTy = v;
 		}
 	}
@@ -33,7 +33,7 @@ public class VarLogger {
 			}
 			this.logs.add(new VarLog(v));
 		}
-		v.innerTy = ty;
+		v.resolvedTy = ty;
 		return true;
 	}
 
@@ -41,7 +41,7 @@ public class VarLogger {
 		if (this.logs != null) {
 			for (int i = this.logs.size() - 1; i >= 0; i--) {
 				VarLog log = this.logs.get(i);
-				log.varTy.innerTy = log.prevTy;
+				log.varTy.resolvedTy = log.prevTy;
 			}
 			this.logs = null;
 		}

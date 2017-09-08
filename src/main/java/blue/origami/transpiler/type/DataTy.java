@@ -37,7 +37,7 @@ public class DataTy extends Ty {
 	}
 
 	DataTy(boolean isMutable, String... names) {
-		super();
+		this();
 		this.isMutable = isMutable;
 		for (String n : names) {
 			this.fields.add(n);

@@ -189,7 +189,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	@Override
 	protected String key(DataTy dataTy) {
-		return dataTy.size() == 0 ? "{}" : dataTy.names().toString();
+		return dataTy.size() == 0 ? "{}" : StringCombinator.joins(dataTy.names(), ",");
 	}
 
 	@Override

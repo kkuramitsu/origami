@@ -19,13 +19,21 @@ public class FlowDataTy extends DataTy {
 	}
 
 	@Override
+	public Ty finalTy() {
+		if (!this.hasMutation) {
+			return Ty.tRecord(this.names());
+		}
+		return Ty.tData(this.names());
+	}
+
+	@Override
 	public boolean hasField(String field, VarLogger logs) {
-		if (!this.hasField(field)) {
+		if (!super.hasField(field, logs)) {
 			if (logs.isUpdate()) {
 				this.fields.add(field);
 			}
-			return true;
 		}
 		return true;
 	}
+
 }
