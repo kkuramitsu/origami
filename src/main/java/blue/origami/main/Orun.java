@@ -14,7 +14,7 @@ public class Orun extends OCommand {
 		String target = options.stringValue(ParserOption.Target, "jvm");
 		Grammar g = this.getGrammar(options, "konoha5.opeg");
 		Transpiler env = new Transpiler(g, target, options);
-		env.setVerbose(this.isDebug());
+		// ODebug.setVerbose(this.isDebug());
 		ODebug.setDebug(this.isDebug());
 		for (String file : files) {
 			env.loadScriptFile(file);

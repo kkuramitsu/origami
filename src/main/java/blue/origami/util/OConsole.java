@@ -131,6 +131,4 @@ public class OConsole {
 		System.out.println();
 	}
 
-	// reporting
-
 }

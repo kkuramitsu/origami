@@ -12,7 +12,6 @@ import blue.origami.util.ODebug;
 public class AsmClassLoader extends ClassLoader {
 
 	int seq = 0;
-	// private final Map<String, OClassDecl> uncompiledMap;
 
 	public AsmClassLoader() {
 		super();
@@ -59,7 +58,6 @@ public class AsmClassLoader extends ClassLoader {
 
 	@Override
 	protected Class<?> findClass(String cname) throws ClassNotFoundException {
-		assert (cname != null);
 		byte[] byteCode = this.codeMap.remove(cname);
 		if (byteCode == null) {
 			throw new ClassNotFoundException("not found '" + cname + "'");
@@ -69,11 +67,10 @@ public class AsmClassLoader extends ClassLoader {
 		return c;
 	}
 
-	public boolean traceMode = true;
 	private String dumpDirectory = null;
 
 	void dump(String className, byte[] byteCode) {
-		if (this.traceMode || this.dumpDirectory != null) {
+		ODebug.showCyan("Generated", () -> {
 			int index = className.lastIndexOf('.');
 			String classFileName = className.substring(index + 1) + ".class";
 			if (this.dumpDirectory != null) {
@@ -85,8 +82,8 @@ public class AsmClassLoader extends ClassLoader {
 				if (this.dumpDirectory == null) {
 					new File(classFileName).deleteOnExit();
 				}
-				OConsole.beginColor(OConsole.Cyan);
-				OConsole.println("[Generated] " + classFileName + " size=" + byteCode.length);
+				// OConsole.println("[Generated] " + classFileName + " size=" +
+				// byteCode.length);
 				ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-l", "-p", "-s",
 						/*
 						 * "-v" ,
@@ -95,72 +92,12 @@ public class AsmClassLoader extends ClassLoader {
 				Process p = pb.start();
 				p.waitFor();
 				p.destroy();
-				OConsole.endColor();
 			} catch (IOException e) {
-				ODebug.trace("Cannot dump " + classFileName + " caused by " + e);
+				OConsole.println("Cannot dump " + classFileName + " caused by " + e);
 			} catch (InterruptedException e) {
-				ODebug.traceException(e);
+				e.printStackTrace();
 			}
-		}
+		});
 	}
-
-	// // uniquename
-	//
-	// HashMap<String, String> shortMap = new HashMap<>();
-	// HashMap<Character, Integer> countMap = new HashMap<>();
-	//
-	// public final String shortName(OType t) {
-	// String desc = t.typeDesc(0);
-	// String shortName = this.shortMap.get(desc);
-	// if (shortName == null) {
-	// Character firstChar = t.getName().charAt(0);
-	// shortName = String.valueOf(firstChar);
-	// Integer c = this.countMap.get(firstChar);
-	// if (c == null) {
-	// this.countMap.put(firstChar, 0);
-	// } else {
-	// c = c + 1;
-	// shortName = c + shortName;
-	// this.countMap.put(firstChar, c);
-	// }
-	// this.shortMap.put(desc, shortName);
-	// }
-	// return shortName;
-	// }
-	//
-	// public final String uniqueName(String prefix, OType... params) {
-	// StringBuilder sb = new StringBuilder();
-	// sb.append(prefix);
-	// sb.append("$");
-	// for (OType t : params) {
-	// sb.append(this.shortName(t));
-	// }
-	// return sb.toString();
-	// }
-	//
-	// public final String uniqueName(String prefix, int id, OType... params) {
-	// StringBuilder sb = new StringBuilder();
-	// sb.append(prefix);
-	// sb.append("$$");
-	// sb.append(1000 + id);
-	// sb.append("$");
-	// for (OType t : params) {
-	// sb.append(this.shortName(t));
-	// }
-	// return sb.toString();
-	// }
-
-	// /* message */
-	//
-	// private ArrayList<String> messageList = new ArrayList<>();
-	//
-	// public final int getMessageId(String message) {
-	// this.messageList.add(message);
-	// return this.messageList.size() - 1;
-	// }
-	//
-	// public final String getMessageById(int md) {
-	// return this.messageList.get(md);
-	// }
 
 }

@@ -184,22 +184,6 @@ public class Transpiler extends TEnv {
 		this.emitCode(this, sc);
 	}
 
-	boolean isVerbose = false;
-
-	public void setVerbose(boolean debug) {
-		this.isVerbose = debug;
-		this.generator.setVerbose(debug);
-	}
-
-	public void verbose(String msg, Runnable p) {
-		if (this.isVerbose) {
-			OConsole.beginColor(OConsole.Blue);
-			OConsole.print("[" + msg + "] ");
-			p.run();
-			OConsole.endColor();
-		}
-	}
-
 	public void verboseError(String msg, Runnable p) {
 		OConsole.beginColor(OConsole.Red);
 		OConsole.print("[" + msg + "] ");
@@ -237,7 +221,7 @@ public class Transpiler extends TEnv {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		this.verbose("Tree", () -> {
+		ODebug.showBlue("Tree", () -> {
 			OConsole.println(t);
 		});
 		this.generator.setup();
@@ -338,9 +322,8 @@ public class Transpiler extends TEnv {
 		}
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
-		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
 		tp.nomAll();
-		this.verbose("Typed", () -> {
+		ODebug.showBlue("TypedTree", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 		});
 		// assert (!returnType.isUntyped());
@@ -369,7 +352,7 @@ public class Transpiler extends TEnv {
 		}
 		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
 		tp.nomAll();
-		this.verbose("Typed", () -> {
+		ODebug.showBlue("TypedTree", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 		});
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
@@ -382,7 +365,7 @@ public class Transpiler extends TEnv {
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		tp.asError(body.hasSome(c -> c.isError()));
-		this.verbose("Typed", () -> {
+		ODebug.showBlue("TypedTree", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 		});
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), body);

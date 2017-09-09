@@ -20,12 +20,13 @@ public class Otranscode extends OCommand {
 		for (String file : files) {
 			this.loadScriptFile(trcc, file);
 		}
-		ODebug.setDebug(this.isDebug());
+		ODebug.setHacked(this.isHacked());
+		ODebug.setVerbose(options.is(ParserOption.Verbose, this.isVerbose()));
+		ODebug.setVerbose(options.is(ParserOption.Debug, this.isDebug()));
 		Arrays.stream(trcc).forEach(tr -> {
 			tr.setShellMode(true);
-			tr.setVerbose(true);
 		});
-		if (files.length == 0 || this.isDebug()) {
+		if (files.length == 0 || this.isREPL()) {
 			displayVersion("Konoha5->" + target);
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 
@@ -72,12 +73,20 @@ public class Otranscode extends OCommand {
 		}
 	}
 
+	public boolean isREPL() {
+		return false;
+	}
+
+	public boolean isHacked() {
+		return false;
+	}
+
 	public boolean isVerbose() {
-		return true;
+		return false;
 	}
 
 	public boolean isDebug() {
-		return true;
+		return false;
 	}
 
 }

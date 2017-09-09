@@ -18,18 +18,70 @@ package blue.origami.util;
 
 public class ODebug extends OConsole {
 
-	public static boolean enabled = false;
+	private static boolean hacked = false;
+	private static boolean traced = false;
+	private static boolean debugged = false;
 
-	public static void setDebug(boolean b) {
-		enabled = b;
+	public static void setHacked(boolean b) {
+		hacked = b;
 	}
 
-	public final static boolean isDebug() {
-		return enabled || System.getenv("DEBUG") != null;
+	public static void setVerbose(boolean b) {
+		traced = b;
+	}
+
+	public static void setDebug(boolean b) {
+		debugged = b;
+	}
+
+	public static void showRed(String key, Runnable r) {
+		show(key, Red, r);
+	}
+
+	public static void showMagenta(String key, Runnable r) {
+		show(key, Magenta, r);
+	}
+
+	public static void showBlue(String key, Runnable r) {
+		show(key, Blue, r);
+	}
+
+	public static void showCyan(String key, Runnable r) {
+		show(key, Cyan, r);
+	}
+
+	private static void show(String key, int color, Runnable r) {
+		if (hacked) {
+			println(bold("[" + key + "]"));
+			beginColor(color);
+			r.run();
+			endColor();
+		}
+	}
+
+	public static void log(Runnable r) {
+		if (traced) {
+			r.run();
+		}
+	}
+
+	public static void p(String fmt, Object... args) {
+		// StackTraceElement[] s = Thread.currentThread().getStackTrace();
+		println(/* loc(s[2]) + */ OStrings.format(fmt, args));
 	}
 
 	public static String loc(StackTraceElement s) {
 		return color(Gray, "@[" + s.getClassName() + "." + s.getMethodName() + "] ");
+	}
+
+	public static void debug(Runnable r) {
+		if (debugged) {
+			r.run();
+		}
+	}
+
+	public final static boolean isDebug() {
+		return debugged || System.getenv("DEBUG") != null;
 	}
 
 	public static String filenum(StackTraceElement s) {
@@ -41,23 +93,6 @@ public class ODebug extends OConsole {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
 			println(loc(s[2]) + OStrings.format(fmt, args));
 		}
-	}
-
-	public static void verbose(Runnable r) {
-		if (isDebug()) {
-			r.run();
-		}
-	}
-
-	public static void trace(Runnable r) {
-		if (isDebug()) {
-			r.run();
-		}
-	}
-
-	public static void p(String fmt, Object... args) {
-		StackTraceElement[] s = Thread.currentThread().getStackTrace();
-		println(loc(s[2]) + OStrings.format(fmt, args));
 	}
 
 	private static int countExceptions = 0;
