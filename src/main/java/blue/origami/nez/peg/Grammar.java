@@ -13,9 +13,9 @@ import blue.origami.nez.parser.ParserOption;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public abstract class Grammar extends AbstractList<Production> implements StringCombinator {
+public abstract class Grammar extends AbstractList<Production> implements OStrings {
 
 	protected final String id;
 	protected final Grammar parent;
@@ -166,7 +166,7 @@ public abstract class Grammar extends AbstractList<Production> implements String
 
 	@Override
 	public final String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	@Override
@@ -176,7 +176,7 @@ public abstract class Grammar extends AbstractList<Production> implements String
 			sb.append(" ");
 			sb.append(name);
 			sb.append(" = ");
-			StringCombinator.append(sb, this.exprMap.get(name));
+			OStrings.append(sb, this.exprMap.get(name));
 		}
 	}
 

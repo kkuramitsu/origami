@@ -39,7 +39,7 @@ public class ODebug extends OConsole {
 	public static void trace(String fmt, Object... args) {
 		if (isDebug()) {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
-			println(loc(s[2]) + StringCombinator.format(fmt, args));
+			println(loc(s[2]) + OStrings.format(fmt, args));
 		}
 	}
 
@@ -57,7 +57,7 @@ public class ODebug extends OConsole {
 
 	public static void p(String fmt, Object... args) {
 		StackTraceElement[] s = Thread.currentThread().getStackTrace();
-		println(loc(s[2]) + StringCombinator.format(fmt, args));
+		println(loc(s[2]) + OStrings.format(fmt, args));
 	}
 
 	private static int countExceptions = 0;
@@ -115,7 +115,7 @@ public class ODebug extends OConsole {
 	}
 
 	public static void TODO(String fmt, Object... args) {
-		println("[TODO] " + StringCombinator.format(fmt, args));
+		println("[TODO] " + OStrings.format(fmt, args));
 	}
 
 	public static void FIXME(String s) {

@@ -239,7 +239,7 @@ public class OOption {
 	public final void verbose(String fmt, Object... a) {
 		if (this.verboseMode) {
 			OConsole.beginColor(34);
-			OConsole.println(StringCombinator.format(fmt, a));
+			OConsole.println(OStrings.format(fmt, a));
 			OConsole.endColor();
 		}
 	}

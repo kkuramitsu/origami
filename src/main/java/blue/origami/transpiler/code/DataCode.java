@@ -8,7 +8,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class DataCode extends CodeN {
 	protected String[] names;
@@ -94,7 +94,7 @@ public class DataCode extends CodeN {
 				sb.append(this.names[i]);
 				sb.append(":");
 			}
-			StringCombinator.append(sb, this.args[i]);
+			OStrings.append(sb, this.args[i]);
 		}
 		sb.append(this.isMutable() ? "}" : "]");
 	}

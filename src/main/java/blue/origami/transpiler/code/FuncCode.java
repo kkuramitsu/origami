@@ -8,7 +8,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 
@@ -122,7 +122,7 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 			sb.append(" ");
 		}
 		sb.append("-> ");
-		StringCombinator.append(sb, this.getInner());
+		OStrings.append(sb, this.getInner());
 		sb.append(")");
 	}
 

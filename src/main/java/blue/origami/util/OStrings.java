@@ -23,27 +23,27 @@ import java.util.stream.BaseStream;
 
 import blue.origami.nez.ast.LocaleFormat;
 
-public interface StringCombinator {
+public interface OStrings {
 
 	public void strOut(StringBuilder sb);
 
-	public static String stringfy(StringCombinator o) {
+	public static String stringfy(OStrings o) {
 		StringBuilder sb = new StringBuilder();
 		append(sb, o);
 		return sb.toString();
 	}
 
 	public static void append(StringBuilder sb, Object o) {
-		if (o instanceof StringCombinator) {
-			((StringCombinator) o).strOut(sb);
+		if (o instanceof OStrings) {
+			((OStrings) o).strOut(sb);
 		} else {
 			sb.append(o);
 		}
 	}
 
 	public static void appendQuoted(StringBuilder sb, Object o) {
-		if (o instanceof StringCombinator) {
-			((StringCombinator) o).strOut(sb);
+		if (o instanceof OStrings) {
+			((OStrings) o).strOut(sb);
 		} else if (o instanceof String) {
 			sb.append("'");
 			sb.append(o);
@@ -101,7 +101,7 @@ public interface StringCombinator {
 			String t = tokens[i];
 			if (t.length() > 0 && Character.isDigit(t.charAt(0))) {
 				int index = t.charAt(0) - '0';
-				StringCombinator.append(sb, args[index]);
+				OStrings.append(sb, args[index]);
 				sb.append(t.substring(1));
 			} else {
 				sb.append("$");
@@ -122,7 +122,7 @@ public interface StringCombinator {
 			if (c > 0) {
 				sb.append(delim);
 			}
-			StringCombinator.append(sb, n);
+			OStrings.append(sb, n);
 			c++;
 		}
 	}
@@ -139,7 +139,7 @@ public interface StringCombinator {
 			if (c > 0) {
 				sb.append(delim);
 			}
-			StringCombinator.append(sb, map.apply(n));
+			OStrings.append(sb, map.apply(n));
 			c++;
 		}
 	}
@@ -150,7 +150,7 @@ public interface StringCombinator {
 			if (c > 0) {
 				sb.append(delim);
 			}
-			StringCombinator.append(sb, map.apply(n));
+			OStrings.append(sb, map.apply(n));
 			c++;
 		}
 	}

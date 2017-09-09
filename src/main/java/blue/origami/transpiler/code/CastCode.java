@@ -5,7 +5,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class CastCode extends Code1 implements CallCode {
 	public CastCode(Ty ret, Template tp, Code inner) {
@@ -49,9 +49,9 @@ public class CastCode extends Code1 implements CallCode {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("(");
-		StringCombinator.append(sb, this.getType());
+		OStrings.append(sb, this.getType());
 		sb.append(")");
-		StringCombinator.append(sb, this.getInner());
+		OStrings.append(sb, this.getInner());
 	}
 
 	// constants

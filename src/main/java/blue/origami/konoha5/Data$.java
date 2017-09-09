@@ -3,9 +3,9 @@ package blue.origami.konoha5;
 import java.lang.reflect.Field;
 
 import blue.origami.util.OConsole;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class Data$ implements StringCombinator, Cloneable {
+public class Data$ implements OStrings, Cloneable {
 
 	@Override
 	public Data$ clone() {
@@ -38,7 +38,7 @@ public class Data$ implements StringCombinator, Cloneable {
 			String name = f.getName();
 			sb.append(name);
 			sb.append(": ");
-			StringCombinator.appendQuoted(sb, this.getf(f, this));
+			OStrings.appendQuoted(sb, this.getf(f, this));
 			cnt++;
 		}
 		sb.append("}");
@@ -63,7 +63,7 @@ public class Data$ implements StringCombinator, Cloneable {
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 }

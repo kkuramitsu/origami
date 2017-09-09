@@ -4,7 +4,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class OptionTy extends MonadTy {
 
@@ -61,7 +61,7 @@ public class OptionTy extends MonadTy {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("Option[");
-		StringCombinator.append(sb, this.innerTy);
+		OStrings.append(sb, this.innerTy);
 		sb.append("]");
 	}
 

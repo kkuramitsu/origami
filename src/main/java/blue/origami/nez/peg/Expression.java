@@ -35,9 +35,9 @@ import blue.origami.nez.peg.expression.POption;
 import blue.origami.nez.peg.expression.PPair;
 import blue.origami.nez.peg.expression.PTree;
 import blue.origami.util.OStringUtils;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public abstract class Expression extends AbstractList<Expression> implements StringCombinator {
+public abstract class Expression extends AbstractList<Expression> implements OStrings {
 
 	/* External reference */
 
@@ -70,7 +70,7 @@ public abstract class Expression extends AbstractList<Expression> implements Str
 
 	@Override
 	public final String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	public Expression desugar() {

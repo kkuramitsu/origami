@@ -1,8 +1,8 @@
 package blue.origami.nez.peg.expression;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class ByteSet implements StringCombinator {
+public class ByteSet implements OStrings {
 	private final int bits[];
 
 	public ByteSet() {

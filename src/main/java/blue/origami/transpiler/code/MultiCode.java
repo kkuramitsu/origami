@@ -6,7 +6,7 @@ import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class MultiCode extends CodeN {
 
@@ -22,24 +22,14 @@ public class MultiCode extends CodeN {
 		super(AutoType, codes.toArray(new Code[codes.size()]));
 	}
 
-	// private boolean isBlockExpr;
-	//
-	// public boolean isBlockExpr() {
-	// return this.isBlockExpr;
-	// }
-	//
-	// public void setBlockExpr(boolean isBlockExpr) {
-	// this.isBlockExpr = isBlockExpr;
-	// }
-
 	@Override
-	public boolean isEmpty() {
+	public boolean isGenerative() {
 		for (Code a : this.args) {
-			if (!a.isEmpty()) {
-				return false;
+			if (!a.isGenerative()) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	@Override
@@ -88,7 +78,7 @@ public class MultiCode extends CodeN {
 			if (i > 1) {
 				sb.append(";");
 			}
-			StringCombinator.append(sb, this.args[i]);
+			OStrings.append(sb, this.args[i]);
 		}
 		sb.append("}");
 	}

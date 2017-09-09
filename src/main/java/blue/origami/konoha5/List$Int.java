@@ -11,9 +11,9 @@ import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncIntVoid;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class List$Int implements StringCombinator, FuncIntInt {
+public class List$Int implements OStrings, FuncIntInt {
 	protected int[] arrays = null;
 	protected int start = 0;
 	protected int end = 0;

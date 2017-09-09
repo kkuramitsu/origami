@@ -34,7 +34,7 @@ import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 import blue.origami.util.OOption.OOptionKey;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public abstract class OCommand extends OConsole {
 
@@ -181,23 +181,23 @@ public abstract class OCommand extends OConsole {
 	}
 
 	public final static void p(String fmt, Object... args) {
-		println(StringCombinator.format(fmt, args));
+		println(OStrings.format(fmt, args));
 	}
 
 	static void p2(String desc, LocaleFormat fmt, Object... args) {
 		print(desc);
-		println(StringCombinator.format(fmt, args));
+		println(OStrings.format(fmt, args));
 	}
 
 	public final static void p(int color, String fmt, Object... args) {
 		beginColor(color);
-		println(StringCombinator.format(fmt, args));
+		println(OStrings.format(fmt, args));
 		endColor();
 	}
 
 	public final static void p(int color, LocaleFormat fmt, Object... args) {
 		beginColor(color);
-		println(StringCombinator.format(fmt, args));
+		println(OStrings.format(fmt, args));
 		endColor();
 	}
 

@@ -16,7 +16,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.rule.Symbols;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class MatchCode extends CodeN implements ParseRule, Symbols {
 
@@ -46,7 +46,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("match (");
-		StringCombinator.append(sb, this.targetCode);
+		OStrings.append(sb, this.targetCode);
 		sb.append(") ");
 		Arrays.stream(this.args).forEach((r) -> {
 			r.strOut(sb);
@@ -253,9 +253,9 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("| ");
-			StringCombinator.append(sb, this.iCase);
+			OStrings.append(sb, this.iCase);
 			sb.append(" => ");
-			StringCombinator.append(sb, this.thenCode());
+			OStrings.append(sb, this.thenCode());
 		}
 	}
 
@@ -352,7 +352,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 
 		@Override
 		public void strOut(StringBuilder sb) {
-			StringCombinator.joins(sb, this.args, ",");
+			OStrings.joins(sb, this.args, ",");
 		}
 
 		@Override
@@ -378,12 +378,12 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("(");
-			StringCombinator.append(sb, this.args[0]);
+			OStrings.append(sb, this.args[0]);
 			sb.append(" to ");
 			if (!this.inclusive) {
 				sb.append("<");
 			}
-			StringCombinator.append(sb, this.args[1]);
+			OStrings.append(sb, this.args[1]);
 			sb.append(")");
 		}
 
@@ -452,7 +452,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("{");
-			StringCombinator.joins(sb, this.args, ", ");
+			OStrings.joins(sb, this.args, ", ");
 			sb.append("}");
 		}
 
@@ -486,7 +486,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("[");
-			StringCombinator.joins(sb, this.args, ", ");
+			OStrings.joins(sb, this.args, ", ");
 			sb.append("]");
 		}
 

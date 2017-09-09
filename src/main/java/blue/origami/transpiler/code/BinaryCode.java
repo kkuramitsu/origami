@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class BinaryCode extends ExprCode implements CodeBuilder {
 
@@ -28,7 +28,7 @@ public class BinaryCode extends ExprCode implements CodeBuilder {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.joins(sb, this.args, this.name);
+		OStrings.joins(sb, this.args, this.name);
 	}
 
 }

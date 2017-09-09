@@ -12,9 +12,9 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
+public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override
 	public default Code self() {
 		return this;
@@ -45,10 +45,6 @@ public interface Code extends CodeAPI, Iterable<Code>, StringCombinator {
 interface CodeAPI {
 
 	public Code self();
-
-	public default boolean isEmpty() {
-		return false;
-	}
 
 	public default int size() {
 		return self().args().length;
@@ -126,7 +122,7 @@ interface CodeAPI {
 	}
 
 	public default Code bind(Ty ret) {
-		return ExprCode.option(ret.isMutable() ? "bindM" : "bind", self());
+		return ExprCode.option("bind", self());
 	}
 
 	public default Ty guessType() {
@@ -147,6 +143,10 @@ interface CodeAPI {
 
 	public default Code applyMethodCode(TEnv env, String name, Code... params) {
 		return new ExprCode(name, TArrays.join(self(), params));
+	}
+
+	public default boolean isGenerative() {
+		return true;
 	}
 
 }
@@ -226,7 +226,7 @@ abstract class CommonCode implements Code {
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 }

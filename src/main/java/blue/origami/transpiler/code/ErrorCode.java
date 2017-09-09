@@ -8,7 +8,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 @SuppressWarnings("serial")
 public class ErrorCode extends RuntimeException implements Code {
@@ -36,6 +36,11 @@ public class ErrorCode extends RuntimeException implements Code {
 
 	public ErrorCode(String fmt, Object... args) {
 		this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
+	}
+
+	@Override
+	public boolean isGenerative() {
+		return false;
 	}
 
 	public TLog getLog() {
@@ -77,7 +82,7 @@ public class ErrorCode extends RuntimeException implements Code {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.appendQuoted(sb, this.log);
+		OStrings.appendQuoted(sb, this.log);
 	}
 
 	@Override

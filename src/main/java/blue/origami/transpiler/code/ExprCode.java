@@ -15,7 +15,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class ExprCode extends CodeN implements CallCode {
 
@@ -113,14 +113,14 @@ public class ExprCode extends CodeN implements CallCode {
 	private String msgArgs() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		StringCombinator.joins(sb, this.args, ", ", p -> p.getType());
+		OStrings.joins(sb, this.args, ", ", p -> p.getType());
 		sb.append(")");
 		return sb.toString();
 	}
 
 	static String msgHint(TEnv env, List<Template> l) {
 		StringBuilder sb = new StringBuilder();
-		StringCombinator.joins(sb, l, ", ", tp -> tp.getName() + ": " + tp.getFuncType());
+		OStrings.joins(sb, l, ", ", tp -> tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
 			return "";
 		}
@@ -188,7 +188,7 @@ public class ExprCode extends CodeN implements CallCode {
 		if (this.args.length > 0) {
 			sb.append(" ");
 		}
-		StringCombinator.joins(sb, this.args, " ");
+		OStrings.joins(sb, this.args, " ");
 		sb.append(")");
 	}
 

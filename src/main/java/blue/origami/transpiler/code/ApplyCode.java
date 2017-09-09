@@ -9,7 +9,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class ApplyCode extends CodeN {
 	public ApplyCode(Code... values) {
@@ -66,9 +66,9 @@ public class ApplyCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.args[0]);
+		OStrings.append(sb, this.args[0]);
 		sb.append("(");
-		StringCombinator.joins(sb, TArrays.ltrim2(this.args), ",");
+		OStrings.joins(sb, TArrays.ltrim2(this.args), ",");
 		sb.append(")");
 	}
 

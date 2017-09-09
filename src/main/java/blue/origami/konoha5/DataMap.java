@@ -1,8 +1,8 @@
 package blue.origami.konoha5;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public interface DataMap extends Cloneable, StringCombinator {
+public interface DataMap extends Cloneable, OStrings {
 	public Object getf(int key, Object def);
 
 	public void setf(int key, Object value);

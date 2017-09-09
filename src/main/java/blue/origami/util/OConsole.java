@@ -20,14 +20,14 @@ import blue.origami.nez.ast.LocaleFormat;
 
 public class OConsole {
 
-	public static void exit(int status, LocaleFormat message) {
-		OConsole.println("EXIT " + message);
-		System.exit(status);
-	}
-
 	public static void exit(int status, Throwable e) {
 		OConsole.println("EXIT by " + e);
 		e.printStackTrace();
+		System.exit(status);
+	}
+
+	public static void exit(int status, LocaleFormat message) {
+		OConsole.println("EXIT " + message);
 		System.exit(status);
 	}
 
@@ -109,11 +109,11 @@ public class OConsole {
 	}
 
 	public static void println(String format, Object... args) {
-		System.out.println(StringCombinator.format(format, args));
+		System.out.println(OStrings.format(format, args));
 	}
 
 	public static void print(String format, Object... args) {
-		System.out.print(StringCombinator.format(format, args));
+		System.out.print(OStrings.format(format, args));
 	}
 
 	public static void dump(String tab, Object o) {

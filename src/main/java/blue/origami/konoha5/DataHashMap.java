@@ -2,7 +2,7 @@ package blue.origami.konoha5;
 
 import java.util.Arrays;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class DataHashMap implements DataMap {
 	private final static int Unused = 0;
@@ -48,7 +48,7 @@ public class DataHashMap implements DataMap {
 				}
 				sb.append(DSymbol.symbol(this.keys[i]));
 				sb.append(": ");
-				StringCombinator.appendQuoted(sb, this.values[i]);
+				OStrings.appendQuoted(sb, this.values[i]);
 				cnt++;
 			}
 		}
@@ -57,7 +57,7 @@ public class DataHashMap implements DataMap {
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	@Override

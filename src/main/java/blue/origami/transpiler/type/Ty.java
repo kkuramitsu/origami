@@ -16,9 +16,9 @@ import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public abstract class Ty implements TypeApi, StringCombinator {
+public abstract class Ty implements TypeApi, OStrings {
 
 	// Core types
 	public static final Ty tVoid = new VoidTy();
@@ -108,12 +108,12 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	public static final DataTy tRecord(String... names) {
 		Arrays.sort(names);
-		return (DataTy) reg("[" + StringCombinator.joins(names, ",") + "]", () -> new DataTy(false, names));
+		return (DataTy) reg("[" + OStrings.joins(names, ",") + "]", () -> new DataTy(false, names));
 	}
 
 	public static final DataTy tData(String... names) {
 		Arrays.sort(names);
-		return (DataTy) reg("{" + StringCombinator.joins(names, ",") + "}", () -> new DataTy(true, names));
+		return (DataTy) reg("{" + OStrings.joins(names, ",") + "}", () -> new DataTy(true, names));
 	}
 
 	public static OptionTy tOption(Ty ty) {
@@ -202,7 +202,7 @@ public abstract class Ty implements TypeApi, StringCombinator {
 
 	@Override
 	public final String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	// public static Ty selfTy(Ty ty, DataTy dt) {

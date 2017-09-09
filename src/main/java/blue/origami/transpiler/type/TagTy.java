@@ -1,6 +1,6 @@
 package blue.origami.transpiler.type;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class TagTy extends Ty {
 	protected String[] names;
@@ -94,9 +94,9 @@ public class TagTy extends Ty {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.innerTy);
+		OStrings.append(sb, this.innerTy);
 		sb.append(" #");
-		StringCombinator.joins(sb, this.names, " #");
+		OStrings.joins(sb, this.names, " #");
 	}
 
 }

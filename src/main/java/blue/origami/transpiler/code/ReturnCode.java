@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class ReturnCode extends Code1 {
 
@@ -27,7 +27,7 @@ public class ReturnCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.getInner());
+		OStrings.append(sb, this.getInner());
 	}
 
 }

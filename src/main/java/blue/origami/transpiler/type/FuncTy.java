@@ -14,7 +14,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class FuncTy extends Ty {
 	protected final String name;
@@ -61,10 +61,10 @@ public class FuncTy extends Ty {
 	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
-			StringCombinator.joins(sb, paramTypes, ",", (ty) -> group(ty));
+			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
 			sb.append(")");
 		} else {
-			StringCombinator.joins(sb, paramTypes, ",", (ty) -> group(ty));
+			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
 		}
 		sb.append("->");
 		sb.append(returnType);

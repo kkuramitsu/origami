@@ -75,10 +75,9 @@ public class AsmGenerator extends Generator implements Opcodes {
 	@Override
 	public void emit(TEnv env, Code code) {
 		code = this.emitHeader(env, code);
-		// ODebug.trace("isEmpty: %s %s", code.isEmpty(), code);
-		if (this.cw0 != null) {
+		if (!code.isGenerative()) {
 			Method m = new Method(evalName, Type.getType(this.ts.toClass(code.getType())), emptyTypes);
-			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw0);
+			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw());
 			AsmSection sec = new AsmSection(this.ts, this.cname(), mw);
 			code.emitCode(env, sec);
 			mw.returnValue();

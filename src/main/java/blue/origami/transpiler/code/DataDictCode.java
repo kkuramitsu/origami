@@ -4,7 +4,7 @@ import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.DictTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class DataDictCode extends DataCode {
 
@@ -46,15 +46,15 @@ public class DataDictCode extends DataCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.args[0]);
+		OStrings.append(sb, this.args[0]);
 		sb.append(this.isMutable() ? "{" : "[");
 		for (int i = 0; i < this.args.length; i++) {
 			if (i > 0) {
 				sb.append(",");
 			}
-			StringCombinator.appendQuoted(sb, this.names[i]);
+			OStrings.appendQuoted(sb, this.names[i]);
 			sb.append(":");
-			StringCombinator.append(sb, this.args[i]);
+			OStrings.append(sb, this.args[i]);
 		}
 		sb.append(this.isMutable() ? "}" : "]");
 	}

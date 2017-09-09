@@ -5,7 +5,7 @@ import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class LetCode extends Code1 {
 	private Ty declType;
@@ -61,7 +61,7 @@ public class LetCode extends Code1 {
 		sb.append("let ");
 		sb.append(this.name);
 		sb.append(" = ");
-		StringCombinator.append(sb, this.getInner());
+		OStrings.append(sb, this.getInner());
 	}
 
 }

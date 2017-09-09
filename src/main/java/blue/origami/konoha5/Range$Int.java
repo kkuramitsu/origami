@@ -3,9 +3,9 @@ package blue.origami.konoha5;
 import java.util.stream.IntStream;
 
 import blue.origami.konoha5.Func.FuncIntVoid;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class Range$Int extends List$Int implements StringCombinator {
+public class Range$Int extends List$Int implements OStrings {
 	final int start;
 	final int until;
 
@@ -27,9 +27,9 @@ public class Range$Int extends List$Int implements StringCombinator {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("[");
-		StringCombinator.append(sb, this.start);
+		OStrings.append(sb, this.start);
 		sb.append(" to ");
-		StringCombinator.append(sb, this.until);
+		OStrings.append(sb, this.until);
 		sb.append("]");
 	}
 

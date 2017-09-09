@@ -16,9 +16,9 @@
 
 package blue.origami.nez.peg;
 
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class Production implements StringCombinator {
+public class Production implements OStrings {
 	private final Grammar grammar;
 	private final String name;
 	private final Expression body;
@@ -57,7 +57,7 @@ public class Production implements StringCombinator {
 
 	@Override
 	public final String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	@Override

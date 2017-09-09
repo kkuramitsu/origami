@@ -2,7 +2,7 @@ package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.NameHint;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
@@ -106,7 +106,7 @@ public class VarTy extends Ty {
 			sb.append("|");
 			sb.append(this.getName());
 			sb.append("=");
-			StringCombinator.append(sb, this.resolvedTy);
+			OStrings.append(sb, this.resolvedTy);
 			sb.append("|");
 		}
 	}

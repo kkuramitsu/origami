@@ -11,7 +11,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class DataTy extends Ty {
 	boolean isMutable = false;
@@ -91,7 +91,7 @@ public class DataTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append(DataTy.this.isMutable ? "{" : "[");
-		StringCombinator.joins(sb, this.names(), ",");
+		OStrings.joins(sb, this.names(), ",");
 		sb.append(DataTy.this.isMutable ? "}" : "]");
 	}
 

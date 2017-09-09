@@ -33,7 +33,7 @@ import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class Transpiler extends TEnv {
 	final OOption options;
@@ -247,10 +247,10 @@ public class Transpiler extends TEnv {
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
-			StringCombinator.append(sb, code.getType());
+			OStrings.append(sb, code.getType());
 			sb.append(") ");
 			OConsole.beginBold(sb);
-			StringCombinator.appendQuoted(sb, result);
+			OStrings.appendQuoted(sb, result);
 			OConsole.endBold(sb);
 			OConsole.println(sb.toString());
 		}
@@ -266,7 +266,7 @@ public class Transpiler extends TEnv {
 	}
 
 	public Ty testType(String s) throws Throwable {
-		return this.testCode(s).getType();
+		return this.testCode(s).getType().finalTy();
 	}
 
 	public Object testEval(String s) throws Throwable {

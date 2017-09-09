@@ -82,11 +82,11 @@ public class OCommonWriter {
 	}
 
 	public final void printf(String fmt, Object... args) {
-		this.print(StringCombinator.format(fmt, args));
+		this.print(OStrings.format(fmt, args));
 	}
 
 	public final void printf(LocaleFormat fmt, Object... args) {
-		this.print(StringCombinator.format(fmt, args));
+		this.print(OStrings.format(fmt, args));
 	}
 
 	public final void println(String fmt, Object... args) {

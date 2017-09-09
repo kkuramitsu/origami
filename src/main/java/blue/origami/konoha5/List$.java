@@ -12,9 +12,9 @@ import blue.origami.konoha5.Func.FuncObjInt;
 import blue.origami.konoha5.Func.FuncObjObj;
 import blue.origami.konoha5.Func.FuncObjObjObj;
 import blue.origami.konoha5.Func.FuncObjVoid;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class List$ implements StringCombinator, FuncIntObj {
+public class List$ implements OStrings, FuncIntObj {
 	private Object[] arrays = null;
 	private int start = 0;
 	private int end = 0;
@@ -53,7 +53,7 @@ public class List$ implements StringCombinator, FuncIntObj {
 			if (cnt > 0) {
 				sb.append(", ");
 			}
-			StringCombinator.append(sb, this.arrays[i]);
+			OStrings.append(sb, this.arrays[i]);
 			cnt++;
 		}
 		sb.append("]");

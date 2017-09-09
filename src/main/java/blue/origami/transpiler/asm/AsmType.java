@@ -30,7 +30,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMap;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();
@@ -166,7 +166,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	@Override
 	protected String key(FuncTy funcTy) {
 		StringBuilder sb = new StringBuilder();
-		StringCombinator.joins(sb,
+		OStrings.joins(sb,
 				Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new), "");
 		sb.append("->");
 		sb.append(this.descFunc(funcTy.getReturnType()));
@@ -189,7 +189,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	@Override
 	protected String key(DataTy dataTy) {
-		return dataTy.size() == 0 ? "{}" : StringCombinator.joins(dataTy.names(), ",");
+		return dataTy.size() == 0 ? "{}" : OStrings.joins(dataTy.names(), ",");
 	}
 
 	@Override
@@ -333,7 +333,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	Class<?> loadDataClass(DataTy dataTy) {
 		String[] names = dataTy.names();
-		String cname1 = "Data$" + StringCombinator.joins(names, "");
+		String cname1 = "Data$" + OStrings.joins(names, "");
 		return this.reg(cname1, () -> {
 			Class<?> c = this.toClass(dataTy);
 			ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);

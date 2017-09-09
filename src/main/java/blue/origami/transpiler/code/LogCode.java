@@ -4,7 +4,7 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class LogCode extends Code1 {
 	protected TLog log;
@@ -27,7 +27,7 @@ public class LogCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.getInner());
+		OStrings.append(sb, this.getInner());
 	}
 
 	@Override

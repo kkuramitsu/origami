@@ -2,7 +2,7 @@ package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataListCode;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class ListTy extends MonadTy {
 	public static String ImmutableName = "List";
@@ -20,7 +20,7 @@ public class ListTy extends MonadTy {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.innerTy);
+		OStrings.append(sb, this.innerTy);
 		sb.append(this.isMutable() ? "[]" : "*");
 	}
 

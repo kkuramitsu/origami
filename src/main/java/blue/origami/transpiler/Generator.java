@@ -84,7 +84,7 @@ public abstract class Generator implements CodeBuilder {
 			}
 			this.funcList = null;
 		}
-		if (code.isEmpty() && this.exampleList != null) {
+		if (!code.isGenerative() && this.exampleList != null) {
 			ArrayList<Code> asserts = new ArrayList<>();
 			for (Tree<?> t : this.exampleList) {
 				Code body = env.parseCode(env, t).asType(env, Ty.tBool);

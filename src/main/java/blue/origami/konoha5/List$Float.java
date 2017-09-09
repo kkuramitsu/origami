@@ -12,9 +12,9 @@ import blue.origami.konoha5.Func.FuncFloatInt;
 import blue.origami.konoha5.Func.FuncFloatObj;
 import blue.origami.konoha5.Func.FuncFloatVoid;
 import blue.origami.konoha5.Func.FuncIntFloat;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class List$Float implements StringCombinator, FuncIntFloat {
+public class List$Float implements OStrings, FuncIntFloat {
 	private double[] arrays = null;
 	private int start = 0;
 	private int end = 0;

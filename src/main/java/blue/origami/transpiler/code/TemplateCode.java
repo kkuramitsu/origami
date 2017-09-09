@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class TemplateCode extends CodeN {
 
@@ -23,7 +23,7 @@ public class TemplateCode extends CodeN {
 			if (i > 1) {
 				sb.append("+");
 			}
-			StringCombinator.append(sb, this.args[i]);
+			OStrings.append(sb, this.args[i]);
 		}
 		sb.append(")");
 	}

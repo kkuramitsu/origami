@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.util.OConsole;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class MonadTy extends Ty {
 	protected String name;
@@ -91,7 +91,7 @@ public class MonadTy extends Ty {
 	public void strOut(StringBuilder sb) {
 		sb.append(this.name);
 		sb.append("[");
-		StringCombinator.append(sb, this.innerTy);
+		OStrings.append(sb, this.innerTy);
 		sb.append("]");
 	}
 

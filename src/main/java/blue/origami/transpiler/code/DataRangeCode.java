@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class DataRangeCode extends DataListCode {
 
@@ -23,9 +23,9 @@ public class DataRangeCode extends DataListCode {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append(this.isMutable() ? "(" : "[");
-		StringCombinator.append(sb, this.args[0]);
+		OStrings.append(sb, this.args[0]);
 		sb.append(" to ");
-		StringCombinator.append(sb, this.args[1]);
+		OStrings.append(sb, this.args[1]);
 		sb.append(this.isMutable() ? ")" : "]");
 	}
 

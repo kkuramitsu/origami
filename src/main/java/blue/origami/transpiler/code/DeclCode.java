@@ -11,8 +11,8 @@ public class DeclCode extends CommonCode {
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return true;
+	public boolean isGenerative() {
+		return false;
 	}
 
 	@Override

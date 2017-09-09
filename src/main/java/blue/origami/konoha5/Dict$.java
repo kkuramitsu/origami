@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import blue.origami.konoha5.Func.FuncStrObjVoid;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class Dict$ extends TreeMap<String, Object> implements StringCombinator {
+public class Dict$ extends TreeMap<String, Object> implements OStrings {
 	private static final long serialVersionUID = -827646422601520488L;
 	private boolean isMutable;
 
@@ -20,7 +20,7 @@ public class Dict$ extends TreeMap<String, Object> implements StringCombinator {
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	@Override
@@ -31,9 +31,9 @@ public class Dict$ extends TreeMap<String, Object> implements StringCombinator {
 			if (cnt > 0) {
 				sb.append(", ");
 			}
-			StringCombinator.appendQuoted(sb, e.getKey());
+			OStrings.appendQuoted(sb, e.getKey());
 			sb.append(": ");
-			StringCombinator.append(sb, e.getValue());
+			OStrings.append(sb, e.getValue());
 			cnt++;
 		}
 		sb.append(this.isMutable ? "}" : "]");

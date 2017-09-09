@@ -4,7 +4,7 @@ import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public class TypeCode extends CommonCode {
 	private Ty value;
@@ -25,7 +25,7 @@ public class TypeCode extends CommonCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		StringCombinator.append(sb, this.value);
+		OStrings.append(sb, this.value);
 	}
 
 }

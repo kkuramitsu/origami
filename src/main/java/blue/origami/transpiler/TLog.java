@@ -3,9 +3,9 @@ package blue.origami.transpiler;
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.OConsole;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
-public class TLog implements StringCombinator {
+public class TLog implements OStrings {
 	public final static int Error = 1;
 	public final static int Warning = 1 << 1;
 	public final static int Notice = 1 << 2;
@@ -88,7 +88,7 @@ public class TLog implements StringCombinator {
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	public void dump() {

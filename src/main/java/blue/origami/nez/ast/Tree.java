@@ -6,10 +6,10 @@ import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.util.OStringUtils;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
-		implements SourcePosition, StringCombinator, TreeFunc, TreeSetFunc {
+		implements SourcePosition, OStrings, TreeFunc, TreeSetFunc {
 	protected final static Symbol[] EmptyLabels = new Symbol[0];
 
 	protected Symbol tag;
@@ -243,7 +243,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 
 	@Override
 	public String toString() {
-		return StringCombinator.stringfy(this);
+		return OStrings.stringfy(this);
 	}
 
 	@Override
@@ -268,7 +268,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 					sb.append(this.subTreeLabels[i].getSymbol());
 					sb.append("=");
 				}
-				StringCombinator.append(sb, this.subTree[i]);
+				OStrings.append(sb, this.subTree[i]);
 			}
 		}
 		sb.append("]");

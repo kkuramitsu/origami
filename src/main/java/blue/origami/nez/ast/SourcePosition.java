@@ -19,7 +19,7 @@ package blue.origami.nez.ast;
 import java.util.ArrayList;
 
 import blue.origami.util.OStringUtils;
-import blue.origami.util.StringCombinator;
+import blue.origami.util.OStrings;
 
 public interface SourcePosition {
 	public Source getSource();
@@ -126,7 +126,7 @@ public interface SourcePosition {
 	public static void appendFormatMessage(StringBuilder sb, SourcePosition s, String mtype, LocaleFormat format,
 			Object... args) {
 		appendFileLine(sb, s.getSource(), s.getSourcePosition(), mtype);
-		StringCombinator.appendFormat(sb, format, args);
+		OStrings.appendFormat(sb, format, args);
 		if (!s.isUnknownPosition()) {
 			sb.append(getTextAround(s.getSource(), s.getSourcePosition(), "\n"));
 		}
