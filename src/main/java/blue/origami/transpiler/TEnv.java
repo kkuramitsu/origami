@@ -443,10 +443,10 @@ interface TEnvApi {
 	}
 
 	public default void addParsedName(String name) {
-		Transpiler tr = env().getTranspiler();
-		if (!NameHint.isOneLetterName(name)) {
-			tr.addParsedName1(name);
-		}
+		// Transpiler tr = env().getTranspiler();
+		// if (!NameHint.isOneLetterName(name)) {
+		// tr.addParsedName1(name);
+		// }
 	}
 
 	public default NameHint addNameDecl(TEnv env, String names, Ty t) {

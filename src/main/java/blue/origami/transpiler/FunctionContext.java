@@ -8,31 +8,38 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class FunctionContext {
 
 	FunctionContext parent;
+	public int startIndex = 0;
 	ArrayList<Variable> varList = new ArrayList<>();
 	HashMap<String, Code> closureMap = null;
 
 	public FunctionContext(FunctionContext parent) {
 		this.parent = parent;
 		if (parent != null) {
+			this.startIndex = parent.index();
 			this.closureMap = new HashMap<>();
 		}
+	}
+
+	public FunctionContext() {
+		this(null);
 	}
 
 	public Variable newVariable(String name, Ty type) {
 		Variable v = new Variable(name, this.index(), type);
 		this.varList.add(v);
-		ODebug.trace("%s", v);
 		return v;
 	}
 
+	public void syncIndex(FunctionContext fcx) {
+		this.startIndex = fcx.startIndex;
+	}
+
 	private int index() {
-		int index = this.varList.size();
-		return (this.parent != null) ? index + this.parent.index() : index;
+		return this.varList.size() + this.startIndex;
 	}
 
 	public int size() {
@@ -43,24 +50,57 @@ public class FunctionContext {
 		return this.varList.get(0);
 	}
 
-	public int enter() {
+	public void enter() {
 		if (this.parent != null) {
 			for (Variable v : this.parent.varList) {
 				v.incRef();
 			}
 			this.parent.enter();
 		}
-		return this.index();
 	}
 
-	public HashMap<String, Code> exit() {
+	public void exit() {
 		if (this.parent != null) {
 			for (Variable v : this.parent.varList) {
 				v.decRef();
 			}
 			this.parent.exit();
 		}
-		return this.closureMap;
+	}
+
+	public int getStartIndex() {
+		return this.startIndex;
+	}
+
+	public String[] getFieldNames() {
+		if (this.closureMap != null && this.closureMap.size() > 0) {
+			return this.closureMap.keySet().toArray(new String[this.closureMap.size()]);
+		}
+		return TArrays.emptyNames;
+	}
+
+	public Code[] getFieldCode() {
+		if (this.closureMap != null && this.closureMap.size() > 0) {
+			Code[] p = new Code[this.closureMap.size()];
+			int c = 0;
+			for (String name : this.closureMap.keySet()) {
+				p[c++] = this.closureMap.get(name);
+			}
+			return p;
+		}
+		return TArrays.emptyCodes;
+	}
+
+	public Ty[] getFieldTypes() {
+		if (this.closureMap != null && this.closureMap.size() > 0) {
+			Ty[] p = new Ty[this.closureMap.size()];
+			int c = 0;
+			for (String name : this.closureMap.keySet()) {
+				p[c++] = this.closureMap.get(name).getType();
+			}
+			return p;
+		}
+		return TArrays.emptyTypes;
 	}
 
 	// public boolean isDuplicatedName(String name, Ty declType) {

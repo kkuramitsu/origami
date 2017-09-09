@@ -52,16 +52,17 @@ public class AsmClassLoader extends ClassLoader {
 
 	private HashMap<String, byte[]> codeMap = new HashMap<>();
 
-	public void set(String cname, byte[] byteCode) {
+	public void store(String cname, byte[] byteCode) {
 		this.dump(cname, byteCode);
 		this.codeMap.put(cname, byteCode);
 	}
 
 	@Override
 	protected Class<?> findClass(String cname) throws ClassNotFoundException {
+		assert (cname != null);
 		byte[] byteCode = this.codeMap.remove(cname);
 		if (byteCode == null) {
-			throw new ClassNotFoundException("not found " + cname);
+			throw new ClassNotFoundException("not found '" + cname + "'");
 		}
 		// this.dump(cname, byteCode);
 		Class<?> c = this.defineClass(cname, byteCode, 0, byteCode.length);

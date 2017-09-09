@@ -34,8 +34,8 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 	public void used(TEnv env) {
 		if (this.isUnused()) {
 			super.used(env);
-			Code code = this.typeBody(env, this.body);
-			boolean isAbstract = code.hasSome(c -> c.isAbstract());
+			Code code = this.typeBody(env, new FunctionContext(), this.body);
+			boolean isAbstract = this.isAbstract(code);
 			ODebug.trace("abstract=%s %s ret=%s", isAbstract, this.getFuncType(), code.getType());
 			if (!isAbstract && this.generated == null) {
 				Transpiler tr = env.getTranspiler();
@@ -85,14 +85,6 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 	@Override
 	public void setReturnType(Ty ret) {
 		this.returnType = ret;
-	}
-
-	@Override
-	public void setStartIndex(int startIndex) {
-	}
-
-	@Override
-	public void setFieldMap(HashMap<String, Code> fieldMap) {
 	}
 
 	@Override

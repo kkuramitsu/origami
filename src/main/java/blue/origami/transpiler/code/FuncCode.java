@@ -1,14 +1,13 @@
 package blue.origami.transpiler.code;
 
-import java.util.HashMap;
-
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.FuncParam;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionUnit;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.StringCombinator;
 
 public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
@@ -17,9 +16,8 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 	Ty[] paramTypes;
 	Ty returnType;
 
-	Tree<?> body;
-	int startIndex;
-	HashMap<String, Code> fieldMap = null;
+	Tree<?> body = null;
+	FunctionContext funcContext = null;
 
 	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Tree<?> body) {
 		super(new DeclCode());
@@ -38,6 +36,11 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 	}
 
 	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
 	public String[] getParamNames() {
 		return this.paramNames;
 	}
@@ -53,51 +56,56 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 	}
 
 	@Override
-	public int getStartIndex() {
-		return this.startIndex;
+	public void setParamTypes(Ty[] pats) {
+		this.paramTypes = pats;
 	}
 
-	public String[] getFieldNames() {
-		if (this.fieldMap != null && this.fieldMap.size() > 0) {
-			return this.fieldMap.keySet().toArray(new String[this.fieldMap.size()]);
-		}
-		return TArrays.emptyNames;
+	@Override
+	public void setReturnType(Ty ret) {
+		this.returnType = ret;
 	}
 
-	public Code[] getFieldCode() {
-		if (this.fieldMap != null && this.fieldMap.size() > 0) {
-			Code[] p = new Code[this.fieldMap.size()];
-			int c = 0;
-			for (String name : this.fieldMap.keySet()) {
-				p[c++] = this.fieldMap.get(name);
-			}
-			return p;
+	private FunctionContext sync(TEnv env) {
+		FunctionContext fcx = new FunctionContext(env.get(FunctionContext.class));
+		if (this.funcContext != null) {
+			fcx.syncIndex(this.funcContext);
 		}
-		return TArrays.emptyCodes;
-	}
-
-	public Ty[] getFieldTypes() {
-		if (this.fieldMap != null && this.fieldMap.size() > 0) {
-			Ty[] p = new Ty[this.fieldMap.size()];
-			int c = 0;
-			for (String name : this.fieldMap.keySet()) {
-				p[c++] = this.fieldMap.get(name).getType();
-			}
-			return p;
-		}
-		return TArrays.emptyTypes;
+		this.funcContext = fcx;
+		return fcx;
 	}
 
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			this.inner = this.typeBody(env, this.body);
+			FunctionContext fcx = this.sync(env);
+			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
+			this.inner = this.typeBody(env, fcx, inner);
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
 		}
 		if (ret.isFunc() && !this.getType().eq(ret)) {
-
+			ODebug.trace(() -> ODebug.p("%s as %s", this.getType(), ret));
+			FunctionContext fcx = this.sync(env);
+			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
+			this.inner = this.typeBody(env, fcx, inner);
 		}
 		return this.castType(env, ret);
+	}
+
+	@Override
+	public int getStartIndex() {
+		return this.funcContext.getStartIndex();
+	}
+
+	public String[] getFieldNames() {
+		return this.funcContext.getFieldNames();
+	}
+
+	public Code[] getFieldCode() {
+		return this.funcContext.getFieldCode();
+	}
+
+	public Ty[] getFieldTypes() {
+		return this.funcContext.getFieldTypes();
 	}
 
 	@Override
@@ -116,31 +124,6 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 		sb.append("-> ");
 		StringCombinator.append(sb, this.getInner());
 		sb.append(")");
-	}
-
-	@Override
-	public String getName() {
-		return null;
-	}
-
-	@Override
-	public void setParamTypes(Ty[] pats) {
-		this.paramTypes = pats;
-	}
-
-	@Override
-	public void setReturnType(Ty ret) {
-		this.returnType = ret;
-	}
-
-	@Override
-	public void setStartIndex(int startIndex) {
-		this.startIndex = startIndex;
-	}
-
-	@Override
-	public void setFieldMap(HashMap<String, Code> fieldMap) {
-		this.fieldMap = fieldMap;
 	}
 
 }

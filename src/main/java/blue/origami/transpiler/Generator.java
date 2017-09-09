@@ -29,7 +29,10 @@ public abstract class Generator implements CodeBuilder {
 
 	public abstract void init();
 
-	protected abstract void setup();
+	protected void setup() {
+		this.funcList = null;
+		this.exampleList = null;
+	}
 
 	protected abstract Object wrapUp();
 

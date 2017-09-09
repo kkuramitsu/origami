@@ -43,7 +43,19 @@ public class ODebug extends OConsole {
 		}
 	}
 
-	public static void trace2(String fmt, Object... args) {
+	public static void verbose(Runnable r) {
+		if (isDebug()) {
+			r.run();
+		}
+	}
+
+	public static void trace(Runnable r) {
+		if (isDebug()) {
+			r.run();
+		}
+	}
+
+	public static void p(String fmt, Object... args) {
 		StackTraceElement[] s = Thread.currentThread().getStackTrace();
 		println(loc(s[2]) + StringCombinator.format(fmt, args));
 	}

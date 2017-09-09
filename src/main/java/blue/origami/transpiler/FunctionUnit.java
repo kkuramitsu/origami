@@ -1,7 +1,6 @@
 package blue.origami.transpiler;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
@@ -21,15 +20,11 @@ public interface FunctionUnit {
 
 	public void setReturnType(Ty ret);
 
-	public void setStartIndex(int startIndex);
-
-	public void setFieldMap(HashMap<String, Code> fieldMap);
-
-	public default Code typeBody(TEnv env, Tree<?> body) {
-		return typeBody(env, env.parseCode(env, body));
+	public default Code typeBody(TEnv env, FunctionContext fcx, Tree<?> body) {
+		return typeBody(env, fcx, env.parseCode(env, body));
 	}
 
-	public default Code typeBody(TEnv env0, Code code0) {
+	public default Code typeBody(TEnv env0, FunctionContext fcx, Code code0) {
 		String[] pnames = this.getParamNames();
 		VarDomain dom = new VarDomain(pnames);
 		this.setParamTypes(dom.paramTypes(pnames, this.getParamTypes()));
@@ -42,15 +37,14 @@ public interface FunctionUnit {
 		// final CodeTemplate tp = this.generator.newFuncTemplate(this, name,
 		// name, ret, pats);
 		// env.add(name, tp);
-		FunctionContext fcx = new FunctionContext(env0.get(FunctionContext.class));
 		env.add(FunctionContext.class, fcx);
-		this.setStartIndex(fcx.enter());
+		fcx.enter();
 		for (int i = 0; i < pnames.length; i++) {
 			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
 		}
 		// Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, ret));
-		this.setFieldMap(fcx.exit());
+		fcx.exit();
 		if (dyn) {
 			ret.toImmutable();
 		}
@@ -59,6 +53,14 @@ public interface FunctionUnit {
 				Arrays.stream(dom.dupParamTypes(this.getParamTypes())).map(t -> t.finalTy()).toArray(Ty[]::new));
 		this.setReturnType(dom.dupRetType(this.getReturnType()).finalTy());
 		return code;
+	}
+
+	public default boolean isAbstract(Code code) {
+		return code.hasSome(c -> c.isAbstract());
+	}
+
+	public default boolean isError(Code code) {
+		return code.hasSome(c -> c.isError());
 	}
 
 }

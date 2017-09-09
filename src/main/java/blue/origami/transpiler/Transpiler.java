@@ -256,12 +256,23 @@ public class Transpiler extends TEnv {
 		}
 	}
 
-	// parsedName
-	// HashSet<String> nameMap = new HashSet<>();
+	public Code testCode(String text) throws Throwable {
+		Source sc = ParserSource.newStringSource("<test>", 1, text);
+		Parser p = this.get(Parser.class);
+		CodeTree defaultTree = new CodeTree();
+		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
+		this.generator.setup();
+		return this.parseCode(this, t).asType(this, Ty.tUntyped());
+	}
 
-	public void addParsedName1(String name) {
-		// TODO Auto-generated method stub
+	public Ty testType(String s) throws Throwable {
+		return this.testCode(s).getType();
+	}
 
+	public Object testEval(String s) throws Throwable {
+		Code code = this.testCode(s);
+		this.generator.emit(this, code);
+		return this.generator.wrapUp();
 	}
 
 	// Buffering

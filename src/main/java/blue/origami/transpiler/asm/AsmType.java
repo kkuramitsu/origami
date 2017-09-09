@@ -254,7 +254,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	private static Class<?> loadClass(String cname, ClassWriter cw) {
-		classLoader.set(cname, cw.toByteArray());
+		classLoader.store(cname, cw.toByteArray());
 		try {
 			return classLoader.loadClass(cname);
 		} catch (ClassNotFoundException e) {
