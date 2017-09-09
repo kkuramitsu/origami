@@ -17,7 +17,7 @@ public class ConstTemplate extends CodeTemplate {
 	}
 
 	@Override
-	public Code newCode(Tree<?> s) {
+	public Code newCode(TEnv env, Tree<?> s) {
 		return new ExprCode(this, TArrays.emptyCodes).setSource(s);
 	}
 

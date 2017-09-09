@@ -4,34 +4,37 @@ import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.FuncParam;
-import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FunctionUnit;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.StringCombinator;
 
-public class FuncCode extends Code1 implements FuncParam {
+public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 
-	int startIndex;
 	String[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
-	VarDomain dom;
+
 	Tree<?> body;
+	int startIndex;
 	HashMap<String, Code> fieldMap = null;
 
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, VarDomain dom, Code body) {
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Tree<?> body) {
+		super(new DeclCode());
+		this.paramNames = paramNames;
+		this.paramTypes = paramTypes;
+		this.returnType = returnType;
+		this.body = body;
+	}
+
+	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		super(body);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
-		this.dom = dom;
-	}
-
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
-		this(paramNames, paramTypes, returnType, null, body);
+		this.body = null;
 	}
 
 	@Override
@@ -44,6 +47,7 @@ public class FuncCode extends Code1 implements FuncParam {
 		return this.paramTypes;
 	}
 
+	@Override
 	public Ty getReturnType() {
 		return this.returnType;
 	}
@@ -87,23 +91,10 @@ public class FuncCode extends Code1 implements FuncParam {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			TEnv lenv = env.newEnv();
-			FunctionContext fcx = env.get(FunctionContext.class);
-			if (fcx == null) {
-				fcx = new FunctionContext();
-				lenv.add(FunctionContext.class, fcx);
-			}
-			HashMap<String, Code> fieldMap = fcx.enterScope(new HashMap<>());
-			this.startIndex = fcx.getStartIndex();
-			for (int i = 0; i < this.paramNames.length; i++) {
-				lenv.add(this.paramNames[i], fcx.newVariable(this.paramNames[i], this.paramTypes[i]));
-			}
-			this.inner = env.catchCode(() -> this.inner.asType(lenv, this.returnType));
-			fieldMap = fcx.exitScope(fieldMap);
+			this.inner = this.typeBody(env, this.body);
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
-			this.fieldMap = fieldMap;
 		}
-		if (ret.isFunc()) {
+		if (ret.isFunc() && !this.getType().eq(ret)) {
 
 		}
 		return this.castType(env, ret);
@@ -125,6 +116,31 @@ public class FuncCode extends Code1 implements FuncParam {
 		sb.append("-> ");
 		StringCombinator.append(sb, this.getInner());
 		sb.append(")");
+	}
+
+	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
+	public void setParamTypes(Ty[] pats) {
+		this.paramTypes = pats;
+	}
+
+	@Override
+	public void setReturnType(Ty ret) {
+		this.returnType = ret;
+	}
+
+	@Override
+	public void setStartIndex(int startIndex) {
+		this.startIndex = startIndex;
+	}
+
+	@Override
+	public void setFieldMap(HashMap<String, Code> fieldMap) {
+		this.fieldMap = fieldMap;
 	}
 
 }

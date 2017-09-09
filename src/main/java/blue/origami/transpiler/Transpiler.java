@@ -303,7 +303,7 @@ public class Transpiler extends TEnv {
 		final String lname = this.generator.safeName(name);
 		final CodeTemplate tp = this.generator.newFuncTemplate(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
-		FunctionContext fcx = new FunctionContext();
+		FunctionContext fcx = new FunctionContext(null);
 		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
@@ -320,7 +320,7 @@ public class Transpiler extends TEnv {
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		final TEnv env = this.newEnv();
-		FunctionContext fcx = new FunctionContext();
+		FunctionContext fcx = new FunctionContext(null);
 		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
@@ -345,7 +345,7 @@ public class Transpiler extends TEnv {
 		this.add(name, tp);
 
 		final TEnv env = this.newEnv();
-		FunctionContext fcx = new FunctionContext();
+		FunctionContext fcx = new FunctionContext(null);
 		env.add(FunctionContext.class, fcx);
 		for (int i = 0; i < paramNames.length; i++) {
 			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));

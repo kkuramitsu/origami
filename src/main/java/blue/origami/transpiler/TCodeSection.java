@@ -79,7 +79,7 @@ public interface TCodeSection {
 
 	public default void pushMatch(TEnv env, MatchCode code) {
 		Code desugared = code.desugarIfCode();
-		System.out.println(":::" + desugared);
+		// System.out.println(":::" + desugared);
 		desugared.emitCode(env, this);
 	}
 

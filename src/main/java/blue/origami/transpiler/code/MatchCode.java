@@ -110,7 +110,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 	private Code firstArgument(TEnv env) {
 		FunctionContext fcx = env.get(FunctionContext.class);
 		if (fcx != null && fcx.size() > 0) {
-			return fcx.getFirstArgument().newCode(null);
+			return fcx.getFirstArgument().newCode(env, null);
 		}
 		throw new ErrorCode(TFmt.required_first_argument);
 	}

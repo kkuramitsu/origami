@@ -1,6 +1,5 @@
 package blue.origami.transpiler;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
@@ -11,7 +10,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
-public class TFunction extends Template implements NameInfo {
+public class TFunction extends Template implements NameInfo, FunctionUnit {
 	static int seq = 0;
 	private int funcId;
 	protected boolean isPublic = false;
@@ -35,19 +34,9 @@ public class TFunction extends Template implements NameInfo {
 	public void used(TEnv env) {
 		if (this.isUnused()) {
 			super.used(env);
-			VarDomain dom = new VarDomain(this.paramNames);
-			Ty[] pats = dom.paramTypes(this.paramNames, this.paramTypes);
-			Ty ret = dom.retType(this.returnType);
-			this.paramTypes = pats;
-			this.returnType = ret;
-			Code code = env.typeBody(this.name, this.paramNames, pats, ret, dom, this.body);
+			Code code = this.typeBody(env, this.body);
 			boolean isAbstract = code.hasSome(c -> c.isAbstract());
-			dom.reset();
-			pats = dom.dupParamTypes(pats);
-			ret = dom.dupRetType(ret);
-			this.paramTypes = Arrays.stream(pats).map(t -> t.finalTy()).toArray(Ty[]::new);
-			this.returnType = ret.finalTy();
-			ODebug.trace(":::: abstract=%s %s ret=%s", isAbstract, this.getFuncType(), code.getType());
+			ODebug.trace("abstract=%s %s ret=%s", isAbstract, this.getFuncType(), code.getType());
 			if (!isAbstract && this.generated == null) {
 				Transpiler tr = env.getTranspiler();
 				this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
@@ -78,8 +67,32 @@ public class TFunction extends Template implements NameInfo {
 		return this.generated == null ? "" : this.generated.getDefined();
 	}
 
+	@Override
+	public String getName() {
+		return this.name;
+	}
+
+	@Override
 	public String[] getParamNames() {
 		return this.paramNames;
+	}
+
+	@Override
+	public void setParamTypes(Ty[] pats) {
+		this.paramTypes = pats;
+	}
+
+	@Override
+	public void setReturnType(Ty ret) {
+		this.returnType = ret;
+	}
+
+	@Override
+	public void setStartIndex(int startIndex) {
+	}
+
+	@Override
+	public void setFieldMap(HashMap<String, Code> fieldMap) {
 	}
 
 	@Override
@@ -125,7 +138,7 @@ public class TFunction extends Template implements NameInfo {
 		VarDomain dom = new VarDomain(this.getParamNames());
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Transpiler tr = env.getTranspiler();
-		String key = sigkey(this.name, this.funcId, p);
+		String key = polykey(this.name, this.funcId, p);
 		Template tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
@@ -137,7 +150,7 @@ public class TFunction extends Template implements NameInfo {
 		return tp;
 	}
 
-	static String sigkey(String name, int id, Ty[] p) {
+	static String polykey(String name, int id, Ty[] p) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(id);
 		sb.append("#");
@@ -149,14 +162,14 @@ public class TFunction extends Template implements NameInfo {
 		return sb.toString();
 	}
 
-	static HashMap<String, Template> sigkeyMap = new HashMap<>();
+	static HashMap<String, Template> polyMap = new HashMap<>();
 
 	static Template getGenerated(String sigkey) {
-		return sigkeyMap.get(sigkey);
+		return polyMap.get(sigkey);
 	}
 
 	static void setGenerated(String sigkey, Template tp) {
-		sigkeyMap.put(sigkey, tp);
+		polyMap.put(sigkey, tp);
 	}
 
 	@Override
@@ -165,7 +178,7 @@ public class TFunction extends Template implements NameInfo {
 	}
 
 	@Override
-	public Code newCode(Tree<?> s) {
+	public Code newCode(TEnv env, Tree<?> s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

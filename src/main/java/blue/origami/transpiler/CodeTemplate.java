@@ -52,7 +52,7 @@ public class CodeTemplate extends Template implements NameInfo {
 	}
 
 	@Override
-	public Code newCode(Tree<?> s) {
+	public Code newCode(TEnv env, Tree<?> s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

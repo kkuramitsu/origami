@@ -51,7 +51,7 @@ public class NameCode extends CommonCode implements ParseRule {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref != null) {
 				ref.used(env);
-				return ref.newCode(this.getSource()).castType(env, ret);
+				return ref.newCode(env, this.getSource()).castType(env, ret);
 			}
 			return this.parseNames(env, this.name, ret);
 		}
@@ -64,10 +64,12 @@ public class NameCode extends CommonCode implements ParseRule {
 			String var = this.parseName(name, i);
 			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
-				throw new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
+				RuntimeException e = new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
+				e.printStackTrace();
+				throw e;
 			}
 			ref.used(env);
-			mul = this.mul(mul, ref.newCode(this.getSource()));
+			mul = this.mul(mul, ref.newCode(env, this.getSource()));
 		}
 		return mul.asType(env, ret);
 	}

@@ -494,7 +494,7 @@ interface TEnvApi {
 			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
 		} catch (ErrorCode e) {
 			e.setSource(t);
-			System.out.println(":::" + t);
+			// System.out.println(":::" + t);
 			throw e;
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
@@ -507,7 +507,7 @@ interface TEnvApi {
 
 			} catch (ErrorCode e) {
 				e.setSource(t);
-				System.out.println(":::" + t);
+				// System.out.println(":::" + t);
 				throw e;
 			} catch (Exception e) {
 				ODebug.exit(1, e);
@@ -586,25 +586,6 @@ interface TEnvApi {
 		List<Template> l = new ArrayList<>(8);
 		env().findList(name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == paramSize);
 		return l;
-	}
-
-	public default Code typeBody(String name, String[] pnames, Ty[] pats, Ty ret, VarDomain dom, Tree<?> body) {
-		boolean dyn = ret.hasVar();
-		final TEnv env = env().newEnv();
-		// final CodeTemplate tp = this.generator.newFuncTemplate(this, name,
-		// name, ret, pats);
-		// env.add(name, tp);
-		FunctionContext fcx = new FunctionContext();
-		env.add(FunctionContext.class, fcx);
-		for (int i = 0; i < pnames.length; i++) {
-			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
-		}
-		Code code0 = env.parseCode(env, body);
-		Code code = env.catchCode(() -> code0.asType(env, ret));
-		if (dyn) {
-			ret.toImmutable();
-		}
-		return code;
 	}
 
 }
