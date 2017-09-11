@@ -48,7 +48,7 @@ public class Oexample extends OCommand {
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.ThrowingParserError, true);
-		options.set(ParserOption.PartialFailure, true);
+		// options.set(ParserOption.PartialFailure, true);
 	}
 
 	@Override

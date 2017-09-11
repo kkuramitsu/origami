@@ -904,7 +904,7 @@ PrimaryType =
 
 
 ClassType =
-	TypeName
+	!TKEYWORD TypeName
 	{$base (("<" $param(TypeParams) ">") / ("[" $param(TypeParams) "]")) #GenericType }?
 
 TypeParams = {
@@ -917,6 +917,11 @@ TypeName = {
 	[']?
 	#ClassType
 } _
+
+TKEYWORD
+	= [Pp] 'ublic' !W
+	/ [Ll] 'et' !W
+
 
 VarType = ['] {
 	[A-Za-z_] [A-Za-z0-9_]*

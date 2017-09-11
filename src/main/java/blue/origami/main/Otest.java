@@ -35,6 +35,8 @@ public class Otest extends Oexample {
 	protected void initOption(OOption options) {
 		super.initOption(options);
 		options.set(ParserOption.Coverage, true);
+		options.set(ParserOption.ThrowingParserError, true);
+		options.set(ParserOption.PartialFailure, true);
 	}
 
 	public static class Coverage {
