@@ -28,19 +28,22 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 		TLog log = null;
 		String text = t.getString().replace("_", "");
 		int radix = 10;
+		Class<?> base = this.baseType;
 		if (text.endsWith("L") || text.endsWith("l")) {
 			text = text.substring(0, text.length() - 1);
 		}
 		if (text.startsWith("0b") || text.startsWith("0B")) {
 			text = text.substring(2);
 			radix = 2;
+			base = int.class;
 		} else if (text.startsWith("0x") || text.startsWith("0X")) {
 			text = text.substring(2);
 			radix = 16;
+			base = int.class;
 		} else if (text.startsWith("0")) {
 			radix = 8;
+			base = int.class;
 		}
-		Class<?> base = this.baseType;
 		Number value = null;
 		if (base == int.class) {
 			try {
