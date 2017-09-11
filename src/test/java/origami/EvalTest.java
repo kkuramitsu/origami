@@ -24,7 +24,7 @@ public class EvalTest {
 		runScript("1.0+1", "Float");
 	}
 
-	public void testDecimal() throws Throwable {
+	public void testNumber() throws Throwable {
 		runScript("0b10", "Int");
 		runScript("0_10", "Int");
 		runScript("0x10", "Int");
