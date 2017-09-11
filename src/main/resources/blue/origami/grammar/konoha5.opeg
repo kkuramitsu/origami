@@ -509,7 +509,7 @@ NoneCaseExpr = {
 }
 
 RangeCaseExpr = {
-	"("
+	"("?
 	$start(MatchValue)
   ( [Tt] 'o' _
 	  ("<" #RangeUntilCase / #RangeCase)
@@ -517,7 +517,7 @@ RangeCaseExpr = {
 	  ("<" #RangeUntilCase / "." #RangeCase)
 	)
 	$end(MatchValue)
-	")"
+	")"?
 }
 
 ValueCaseExpr = {
@@ -871,7 +871,7 @@ FLOAT =
 
 FRACTION =
 	!'_' ( '_'* DIGIT )* '.' DIGIT ( '_'* DIGIT )*
-    / DIGIT ( '_'* DIGIT )* '.'
+    / DIGIT ( '_'* DIGIT )* '.' !'.'
 
 EXPONENT =
 	[eE] [+\-]? DIGIT ( '_'* DIGIT )*
