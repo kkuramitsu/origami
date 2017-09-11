@@ -254,6 +254,13 @@ ExampleDecl = {
 
 /* Block */
 
+example Statement '''
+a = {
+  1
+  2
+}
+'''
+
 Block =
 	PyBlockExpr
 	/ BlockExpr

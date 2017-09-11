@@ -22,9 +22,9 @@ import blue.origami.nez.ast.CommonTree;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.pasm.PAsmCompiler;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeSetFunc;
+import blue.origami.nez.parser.pasm.PAsmCompiler;
 import blue.origami.nez.peg.Production;
 import blue.origami.util.OOption;
 
@@ -32,7 +32,7 @@ public final class Parser {
 
 	private final Production start;
 	private final OOption options;
-	private ParserCode compiledParserCode = null;
+	private ParserCode compiledParser = null;
 
 	public Parser(Production start, OOption options) {
 		this.options = options;
@@ -41,36 +41,29 @@ public final class Parser {
 	}
 
 	public final ParserGrammar getParserGrammar() {
-		if (this.compiledParserCode == null) {
+		if (this.compiledParser == null) {
 			this.compile();
 		}
-		return this.compiledParserCode.getParserGrammar();
+		return this.compiledParser.getParserGrammar();
 	}
 
 	public final ParserCode compile() {
 		ParserCompiler compl = this.options.newInstance(PAsmCompiler.class);
 		long t = this.options.nanoTime(null, 0);
 		ParserGrammar g = new ParserChecker(this.options, this.start).checkParserGrammar();
-		this.compiledParserCode = compl.compile(g);
+		this.compiledParser = compl.compile(g);
 		this.options.nanoTime("ParserCompilingTime@" + this.start.getUniqueName(), t);
-		return this.compiledParserCode;
+		return this.compiledParser;
 	}
 
 	public final ParserCode getExecutable() {
-		if (this.compiledParserCode == null) {
+		if (this.compiledParser == null) {
 			this.compile();
 		}
-		return this.compiledParserCode;
+		return this.compiledParser;
 	}
 
 	/* --------------------------------------------------------------------- */
-
-	// final <T> T exec(ParserContext px, Source s) {
-	// px.start();
-	// T matched = this.compiledParserCode.exec(px);
-	// px.end();
-	// return matched;
-	// }
 
 	public final Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
 		ParserCode parser = this.getExecutable();
@@ -104,7 +97,4 @@ public final class Parser {
 	public final Tree<?> parse(String str) throws IOException {
 		return this.parse(ParserSource.newStringSource(str));
 	}
-
-	/* Error Handling */
-
 }

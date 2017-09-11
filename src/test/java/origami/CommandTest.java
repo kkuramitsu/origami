@@ -5,11 +5,11 @@ import blue.origami.main.OCommand;
 public class CommandTest {
 
 	public void testExample() throws Throwable {
-		OCommand.start("example", "-g", "math.opeg");
+		OCommand.start("example", "-g", "konoha5.opeg");
 	}
 
 	public void testTest() throws Throwable {
-		OCommand.start("test", "-g", "math.opeg", "-D", "hoge=hoge");
+		OCommand.start("test", "-g", "konoha5.opeg");
 	}
 
 	public void testMatch() throws Throwable {
