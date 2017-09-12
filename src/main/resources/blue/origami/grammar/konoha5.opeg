@@ -12,7 +12,25 @@ example File '''
 println("hello,world") // hello,world
 '''
 
-public File = _ (EOL _)* { $(TopLevel EOS)* #Source } _ EOF
+example File '''
+example MutualRecursion :
+  even?(0)
+  odd?(1)
+
+let even?(a) = 
+  if (a == 0) true else odd?(a - 1)
+
+let odd?(a) = 
+    if (a == 0) false else even?(a - 1)
+
+'''
+
+example File '''
+1
+2
+'''
+
+public File = _  { $((EOL _)* TopLevel (";" _ / EOL _))* #Source } (EOL _)* EOF
 
 /* Code Layout (Whitespace) */
 
@@ -27,7 +45,6 @@ __           = (EOL _)?
 EOS          = (EOL _)+
 EOT          = (!W _)
 
-//INDENT  = ((<exists SS> <match SS>) / '')
 INDENT      = S*
 
 /* TopLevel */
@@ -38,6 +55,7 @@ TopLevel =
 	/ FuncDecl
 	/ ConstDecl
 	/ Expression
+//	/ { #Empty } _
 
 /* Common */
 
@@ -84,7 +102,7 @@ TopLevel =
 
 /* AssumeDecl */
 
-example AssumeDecl&Statement '''
+example AssumeDecl&TopLevel '''
 assume x,y,z : Float
 '''
 
@@ -142,15 +160,15 @@ let fibo n =
     | otherwise => fibo(n-1) + fibo(n-2)
 '''
 
-example ConstDecl&Statement '''
+example ConstDecl&TopLevel '''
 public let f = 1
 '''
 
-example ConstDecl&Statement '''
+example ConstDecl&TopLevel '''
 f = 1
 '''
 
-example ConstDecl&Statement '''
+example ConstDecl&TopLevel '''
 int x = 1
 '''
 
@@ -190,11 +208,11 @@ CParam = {
 }
 
 LetFuncDecl = {
-	("public" ( [Ll] 'et' EOT)? #PublicFuncDecl ) / ( ( [Ll] 'et' EOT)? #FuncDecl )
+	("public" ( [Ll] 'et' EOT)? #PublicFuncDecl  /  ( [Ll] 'et' EOT)? #FuncDecl )
 	$name(Identifier)
 	("(" $param(Params) ")" / $param(LetParams))
 	$type(":as" Type)?
-	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
+	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block)) 
 }
 
 LetParams = {
@@ -224,20 +242,18 @@ CFuncDecl = {
 	/ ''
 
 ConstDecl = CConstDecl / {
-	("public" "const" #PublicLetDecl ) / ("const" #LetDecl )
+	("public" "const" #PublicLetDecl  / "const" #LetDecl )
 	$name(Identifier)
 	$suffix(Quantity)?
 	(":as" $type(Type))?
 	"=" $expr(Expression)
-  ";"?
 }
 
 CConstDecl = {
-	("public" ('const' EOT)? $type(Type) #PublicLetDecl ) / (('const' EOT)? $type(Type) #LetDecl )
+	("public" ('const' EOT)? $type(Type) #PublicLetDecl  / ('const' EOT)? $type(Type) #LetDecl )
 	$name(Identifier)
 	$suffix(Quantity)?
 	"=" $expr(Expression)
-  ";"?
 }
 
 example ExampleDecl '''
@@ -254,36 +270,32 @@ ExampleDecl = {
 
 /* Block */
 
-example Statement '''
-a = {
-  1
-  2
-}
-'''
-
 Block =
 	PyBlockExpr
 	/ BlockExpr
 
 BlockExpr = {
 	"{" ";"?
-	($(Statement) (";"+ $(Statement))* ";"* EOS)+
+	($(Statement) (";" $(Statement))* ";"? EOS)+
 	"}"
 	#MultiExpr
 } / {
-	"{" ";"? $(Statement) (";"+ $(Statement))* ";"* "}"
+	"{" ";"? $(Statement) (";" $(Statement))* ";"? "}"
 	#MultiExpr
+} / {
+	"{" "}" #EmptyExpr
 }
 
 PyBlockExpr = {
 	(':' / '=') _
-	((EOL <block INDENT_BLOCK >) / ($(Statement) EOS))
+	(EOL <block INDENT_BLOCK > / $(Statement) EOS)
 	#MultiExpr
 }
 
 INDENT_BLOCK =
-	<symbol INDENT> $(Statement) (";"+ $(Statement))* ";"* EOL
-	(<match INDENT> $(Statement) (";"+ $(Statement))* ";"* EOL)*
+	<symbol INDENT> $(Statement) (";" $(Statement))* ";"? EOL
+	(_ EOL / <match INDENT> $(Statement) (";" $(Statement))* ";"? EOL)*
+	
 
 /* Statement */
 
@@ -311,7 +323,8 @@ else :
 '''
 
 Statement =
-	LetDecl
+	FuncDecl
+	/ LetDecl
 	/ IfStmt
 	/ ReturnStmt
 	/ AssertStmt
@@ -323,7 +336,6 @@ LetDecl = {
 	$suffix(Quantity)?
 	(":as" $type(Type))?
 	"=" $expr(Expression)
-  ";"?
 	#LetDecl
 }
 
@@ -337,14 +349,12 @@ IfStmt = {
 ReturnStmt = {
 	[Rr] 'eturn' EOT
 	$expr(Expression)?
-  ";"?
 	#ReturnStmt
 }
 
 AssertStmt = {
 	[Aa] 'ssert' EOT
 	$expr(Expression)
-  ";"?
 	#AssertStmt
 }
 
@@ -358,20 +368,21 @@ example JSFuncExpr&Expression [](x,y) { x+y }
 
 example IfExpr&Expression if(a > b) a + b else a - b
 example IfExpr&Expression if(a < b) then a * b else a / b
-example Expression a <= b ? a != b : a >= b
-example Expression a >= b ? a << b : a >> b
+example ConditionalExpr&Expression a <= b ? a != b : a >= b
+example ConditionalExpr&Expression a >= b ? a << b : a >> b
 example Expression true && false || !true
 example Expression a == (b%2)^(c|1)
 example Expression f(1,2)
 example Expression d.name
 example Expression d.f(1,2)
+example Expression d.f $ 1 2
 
 Expression =
 	FuncExpr
 	/ JFuncExpr
 	/ JSFuncExpr
 	/ IfExpr
-	/ FlatApplyExpr
+	/ MatchExpr
 	/ OperatorExpr
 
 // Lambda
@@ -386,6 +397,8 @@ FuncExpr = {
 LambdaParams = {
   '\\' $(LetParam)
   ('\\' $(LetParam))*
+} / {
+	('\\()' / '\\_') _
 }
 
 JFuncExpr = {
@@ -405,17 +418,6 @@ JSFuncExpr = {
   $type(":as" Type)?
   $body(Block)
   #FuncExpr
-}
-
-FlatApplyExpr = {
-	$recv(Identifier)
-	'$' _
-	$param(FlatArguments)
-	#ApplyExpr
-}
-
-FlatArguments = {
-	$(Expression)*
 }
 
 IfExpr = {
@@ -464,21 +466,21 @@ FuncMatchExpr = {
 }
 
 Rules = {
-  $(RuleExpr)
-	(EOS $(RuleExpr))*
-	$(EOS DefaultRuleExpr)?
+	$(RuleExpr)
+	$(__ RuleExpr)+
+ 	$(__ DefaultRuleExpr)?
 }
 
 RuleExpr = {
-	( [Cc] 'ase' EOT / '|' _) $expr(CaseExpr) __?
-	("=>" / ":" ) __?
+	( [Cc] 'ase' !W / '|') _ $expr(CaseExpr) __
+	("=>" / ":" ) __
 	$body(Expression)
 	#CaseExpr
 }
 
 DefaultRuleExpr = {
-	([Dd] 'efault' / [Oo] 'therwise') __?
-	("=>" / ":" ) __?
+	([Dd] 'efault' / [Oo] 'therwise') __
+	("=>" / ":" ) __
 	$body(Expression)
 }
 
@@ -553,7 +555,7 @@ match a
   | [it(>1), *] => a
   | [1, a*] => a
   | [[n,n'(>0)], a*] => a
-  | []
+  | [] => a
 '''
 
 ListCaseExpr = {
@@ -571,7 +573,7 @@ match x
   | {left, right, *} => x
   | {left: {left, right}, right} => x
   | {name, age(>20), ...} => x
-  | {}
+  | {} => x
 '''
 
 DataCaseExpr = {
@@ -590,8 +592,6 @@ DataNameCaseExpr = {
   	#NameCase
 }
 
-
-
 /* Operator */
 
 OperatorExpr = {
@@ -601,57 +601,36 @@ OperatorExpr = {
 } / ConditionalExpr
 
 ConditionalExpr =
-	OrExpr
-	{$cond "?" $then(Expression) ":" $else(OrExpr) #IfExpr }*
+	BindExpr
+	{$cond "?" $then(Expression) ":" $else(BindExpr) #IfExpr }*
+
+BindExpr = 
+	OrExpr {$left '>>=' _ $right(OrExpr) #BindExpr }*
 
 OrExpr =
-	AndExpr
-	{$left ( [Or] 'r' EOT / "||") $right(AndExpr) #OrExpr }*
+	AndExpr {$left OR $right(AndExpr) #OrExpr }*
+
+OR = 
+	[Oo] [Rr] EOT / '||' _
 
 AndExpr =
-	LOrExpr
-	{$left ( [Aa] 'nd' EOT / "&&") $right(LOrExpr) #AndExpr }*
+	EqExpr {$left AND $right(EqExpr) #AndExpr }*
 
-LOrExpr =
-	XOrExpr
-	{$left ('lor' EOT / "|") $right(XOrExpr) #OrExpr }*
+AND =
+	[Aa] 'nd' EOT
+	/ '&&' _
 
-XOrExpr =
-	LAndExpr
-	{$left ([Xx] 'or' EOT / "^") $right(LAndExpr) #XorExpr }*
+EqExpr =
+	InfixExpr
+	{$left EQ $right(InfixExpr) }*
 
-LAndExpr =
-	EqualExpr
-	{$left ('land' EOT / "&") $right(EqualExpr) #AndExpr }*
-
-EqualExpr =
-	CmprExpr
-	{$left EQ $right(CmprExpr) }*
-
-EQ = "==" #EqExpr / "!=" #NeExpr
-
-CmprExpr =
-	IsaExpr
-	{$left CMPR $right(ShiftExpr) }*
-
-CMPR =
-	"<=" #LteExpr
+EQ =
+	"==" #EqExpr 
+	/ "!=" #NeExpr
+	/ "<=" #LteExpr
 	/ ">=" #GteExpr
 	/ "<"  #LtExpr
 	/ ">"  #GtExpr
-
-IsaExpr =
-	InfixExpr
-	{$left ('isa' '?'? _ / 'is' '?'? _ ) #IsaExpr $right(Type) }?
-
-ShiftExpr =
-	SumExpr
-	{$left SHIFT $right(SumExpr) }*
-
-SHIFT =
-	"<<"  #LShiftExpr
-	/ ">>"  #RShiftExpr
-	/ ">>>" #RShiftExpr
 
 InfixExpr =
 	SumExpr
@@ -664,7 +643,7 @@ InfixOp = {
 INFIXOP =
 	'\\' [A-Za-z]+ '?'?  // \in
 	/ [+\-*/%] INFIX
-	/ [<>=!&%^~?]+
+	/ [<>=!&%^~] [<>=!&%^~?]+
 
 INFIX = [+\-*/%<>=!&%^~?]+
 
@@ -672,15 +651,27 @@ SumExpr =
 	ProdExpr
 	{$left SUM $right(ProdExpr) }*
 
-SUM = "+" #AddExpr / "-" #SubExpr
+SUM = 
+	'++' #AddExpr
+	/ "+" #AddExpr 
+	/ "-" #SubExpr
+	/ '|||' _ #LOrExpr     // F#
+	/ '^^^' _ #XOrExpr     // F#
+	/ '|' !'!' _ #LOrExpr  // C
 
 ProdExpr =
 	CastExpr
 	{$left PROD $right(CastExpr) }*
 
 PROD =
-	"*" #MulExpr
+	'^' _ #PowExpr
+	/ '**' !'*' _ #PowExpr  // Python
+	/ '<<' _ #LShiftExpr
+	/ '>>' _ #RShiftExpr
+	/ '&&&' _ #LAndExpr  // F#
+	/ '&' !'&' _ #LAndExpr    // C
 	/ "/" #DivExpr
+	/ "*" #MulExpr
 	/ ("%" / [Mm] 'od' EOT) #ModExpr
 
 CastExpr =
@@ -694,7 +685,6 @@ UnaryExpr
     / { '~' _  $expr(CastExpr)    #CmplExpr }
     / { "+"  $expr(CastExpr)      #PlusExpr }
     / { "|"  $expr(Expression) "|"    #SizeOfExpr }
-    / { "<<"  $expr(Expression) #PopExpr }
 //    / { "#"  $expr(CastExpr)    #TweetExpr }
 //    / { "++" $expr(UnaryExpr)   #IncExpr }
 //    / { "--" $expr(UnaryExpr)   #DecExpr }
@@ -704,35 +694,45 @@ PostExpr =
 	{$recv POSTOP }* // {$left '(' ASSERTOP _  $right(Expression) ")" }?
 
 POSTOP =
-	"." $name(Identifier) ( ("(" ($param(Arguments) ")" #MethodExpr) / #GetExpr ))
-	/ "(" $param(Arguments) ")" #ApplyExpr
+	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
+	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
-//	/ "++" #PostIncExpr
-//	/ "--" #PostDecExpr
 
+ARGU 
+	= "(" $param(Arguments) ")"
+	/ '$' _ $param(FlatArguments)
+	
 Arguments = {
 	$(Expression)?
 	( "," $(Expression) )*
 }
 
+FlatArguments = {
+	$(Expression)*
+}
+
+
 /* Primary */
 
+example PrimaryExpression&Expression (1,2) //
 example PrimaryExpression&Expression (1)
 example PrimaryExpression&Expression () //
 example PrimaryExpression&Expression [1,2,3]
-example PrimaryExpression&Expression {(e.g. 1)}
 example PrimaryExpression&Expression {name: 'naruto', age: 17}
 example PrimaryExpression&Expression {"name": 'naruto', "age": '17'}
+example PrimaryExpression&Expression {1;2}
+example PrimaryExpression&Expression {}
+
 
 PrimaryExpression =
 	GroupExpr
   / EmptyExpr
-  / MutableExpr
-  / ImmutableExpr
+  / DataExpr
+  / RecordExpr
   / Constant
   / Identifier
 
-GroupExpr = "(" Expression ")"
+GroupExpr = "(" Expression {$ ("," $(Expression))+ #TupleExpr }? ")"
 EmptyExpr = { '()' #EmptyExpr } _
 
 Constant =
@@ -747,36 +747,9 @@ Constant =
 
 /* Data */
 
-MutableExpr = {
-	"{" SET "*"? #DataListExpr "}"
-} / {
-	"{" DICT #DataDictExpr "}"
-} / {
-	"{" DATA? #DataExpr "}"
-}
+ARRAY = $value(Expression) '*' _ $param(Expression)
 
-ImmutableExpr = RangeExpr / {
-	"[" SET "*"? #ListExpr "]"
-} / {
-	"[" DICT #DictExpr "]"
-} / {
-	"[" DATA? #RecordExpr "]"
-}
-
-RangeExpr = {
-	"["
-	$left(Expression)
-	( [Tt] 'o' EOT / '..' _)
-	(("<" #RangeUntilExpr) / #RangeExpr)
-	$right(Expression)
-	"]"
-}
-
-SET = $(EgExpr) (","+ $(EgExpr))* ","*
-
-EgExpr =
-	{ '(' [Ee] ( '.g.' / 'x ' ) _ $(Expression) ")" #ForExampleExpr }
-	/ Expression
+LIST = $(Expression) (","+ $(Expression))* ","*
 
 DATA = $(KeyValue) ("," $(KeyValue))*
 
@@ -792,6 +765,37 @@ DEntry = {
 	$name(StringExpr/CharExpr)
 	(":")
 	$value(Expression)
+}
+
+DataExpr = {
+	"{"
+	( 
+	  DICT  #DataDictExpr
+	  / DATA #DataExpr
+	  / ARRAY #DataArrayExpr
+	  / LIST  #DataListExpr 
+	) 
+	"}"
+} / BlockExpr
+
+RecordExpr = RangeExpr / {
+	"["
+	( 
+	  DICT  #DictExpr
+	  / DATA #RecordExpr
+	  / ARRAY #ArrayExpr
+	  / LIST  #ListExpr 
+	) 
+	"]"
+}
+
+RangeExpr = {
+	"["
+	$left(Expression)
+	( [Tt] 'o' EOT / '..' _)
+	(("<" #RangeUntilExpr) / #RangeExpr)
+	$right(Expression)
+	"]"
 }
 
 /* Literal */
@@ -877,21 +881,35 @@ Quantity = {
 
 /* Type */
 
+example Type bool
+example Type Int*
+example Type ()
+example Type Dict[Int]
+example Type () -> int
+example Type int -> int -> int
+example Type (int, int)
+example Type {}
+example Type {name, age}
+example Type #JSON type of 1
+example Type [km/h]
+
 Type =
 	PrimaryType
 	{$base TSUFFIX }*
 
 TSUFFIX =
-    / "*"   #ArrayType
-    / "?"   #OptionType
+    / '*' _   #ListType
+    / "[" ']' _  #ArrayType
+    / "[" $param(Type) ']' _  #MonadType
+    / "<" $param(Type) '>' _  #MonadType
+    / '?' _   #OptionType
     / "->" $type(PrimaryType) #FuncType
 
+"typeof" = [Tt] 'ype' _ [Oo] 'f' EOT
+
 PrimaryType =
-	VarType
-	/ { [Tt] 'ypeof' EOT $expr(Expression) #ExprType }
-	/ {'@' $name(Identifier) $type(PrimaryType) #MType }
-	/ {('Maybe' EOT / 'Option' 'al'? EOT) _ $base(Type) #OptionType }
-  / {'Option' 'al'? _ "<" $base(Type) _ '>' _ #OptionType }
+	{ "typeof" $expr(Expression) #ExprType }
+	/ { '#' $name(Identifier) $type(PrimaryType) #TagType }
 	/ { '_' #ClassType } _
 	/ ClassType
 	/ FuncType
@@ -902,10 +920,9 @@ PrimaryType =
 	/ RecordType
 	/ UnitType
 
-
 ClassType =
 	!TKEYWORD TypeName
-	{$base (("<" $param(TypeParams) ">") / ("[" $param(TypeParams) "]")) #GenericType }?
+	// {$base (("<" $param(TypeParams) ">") / ("[" $param(TypeParams) "]")) #GenericType }?
 
 TypeParams = {
 	( $(Type) ("," $(Type))* )?
@@ -921,7 +938,6 @@ TypeName = {
 TKEYWORD
 	= [Pp] 'ublic' !W
 	/ [Ll] 'et' !W
-
 
 VarType = ['] {
 	[A-Za-z_] [A-Za-z0-9_]*
@@ -941,14 +957,16 @@ FuncType = {
 	#FuncType
 }
 
-TupleType =  { "("
+TupleType =  { 
+	"("
 	$(Type) ("," $(Type))+
 	#TupleType
-")" }
+	")" 
+}
 
 DataType =  { "{"
 	($(Identifier) ("," $(Identifier))*)?
-	#MutableRecordType
+	#DataType
 "}" }
 
 RecordType =  { "["
@@ -966,15 +984,3 @@ TypeParameters = {
 
 TypeParameter = Identifier
 
-example Type bool
-example Type Int*
-example Type ()
-example Type Dict[Int]*
-example Type () -> int
-example Type int -> int -> int
-example Type (int, int)
-example Type {}
-example Type {name, age}
-example Type Maybe Int
-example Type @Nullable C
-example Type [km/h]

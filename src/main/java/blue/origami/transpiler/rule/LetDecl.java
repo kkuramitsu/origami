@@ -27,7 +27,7 @@ public class LetDecl extends SyntaxRule implements ParseRule {
 		String name = t.getStringAt(_name, "");
 		Code right = env.parseCode(env, t.get(_expr));
 		Ty type = t.has(_type) ? env.parseType(env, t.get(_type, null), null) : null;
-
+		//
 		FunctionContext fcx = env.get(FunctionContext.class);
 		if (fcx == null) { // TopLevel
 			if (type == null) {
