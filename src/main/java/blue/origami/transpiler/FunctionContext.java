@@ -136,6 +136,10 @@ public class FunctionContext {
 			return this.name;
 		}
 
+		public int getIndex() {
+			return this.seq;
+		}
+
 		@Override
 		public boolean isNameInfo(TEnv env) {
 			return true;
@@ -162,6 +166,7 @@ public class FunctionContext {
 		public void used(TEnv env) {
 			this.isUsed = true;
 		}
+
 	}
 
 }

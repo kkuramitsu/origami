@@ -43,6 +43,12 @@ public class ErrorCode extends RuntimeException implements Code {
 		return false;
 	}
 
+	@Override
+	public boolean showError(TEnv env) {
+		env.reportLog(this.log);
+		return true;
+	}
+
 	public TLog getLog() {
 		return this.log;
 	}

@@ -25,7 +25,7 @@ public class MultiCode extends CodeN {
 	@Override
 	public boolean isGenerative() {
 		for (Code a : this.args) {
-			if (!a.isGenerative()) {
+			if (a.isGenerative()) {
 				return true;
 			}
 		}

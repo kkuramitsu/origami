@@ -149,6 +149,16 @@ interface CodeAPI {
 		return true;
 	}
 
+	public default boolean showError(TEnv env) {
+		boolean b = false;
+		for (Code a : self().args()) {
+			if (a.showError(env)) {
+				b = true;
+			}
+		}
+		return b;
+	}
+
 }
 
 abstract class CommonCode implements Code {

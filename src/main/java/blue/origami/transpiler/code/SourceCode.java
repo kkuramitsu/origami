@@ -12,7 +12,9 @@ public class SourceCode extends MultiCode {
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
 		for (Code a : this.args) {
-			a.emitCode(env, sec);
+			if (!a.showError(env)) {
+				a.emitCode(env, sec);
+			}
 		}
 	}
 }

@@ -8,9 +8,10 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OStrings;
 
 public class LetCode extends Code1 {
+	private boolean isImplicit = false;
 	private Ty declType;
 	private String name;
-	// private boolean isDuplicated = false;
+	private int index = -1;
 
 	public LetCode(String name, Code expr) {
 		this(name, null, expr);
@@ -22,8 +23,13 @@ public class LetCode extends Code1 {
 		this.declType = type == null ? Ty.tUntyped() : type;
 	}
 
+	public LetCode asImplicit() {
+		this.isImplicit = true;
+		return this;
+	}
+
 	public String getName() {
-		return this.name;
+		return this.index == -1 ? this.name : this.name + this.index;
 	}
 
 	public Ty getDeclType() {
@@ -41,12 +47,20 @@ public class LetCode extends Code1 {
 			this.setType(Ty.tVoid);
 		}
 		FunctionContext fcx = env.get(FunctionContext.class);
-		assert (fcx != null);
-		// if (fcx.isDuplicatedName(this.name, this.declType)) {
+		if (fcx == null) {
+			fcx = new FunctionContext(null); // TopLevel
+			env.add(FunctionContext.class, fcx);
+		}
+		if (this.isImplicit) {
+
+		}
+		// if () {
 		// this.isDuplicated = true;
 		// ODebug.trace("duplicated local name %s", this.name);
 		// }
 		Variable var = fcx.newVariable(this.name, this.declType);
+		this.index = var.getIndex();
+		// ODebug.trace("let %s %s %s", env, this.name, this.declType);
 		env.add(this.name, var);
 		return this;
 	}

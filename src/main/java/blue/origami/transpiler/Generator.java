@@ -36,7 +36,7 @@ public abstract class Generator implements CodeBuilder {
 
 	protected abstract Object wrapUp();
 
-	public abstract void emit(TEnv env, Code code);
+	public abstract void emitTopLevel(TEnv env, Code code);
 
 	public abstract CodeTemplate newConstTemplate(TEnv env, String lname, Ty ret);
 

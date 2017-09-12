@@ -46,7 +46,7 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
-	public void emit(TEnv env, Code code) {
+	public void emitTopLevel(TEnv env, Code code) {
 		code = this.emitHeader(env, code);
 		code.emitCode(env, this.eval);
 	}

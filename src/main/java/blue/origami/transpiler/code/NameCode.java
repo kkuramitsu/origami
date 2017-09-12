@@ -65,7 +65,7 @@ public class NameCode extends CommonCode implements ParseRule {
 			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
 				RuntimeException e = new ErrorCode(this, TFmt.undefined_name__YY0, this.name);
-				e.printStackTrace();
+				// e.printStackTrace();
 				throw e;
 			}
 			ref.used(env);

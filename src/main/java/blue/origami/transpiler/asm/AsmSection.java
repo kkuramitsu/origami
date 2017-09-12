@@ -487,6 +487,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	@Override
 	public void pushLet(TEnv env, LetCode code) {
+		// ODebug.trace("<<<<<< %s %s", code.getName(), code.getDeclType());
 		this.addVariable(code.getName(), code.getDeclType());
 		Type typeDesc = this.ts.ti(this.varStack.varType);
 		code.getInner().emitCode(env, this);
@@ -501,6 +502,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.getField(Type.getType("L" + this.cname + ";"), code.getName(), this.ts.ti(code.getType()));
 		} else {
 			VarEntry var = this.varStack.find(code.getName());
+			// ODebug.trace(">>>>>> %s %s", code.getName(), var);
 			Type typeDesc = (this.ts.ti(var.varType));
 			this.mBuilder.visitVarInsn(typeDesc.getOpcode(ILOAD), var.varIndex);
 		}

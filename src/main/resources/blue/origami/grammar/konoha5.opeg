@@ -224,7 +224,6 @@ LetParam = {
 	$name(Identifier)
 	$suffix(Quantity)?
 	(":as" $type(Type) )?
-	#LetDecl
 }
 
 CFuncDecl = {
@@ -242,7 +241,7 @@ CFuncDecl = {
 	/ ''
 
 ConstDecl = CConstDecl / {
-	("public" "const" #PublicLetDecl  / "const" #LetDecl )
+	("public" "const" #PublicConstDecl  / "const" #ConstDecl )
 	$name(Identifier)
 	$suffix(Quantity)?
 	(":as" $type(Type))?
@@ -250,7 +249,7 @@ ConstDecl = CConstDecl / {
 }
 
 CConstDecl = {
-	("public" ('const' EOT)? $type(Type) #PublicLetDecl  / ('const' EOT)? $type(Type) #LetDecl )
+	("public" ('const' EOT)? $type(Type) #PublicConstDecl  / ('const' EOT)? $type(Type) #ConstDecl )
 	$name(Identifier)
 	$suffix(Quantity)?
 	"=" $expr(Expression)
@@ -608,17 +607,20 @@ BindExpr =
 	OrExpr {$left '>>=' _ $right(OrExpr) #BindExpr }*
 
 OrExpr =
-	AndExpr {$left OR $right(AndExpr) #OrExpr }*
+	AndExpr {$left OR $right(AndExpr)  }*
 
 OR = 
-	[Oo] [Rr] EOT / '||' _
-
+	[Oo] 'r' EOT #OrExpr
+	/ '||' !'|' _　#OrExpr
+	/ [|?] '?' !'|' _ #OrElseExpr
+	/ [Oo] 'r' _ 'else' EOT #OrElseExpr
+	
 AndExpr =
 	EqExpr {$left AND $right(EqExpr) #AndExpr }*
 
 AND =
 	[Aa] 'nd' EOT
-	/ '&&' _
+	/ '&&' !'&' _
 
 EqExpr =
 	InfixExpr
@@ -676,6 +678,7 @@ PROD =
 
 CastExpr =
 	{ "(" $type(Type) ")" $expr(CastExpr) #CastExpr }
+	{ "(" $type(Type) '!!' _ ")" $expr(CastExpr) #UnsafeCastExpr }
 	/ UnaryExpr
 
 UnaryExpr
@@ -697,6 +700,7 @@ POSTOP =
 	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
 	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
+	'to' EOT $type(Type) #CastExpr
 
 ARGU 
 	= "(" $param(Arguments) ")"

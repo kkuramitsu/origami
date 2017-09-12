@@ -22,7 +22,7 @@ public class Otranscode extends OCommand {
 		}
 		ODebug.setHacked(this.isHacked());
 		ODebug.setVerbose(options.is(ParserOption.Verbose, this.isVerbose()));
-		ODebug.setVerbose(options.is(ParserOption.Debug, this.isDebug()));
+		ODebug.setDebug(options.is(ParserOption.Debug, this.isDebug()));
 		Arrays.stream(trcc).forEach(tr -> {
 			tr.setShellMode(true);
 		});

@@ -92,7 +92,7 @@ public class Transpiler extends TEnv {
 		this.add("RecordExpr", new DataExpr(false));
 
 		this.add("RecordType", new DataType(false));
-		this.add("MutableRecordType", new DataType(true));
+		this.add("DataType", new DataType(true));
 
 		// type
 		// this.add("?", Ty.tUntyped0);
@@ -226,12 +226,14 @@ public class Transpiler extends TEnv {
 		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
-		this.generator.emit(env, code);
+		this.generator.emitTopLevel(env, code);
+
 		Object result = this.generator.wrapUp();
+
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
-			OStrings.append(sb, code.getType());
+			OStrings.append(sb, code.getType().real());
 			sb.append(") ");
 			OConsole.beginBold(sb);
 			OStrings.appendQuoted(sb, result);
@@ -255,7 +257,7 @@ public class Transpiler extends TEnv {
 
 	public Object testEval(String s) throws Throwable {
 		Code code = this.testCode(s);
-		this.generator.emit(this, code);
+		this.generator.emitTopLevel(this, code);
 		return this.generator.wrapUp();
 	}
 
