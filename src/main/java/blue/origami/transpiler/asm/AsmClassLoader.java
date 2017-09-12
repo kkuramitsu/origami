@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.HashMap;
 
+import blue.origami.transpiler.TFmt;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 
@@ -70,7 +71,7 @@ public class AsmClassLoader extends ClassLoader {
 	private String dumpDirectory = null;
 
 	void dump(String className, byte[] byteCode) {
-		ODebug.showCyan("Generated", () -> {
+		ODebug.showCyan(TFmt.Generated_ByteCode.toString(), () -> {
 			int index = className.lastIndexOf('.');
 			String classFileName = className.substring(index + 1) + ".class";
 			if (this.dumpDirectory != null) {

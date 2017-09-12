@@ -37,7 +37,7 @@ public class ApplyCode extends CodeN {
 			FuncTy funcType = (FuncTy) firstType.real();
 			Ty[] p = funcType.getParamTypes();
 			if (p.length + 1 != this.args.length) {
-				throw new ErrorCode("mismatched parameter size %d %d", p.length, this.args.length);
+				throw new ErrorCode(TFmt.mismatched_parameter_size_S_S, p.length, this.args.length);
 			}
 			for (int i = 0; i < p.length; i++) {
 				this.args[i + 1] = this.args[i + 1].asType(env, p[i]);
@@ -56,7 +56,7 @@ public class ApplyCode extends CodeN {
 			this.setType(ret);
 			return this;
 		}
-		throw new ErrorCode(this.args[0], TFmt.not_function__YY0, this.args[0].getType());
+		throw new ErrorCode(this.args[0], TFmt.not_function__YY1, this.args[0].getType());
 	}
 
 	@Override

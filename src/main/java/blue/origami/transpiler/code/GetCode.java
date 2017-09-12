@@ -41,7 +41,7 @@ public class GetCode extends Code1 {
 				this.setType(dt.fieldTy(env, this.getSource(), this.name));
 				return this.castType(env, ret);
 			}
-			throw new ErrorCode(this.getSource(), TFmt.unsupported_operator);
+			throw new ErrorCode(this.getSource(), TFmt.unsupported_error);
 		}
 		return this.castType(env, ret);
 	}

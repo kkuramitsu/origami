@@ -8,6 +8,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 
 public class FunctionContext {
 
@@ -32,6 +33,25 @@ public class FunctionContext {
 		Variable v = new Variable(name, this.index(), type);
 		this.varList.add(v);
 		return v;
+	}
+
+	public Variable newVariable(String name, int index, Ty type) {
+		if (index == -1) {
+			Variable v = new Variable(name, this.index(), type);
+			this.varList.add(v);
+			return v;
+		} else {
+			Variable v = this.get(name, index);
+			ODebug.trace("%s %s", v, type);
+			return v;
+		}
+	}
+
+	private Variable get(String name, int index) {
+		if (index - this.startIndex >= 0) {
+			return this.varList.get(index - this.startIndex);
+		}
+		return this.parent.get(name, index);
 	}
 
 	public void syncIndex(FunctionContext fcx) {

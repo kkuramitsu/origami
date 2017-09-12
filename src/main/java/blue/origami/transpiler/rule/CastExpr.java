@@ -20,7 +20,7 @@ public class CastExpr implements ParseRule, Symbols {
 		// new MutableCode(expr).setSource(type);
 		// }
 		Ty ty = env.parseType(env, type, () -> {
-			throw new ErrorCode(type, TFmt.undefined_type__YY0, name);
+			throw new ErrorCode(type, TFmt.undefined_type__YY1, name);
 		});
 		return new CastCode(ty, expr).setSource(type);
 	}

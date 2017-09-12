@@ -43,7 +43,7 @@ public class SetCode extends CodeN {
 				this.setType(Ty.tVoid);
 				return this.castType(env, ret);
 			}
-			throw new ErrorCode(this.getSource(), TFmt.unsupported_operator);
+			throw new ErrorCode(this.getSource(), TFmt.unsupported_error);
 		}
 		return this.castType(env, ret);
 	}

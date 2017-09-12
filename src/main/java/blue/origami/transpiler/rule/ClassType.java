@@ -13,7 +13,7 @@ public class ClassType implements ParseRule {
 	public Code apply(TEnv env, Tree<?> t) {
 		Ty type = this.parseType(env, t);
 		if (type == null) {
-			throw new ErrorCode(t, TFmt.undefined_type__YY0, t.getString());
+			throw new ErrorCode(t, TFmt.undefined_type__YY1, t.getString());
 		}
 		return new TypeCode(type);
 	}

@@ -67,7 +67,7 @@ public class Oparse extends OCommand {
 	}
 
 	public void exec2(OOption options) throws Throwable {
-		OCommand.displayVersion("Nez Parser");
+		this.displayVersion();
 		p(Yellow, "Enter an input string to match (or a grammar if you want to update).");
 		p(Yellow, "Tips: Start with an empty line for multiple lines.");
 		p(Yellow, " Entering two empty lines diplays the current grammar.");

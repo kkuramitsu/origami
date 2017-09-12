@@ -161,7 +161,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 				String name = l[i].name;
 				NameHint hint = env.findGlobalNameHint(env, name);
 				if (hint == null) {
-					throw new ErrorCode(e, TFmt.undefined_name__YY0, name);
+					throw new ErrorCode(e, TFmt.undefined_name__YY1, name);
 				}
 				l[i].setNameType(hint.getType());
 				i++;
@@ -183,7 +183,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 			return new NameCase(name, suffix, "", null);
 		}
 		default:
-			throw new ErrorCode(t, TFmt.undefined_syntax__YY0, t.getTag());
+			throw new ErrorCode(t, TFmt.undefined_syntax__YY1, t.getTag());
 		}
 	}
 
@@ -438,7 +438,7 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 				ands.add(this.not(new ApplyCode(this.args[0], target)));
 				break;
 			default:
-				throw new ErrorCode(TFmt.undefined_syntax__YY0, this.op);
+				throw new ErrorCode(TFmt.undefined_syntax__YY1, this.op);
 			}
 		}
 	}

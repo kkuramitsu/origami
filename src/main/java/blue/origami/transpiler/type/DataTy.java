@@ -83,9 +83,9 @@ public class DataTy extends Ty {
 				Ty ty = hint.getType();
 				return ty == Ty.tThis ? this : ty;
 			}
-			throw new ErrorCode(s, TFmt.undefined_name__YY0, name);
+			throw new ErrorCode(s, TFmt.undefined_name__YY1, name);
 		}
-		throw new ErrorCode(s, TFmt.undefined_name__YY0_in_YY1, name, this);
+		throw new ErrorCode(s, TFmt.undefined_name__YY1_in_YY2, name, this);
 	}
 
 	@Override

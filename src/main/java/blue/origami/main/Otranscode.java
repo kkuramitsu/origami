@@ -27,7 +27,7 @@ public class Otranscode extends OCommand {
 			tr.setShellMode(true);
 		});
 		if (files.length == 0 || this.isREPL()) {
-			displayVersion("Konoha5->" + target);
+			this.displayVersion();
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 
 			int startline = this.linenum;
@@ -41,6 +41,16 @@ public class Otranscode extends OCommand {
 				startline = this.linenum;
 			}
 		}
+	}
+
+	@Override
+	protected String progName() {
+		return "Konoha";
+	}
+
+	@Override
+	protected String version() {
+		return "5.0 lambda";
 	}
 
 	private Transpiler[] newTranspiler(String target, OOption options) throws Throwable {

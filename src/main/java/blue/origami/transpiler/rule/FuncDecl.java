@@ -24,7 +24,7 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 		if (this.isPublic && !tr.isShellMode()) {
 			TFunction tf = env.get(name, TFunction.class);
 			if (tf != null) {
-				TLog log = this.reportWarning(null, t.get(_name), TFmt.redefined_name__YY0, name);
+				TLog log = this.reportWarning(null, t.get(_name), TFmt.redefined_name__YY1, name);
 				env.reportLog(log);
 			}
 		}

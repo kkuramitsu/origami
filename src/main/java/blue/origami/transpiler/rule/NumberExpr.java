@@ -50,42 +50,42 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 				value = Integer.parseInt(text, radix);
 			} catch (NumberFormatException e) {
 				ODebug.trace("radix=%d", radix);
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0;
 			}
 		} else if (base == double.class) {
 			try {
 				value = Double.parseDouble(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0.0;
 			}
 		} else if (base == long.class) {
 			try {
 				value = Long.parseLong(text, radix);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0L;
 			}
 		} else if (base == float.class) {
 			try {
 				value = Float.parseFloat(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0.0f;
 			}
 		} else if (base == BigInteger.class) {
 			try {
 				value = new BigInteger(text, radix);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e2);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e2);
 				value = BigInteger.ZERO;
 			}
 		} else {
 			try {
 				value = new BigDecimal(text);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY0_by_YY1, text, e2);
+				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e2);
 				value = BigDecimal.ZERO;
 			}
 		}

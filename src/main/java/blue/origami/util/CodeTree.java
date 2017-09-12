@@ -42,7 +42,7 @@ public class CodeTree extends Tree<CodeTree> {
 
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
-		throw new ErrorCode(this, TFmt.YY0_does_not_exist, "$" + label);
+		throw new ErrorCode(this, TFmt.YY1_does_not_exist, "$" + label);
 	}
 
 	@Override

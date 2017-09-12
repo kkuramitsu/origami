@@ -514,7 +514,7 @@ interface TEnvApi {
 			}
 		}
 		if (node == null) {
-			throw new ErrorCode(t, TFmt.undefined_syntax__YY0, name);
+			throw new ErrorCode(t, TFmt.undefined_syntax__YY1, name);
 		}
 		node.setSource(t);
 		return node;

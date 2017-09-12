@@ -116,7 +116,7 @@ interface CodeAPI {
 		Template tp = env.findTypeMap(env, f, ret);
 		if (tp == TConvTemplate.Stupid) {
 			new Exception().printStackTrace();
-			return new ErrorCode(self, TFmt.type_error_YY0_YY1, f, ret);
+			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f, ret);
 		}
 		return new CastCode(ret, tp, self);
 	}

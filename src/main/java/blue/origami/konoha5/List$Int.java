@@ -141,6 +141,11 @@ public class List$Int implements OStrings, FuncIntInt {
 	}
 
 	@Override
+	public String toString() {
+		return OStrings.stringfy(this);
+	}
+
+	@Override
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
 		sb.append(this instanceof ListM$Int ? "{" : "[");

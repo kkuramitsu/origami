@@ -122,7 +122,7 @@ public abstract class OCommand extends OConsole {
 				fileList.add(as);
 				continue;
 			}
-			usage("undefined option: " + as);
+			this.usage("undefined option: " + as);
 		}
 		options.set(ParserOption.InputFiles, fileList.toArray(new String[fileList.size()]));
 	}
@@ -144,14 +144,22 @@ public abstract class OCommand extends OConsole {
 		return g.newParser(options);
 	}
 
-	protected static void displayVersion(String codeName) {
-		p(bold(OVersion.ProgName) + "-" + OVersion.Version + " (" + codeName + "," + MainFmt.English + ") on Java JVM-"
-				+ System.getProperty("java.version"));
+	protected void displayVersion() {
+		p(bold(this.progName()) + "-" + this.version() + " (" + MainFmt.English + ") on Java JVM-"
+				+ System.getProperty("java.version") + "/" + OVersion.ProgName + "-" + OVersion.Version);
 		p(Yellow, OVersion.Copyright);
 	}
 
+	protected String progName() {
+		return "Nez";
+	}
+
+	protected String version() {
+		return OVersion.Version;
+	}
+
 	protected static void usage(String msg) {
-		displayVersion("Celery");
+		// this.displayVersion();
 		p(bold("Usage: origami <command> options inputs"));
 		p2("  -g | --grammar <file>      ", MainFmt.specify_a_grammar_file);
 		p2("  -s | --start <NAME>        ", MainFmt.specify_a_starting_rule);

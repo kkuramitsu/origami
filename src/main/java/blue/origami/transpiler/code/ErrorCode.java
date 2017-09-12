@@ -30,13 +30,13 @@ public class ErrorCode extends RuntimeException implements Code {
 		this.log = new TLog(at.getSource(), TLog.Error, fmt, args);
 	}
 
-	public ErrorCode(SourcePosition s, String fmt, Object... args) {
-		this(s, LocaleFormat.wrap(fmt), args);
-	}
-
-	public ErrorCode(String fmt, Object... args) {
-		this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
-	}
+	// public ErrorCode(SourcePosition s, String fmt, Object... args) {
+	// this(s, LocaleFormat.wrap(fmt), args);
+	// }
+	//
+	// public ErrorCode(String fmt, Object... args) {
+	// this(SourcePosition.UnknownPosition, LocaleFormat.wrap(fmt), args);
+	// }
 
 	@Override
 	public boolean isGenerative() {

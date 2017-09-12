@@ -164,7 +164,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 			if (defaultType != null) {
 				ty = defaultType;
 			} else {
-				throw new ErrorCode(param, TFmt.no_typing_hint__YY0, param.getString());
+				throw new ErrorCode(param, TFmt.no_type_hint__YY1, param.getString());
 			}
 		}
 		return ty;

@@ -61,7 +61,7 @@ public class ExprCode extends CodeN implements CallCode {
 			this.typeArgs(env, founds);
 			Ty[] p = Arrays.stream(this.args).map(c -> c.getType()).toArray(Ty[]::new);
 			if (founds.size() == 0) {
-				return this.asUnfound(env, founds);
+				return this.asUnfound(env, founds).castType(env, ret);
 			}
 			if (founds.size() == 1) {
 				return this.asMatched(env, founds.get(0).generate(env, p), ret);
@@ -69,7 +69,7 @@ public class ExprCode extends CodeN implements CallCode {
 			this.typeArgs(env, founds);
 			Template selected = Template.select(env, founds, ret, p, this.maxCost());
 			if (selected == null) {
-				return this.asMismatched(env, founds);
+				return this.asMismatched(env, founds).castType(env, ret);
 			}
 			return this.asMatched(env, selected.generate(env, p), ret);
 		}

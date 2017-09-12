@@ -28,7 +28,7 @@ public class DataType implements ParseRule {
 			String name = sub.getString();
 			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint == null) {
-				throw new ErrorCode(sub, TFmt.undefined_name__YY0, name);
+				throw new ErrorCode(sub, TFmt.undefined_name__YY1, name);
 			}
 			names[c] = name;
 			c++;

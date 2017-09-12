@@ -43,25 +43,28 @@ public class LetCode extends Code1 {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			this.inner = this.inner.bind(this.declType).asType(env, this.declType);
-			this.setType(Ty.tVoid);
-		}
-		FunctionContext fcx = env.get(FunctionContext.class);
-		if (fcx == null) {
-			fcx = new FunctionContext(null); // TopLevel
-			env.add(FunctionContext.class, fcx);
-		}
-		if (this.isImplicit) {
+			FunctionContext fcx = env.get(FunctionContext.class);
+			if (fcx == null) {
+				fcx = new FunctionContext(null); // TopLevel
+				env.add(FunctionContext.class, fcx);
+			}
+			if (this.isImplicit) {
 
+			}
+			Variable var = fcx.newVariable(this.name, this.index, this.declType);
+			env.add(this.name, var);
+			this.index = var.getIndex();
+
+			this.inner = this.inner.bind(this.declType).asType(env, this.declType);
+			// ODebug.trace("let %s %s %s", this.name, this.declType,
+			// this.inner.getType());
+			this.setType(Ty.tVoid);
+			;
+			// if () {
+			// this.isDuplicated = true;
+			// ODebug.trace("duplicated local name %s", this.name);
+			// }
 		}
-		// if () {
-		// this.isDuplicated = true;
-		// ODebug.trace("duplicated local name %s", this.name);
-		// }
-		Variable var = fcx.newVariable(this.name, this.declType);
-		this.index = var.getIndex();
-		// ODebug.trace("let %s %s %s", env, this.name, this.declType);
-		env.add(this.name, var);
 		return this;
 	}
 

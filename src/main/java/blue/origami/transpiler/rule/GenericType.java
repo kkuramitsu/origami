@@ -31,6 +31,6 @@ public class GenericType implements ParseRule, Symbols {
 				return new TypeCode(Ty.tMonad(name, p[0]));
 			}
 		}
-		return new ErrorCode(t.get(_base), TFmt.undefined_type__YY0, name);
+		return new ErrorCode(t.get(_base), TFmt.undefined_type__YY1, name);
 	}
 }

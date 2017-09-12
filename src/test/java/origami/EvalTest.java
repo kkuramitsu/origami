@@ -7,35 +7,43 @@ import blue.origami.transpiler.Transpiler;
 public class EvalTest {
 
 	public void testLiteral() throws Throwable {
-		runScript("()", "()");
-		runScript("true", "Bool");
-		runScript("false", "Bool");
-		runScript("1", "Int");
-		runScript("1.0", "Float");
-		runScript("'a'", "Char");
-		runScript("'abc'", "String");
-		runScript("\"abc\"", "String");
-		runScript("[1,2,3]", "Int*");
-		runScript("{1,2,3}", "Int[]");
+		runScript("()", null);
+		runScript("true", "true");
+		runScript("false", "false");
+		runScript("1", "1");
+		runScript("1.0", "1.0");
+		runScript("'a'", "a");
+		runScript("'abc'", "abc");
+		runScript("\"abc\"", "abc");
+		runScript("[1,2,3]", "[1,2,3]");
+		runScript("{1,2,3}", "{1,2,3}");
 	}
 
 	public void testBinary() throws Throwable {
-		runScript("1+1.0", "Float");
-		runScript("1.0+1", "Float");
+		runScript("1+1.0", "2.0");
+		runScript("1.0+1", "2.0");
 	}
 
 	public void testNumber() throws Throwable {
-		runScript("0b10", "Int");
-		runScript("0_10", "Int");
-		runScript("0x10", "Int");
+		runScript("0b10", "2");
+		runScript("0_10", "8");
+		runScript("0x10", "16");
 	}
 
-	public void testLet() throws Throwable {
-		runScript("a = 1\na", "Int");
+	public void testConst() throws Throwable {
+		runScript("a = 1\na", "1");
 	}
 
 	public void testLambda() throws Throwable {
-		runScript("\\n n+1", "Int->Int");
+		runScript("(\\n n+1)(0)", "1");
+	}
+
+	public void testBlock() throws Throwable {
+		runScript("{a=1;a}", "1");
+		runScript("{a=1;b=a;a+b}", "2");
+		runScript("{a=1;b={a=2;a};a+b}", "3");
+		// {a=1;{b=a;b}}
+
 	}
 
 	//
@@ -44,9 +52,9 @@ public class EvalTest {
 		Transpiler env = new Transpiler(g, "jvm");
 		Object result = env.testEval(text);
 		System.out.printf("%s => %s\n", text, result);
-		// if (checked != null) {
-		// assert (checked.equals(ty.toString())) : ty + " != " + checked;
-		// }
+		if (checked != null) {
+			assert (checked.equals(result.toString())) : result + " != " + checked;
+		}
 	}
 
 }

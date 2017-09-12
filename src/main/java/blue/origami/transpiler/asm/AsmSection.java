@@ -476,22 +476,29 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return null;
 		}
 
+		@Override
+		public String toString() {
+			return String.format("var[%s %s :: %s]", this.name, this.varIndex, this.varType);
+		}
+
 	}
 
 	VarEntry varStack = null;
 
-	void addVariable(String name, Ty varType) {
+	VarEntry addVariable(String name, Ty varType) {
 		int index = this.varStack == null ? 0 : this.varStack.nextIndex();
 		this.varStack = new VarEntry(this.varStack, name, index, varType);
+		return this.varStack;
 	}
 
 	@Override
 	public void pushLet(TEnv env, LetCode code) {
-		// ODebug.trace("<<<<<< %s %s", code.getName(), code.getDeclType());
-		this.addVariable(code.getName(), code.getDeclType());
+		VarEntry var = this.addVariable(code.getName(), code.getDeclType());
 		Type typeDesc = this.ts.ti(this.varStack.varType);
+		// ODebug.trace("store %s %s %s", code.getName(), code.getDeclType(),
+		// var);
 		code.getInner().emitCode(env, this);
-		this.mBuilder.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), this.varStack.varIndex);
+		this.mBuilder.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), var.varIndex);
 	}
 
 	@Override
@@ -502,7 +509,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.getField(Type.getType("L" + this.cname + ";"), code.getName(), this.ts.ti(code.getType()));
 		} else {
 			VarEntry var = this.varStack.find(code.getName());
-			// ODebug.trace(">>>>>> %s %s", code.getName(), var);
+			// ODebug.trace("load %s %s", code.getName(), var);
 			Type typeDesc = (this.ts.ti(var.varType));
 			this.mBuilder.visitVarInsn(typeDesc.getOpcode(ILOAD), var.varIndex);
 		}
