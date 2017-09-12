@@ -509,7 +509,7 @@ NoneCaseExpr = {
 }
 
 RangeCaseExpr = {
-	"("?
+	("("
 	$start(MatchValue)
   ( [Tt] 'o' _
 	  ("<" #RangeUntilCase / #RangeCase)
@@ -517,7 +517,15 @@ RangeCaseExpr = {
 	  ("<" #RangeUntilCase / "." #RangeCase)
 	)
 	$end(MatchValue)
-	")"?
+	")") / (
+  $start(MatchValue)
+  ( [Tt] 'o' _
+    ("<" #RangeUntilCase / #RangeCase)
+  / '..'
+    ("<" #RangeUntilCase / "." #RangeCase)
+  )
+  $end(MatchValue)
+  )
 }
 
 ValueCaseExpr = {
