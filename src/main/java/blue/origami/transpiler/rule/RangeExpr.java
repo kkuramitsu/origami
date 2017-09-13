@@ -23,7 +23,7 @@ public class RangeExpr implements ParseRule, Symbols {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
 		if (!this.inclusive) {
-			right = new BinaryCode("+", right, new IntCode(1));
+			right = new BinaryCode("-", right, new IntCode(1));
 		}
 		return new DataRangeCode(left, right);
 	}
