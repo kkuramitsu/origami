@@ -17,10 +17,10 @@ example MutualRecursion :
   even?(0)
   odd?(1)
 
-let even?(a) = 
+let even?(a) =
   if (a == 0) true else odd?(a - 1)
 
-let odd?(a) = 
+let odd?(a) =
     if (a == 0) false else even?(a - 1)
 
 '''
@@ -41,7 +41,7 @@ BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
              / '(*' ( !'*)' . )* '*)'
 LINECOMMENT  = '//' ( !EOL . )* EOS
 EOL          = ('\r'? '\n') / EOF
-__           = (EOL _)?
+__           = (EOL)? _
 EOS          = (EOL _)+
 EOT          = (!W _)
 
@@ -212,7 +212,7 @@ LetFuncDecl = {
 	$name(Identifier)
 	("(" $param(Params) ")" / $param(LetParams))
 	$type(":as" Type)?
-	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block)) 
+	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
 }
 
 LetParams = {
@@ -294,7 +294,7 @@ PyBlockExpr = {
 INDENT_BLOCK =
 	<symbol INDENT> $(Statement) (";" $(Statement))* ";"? EOL
 	(_ EOL / <match INDENT> $(Statement) (";" $(Statement))* ";"? EOL)*
-	
+
 
 /* Statement */
 
@@ -481,6 +481,7 @@ DefaultRuleExpr = {
 	([Dd] 'efault' / [Oo] 'therwise') __
 	("=>" / ":" ) __
 	$body(Expression)
+  #AnyCaseExpr
 }
 
 MatchValue = Constant
@@ -611,14 +612,14 @@ ConditionalExpr =
 	BindExpr
 	{$cond "?" $then(Expression) ":" $else(BindExpr) #IfExpr }*
 
-BindExpr = 
-	OrExpr 
+BindExpr =
+	OrExpr
 	{$left '>>=' _ $right(OrExpr) #BindExpr }*
 
 OrExpr =
 	AndExpr {$left OR $right(AndExpr)  }*
 
-OR = 
+OR =
 	[|?] '?' !'|' _ #OrElseExpr
 	/ [Oo] 'r' _ 'else' EOT #OrElseExpr
 	/ [Oo] 'r' EOT #OrExpr
@@ -636,7 +637,7 @@ EqExpr =
 	{$left EQ $right(InfixExpr) }*
 
 EQ =
-	"==" #EqExpr 
+	"==" #EqExpr
 	/ "!=" #NeExpr
 	/ "<=" #LteExpr
 	/ ">=" #GteExpr
@@ -647,9 +648,9 @@ InfixExpr =
 	ConsExpr
 	{$left $name(InfixOp) $right(ConsExpr) #InfixExpr }*
 
-DEFOP = 
-	'>>=' / '::' / ':' 
-	/ '|||' / '||' / '|' / '|?' / '??' 
+DEFOP =
+	'>>=' / '::' / ':'
+	/ '|||' / '||' / '|' / '|?' / '??'
 	/ '&&&' / '&&' / '&'
 
 InfixOp = {
@@ -662,15 +663,15 @@ INFIXOP =
 
 ConsExpr =
 	SumExpr
-	{$left '::' _ $right(Expression) #ConsExpr }* 
+	{$left '::' _ $right(Expression) #ConsExpr }*
 
 SumExpr =
 	ProdExpr
 	{$left SUM $right(ProdExpr) }*
 
-SUM = 
+SUM =
 	'++' #CatExpr
-	/ "+" #AddExpr 
+	/ "+" #AddExpr
 	/ "-" #SubExpr
 	/ '|||' _ #LOrExpr     // F#
 	/ '^^^' _ #XOrExpr     // F#
@@ -717,10 +718,10 @@ POSTOP =
 	/ "[" $param(Arguments) "]" #IndexExpr
 	/ 'to' EOT $type(Type) #CastExpr
 
-ARGU 
+ARGU
 	= "(" $param(Arguments) ")"
 	/ '$' _ $param(FlatArguments)
-	
+
 Arguments = {
 	$(Expression)?
 	( "," $(Expression) )*
@@ -788,23 +789,23 @@ DEntry = {
 
 DataExpr = {
 	"{"
-	( 
+	(
 	  DICT  #DataDictExpr
 	  / DATA #DataExpr
 	  / ARRAY #DataArrayExpr
-	  / LIST  #DataListExpr 
-	) 
+	  / LIST  #DataListExpr
+	)
 	"}"
 } / BlockExpr
 
 RecordExpr = RangeExpr / {
 	"["
-	( 
+	(
 	  DICT  #DictExpr
 	  / DATA #RecordExpr
 	  / ARRAY #ArrayExpr
-	  / LIST  #ListExpr 
-	) 
+	  / LIST  #ListExpr
+	)
 	"]"
 }
 
@@ -976,11 +977,11 @@ FuncType = {
 	#FuncType
 }
 
-TupleType =  { 
+TupleType =  {
 	"("
 	$(Type) ("," $(Type))+
 	#TupleType
-	")" 
+	")"
 }
 
 DataType =  { "{"
@@ -1002,4 +1003,3 @@ TypeParameters = {
 }
 
 TypeParameter = Identifier
-
