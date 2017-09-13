@@ -71,20 +71,19 @@ public class ODebug extends OConsole {
 	}
 
 	public static void stackTrace(String fmt, Object... args) {
-		println(OStrings.format(fmt, args));
 		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+		println(loc(stacks[2]) + OStrings.format(fmt, args));
 		int c = 0;
 		for (StackTraceElement s : stacks) {
-			println(String.format("[%d] %s", c, s));
-			c++;
-			if (c > 10) {
-				break;
+			if (c > 3 && c < 14) {
+				println(String.format("[%d] %s", c, s));
 			}
+			c++;
 		}
 	}
 
 	public static String loc(StackTraceElement s) {
-		return color(Gray, "@[" + s.getClassName() + "." + s.getMethodName() + "] ");
+		return color(Gray, "" + s + " ");
 	}
 
 	public static void debug(Runnable r) {
@@ -104,7 +103,7 @@ public class ODebug extends OConsole {
 	public static void trace(String fmt, Object... args) {
 		if (isDebug()) {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
-			println(loc(s[2]) + OStrings.format(fmt, args));
+			println(OStrings.format(fmt, args) + " @ " + loc(s[2]));
 		}
 	}
 

@@ -34,6 +34,17 @@ public class EvalTest {
 		runScript("a = 1\na", "1");
 	}
 
+	public void testIntList() throws Throwable {
+		runScript("a=[1,2];a", "[1,2]");
+		runScript("a=[1,2];a[1]", "2");
+		runScript("a=[1,2].map(\\n n+1);a", "[2,3]");
+	}
+
+	public void testIntArray() throws Throwable {
+		runScript("a={1,2};a[0]=9;a[0]", "9");
+		runScript("a={1,2}.map(\\n n+1);a", "{2,3}");
+	}
+
 	public void testLambda() throws Throwable {
 		runScript("(\\n n+1)(0)", "1");
 	}

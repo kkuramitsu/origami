@@ -611,10 +611,10 @@ OrExpr =
 	AndExpr {$left OR $right(AndExpr)  }*
 
 OR = 
-	[Oo] 'r' EOT #OrExpr
-	/ '||' !'|' _　#OrExpr
-	/ [|?] '?' !'|' _ #OrElseExpr
+	[|?] '?' !'|' _ #OrElseExpr
 	/ [Oo] 'r' _ 'else' EOT #OrElseExpr
+	/ [Oo] 'r' EOT #OrExpr
+	/ '||' !'|' _　#OrExpr
 	
 AndExpr =
 	EqExpr {$left AND $right(EqExpr) #AndExpr }*
@@ -636,19 +636,25 @@ EQ =
 	/ ">"  #GtExpr
 
 InfixExpr =
-	SumExpr
-	{$left $name(InfixOp) $right(SumExpr) #InfixExpr }*
+	ConsExpr
+	{$left $name(InfixOp) $right(ConsExpr) #InfixExpr }*
+
+DEFOP = 
+	'>>=' / '::' / ':' 
+	/ '|||' / '||' / '|' / '|?' / '??' 
+	/ '&&&' / '&&' / '&'
 
 InfixOp = {
-	INFIXOP #NameExpr
+	!(DEFOP _) INFIXOP #NameExpr
 } _
 
 INFIXOP =
 	'\\' [A-Za-z]+ '?'?  // \in
-	/ [+\-*/%] INFIX
-	/ [<>=!&%^~] [<>=!&%^~?]+
+	/ [+\-*/%<>=!&%^~?]+
 
-INFIX = [+\-*/%<>=!&%^~?]+
+ConsExpr =
+	SumExpr
+	{$left '::' _ $right(Expression) #ConsExpr }* 
 
 SumExpr =
 	ProdExpr
@@ -701,7 +707,7 @@ POSTOP =
 	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
 	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
-	'to' EOT $type(Type) #CastExpr
+	/ 'to' EOT $type(Type) #CastExpr
 
 ARGU 
 	= "(" $param(Arguments) ")"

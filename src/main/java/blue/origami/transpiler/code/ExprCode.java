@@ -86,6 +86,9 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	protected Code asMismatched(TEnv env, List<Template> l) {
+		if (l.get(0).isMutation() && !this.args[0].getType().isMutable()) {
+			throw new ErrorCode(this, TFmt.not_mutable_SSS, this.name, this.msgArgs(), msgHint(env, l));
+		}
 		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
@@ -113,7 +116,7 @@ public class ExprCode extends CodeN implements CallCode {
 	private String msgArgs() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		OStrings.joins(sb, this.args, ", ", p -> p.getType());
+		OStrings.joins(sb, this.args, ", ", p -> p.getType().finalTy());
 		sb.append(")");
 		return sb.toString();
 	}

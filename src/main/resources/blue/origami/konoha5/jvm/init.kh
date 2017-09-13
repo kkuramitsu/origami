@@ -158,6 +158,7 @@ reduce:Stream'[a]:a:a,a->a:a             = S|blue/origami/konoha5/List$|reduce
 ||:Int*:Int                        = V|blue/origami/konoha5/List$Int|size
 []:Int*:Int:Int                    = V|blue/origami/konoha5/List$Int|geti
 bind:Int*:Int*                     = V|blue/origami/konoha5/List$Int|bind
+cons:Int:Int*:Int*                 = S|blue/origami/konoha5/List$Int|cons
 
 Int*->Stream[Int]                  = V|blue/origami/konoha5/List$Int|stream
 Stream[Int]->Int*                  = S|blue/origami/konoha5/List$Int|list
@@ -205,7 +206,7 @@ forEach:Dict'[a]:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
 Some:a:a?                            = -
 some?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isSome
 none?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isNone
-||:a?:a:a                            = X|orElse
+|?:a?:a:a                            = X|orElse
 forEach:a?:a->():()                  = S|blue/origami/transpiler/asm/APIs|forEach
 map:a?:a->b:b?                       = S|blue/origami/transpiler/asm/APIs|map
 flatMap:a?:a->b?:b?                  = S|blue/origami/transpiler/asm/APIs|flatMap

@@ -15,9 +15,8 @@ public class IndexExpr implements ParseRule, Symbols {
 		Code recv = env.parseCode(env, t.get(_recv));
 		Code[] params = env.parseParams(env, t, _param);
 		if (params.length != 1) {
-			throw new ErrorCode(t.get(_param), TFmt.syntax_error);
+			throw new ErrorCode(t.get(_param), TFmt.mismatched_parameter_size_S_S, params.length, 1);
 		}
-		// return new ExprCode("[]", recv, params[0]);
 		return new GetIndexCode(recv, params[0]);
 	}
 

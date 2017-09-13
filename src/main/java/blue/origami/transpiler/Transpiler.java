@@ -86,6 +86,10 @@ public class Transpiler extends TEnv {
 		this.add("LShiftExpr", new BinaryExpr("<<"));
 		this.add("RShiftExpr", new BinaryExpr(">>"));
 
+		this.add("BindExpr", new BinaryExpr("flatMap"));
+		this.add("ConsExpr", new BinaryExpr("cons"));
+		this.add("OrElseExpr", new BinaryExpr("!?"));
+
 		this.add("NotExpr", new UnaryExpr("!"));
 		this.add("MinusExpr", new UnaryExpr("-"));
 		this.add("PlusExpr", new UnaryExpr("+"));

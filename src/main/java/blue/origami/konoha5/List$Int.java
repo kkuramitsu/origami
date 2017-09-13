@@ -51,40 +51,12 @@ public class List$Int implements OStrings, FuncIntInt {
 	public int size() {
 		int len = 0;
 		for (List$Int p = this; p != null; p = p.next) {
-			len = p.end - p.start;
+			len += p.end - p.start;
 		}
 		return len;
 	}
 
-	public int geti(int index) {
-		if (this.next == null) {
-			return this.arrays[this.start + index];
-		}
-		for (List$Int p = this; p != null; p = p.next) {
-			int n = index + p.start;
-			if (n < p.end) {
-				return p.arrays[n];
-			}
-		}
-		return this.arrays[index];
-	}
-
-	public void seti(int index, int value) {
-		if (this.next == null) {
-			this.arrays[this.start + index] = value;
-			return;
-		}
-		for (List$Int p = this; p != null; p = p.next) {
-			int n = index + p.start;
-			if (n < p.end) {
-				this.arrays[this.start + index] = value;
-				return;
-			}
-		}
-		this.arrays[index] = value;
-	}
-
-	public List$Int flat() {
+	private void flatten() {
 		if (this.next != null) {
 			int[] buf = new int[this.size()];
 			int offset = 0;
@@ -92,39 +64,36 @@ public class List$Int implements OStrings, FuncIntInt {
 				System.arraycopy(p.arrays, p.start, buf, offset, p.end - p.start);
 				offset += p.end - p.start;
 			}
-			return new List$Int(buf);
+			this.arrays = buf;
+			this.start = 0;
+			this.end = 0;
+			this.next = null;
 		}
-		return this;
 	}
 
-	static int CopyCost = 8;
+	public int geti(int index) {
+		this.flatten();
+		return this.arrays[this.start + index];
+	}
 
-	public List$Int cons(int x, List$Int xs) {
-		if (xs.cost < CopyCost) {
-			int[] a = { x };
-			return new List$Int(a, 0, 1, xs, xs.cost + 1);
-		}
-		int[] buf = new int[xs.size() + 1];
-		buf[0] = x;
-		int offset = 1;
-		for (List$Int p = this; p != null; p = p.next) {
-			System.arraycopy(p.arrays, p.start, buf, offset, p.end - p.start);
-			offset += p.end - p.start;
-		}
-		return new List$Int(buf);
+	public void seti(int index, int value) {
+		this.flatten();
+		this.arrays[this.start + index] = value;
+		return;
+	}
+
+	public static List$Int cons(int x, List$Int xs) {
+		int[] a = { x };
+		return new List$Int(a, 0, 1, xs, xs.cost + 1);
 	}
 
 	public List$Int ltrim(int shift) {
-		if (this.next != null) {
-			return this.flat().ltrim(shift);
-		}
+		this.flatten();
 		return new List$Int(this.arrays, this.start + shift, this.end);
 	}
 
 	public List$Int rtrim(int shift) {
-		if (this.next != null) {
-			return this.flat().rtrim(shift);
-		}
+		this.flatten();
 		return new List$Int(this.arrays, this.start, this.end - shift);
 	}
 
@@ -169,10 +138,9 @@ public class List$Int implements OStrings, FuncIntInt {
 		}
 	}
 
-	public List$Int push(int v) {
+	public void push(int v) {
 		this.ensure(this.end);
 		this.arrays[this.end++] = v;
-		return this;
 	}
 
 	public int pop() {
@@ -268,9 +236,9 @@ class ListM$Int extends List$Int {
 	}
 
 	@Override
-	public List$Int push(int v) {
+	public void push(int v) {
 		this.imm = null;
-		return super.push(v);
+		super.push(v);
 	}
 
 	@Override

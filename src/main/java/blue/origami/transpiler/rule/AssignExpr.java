@@ -9,6 +9,7 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
+import blue.origami.util.ODebug;
 
 public class AssignExpr implements ParseRule, Symbols {
 	@Override
@@ -21,6 +22,9 @@ public class AssignExpr implements ParseRule, Symbols {
 		if (left instanceof GetIndexCode) {
 			return new ExprCode("[]=", ((GetIndexCode) left).recv, ((GetIndexCode) left).index, right);
 		}
+		ODebug.log(() -> {
+			ODebug.p("No Assignment %s %s", left.getClass().getSimpleName(), left);
+		});
 		throw new ErrorCode(t.get(_right), TFmt.no_more_assignment);
 	}
 
