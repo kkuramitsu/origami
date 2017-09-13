@@ -70,6 +70,10 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 		this.reg("StreamI", IntStream.class);
 		this.reg("StreamD", DoubleStream.class);
 
+		this.reg("Stream'", Stream.class);
+		this.reg("Stream'I", IntStream.class);
+		this.reg("Stream'D", DoubleStream.class);
+
 		this.reg("Dict", blue.origami.konoha5.Dict$.class);
 		this.reg("Dict'", blue.origami.konoha5.Dict$.class);
 
@@ -166,8 +170,8 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	@Override
 	protected String key(FuncTy funcTy) {
 		StringBuilder sb = new StringBuilder();
-		OStrings.joins(sb,
-				Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new), "");
+		OStrings.joins(sb, Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new),
+				"");
 		sb.append("->");
 		sb.append(this.descFunc(funcTy.getReturnType()));
 		return sb.toString();

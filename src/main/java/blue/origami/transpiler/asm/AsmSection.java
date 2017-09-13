@@ -181,7 +181,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.checkCast(this.ts.ti(code.getType()));
 			return;
 		default:
-			ODebug.trace("undefined call %s %s", tp.getDefined(), code.getClass().getName());
+			ODebug.trace("undefined call '%s' %s", tp.getDefined(), code.getClass().getName());
 		}
 	}
 

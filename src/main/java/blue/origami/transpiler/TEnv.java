@@ -544,7 +544,9 @@ interface TEnvApi {
 		return def.get();
 	}
 
-	public default Template findTypeMap(TEnv env, Ty fromTy, Ty toTy) {
+	public default Template findTypeMap(TEnv env, Ty fromTy0, Ty toTy0) {
+		Ty fromTy = fromTy0.finalTy();
+		Ty toTy = toTy0.finalTy();
 		String key = FuncTy.mapKey(fromTy, toTy);
 		Template tp = env.get(key, Template.class);
 		if (tp != null) {
@@ -566,10 +568,12 @@ interface TEnvApi {
 		return TConvTemplate.Stupid;
 	}
 
-	public default int mapCost(TEnv env, Ty fromTy, Ty toTy, VarLogger logs) {
-		if (toTy.acceptTy(true, fromTy, logs)) {
+	public default int mapCost(TEnv env, Ty fromTy0, Ty toTy0, VarLogger logs) {
+		if (toTy0.acceptTy(true, fromTy0, logs)) {
 			return CastCode.SAME;
 		}
+		Ty fromTy = fromTy0.finalTy();
+		Ty toTy = toTy0.finalTy();
 		String key = FuncTy.mapKey(fromTy, toTy);
 		Template tp = env.get(key, Template.class);
 		if (tp != null) {

@@ -70,6 +70,19 @@ public class ODebug extends OConsole {
 		println(/* loc(s[2]) + */ OStrings.format(fmt, args));
 	}
 
+	public static void stackTrace(String fmt, Object... args) {
+		println(OStrings.format(fmt, args));
+		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+		int c = 0;
+		for (StackTraceElement s : stacks) {
+			println(String.format("[%d] %s", c, s));
+			c++;
+			if (c > 10) {
+				break;
+			}
+		}
+	}
+
 	public static String loc(StackTraceElement s) {
 		return color(Gray, "@[" + s.getClassName() + "." + s.getMethodName() + "] ");
 	}

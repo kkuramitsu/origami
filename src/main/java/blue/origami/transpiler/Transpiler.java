@@ -67,6 +67,8 @@ public class Transpiler extends TEnv {
 		this.add("Source", new SourceUnit());
 		this.add("AddExpr", new BinaryExpr("+"));
 		this.add("SubExpr", new BinaryExpr("-"));
+		this.add("CatExpr", new BinaryExpr("++"));
+		this.add("PowExpr", new BinaryExpr("^"));
 		this.add("MulExpr", new BinaryExpr("*"));
 		this.add("DivExpr", new BinaryExpr("/"));
 		this.add("ModExpr", new BinaryExpr("%"));
@@ -76,6 +78,8 @@ public class Transpiler extends TEnv {
 		this.add("LteExpr", new BinaryExpr("<="));
 		this.add("GtExpr", new BinaryExpr(">"));
 		this.add("GteExpr", new BinaryExpr(">="));
+		this.add("LAndExpr", new BinaryExpr("&&"));
+		this.add("LOrExpr", new BinaryExpr("||"));
 		this.add("AndExpr", new BinaryExpr("&&"));
 		this.add("OrExpr", new BinaryExpr("||"));
 		this.add("XorExpr", new BinaryExpr("^^"));
@@ -86,6 +90,7 @@ public class Transpiler extends TEnv {
 		this.add("MinusExpr", new UnaryExpr("-"));
 		this.add("PlusExpr", new UnaryExpr("+"));
 		this.add("CmplExpr", new UnaryExpr("~"));
+
 		this.add("DataListExpr", new ListExpr(true));
 		this.add("RangeUntilExpr", new RangeExpr(false));
 		this.add("DataDictExpr", new DictExpr(true));
@@ -233,7 +238,7 @@ public class Transpiler extends TEnv {
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
-			OStrings.append(sb, code.getType().real());
+			OStrings.append(sb, code.getType().finalTy());
 			sb.append(") ");
 			OConsole.beginBold(sb);
 			OStrings.appendQuoted(sb, result);

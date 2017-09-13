@@ -130,6 +130,10 @@ public class APIs {
 		return ~a;
 	}
 
+	public final static int pow(int a, int b) {
+		return (int) Math.pow(a, b);
+	}
+
 	public final static String toString(int a) {
 		return String.valueOf(a);
 	}

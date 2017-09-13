@@ -12,6 +12,7 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
@@ -115,8 +116,10 @@ interface CodeAPI {
 		Ty ret = ret0;
 		Template tp = env.findTypeMap(env, f, ret);
 		if (tp == TConvTemplate.Stupid) {
-			new Exception().printStackTrace();
-			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f, ret);
+			ODebug.log(() -> {
+				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);
+			});
+			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
 		}
 		return new CastCode(ret, tp, self);
 	}

@@ -48,13 +48,6 @@ public class List$Int implements OStrings, FuncIntInt {
 		return this;
 	}
 
-	public Object bindOption(Object o) {
-		if (o instanceof List$Int) {
-			return ((List$Int) o).bind();
-		}
-		return o;
-	}
-
 	public int size() {
 		int len = 0;
 		for (List$Int p = this; p != null; p = p.next) {
@@ -207,7 +200,7 @@ public class List$Int implements OStrings, FuncIntInt {
 		return new List$Int(s.toArray());
 	}
 
-	public static final ListM$Int listM(IntStream s) {
+	public static final List$Int listM(IntStream s) {
 		return new ListM$Int(s.toArray());
 	}
 

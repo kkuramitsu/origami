@@ -83,32 +83,33 @@ public interface OStrings {
 	public static void appendFormat(StringBuilder sb, String fmt, Object... args) {
 		assert (fmt != null);
 		try {
-			if (fmt.indexOf("$0") >= 0) {
-				formatIndexedFormat(sb, fmt, args);
-			} else {
-				sb.append(String.format(fmt, args));
-			}
+			// if (fmt.indexOf("$0") >= 0) {
+			// formatIndexedFormat(sb, fmt, args);
+			// } else {
+			sb.append(String.format(fmt, args));
+			// }
 		} catch (Exception e) {
-			ODebug.traceException(e);
 			sb.append("FIXME: WRONG FORMAT: '" + fmt + "' by " + e);
+			ODebug.traceException(e);
 		}
 	}
 
-	static void formatIndexedFormat(StringBuilder sb, String fmt2, Object[] args) {
-		String[] tokens = fmt2.split("\\$", -1);
-		sb.append(tokens[0]);
-		for (int i = 1; i < tokens.length; i++) {
-			String t = tokens[i];
-			if (t.length() > 0 && Character.isDigit(t.charAt(0))) {
-				int index = t.charAt(0) - '0';
-				OStrings.append(sb, args[index]);
-				sb.append(t.substring(1));
-			} else {
-				sb.append("$");
-				sb.append(t);
-			}
-		}
-	}
+	// static void formatIndexedFormat(StringBuilder sb, String fmt2, Object[]
+	// args) {
+	// String[] tokens = fmt2.split("\\$", -1);
+	// sb.append(tokens[0]);
+	// for (int i = 1; i < tokens.length; i++) {
+	// String t = tokens[i];
+	// if (t.length() > 0 && Character.isDigit(t.charAt(0))) {
+	// int index = t.charAt(0) - '0';
+	// OStrings.append(sb, args[index]);
+	// sb.append(t.substring(1));
+	// } else {
+	// sb.append("$");
+	// sb.append(t);
+	// }
+	// }
+	// }
 
 	public static <T> String joins(T[] objs, String delim) {
 		StringBuilder sb = new StringBuilder();

@@ -149,7 +149,7 @@ public abstract class Template {
 		for (int i = 0; i < founds.size(); i++) {
 			Template next = founds.get(i);
 			int nextCost = match(env, next, ret, p, maxCost);
-			ODebug.trace("cost=%d,%s", nextCost, next);
+			ODebug.log(() -> ODebug.p("cost=%d,%s", nextCost, next));
 			if (nextCost < mapCost) {
 				mapCost = nextCost;
 				selected = next;
@@ -164,8 +164,8 @@ public abstract class Template {
 			Template abst = founds.get(founds.size() - 1);
 			if (abst != selected && abst.isAbstract()) {
 				int nextCost = match(env, abst, ret, p, maxCost);
-				ODebug.trace("ABST cost=%d,%s,%s", mapCost, nextCost, abst);
 				if (nextCost == mapCost) {
+					ODebug.log(() -> ODebug.p("ABST cost=%s,%s", nextCost, abst));
 					return abst;
 				}
 			}

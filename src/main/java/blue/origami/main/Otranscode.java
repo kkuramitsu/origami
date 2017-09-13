@@ -37,7 +37,7 @@ public class Otranscode extends OCommand {
 				if (checkEmptyInput(input)) {
 					continue;
 				}
-				this.shell(trcc, "<stdin>", startline, input);
+				this.shell(trcc, "<stdin>", startline, input + " ");
 				startline = this.linenum;
 			}
 		}

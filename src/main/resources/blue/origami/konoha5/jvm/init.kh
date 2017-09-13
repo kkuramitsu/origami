@@ -26,8 +26,8 @@ String     = String
 []=:b[]:Int:b:()   =
 
 # Bool
-true:Bool       = true
-false:Bool      = false
+#true:Bool       = true
+#false:Bool      = false
 
 ==:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|eq
 !=:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|ne
@@ -59,6 +59,7 @@ assert:Bool:()!!       = S|blue/origami/transpiler/asm/APIs|testAssert
 ||:Int:Int:Int   = O|ior
 ^^:Int:Int:Int   = O|ixor
 ~:Int:Int        = S|blue/origami/transpiler/asm/APIs|cmpl
+^:Int:Int:Int    = S|blue/origami/transpiler/asm/APIs|pow
 ||:Int:Int       = S|java/lang/Math|abs
 
 # Float
@@ -85,19 +86,20 @@ rand:Float@          = S|java/lang/Math|random
 
 #String
 char->String           = O|blue/origami/transpiler/asm/APIs|toch
-String--->Int          = S|blue/origami/transpiler/asm/APIs|toint
-String--->Float        = S|blue/origami/transpiler/asm/APIs|todouble
+String--->Int!!        = S|blue/origami/transpiler/asm/APIs|toint
+String--->Float!!      = S|blue/origami/transpiler/asm/APIs|todouble
 Int-->String           = S|blue/origami/transpiler/asm/APIs|toString
 Float-->String         = S|blue/origami/transpiler/asm/APIs|toString
 
-||:String:Int          = S|blue/origami/transpiler/asm/APIs|size
-==:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|eq
-!=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|ne
-<:String:String:Bool   = S|blue/origami/transpiler/asm/APIs|lt
->:String:String:Bool   = S|blue/origami/transpiler/asm/APIs|gt
-<=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|lte
->=:String:String:Bool  = S|blue/origami/transpiler/asm/APIs|gte
-println:String:()@     = S|blue/origami/transpiler/asm/APIs|p
+||:String:Int             = V|java/lang/String|length
+++:String:String:String   = V|java/lang/String|concat
+==:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|eq
+!=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|ne
+<:String:String:Bool      = S|blue/origami/transpiler/asm/APIs|lt
+>:String:String:Bool      = S|blue/origami/transpiler/asm/APIs|gt
+<=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|lte
+>=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|gte
+println:String:()         = S|blue/origami/transpiler/asm/APIs|p
 
 ## AnyRef
 any==>Bool              = S|blue/origami/transpiler/asm/APIs|unboxZ

@@ -604,7 +604,8 @@ ConditionalExpr =
 	{$cond "?" $then(Expression) ":" $else(BindExpr) #IfExpr }*
 
 BindExpr = 
-	OrExpr {$left '>>=' _ $right(OrExpr) #BindExpr }*
+	OrExpr 
+	{$left '>>=' _ $right(OrExpr) #BindExpr }*
 
 OrExpr =
 	AndExpr {$left OR $right(AndExpr)  }*
@@ -654,7 +655,7 @@ SumExpr =
 	{$left SUM $right(ProdExpr) }*
 
 SUM = 
-	'++' #AddExpr
+	'++' #CatExpr
 	/ "+" #AddExpr 
 	/ "-" #SubExpr
 	/ '|||' _ #LOrExpr     // F#

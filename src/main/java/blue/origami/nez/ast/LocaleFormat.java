@@ -44,7 +44,8 @@ public interface LocaleFormat {
 		try {
 			return ResourceBundle.getBundle(path, Locale.ENGLISH).getString(name);
 		} catch (java.util.MissingResourceException ex) {
-			return name.replaceAll("__", ": ").replaceAll("_", " ").replace("S", "%s").replace("YY", "%s$");
+			return name.replaceAll("__", ": ").replaceAll("_", " ").replace("S", "%s").replace("YY1", "%1$s")
+					.replace("YY2", "%2$s");
 		}
 	}
 
