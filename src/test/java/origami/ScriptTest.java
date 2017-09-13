@@ -31,6 +31,10 @@ public class ScriptTest {
 		runScript("/konoha5-test/fact.k", 0);
 	}
 
+	public void testMutualRecursion() throws Throwable {
+		runScript("/konoha5-test/mutual_recursion.k", 0);
+	}
+
 	//
 	public static void runScript(String file, int pass) throws Throwable {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
