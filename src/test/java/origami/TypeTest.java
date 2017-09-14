@@ -49,6 +49,11 @@ public class TypeTest {
 		runScript("\\n n+1", "Int->Int");
 	}
 
+	public void testTemplate() throws Throwable {
+		runScript("f(a)=|a|;f", "a->Int");
+		runScript("f(a)=|a|;f(1);f", "Int->Int");
+	}
+
 	//
 	public static void runScript(String text, String checked) throws Throwable {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
