@@ -24,7 +24,7 @@ public class MatchExpr implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> match) {
-		ODebug.setDebug(true);
+		// ODebug.setDebug(true);
 		Code targetCode = (match.has(_expr)) ? //
 				env.parseCode(env, match.get(_expr)) : null; //
 		Tree<?> body = match.get(_body);

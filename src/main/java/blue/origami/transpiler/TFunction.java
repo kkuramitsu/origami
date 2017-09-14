@@ -40,13 +40,15 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 			super.used(env);
 			Code code = this.typeBody(env, new FunctionContext(), this.body);
 			if (code.showError(env)) {
-				env.reportError(this.at, TFmt.function_S_remains_undefined, this.name);
+				// env.reportError(this.at, TFmt.function_S_remains_undefined,
+				// this.name);
 				this.setExpired();
 				return;
 			}
 			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
-				ODebug.trace("generative %s %s ret=%s", this.name, this.getFuncType(), code.getType());
-
+				ODebug.showBlue(TFmt.Template.toString(), () -> {
+					ODebug.println("%s : %s", this.name, this.getFuncType());
+				});
 			} else {
 				ODebug.trace("static %s %s generated=%s", this.name, this.getFuncType(), code.getType(),
 						this.generated);
