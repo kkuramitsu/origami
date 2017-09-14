@@ -3,6 +3,7 @@ package blue.origami.main;
 import java.io.IOException;
 import java.util.Arrays;
 
+import blue.origami.PatchLevel;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
@@ -31,7 +32,8 @@ public class Otranscode extends OCommand {
 			p(Yellow, MainFmt.Tips__starting_with_an_empty_line_for_multiple_lines);
 
 			int startline = this.linenum;
-			String prompt = bold("\n>>> ");
+			// String prompt = bold("\n>>> ");
+			String prompt = bold("\n(🍃" + PatchLevel.REV + ")>>> ");
 			String input = null;
 			while ((input = this.readMulti(prompt)) != null) {
 				if (checkEmptyInput(input)) {
@@ -45,12 +47,12 @@ public class Otranscode extends OCommand {
 
 	@Override
 	protected String progName() {
-		return "Konoha";
+		return "Konoha 🍃";
 	}
 
 	@Override
 	protected String version() {
-		return "5.0 lambda";
+		return "5.0." + PatchLevel.REV;
 	}
 
 	private Transpiler[] newTranspiler(String target, OOption options) throws Throwable {

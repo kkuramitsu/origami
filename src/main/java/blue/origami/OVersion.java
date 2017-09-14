@@ -22,8 +22,7 @@ public class OVersion {
 
 	public final static int MainVersion = 0;
 	public final static int MinorVersion = 2;
-	public final static int PatchLevel = 1;
-	public final static String Version = "" + MainVersion + "." + MinorVersion + "." + PatchLevel;
+	public final static String Version = "" + MainVersion + "." + MinorVersion + "." + PatchLevel.REV;
 	public final static String Copyright = "Copyright 2017, Kimio Kuramitsu and ORIGAMI project";
 	public final static String License = "the Apache License, Version 2.0";
 
