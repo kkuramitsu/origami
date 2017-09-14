@@ -181,6 +181,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return;
 		default:
 			ODebug.trace("undefined call '%s' %s", tp.getDefined(), code.getClass().getName());
+			assert (tp.getDefined().length() > 0);
 		}
 	}
 

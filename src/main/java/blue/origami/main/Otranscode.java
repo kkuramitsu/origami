@@ -47,7 +47,7 @@ public class Otranscode extends OCommand {
 
 	@Override
 	protected String progName() {
-		return "Konoha 🍃";
+		return "Konoha🍃";
 	}
 
 	@Override

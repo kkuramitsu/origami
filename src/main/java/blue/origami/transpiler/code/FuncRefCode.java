@@ -51,6 +51,15 @@ public final class FuncRefCode extends CommonCode {
 		return super.castType(env, ret);
 	}
 
+	@Override
+	public boolean showError(TEnv env) {
+		if (this.template.isAbstract()) {
+			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this.name, this.template.getFuncType());
+			return true;
+		}
+		return false;
+	}
+
 	private Code asMatched(TEnv env, Template selected, Ty ret) {
 		this.template = selected;
 		this.setType(selected.getFuncType());
