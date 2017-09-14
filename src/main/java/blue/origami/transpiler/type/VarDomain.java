@@ -108,6 +108,10 @@ public class VarDomain {
 		this.useMemo = true;
 	}
 
+	public int usedVars() {
+		return this.len;
+	}
+
 	static VarTy[] memoed = { new VarTy("a", 0), new VarTy("b", 1), new VarTy("c", 2), new VarTy("d", 3),
 			new VarTy("e", 4), new VarTy("f", 5), };
 

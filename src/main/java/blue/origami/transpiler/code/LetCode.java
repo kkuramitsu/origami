@@ -5,6 +5,7 @@ import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class LetCode extends Code1 {
@@ -56,8 +57,7 @@ public class LetCode extends Code1 {
 			this.index = var.getIndex();
 
 			this.inner = this.inner.bind(this.declType).asType(env, this.declType);
-			// ODebug.trace("let %s %s %s", this.name, this.declType,
-			// this.inner.getType());
+			ODebug.trace("let %s %s %s", this.name, this.declType, this.inner.getType());
 			this.setType(Ty.tVoid);
 			;
 			// if () {

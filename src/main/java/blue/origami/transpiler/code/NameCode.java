@@ -22,12 +22,12 @@ public class NameCode extends CommonCode implements ParseRule {
 	private final int refLevel;
 
 	public NameCode(Tree<?> name) {
-		this(name.getString(), 0, null, 0);
+		this(name.getString(), -1, null, 0);
 		this.setSource(name);
 	}
 
 	public NameCode(String name) {
-		this(name, 0, null, 0);
+		this(name, -1, null, 0);
 	}
 
 	public NameCode(String name, int seq, Ty ty, int refLevel) {
@@ -38,7 +38,7 @@ public class NameCode extends CommonCode implements ParseRule {
 	}
 
 	public String getName() {
-		return NameHint.safeName(this.name) + this.seq;
+		return this.seq == -1 ? this.name : NameHint.safeName(this.name) + this.seq;
 	}
 
 	public int getRefLevel() {

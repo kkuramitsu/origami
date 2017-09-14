@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
@@ -237,6 +238,17 @@ interface TEnvTraits {
 		log.dump();
 	}
 
+	public default void reportError(SourcePosition s, LocaleFormat format, Object... args) {
+		new TLog(s, TLog.Error, format, args).dump();
+	}
+
+	public default void reportWarning(SourcePosition s, LocaleFormat format, Object... args) {
+		new TLog(s, TLog.Warning, format, args).dump();
+	}
+
+	public default void reportNotice(SourcePosition s, LocaleFormat format, Object... args) {
+		new TLog(s, TLog.Notice, format, args).dump();
+	}
 }
 
 interface TEnvApi {
@@ -405,11 +417,11 @@ interface TEnvApi {
 			}
 			if (tsig.endsWith("*")) {
 				ty = checkType(tsig.substring(0, tsig.length() - 1));
-				return Ty.tImList(ty);
+				return Ty.tList(ty);
 			}
 			if (tsig.endsWith("[]")) {
 				ty = checkType(tsig.substring(0, tsig.length() - 2));
-				return Ty.tList(ty);
+				return Ty.tArray(ty);
 			}
 			if (tsig.endsWith("?")) {
 				ty = checkType(tsig.substring(0, tsig.length() - 1));

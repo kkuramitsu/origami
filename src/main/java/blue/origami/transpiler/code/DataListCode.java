@@ -23,7 +23,7 @@ public class DataListCode extends DataCode {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
-			this.setType(this.isMutable() ? Ty.tList(firstType) : Ty.tImList(firstType));
+			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tList(firstType));
 			// ODebug.trace("first %s %s", firstType, this.getType());
 		}
 		if (ret.isList()) {
@@ -33,7 +33,7 @@ public class DataListCode extends DataCode {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
 			}
-			this.setType(this.isMutable() ? Ty.tList(ty) : Ty.tImList(ty));
+			this.setType(this.isMutable() ? Ty.tArray(ty) : Ty.tList(ty));
 		}
 		return this.castType(env, ret);
 	}

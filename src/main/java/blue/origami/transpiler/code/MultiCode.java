@@ -74,12 +74,7 @@ public class MultiCode extends CodeN {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append("{");
-		for (int i = 0; i < this.args.length; i++) {
-			if (i > 1) {
-				sb.append(";");
-			}
-			OStrings.append(sb, this.args[i]);
-		}
+		OStrings.joins(sb, this.args, ";");
 		sb.append("}");
 	}
 

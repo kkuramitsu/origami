@@ -15,7 +15,7 @@ public class DataRangeCode extends DataListCode {
 		if (this.isUntyped()) {
 			this.args[0] = this.args[0].asType(env, Ty.tInt);
 			this.args[1] = this.args[1].asType(env, Ty.tInt);
-			this.setType(Ty.tImList(Ty.tInt));
+			this.setType(Ty.tList(Ty.tInt));
 		}
 		return super.asType(env, ret);
 	}

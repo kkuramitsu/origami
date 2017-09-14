@@ -8,6 +8,10 @@ public interface CodeBuilder {
 		return new BoolCode(b);
 	}
 
+	public default Code v(int n) {
+		return new IntCode(n);
+	}
+
 	public default Code group(Code c) {
 		return groupfy(c);
 	}
@@ -50,16 +54,36 @@ public interface CodeBuilder {
 		return this.or(l.toArray(new Code[l.size()]));
 	}
 
-	public default Code get(Code c) {
-		return new ExprCode("getv", c);
-	}
-
 	public default Code isSome(Code c) {
-		return new ExprCode("isSome", c);
+		return new ExprCode("Some?", c);
 	}
 
-	public default Code isNull(Code c) {
-		return new ExprCode("isNone", c);
+	public default Code getSome(Code c) {
+		return new ExprCode("getSome", c);
+	}
+
+	public default Code isNone(Code c) {
+		return new ExprCode("None?", c);
+	}
+
+	public default Code len(Code c) {
+		return new ExprCode("||", c);
+	}
+
+	public default Code geti(Code c, int index) {
+		return new ExprCode("[]", c, v(index));
+	}
+
+	public default Code tail(Code c, int index) {
+		return new ExprCode("tail", c, v(index));
+	}
+
+	public default Code op(Code c, String op, Code c2) {
+		return new BinaryCode(op, c, c2);
+	}
+
+	public default Code op(Code c, String op, int num) {
+		return op(c, op, v(num));
 	}
 
 }

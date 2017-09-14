@@ -4,10 +4,14 @@ import java.util.Arrays;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
 public interface FunctionUnit {
+
+	public Tree<?> getSource();
+
 	public String getName();
 
 	public String[] getParamNames();
@@ -34,9 +38,14 @@ public interface FunctionUnit {
 		final Ty ret = this.getReturnType();
 		boolean dyn = ret.hasVar();
 		final TEnv env = env0.newEnv();
-		// final CodeTemplate tp = this.generator.newFuncTemplate(this, name,
-		// name, ret, pats);
-		// env.add(name, tp);
+		// String name = this.getName();
+		// if (name != null) {
+		// ODebug.trace("::::::::::::: name=%s", name);
+		// Transpiler tr = env0.getTranspiler();
+		// CodeTemplate tp = tr.newTemplate(name, ret, pats);
+		// ODebug.trace("name=%s, %s", name, tp);
+		// tr.add(name, tp);
+		// }
 		env.add(FunctionContext.class, fcx);
 		fcx.enter();
 		for (int i = 0; i < pnames.length; i++) {
@@ -51,12 +60,20 @@ public interface FunctionUnit {
 		dom.reset();
 		this.setParamTypes(
 				Arrays.stream(dom.dupParamTypes(this.getParamTypes())).map(t -> t.finalTy()).toArray(Ty[]::new));
+		int vars = dom.usedVars();
 		this.setReturnType(dom.dupRetType(this.getReturnType()).finalTy());
+		if (dom.usedVars() > vars) {
+			return new ErrorCode(this.getSource(), TFmt.ambiguous_type__S, this.getReturnType());
+		}
 		return code;
 	}
 
 	public default boolean isAbstract(Code code) {
 		return code.hasSome(c -> c.isAbstract());
+	}
+
+	public default boolean hasVarParams(Code code) {
+		return TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
 	}
 
 	public default boolean isError(Code code) {

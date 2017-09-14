@@ -93,7 +93,7 @@ public class VarTy extends Ty {
 			return true;
 		}
 		if (logs.update(this, codeTy) && this.name != null) {
-			ODebug.trace("infer %s as %s", this.getName(), codeTy);
+			ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s", this.getName(), codeTy));
 		}
 		return true;
 	}

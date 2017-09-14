@@ -4,30 +4,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.rule.ParseRule;
-import blue.origami.transpiler.rule.Symbols;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
-public class MatchCode extends CodeN implements ParseRule, Symbols {
-
-	public MatchCode() {
-	}
+public class MatchCode extends CodeN implements CodeBuilder {
 
 	Code targetCode;
+	RuleCode optionalCase = null;
 
-	MatchCode(Code targetCode, boolean isOptional, RuleCode... cases) {
+	public MatchCode(Code targetCode, RuleCode optionalCase, RuleCode... cases) {
 		super(Ty.tAuto, cases);
 		this.targetCode = targetCode;
+		this.optionalCase = optionalCase;
 	}
 
 	@Override
@@ -35,12 +32,76 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		return this.args[0].getType();
 	}
 
+	public Ty inferTargetType() {
+		Ty infTy = null;
+		for (Code c : this.args) {
+			RuleCode r = (RuleCode) c;
+			Ty ty = r.inferType();
+			if (ty != null) {
+				infTy = ty;
+				if (!infTy.hasVar()) {
+					break;
+				}
+			}
+		}
+		if (infTy == null) {
+			infTy = Ty.tUntyped();
+		}
+		return infTy;
+	}
+
 	@Override
 	public Code asType(TEnv env, Ty ret) {
-		for (int i = 0; i < this.size(); i++) {
-			this.args[i].asType(env, ret);
+		if (this.targetCode == null) {
+			FunctionContext fcx = env.get(FunctionContext.class);
+			if (fcx == null || fcx.size() == 0) {
+				throw new ErrorCode(TFmt.required_first_argument);
+			}
+			this.targetCode = fcx.getFirstArgument().newCode(env, null);
 		}
-		return this.castType(env, ret);
+		Ty targetTy = this.inferTargetType();
+		Code desugar = null;
+		if (this.optionalCase != null) {
+			this.targetCode = this.targetCode.asType(env, Ty.tOption(targetTy));
+			LetCode decl = new LetCode("it", this.targetCode);
+			this.targetCode = new NameCode("it");
+			Code ifCode = new IfCode(this.isNone(this.targetCode), this.optionalCase.thenCode(),
+					this.desugarRule(env, this.getSome(this.targetCode), targetTy));
+			desugar = decl.add(ifCode);
+		} else {
+			desugar = this.desugarRule(env, this.targetCode, targetTy);
+		}
+		ODebug.trace("match %s", desugar);
+		return desugar.asType(env, ret);
+	}
+
+	private Code desugarRule(TEnv env, Code targetCode0, Ty targetTy) {
+		Code targetCode = targetCode0.asType(env, targetTy);
+		ODebug.trace("target %s", targetCode.getType());
+		targetTy = targetCode.getType();
+		LetCode decl = new LetCode("it", targetCode);
+		targetCode = new NameCode("it");
+		for (Code c : this.args) {
+			RuleCode r = (RuleCode) c;
+			r.desugar0(targetCode, targetTy);
+			ODebug.trace("desugared %s", r);
+		}
+		return this.toIfCode(decl);
+	}
+
+	private Code toIfCode(Code decl) {
+		int last = this.size() - 1;
+		RuleCode r = this.get(last);
+		Code elseCode = r.thenCode();
+		for (int i = last - 1; i >= 0; i--) {
+			r = this.get(i);
+			elseCode = new IfCode(r.condCode(), r.thenCode(), elseCode);
+		}
+		return (decl == null) ? elseCode : decl.add(elseCode);
+	}
+
+	private RuleCode get(int index) {
+		return (RuleCode) this.args[index];
 	}
 
 	@Override
@@ -55,160 +116,37 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 
 	@Override
 	public void emitCode(TEnv env, TCodeSection sec) {
-		sec.pushMatch(env, this);
-	}
 
-	RuleCode get(int index) {
-		return (RuleCode) this.args[index];
-	}
-
-	public Code desugarIfCode() {
-		int last = this.size() - 1;
-		RuleCode r = this.get(last);
-		Code elseCode = r.thenCode();
-		for (int i = last - 1; i >= 0; i--) {
-			r = this.get(i);
-			elseCode = new IfCode(r.condCode(), r.thenCode(), elseCode);
-		}
-		return elseCode;
-	}
-
-	@Override
-	public Code apply(TEnv env, Tree<?> match) {
-		Code targetCode = (match.has(_expr)) ? //
-				env.parseCode(env, match.get(_expr)) : //
-				this.firstArgument(env);
-		Tree<?> body = match.get(_body);
-		RuleCode[] rules = new RuleCode[body.size() + 1];
-		int c = 1;
-		boolean isOptional = false;
-		for (int i = 0; i < body.size(); i++) {
-			Tree<?> sub = body.get(i);
-			Case cse = this.parseCase(env, sub);
-			Code bodyCode = env.parseCode(env, sub.get(_body));
-			if (cse instanceof NoneCase) {
-				rules[0] = new RuleCode(cse, bodyCode);
-				isOptional = true;
-			} else {
-				rules[c] = new RuleCode(cse, bodyCode);
-				if (c > 1 && !rules[1].same(rules[c])) {
-					throw new ErrorCode(sub, TFmt.different_pattern);
-				}
-				c++;
-			}
-		}
-		rules = isOptional ? TArrays.rtrim2(rules) : TArrays.ltrim2(rules);
-		for (RuleCode r : rules) {
-			r.desugar(targetCode);
-		}
-		MatchCode matchCode = new MatchCode(targetCode, isOptional, rules);
-		System.out.println(":::::" + matchCode);
-		System.out.println(":::::" + matchCode.desugarIfCode());
-		return matchCode.desugarIfCode();
-	}
-
-	private Code firstArgument(TEnv env) {
-		FunctionContext fcx = env.get(FunctionContext.class);
-		if (fcx != null && fcx.size() > 0) {
-			return fcx.getFirstArgument().newCode(env, null);
-		}
-		throw new ErrorCode(TFmt.required_first_argument);
-	}
-
-	private Case parseCase(TEnv env, Tree<?> tbody) {
-		Tree<?> t = tbody.get(_expr);
-		String tag = t.getTag().getSymbol();
-		switch (tag) {
-		case "AnyCase": {
-			return new AnyCase();
-		}
-		case "NoneCase": {
-			return new NoneCase();
-		}
-		case "ValueCase": {
-			if (t.has(_list)) {
-				Code[] v = new Code[t.size(_list, 0)];
-				int i = 0;
-				for (Tree<?> e : t.get(_list)) {
-					v[i] = env.parseCode(env, e);
-					i++;
-				}
-				return new ValuesCase(v);
-			}
-			Code v = env.parseCode(env, t.get(_value));
-			return new ValuesCase(v);
-		}
-		case "RangeCase":
-		case "RangeUntilCase": {
-			Code start = env.parseCode(env, t.get(_start));
-			Code end = env.parseCode(env, t.get(_end));
-			return new RangeCase(start, end, !tag.equals("RangeUntilCase"));
-		}
-		case "ListCase": {
-			Case[] l = new Case[t.size()];
-			int i = 0;
-			for (Tree<?> e : t) {
-				l[i] = this.parseCase(env, e);
-				i++;
-			}
-			return new ListCase(l);
-		}
-		case "DataCase": {
-			Case[] l = new Case[t.size()];
-			int i = 0;
-			for (Tree<?> e : t) {
-				l[i] = this.parseCase(env, e);
-				String name = l[i].name;
-				NameHint hint = env.findGlobalNameHint(env, name);
-				if (hint == null) {
-					throw new ErrorCode(e, TFmt.undefined_name__YY1, name);
-				}
-				l[i].setNameType(hint.getType());
-				i++;
-			}
-			return new DataCase(l);
-		}
-		case "NameCase": {
-			String name = t.getStringAt(_name, "");
-			String suffix = t.getStringAt(_suffix, "");
-			if (t.has(_cond)) {
-				Case cse = this.parseCase(env, t.get(_cond));
-				cse.setNameSuffix(name, suffix);
-				return cse;
-			}
-			if (t.has(_where)) {
-				Tree<?> where = t.get(_where);
-				return new NameCase(name, suffix, where.getTag().getSymbol(), env.parseCode(env, where.get(_right)));
-			}
-			return new NameCase(name, suffix, "", null);
-		}
-		default:
-			throw new ErrorCode(t, TFmt.undefined_syntax__YY1, t.getTag());
-		}
 	}
 
 	public static class RuleCode extends CodeN implements CodeBuilder {
-		Case iCase;
+		Case caseCode;
 
-		RuleCode(Case iCase, Code bodyCode) {
-			super(Ty.tAuto, iCase, bodyCode);
-			this.iCase = iCase;
+		public RuleCode(Case caseCode, Code bodyCode) {
+			super(Ty.tAuto, caseCode, bodyCode);
+			this.caseCode = caseCode;
 		}
 
-		public boolean same(RuleCode ruleCode) {
-			// TODO Auto-generated method stub
-			return true;
+		public boolean match(RuleCode prev) {
+			return this.caseCode.match(prev.caseCode);
 		}
 
-		void desugar(Code target) {
+		public Ty inferType() {
+			return this.caseCode.inferType();
+		}
+
+		void desugar0(Code target, Ty targetTy) {
 			List<Code> ands = new ArrayList<>();
-			this.iCase.makeCondCode(target, ands);
+			this.caseCode.makeCondCode(target, targetTy, ands);
 			this.args[0] = this.and(ands);
+			;
+			;
 			Set<String> names = new HashSet<>();
 			this.findNames(this.args[1], names);
+			ODebug.trace("names %s", names);
 			if (names.size() > 0) {
 				List<Code> vars = new ArrayList<>();
-				this.iCase.declCode(names, vars);
+				this.caseCode.declCode(names, vars);
 				if (vars.size() > 0) {
 					vars.add(this.args[1]);
 					this.args[1] = new MultiCode(vars);
@@ -219,10 +157,10 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		void findNames(Code c, Set<String> names) {
 			if (c instanceof NameCode) {
 				names.add(((NameCode) c).getName());
-			} else {
-				for (Code sub : c.args()) {
-					this.findNames(sub, names);
-				}
+				return;
+			}
+			for (Code sub : c.args()) {
+				this.findNames(sub, names);
 			}
 		}
 
@@ -253,17 +191,21 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("| ");
-			OStrings.append(sb, this.iCase);
+			OStrings.append(sb, this.caseCode);
+			if (this.caseCode != this.condCode()) {
+				sb.append(" if ");
+				OStrings.append(sb, this.condCode());
+			}
 			sb.append(" => ");
 			OStrings.append(sb, this.thenCode());
 		}
 	}
 
-	static abstract class Case extends CodeN implements CodeBuilder {
+	public static abstract class Case extends CodeN implements CodeBuilder {
 		String name = null;
 		String suffix = "";
-		Ty nameTy = null;
 		Code target = null;
+		Ty targetTy = null;
 
 		Case() {
 			super(TArrays.emptyCodes);
@@ -273,16 +215,34 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 			super(values);
 		}
 
-		void setNameSuffix(String name, String suffix) {
+		public boolean match(Case prev) {
+			return !(prev instanceof ListCase || prev instanceof DataCase);
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setNameSuffix(String name, String suffix) {
 			this.name = name;
 			this.suffix = suffix;
 		}
 
-		void setNameType(Ty nameTy) {
-			this.nameTy = nameTy;
+		public boolean isZeroMore() {
+			return Objects.equals("*", this.suffix);
 		}
 
-		public abstract void makeCondCode(Code target, List<Code> ands);
+		public void makeCondCode(Code target, Ty ty, List<Code> ands) {
+			this.target = target;
+			if (this.targetTy == null) {
+				this.targetTy = ty;
+			}
+			this.extractCondCode(ands);
+		}
+
+		public abstract Ty inferType();
+
+		public abstract void extractCondCode(List<Code> ands);
 
 		public void declCode(Set<String> names, List<Code> vars) {
 			if (this.size() > 0 && this.args[0] instanceof Case) {
@@ -292,14 +252,10 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 				}
 			}
 			if (this.name != null && this.target != null) {
-				if (!names.contains(this.name)) {
-					vars.add(new LetCode(this.name, null, this.target));
+				if (names.contains(this.name)) {
+					vars.add(new LetCode(this.name, this.targetTy, this.target));
 				}
 			}
-		}
-
-		@Override
-		public void strOut(StringBuilder sb) {
 		}
 
 		@Override
@@ -308,9 +264,14 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 
 	}
 
-	static class AnyCase extends Case {
-		AnyCase() {
+	public static class AnyCase extends Case {
+		public AnyCase() {
 			super();
+		}
+
+		@Override
+		public boolean match(Case prev) {
+			return true;
 		}
 
 		@Override
@@ -319,14 +280,19 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
+		public Ty inferType() {
+			return null;
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
 		}
 
 	}
 
-	static class NoneCase extends Case {
+	public static class NoneCase extends Case {
 
-		NoneCase() {
+		public NoneCase() {
 			super();
 		}
 
@@ -336,15 +302,19 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			this.target = target;
-			ands.add(this.isNull(target));
+		public Ty inferType() {
+			return null;
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
+			ands.add(this.isNone(this.target));
 		}
 	}
 
 	// case 1,2,3 => it
 
-	static class ValuesCase extends Case {
+	public static class ValuesCase extends Case {
 
 		public ValuesCase(Code... values) {
 			super(values);
@@ -356,18 +326,27 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			this.target = target;
+		public Ty inferType() {
+			for (Code c : this.args) {
+				Ty ty = c.getType();
+				if (ty != null) {
+					return ty;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
 			List<Code> ors = new ArrayList<>();
 			Arrays.stream(this.args).forEach(c -> {
-				ors.add(new BinaryCode("==", target, c));
+				ors.add(new BinaryCode("==", this.target, c));
 			});
 			ands.add(this.group(this.or(ors)));
 		}
-
 	}
 
-	static class RangeCase extends Case {
+	public static class RangeCase extends Case {
 		boolean inclusive;
 
 		public RangeCase(Code start, Code end, boolean inclusive) {
@@ -388,19 +367,31 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			this.target = target;
-			ands.add(new BinaryCode("<=", this.args[0], target));
-			ands.add(new BinaryCode(this.inclusive ? "<=" : "<", target, this.args[1]));
+		public Ty inferType() {
+			for (Code c : this.args) {
+				Ty ty = c.getType();
+				if (ty != null) {
+					return ty;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
+			ands.add(this.op(this.args[0], "<=", this.target));
+			ands.add(this.op(this.target, this.inclusive ? "<=" : "<", this.args[1]));
 		}
 	}
 
 	// name
-	static class NameCase extends Case {
+	public static class NameCase extends Case {
 		String op;
 
 		public NameCase(String name, String suffix, String op, Code expr) {
 			super(expr);
+			this.name = name;
+			this.suffix = suffix;
 			this.op = op;
 		}
 
@@ -410,43 +401,55 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			this.target = target;
+		public Ty inferType() {
+			return null;
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
 			switch (this.op) {
+			case "":
+				break;
 			case "WhereEqExpr":
-				ands.add(new BinaryCode("==", target, this.args[0]));
+				ands.add(this.op(this.target, "==", this.args[0]));
 				break;
 			case "WhereNeExpr":
-				ands.add(new BinaryCode("!=", target, this.args[0]));
+				ands.add(this.op(this.target, "!=", this.args[0]));
 				break;
 			case "WhereLtExpr":
-				ands.add(new BinaryCode("<", target, this.args[0]));
+				ands.add(this.op(this.target, "<", this.args[0]));
 				break;
 			case "WhereLteExpr":
-				ands.add(new BinaryCode("<=", target, this.args[0]));
+				ands.add(this.op(this.target, "<=", this.args[0]));
 				break;
 			case "WhereGtExpr":
-				ands.add(new BinaryCode(">", target, this.args[0]));
+				ands.add(this.op(this.target, ">", this.args[0]));
 				break;
 			case "WhereGteExpr":
-				ands.add(new BinaryCode(">=", target, this.args[0]));
+				ands.add(this.op(this.target, ">=", this.args[0]));
 				break;
 			case "WherePredExpr":
-				ands.add(new ApplyCode(this.args[0], target));
+				ands.add(new ApplyCode(this.args[0], this.target));
 				break;
 			case "WhereNotPredExpr":
-				ands.add(this.not(new ApplyCode(this.args[0], target)));
+				ands.add(this.not(new ApplyCode(this.args[0], this.target)));
 				break;
 			default:
 				throw new ErrorCode(TFmt.undefined_syntax__YY1, this.op);
 			}
 		}
+
 	}
 
 	// {a:T,b:T,c:T}
-	static class DataCase extends Case {
+	public static class DataCase extends Case {
 		public DataCase(Case[] list) {
 			super(list);
+		}
+
+		@Override
+		public boolean match(Case prev) {
+			return prev instanceof DataCase;
 		}
 
 		@Override
@@ -457,30 +460,38 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 		}
 
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			this.target = target;
+		public Ty inferType() {
+			return Ty.tData();
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
 			for (Code c : this.args) {
 				Case inner = (Case) c;
-				String name = inner.name;
-				Ty nameTy = inner.nameTy;
-				ands.add(new ExistFieldCode(target, name));
-				Code field = new GetCode(target, name, nameTy);
+				String name = inner.getName();
+				Ty nameTy = inner.targetTy;
+				ands.add(new ExistFieldCode(this.target, name));
+				Code field = new GetCode(this.target, name, nameTy);
 				if (nameTy.isOption()) {
 					ands.add(this.isSome(field));
-					inner.makeCondCode(this.get(field), ands);
+					inner.makeCondCode(field, nameTy.getInnerTy(), ands);
 				} else {
-					inner.makeCondCode(field, ands);
+					inner.makeCondCode(field, nameTy, ands);
 				}
 			}
 		}
-
 	}
 
 	// [X,Y,Z]
-	static class ListCase extends Case {
+	public static class ListCase extends Case {
 
 		public ListCase(Case[] list) {
 			super(list);
+		}
+
+		@Override
+		public boolean match(Case prev) {
+			return prev instanceof ListCase;
 		}
 
 		@Override
@@ -490,16 +501,45 @@ public class MatchCode extends CodeN implements ParseRule, Symbols {
 			sb.append("]");
 		}
 
+		private Case caseAt(int index) {
+			return (Case) this.args[index];
+		}
+
+		private boolean isTailZeroMore() {
+			if (this.args.length > 1) {
+				return this.caseAt(this.args.length - 1).isZeroMore();
+			}
+			return false;
+		}
+
 		@Override
-		public void makeCondCode(Code target, List<Code> ands) {
-			// ArrayList<Code> l = new ArrayList<>();
-			// for (Code c : this.args) {
-			// ICase inner = (ICase) c;
-			// String name = inner.getName();
-			// l.add(new ExistFieldCode(target, name));
-			// l.add(inner.condCode(new GetCode(target, name)));
-			// }
-			// return this.and(l);
+		public Ty inferType() {
+			for (Code c : this.args) {
+				Ty ty = c.getType();
+				if (ty != null) {
+					return Ty.tList(ty);
+				}
+			}
+			return Ty.tList(Ty.tUntyped());
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
+			int len = this.args.length;
+			if (this.isTailZeroMore()) {
+				ands.add(this.op(this.len(this.target), ">=", len - 1));
+				for (int i = 0; i < len - 1; i++) {
+					Case c = this.caseAt(i);
+					c.makeCondCode(this.geti(this.target, i), this.targetTy.getInnerTy(), ands);
+				}
+				this.caseAt(len - 1).makeCondCode(this.tail(this.target, len - 1), this.targetTy, ands);
+				return;
+			}
+			ands.add(this.op(this.len(this.target), "==", len));
+			for (int i = 0; i < len; i++) {
+				Case c = this.caseAt(i);
+				c.makeCondCode(this.geti(this.target, i), this.targetTy.getInnerTy(), ands);
+			}
 		}
 
 	}

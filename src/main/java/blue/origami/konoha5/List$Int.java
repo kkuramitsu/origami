@@ -87,12 +87,12 @@ public class List$Int implements OStrings, FuncIntInt {
 		return new List$Int(a, 0, 1, xs, xs.cost + 1);
 	}
 
-	public List$Int ltrim(int shift) {
+	public List$Int tail(int shift) {
 		this.flatten();
 		return new List$Int(this.arrays, this.start + shift, this.end);
 	}
 
-	public List$Int rtrim(int shift) {
+	public List$Int head(int shift) {
 		this.flatten();
 		return new List$Int(this.arrays, this.start, this.end - shift);
 	}

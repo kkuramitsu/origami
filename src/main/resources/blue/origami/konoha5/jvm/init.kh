@@ -159,6 +159,8 @@ reduce:Stream'[a]:a:a,a->a:a             = S|blue/origami/konoha5/List$|reduce
 []:Int*:Int:Int                    = V|blue/origami/konoha5/List$Int|geti
 bind:Int*:Int*                     = V|blue/origami/konoha5/List$Int|bind
 cons:Int:Int*:Int*                 = S|blue/origami/konoha5/List$Int|cons
+tail:Int*:Int:Int*                 = V|blue/origami/konoha5/List$Int|tail
+
 
 Int*->Stream[Int]                  = V|blue/origami/konoha5/List$Int|stream
 Stream[Int]->Int*                  = S|blue/origami/konoha5/List$Int|list

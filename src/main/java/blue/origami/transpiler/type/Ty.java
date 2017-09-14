@@ -98,11 +98,11 @@ public abstract class Ty implements TypeApi, OStrings {
 		return reg(key, () -> monad.newType(name, ty));
 	}
 
-	public static final ListTy tImList(Ty ty) {
+	public static final ListTy tList(Ty ty) {
 		return (ListTy) tMonad("List", ty);
 	}
 
-	public static final ListTy tList(Ty ty) {
+	public static final ListTy tArray(Ty ty) {
 		return (ListTy) tMonad("List'", ty);
 	}
 

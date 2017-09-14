@@ -32,7 +32,6 @@ import blue.origami.transpiler.code.GroupCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
-import blue.origami.transpiler.code.MatchCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.NoneCode;
@@ -748,12 +747,6 @@ public class AsmSection implements TCodeSection, Opcodes {
 		code.getInner().emitCode(env, this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		this.mBuilder.instanceOf(Type.getType(ifield));
-	}
-
-	@Override
-	public void pushMatch(TEnv env, MatchCode code) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

@@ -383,6 +383,11 @@ public class Transpiler extends TEnv {
 		return tp;
 	}
 
+	public CodeTemplate newTemplate(String name, Ty ret, Ty[] pats) {
+		final String lname = this.getLocalName(name);
+		return this.generator.newFuncTemplate(this, name, lname, ret, pats);
+	}
+
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
 		return prefix + NameHint.safeName(name);

@@ -132,6 +132,10 @@ interface CodeAPI {
 		return self().getType();
 	}
 
+	public default Code add(Code c) {
+		return new MultiCode(self(), c);
+	}
+
 	public default boolean hasReturn() {
 		return false;
 	}

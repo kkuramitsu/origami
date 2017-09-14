@@ -28,7 +28,8 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 				env.reportLog(log);
 			}
 		}
-		TFunction tf = new TFunction(this.isPublic, name, returnType, paramNames, paramTypes, t.get(_body, null));
+		TFunction tf = new TFunction(this.isPublic, t.get(_name), returnType, paramNames, paramTypes,
+				t.get(_body, null));
 		tr.addFunction(env, name, tf);
 		return new DeclCode();
 	}
