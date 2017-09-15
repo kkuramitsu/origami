@@ -32,8 +32,8 @@ public class TypeTest {
 		runScript("'a'", "Char");
 		runScript("'abc'", "String");
 		runScript("\"abc\"", "String");
-		runScript("[1,2,3]", "Int*");
-		runScript("{1,2,3}", "Int[]");
+		runScript("[1,2,3]", "Int[]");
+		runScript("{1,2,3}", "Int{}");
 	}
 
 	public void testBinary() throws Throwable {
