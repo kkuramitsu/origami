@@ -54,6 +54,14 @@ public class CastCode extends Code1 implements CallCode {
 		OStrings.append(sb, this.getInner());
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Token("(");
+		sh.Type(this.getType());
+		sh.Token(")");
+		sh.Expr(this.getInner());
+	}
+
 	// constants
 	public static final int SAME = 0;
 	public static final int BESTCAST = 1;

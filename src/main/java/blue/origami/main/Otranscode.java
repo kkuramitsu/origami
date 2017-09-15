@@ -33,7 +33,7 @@ public class Otranscode extends OCommand {
 
 			int startline = this.linenum;
 			// String prompt = bold("\n>>> ");
-			String prompt = bold("\n(🍃" + PatchLevel.REV + ")>>> ");
+			String prompt = bold("\n🍃>>> ");
 			String input = null;
 			while ((input = this.readMulti(prompt)) != null) {
 				if (checkEmptyInput(input)) {

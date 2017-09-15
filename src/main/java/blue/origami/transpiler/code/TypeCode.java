@@ -28,4 +28,9 @@ public class TypeCode extends CommonCode {
 		OStrings.append(sb, this.value);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Type(this.value);
+	}
+
 }

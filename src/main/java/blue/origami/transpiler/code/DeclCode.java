@@ -24,4 +24,8 @@ public class DeclCode extends CommonCode {
 	public void strOut(StringBuilder sb) {
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+	}
+
 }

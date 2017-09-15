@@ -30,4 +30,9 @@ public class ReturnCode extends Code1 {
 		OStrings.append(sb, this.getInner());
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Expr(this.getInner());
+	}
+
 }

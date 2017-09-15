@@ -85,4 +85,11 @@ public final class FuncRefCode extends CommonCode {
 		sb.append(this.name);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.TypeAnnotation(this.getType(), () -> {
+			sh.Name(this.name);
+		});
+	}
+
 }

@@ -57,6 +57,10 @@ public class OConsole {
 		return text;
 	}
 
+	public static String t(String text) {
+		return color(Red, text);
+	}
+
 	public static String bold(int c, String text) {
 		if (isColored) {
 			return "\u001b[00;" + c + "m" + "\u001b[1m" + text + "\u001b[00m";

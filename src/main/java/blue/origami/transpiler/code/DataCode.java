@@ -99,4 +99,24 @@ public class DataCode extends CodeN {
 		sb.append(this.isMutable() ? "}" : "]");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Token(this.isMutable() ? "{" : "[");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 0) {
+				sh.Token(",");
+			}
+			if (this.names.length > 0) {
+				if (this instanceof DataDictCode) {
+					sh.StringLiteral(this.names[i]);
+				} else {
+					sh.Name(this.names[i]);
+				}
+				sh.Token(":");
+			}
+			sh.Expr(this.args[i]);
+		}
+		sh.Token(this.isMutable() ? "}" : "]");
+	}
+
 }

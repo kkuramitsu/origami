@@ -195,6 +195,21 @@ public class ExprCode extends CodeN implements CallCode {
 		sb.append(")");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sb) {
+		sb.TypeAnnotation(this.getType(), () -> {
+			sb.Name(this.name);
+			sb.Token("(");
+			for (int i = 0; i < this.args.length; i++) {
+				if (i > 0) {
+					sb.Token(",");
+				}
+				sb.Expr(this.args[i]);
+			}
+			sb.Token(")");
+		});
+	}
+
 	public static ExprCode option(String name, Code... args) {
 		return new OptionExprCode(name, args);
 	}

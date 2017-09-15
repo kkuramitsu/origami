@@ -31,4 +31,15 @@ public class BinaryCode extends ExprCode implements CodeBuilder {
 		OStrings.joins(sb, this.args, this.name);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.TypeAnnotation(this.getType(), () -> {
+			sh.Expr(this.args[0]);
+			sh.s();
+			sh.Operator(this.name);
+			sh.s();
+			sh.Expr(this.args[1]);
+		});
+	}
+
 }

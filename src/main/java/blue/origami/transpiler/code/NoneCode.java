@@ -22,4 +22,11 @@ public class NoneCode extends CommonCode implements ValueCode {
 		sec.pushNone(env, this);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.TypeAnnotation_(this.getType(), () -> {
+			sh.Keyword("None");
+		});
+	}
+
 }

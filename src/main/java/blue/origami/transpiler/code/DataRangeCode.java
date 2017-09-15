@@ -29,4 +29,13 @@ public class DataRangeCode extends DataListCode {
 		sb.append(this.isMutable() ? ")" : "]");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sb) {
+		sb.Token(this.isMutable() ? "{" : "[");
+		sb.Expr(this.args[0]);
+		sb.Keyword(" to ");
+		sb.Expr(this.args[1]);
+		sb.Token(this.isMutable() ? "}" : "]");
+	}
+
 }

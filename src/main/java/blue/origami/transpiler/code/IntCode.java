@@ -22,6 +22,11 @@ public class IntCode extends CommonCode implements ValueCode {
 		sec.pushInt(env, this);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Literal(this.value);
+	}
+
 	public static class TCharCode extends IntCode {
 
 		public TCharCode(int value) {

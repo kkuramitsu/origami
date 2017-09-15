@@ -72,4 +72,19 @@ public class ApplyCode extends CodeN {
 		sb.append(")");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.TypeAnnotation(this.getType(), () -> {
+			this.args[0].dumpCode(sh);
+			sh.Token("(");
+			for (int i = 1; i < this.args.length; i++) {
+				if (i > 1) {
+					sh.Token(",");
+				}
+				sh.Expr(this.args[i]);
+			}
+			sh.Token(")");
+		});
+	}
+
 }

@@ -22,4 +22,9 @@ public class StringCode extends CommonCode implements ValueCode {
 		sec.pushString(env, this);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.StringLiteral(this.value);
+	}
+
 }

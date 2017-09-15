@@ -107,7 +107,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	@Override
 	public Class<?> type(Ty ty) {
-		Class<?> c = ty.mapType(this);
+		Class<?> c = ty.finalTy().mapType(this);
 		assert (c != null) : "undefined type " + ty + " @" + ty.getClass().getName();
 		return c;
 	}

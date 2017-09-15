@@ -126,4 +126,20 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 		sb.append(")");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sb) {
+		sb.TypeAnnotation(this.getType(), () -> {
+			if (this.paramNames.length == 0) {
+				sb.Keyword("\\() ");
+			} else {
+				for (int i = 0; i < this.paramNames.length; i++) {
+					sb.Keyword("\\");
+					sb.Name(this.paramNames[i]);
+					sb.append(" ");
+				}
+			}
+			sb.Expr(this.getInner());
+		});
+	}
+
 }

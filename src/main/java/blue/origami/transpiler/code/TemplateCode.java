@@ -28,4 +28,16 @@ public class TemplateCode extends CodeN {
 		sb.append(")");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.append("(");
+		for (int i = 0; i < this.args.length; i++) {
+			if (i > 1) {
+				sh.append("++");
+			}
+			this.args[i].dumpCode(sh);
+		}
+		sh.append(")");
+	}
+
 }

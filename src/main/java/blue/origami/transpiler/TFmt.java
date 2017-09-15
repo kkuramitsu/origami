@@ -6,6 +6,7 @@ import blue.origami.util.OConsole;
 public enum TFmt implements LocaleFormat {
 	error, warning, notice, info, version, //
 	// Hack mode
+	ParserError, //
 	Syntax_Tree, Template, Generated_ByteCode,
 	// syntax analysis
 	syntax_error, unsupported_error, //

@@ -70,4 +70,14 @@ public class IfCode extends CodeN {
 		OStrings.append(sb, this.args[2]);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sb) {
+		sb.Keyword("if ");
+		sb.Expr(this.args[0]);
+		sb.Keyword(" then ");
+		sb.Expr(this.args[1]);
+		sb.append(" else ");
+		sb.Expr(this.args[2]);
+	}
+
 }

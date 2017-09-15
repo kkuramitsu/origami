@@ -109,4 +109,11 @@ public class NameCode extends CommonCode implements ParseRule {
 		sb.append(this.name);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.TypeAnnotation_(this.getType(), () -> {
+			sh.Name(this.name);
+		});
+	}
+
 }

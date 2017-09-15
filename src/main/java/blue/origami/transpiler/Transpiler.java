@@ -206,7 +206,7 @@ public class Transpiler extends TEnv {
 			return;
 		}
 		if (e instanceof ParserErrorException) {
-			this.verboseError("ParserError", () -> {
+			this.verboseError(TFmt.ParserError.toString(), () -> {
 				OConsole.println(e);
 			});
 			return;
@@ -242,7 +242,7 @@ public class Transpiler extends TEnv {
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
-			OStrings.append(sb, code.getType().finalTy());
+			sb.append(OConsole.t(code.getType().finalTy().toString()));
 			sb.append(") ");
 			OConsole.beginBold(sb);
 			OStrings.appendQuoted(sb, result);
@@ -334,8 +334,10 @@ public class Transpiler extends TEnv {
 		Code code0 = env.parseCode(env, body);
 		Code code = env.catchCode(() -> code0.asType(env, returnType));
 		tp.nomAll();
-		ODebug.showBlue("TypedTree", () -> {
+		ODebug.showBlue("TypedTree1", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
+			code.dump();
+
 		});
 		// assert (!returnType.isUntyped());
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
@@ -363,8 +365,9 @@ public class Transpiler extends TEnv {
 		}
 		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
 		tp.nomAll();
-		ODebug.showBlue("TypedTree", () -> {
+		ODebug.showBlue("TypedTree3", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
+			code.dump();
 		});
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
@@ -376,8 +379,9 @@ public class Transpiler extends TEnv {
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		tp.asError(body.hasSome(c -> c.isError()));
-		ODebug.showBlue("TypedTree", () -> {
+		ODebug.showBlue("TypedTree2", () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
+			body.dump();
 		});
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), body);
 		return tp;

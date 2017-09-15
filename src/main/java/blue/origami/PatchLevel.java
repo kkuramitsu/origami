@@ -1,5 +1,5 @@
 package blue.origami;
 
 public class PatchLevel {
-        public final static int REV=377;
+        public final static int REV=378;
 }

@@ -12,6 +12,7 @@ import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
@@ -35,6 +36,18 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	public Ty getType();
 
 	public void emitCode(TEnv env, TCodeSection sec);
+
+	// public void dumpCode(SyntaxHighlight sh);
+
+	public default void dumpCode(SyntaxHighlight sh) {
+		sh.append(this);
+	}
+
+	public default void dump() {
+		SyntaxHighlight sh = new SyntaxHighlight();
+		dumpCode(sh);
+		OConsole.println(sh.toString());
+	}
 
 	public final static boolean bSUB = true;
 	public final static boolean bEQ = false;

@@ -26,4 +26,9 @@ public class BoolCode extends CommonCode implements ValueCode {
 		sec.pushBool(env, this);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Literal(this.value);
+	}
+
 }

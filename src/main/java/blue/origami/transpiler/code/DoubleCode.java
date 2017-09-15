@@ -22,4 +22,9 @@ public class DoubleCode extends CommonCode implements ValueCode {
 		sec.pushDouble(env, this);
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Literal(this.value);
+	}
+
 }

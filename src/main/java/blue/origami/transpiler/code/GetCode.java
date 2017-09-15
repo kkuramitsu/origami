@@ -56,4 +56,11 @@ public class GetCode extends Code1 {
 
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Expr(this.getInner());
+		sh.Token(".");
+		sh.Name(this.name);
+	}
+
 }

@@ -58,4 +58,15 @@ public class SetCode extends CodeN {
 
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Expr(this.args[0]);
+		sh.Token(".");
+		sh.Name(this.name);
+		sh.s();
+		sh.Operator("=");
+		sh.s();
+		sh.Expr(this.args[1]);
+	}
+
 }

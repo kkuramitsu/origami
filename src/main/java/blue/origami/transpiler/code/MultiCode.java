@@ -78,4 +78,17 @@ public class MultiCode extends CodeN {
 		sb.append("}");
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.append("{");
+		sh.incIndent();
+		for (Code c : this.args) {
+			sh.Indent();
+			c.dumpCode(sh);
+		}
+		sh.decIndent();
+		sh.Indent();
+		sh.append("}");
+	}
+
 }

@@ -81,4 +81,14 @@ public class LetCode extends Code1 {
 		OStrings.append(sb, this.getInner());
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Keyword("let ");
+		sh.TypeAnnotation_(this.getDeclType(), () -> {
+			sh.Name(this.name);
+		});
+		sh.Operator(" = ");
+		sh.Expr(this.getInner());
+	}
+
 }

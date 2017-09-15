@@ -15,6 +15,7 @@ public class GroupCode extends Code1 {
 		sec.pushGroup(env, this);
 	}
 
+	@Override
 	public Code asType(TEnv env, Ty ret) {
 		this.inner.asType(env, ret);
 		return this;
@@ -25,6 +26,13 @@ public class GroupCode extends Code1 {
 		sb.append("(");
 		OStrings.append(sb, this.getInner());
 		sb.append(")");
+	}
+
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Token("(");
+		sh.Expr(this.getInner());
+		sh.Token(")");
 	}
 
 }

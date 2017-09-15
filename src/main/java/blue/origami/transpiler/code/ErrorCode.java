@@ -92,6 +92,11 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Error(this.log);
+	}
+
+	@Override
 	public String toString() {
 		return this.log.toString();
 	}

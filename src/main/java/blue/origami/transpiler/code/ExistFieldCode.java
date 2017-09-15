@@ -37,4 +37,11 @@ public class ExistFieldCode extends Code1 {
 
 	}
 
+	@Override
+	public void dumpCode(SyntaxHighlight sh) {
+		sh.Name(this.name);
+		sh.Keyword(" in ");
+		sh.Expr(this.getInner());
+	}
+
 }
