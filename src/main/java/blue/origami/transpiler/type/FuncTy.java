@@ -86,7 +86,7 @@ public class FuncTy extends Ty {
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		if (this.name == null && this.hasVar()) {
+		if (this.hasVar()) {
 			return Ty.tFunc(this.returnType.dupVar(dom),
 					Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new));
 		}

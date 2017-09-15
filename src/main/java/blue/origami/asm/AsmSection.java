@@ -153,6 +153,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			// "(D)D", false);
 			desc = this.ts.desc(tp.getReturnType(), tp.getParamTypes());
 			// ODebug.trace("INVOKESTATIC %s,%s,%s", def[1], def[2], desc);
+			// ODebug.trace("template %s", tp);
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, def[1], def[2], desc, false);
 			return;
 		case "V":

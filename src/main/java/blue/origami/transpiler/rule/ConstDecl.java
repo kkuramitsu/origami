@@ -1,7 +1,6 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
@@ -27,7 +26,7 @@ public class ConstDecl extends SyntaxRule implements ParseRule {
 		Code right = env.parseCode(env, t.get(_expr));
 		Ty type = t.has(_type) ? env.parseType(env, t.get(_type, null), null) : null;
 		//
-		FunctionContext fcx = env.get(FunctionContext.class);
+		// FunctionContext fcx = env.get(FunctionContext.class);
 		if (type == null) {
 			type = Ty.tUntyped();
 			right = right.bind(type).asType(env, type);

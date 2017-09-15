@@ -8,6 +8,8 @@ public enum TFmt implements LocaleFormat {
 	// Hack mode
 	ParserError, //
 	Syntax_Tree, Template, Generated_ByteCode,
+	// Message
+	Checked,
 	// syntax analysis
 	syntax_error, unsupported_error, //
 	undefined_syntax__YY1, undefined_name__YY1, wrong_number_format_YY1_by_YY2, //

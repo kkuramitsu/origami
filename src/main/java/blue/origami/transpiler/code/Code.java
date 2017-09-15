@@ -128,6 +128,7 @@ interface CodeAPI {
 		Ty f = self.getType();
 		Ty ret = ret0;
 		Template tp = env.findTypeMap(env, f, ret);
+		ODebug.trace("found map %s", tp);
 		if (tp == TConvTemplate.Stupid) {
 			ODebug.log(() -> {
 				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);

@@ -60,6 +60,14 @@ public class VarDomain {
 		return this.newVarTy(n, -1);
 	}
 
+	public Ty[] dupParamTypes(Ty[] g) {
+		Ty[] v = new Ty[g.length];
+		for (int i = 0; i < g.length; i++) {
+			v[i] = g[i].dupVar(this);
+		}
+		return v;
+	}
+
 	public Ty[] dupParamTypes(Ty[] dParamTypes, Ty[] codeTy) {
 		Ty[] gParamTypes = new Ty[dParamTypes.length];
 		for (int i = 0; i < dParamTypes.length; i++) {
@@ -77,10 +85,6 @@ public class VarDomain {
 			}
 		}
 		return gParamTypes;
-	}
-
-	public Ty[] dupParamTypes(Ty[] dParamTypes) {
-		return this.dupParamTypes(dParamTypes, null);
 	}
 
 	public Ty dupRetType(Ty ret) {

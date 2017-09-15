@@ -18,6 +18,7 @@ package origami;
 
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 
@@ -59,7 +60,7 @@ public class TypeTest {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
 		Transpiler env = new Transpiler(g, "jvm");
 		Ty ty = env.testType(text);
-		System.out.printf("%s :: %s\n", text, ty);
+		System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
 		if (checked != null) {
 			assert (checked.equals(ty.toString())) : ty + " != " + checked;
 		}

@@ -1,19 +1,15 @@
 package blue.origami.transpiler;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BinaryCode;
-import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.CodeBuilder;
 import blue.origami.transpiler.code.ExprCode;
-import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.NameCode;
-import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
 public abstract class Generator implements CodeBuilder {
@@ -42,9 +38,16 @@ public abstract class Generator implements CodeBuilder {
 
 	public abstract void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr);
 
-	public String safeName(String name) {
+	HashMap<String, Integer> arrowMap = new HashMap<>();
+
+	public final String safeName(String name) {
 		if (name.indexOf("->") > 0) {
-			return "conv";
+			Integer n = this.arrowMap.get(name);
+			if (n == null) {
+				n = this.arrowMap.size();
+				this.arrowMap.put(name, n);
+			}
+			return "c0nv" + n;
 		}
 		return name;
 	}
@@ -107,22 +110,26 @@ public abstract class Generator implements CodeBuilder {
 		return tr.defineFunction("test" + op + ty, names, params, ty, body);
 	}
 
-	public Template genFuncConvFunc(TEnv env, FuncTy fromTy, FuncTy toTy) {
-		Transpiler tr = env.getTranspiler();
-		String[] names = { "_f" };
-		Ty[] params = { fromTy };
+	// public abstract String arrowName(Ty fromTy, Ty toTy);
 
-		Ty[] fromTypes = fromTy.getParamTypes();
-		Ty[] toTypes = toTy.getParamTypes();
-		String[] fnames = TArrays.names(toTypes.length);
-		List<Code> l = new ArrayList<>();
-		l.add(new NameCode("_f"));
-		for (int c = 0; c < toTy.getParamSize(); c++) {
-			l.add(new CastCode(fromTypes[c], new NameCode(String.valueOf((char) c))));
-		}
-		Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
-		body = new FuncCode(fnames, fromTypes, toTy.getReturnType(), body);
-		return tr.defineFunction("(" + fromTy + ")->(" + toTy + ")", names, params, toTy, body);
-	}
+	// public Template genFuncConvFunc(TEnv env, FuncTy fromTy, FuncTy toTy) {
+	// Transpiler tr = env.getTranspiler();
+	// String[] names = { "_f" };
+	// Ty[] params = { fromTy };
+	//
+	// Ty[] fromTypes = fromTy.getParamTypes();
+	// Ty[] toTypes = toTy.getParamTypes();
+	// String[] fnames = TArrays.names(toTypes.length);
+	// List<Code> l = new ArrayList<>();
+	// l.add(new NameCode("_f"));
+	// for (int c = 0; c < toTy.getParamSize(); c++) {
+	// l.add(new CastCode(fromTypes[c], new NameCode(String.valueOf((char)
+	// c))));
+	// }
+	// Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
+	// body = new FuncCode(fnames, fromTypes, toTy.getReturnType(), body);
+	// return tr.defineFunction(FuncTy.mapKey(fromTy, toTy), names, params,
+	// toTy, body);
+	// }
 
 }

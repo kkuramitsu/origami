@@ -122,7 +122,7 @@ public abstract class OCommand extends OConsole {
 				fileList.add(as);
 				continue;
 			}
-			this.usage("undefined option: " + as);
+			usage("undefined option: " + as);
 		}
 		options.set(ParserOption.InputFiles, fileList.toArray(new String[fileList.size()]));
 	}

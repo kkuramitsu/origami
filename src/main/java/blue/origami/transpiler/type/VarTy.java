@@ -1,7 +1,6 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.NameHint;
-import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class VarTy extends Ty {
@@ -93,7 +92,8 @@ public class VarTy extends Ty {
 			return true;
 		}
 		if (logs.update(this, codeTy) && this.name != null) {
-			ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s", this.getName(), codeTy));
+			// ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s",
+			// this.getName(), codeTy));
 		}
 		return true;
 	}

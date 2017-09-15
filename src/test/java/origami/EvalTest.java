@@ -2,6 +2,7 @@ package origami;
 
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 
 public class EvalTest {
@@ -54,7 +55,6 @@ public class EvalTest {
 		runScript("{a=1;b=a;a+b}", "2");
 		runScript("{a=1;b={a=2;a};a+b}", "3");
 		// {a=1;{b=a;b}}
-
 	}
 
 	//
@@ -62,7 +62,7 @@ public class EvalTest {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
 		Transpiler env = new Transpiler(g, "jvm");
 		Object result = env.testEval(text);
-		System.out.printf("%s => %s\n", text, result);
+		System.out.printf("%s %s => %s\n", TFmt.Checked, text, result);
 		if (checked != null) {
 			assert (checked.equals(result.toString())) : result + " != " + checked;
 		}
