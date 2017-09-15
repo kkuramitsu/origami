@@ -1,4 +1,4 @@
-package blue.origami.transpiler.asm;
+package blue.origami.asm;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TArrays;

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 
+import blue.origami.asm.AsmGenerator;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
@@ -15,7 +16,6 @@ import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserCode.ParserErrorException;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
-import blue.origami.transpiler.asm.AsmGenerator;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;

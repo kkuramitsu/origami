@@ -16,10 +16,10 @@
 
 package blue.origami.main;
 
+import blue.origami.asm.APIs;
 import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.asm.APIs;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;

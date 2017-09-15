@@ -1,10 +1,10 @@
 package origami;
 
+import blue.origami.asm.APIs;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.transpiler.asm.APIs;
 
 //import junit.framework.Assert;
 //import org.junit.Test;

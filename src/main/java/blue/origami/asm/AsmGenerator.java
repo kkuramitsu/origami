@@ -1,4 +1,4 @@
-package blue.origami.transpiler.asm;
+package blue.origami.asm;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;

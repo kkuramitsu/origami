@@ -1,4 +1,4 @@
-package blue.origami.transpiler.asm;
+package blue.origami.asm;
 
 import java.io.File;
 import java.io.FileOutputStream;

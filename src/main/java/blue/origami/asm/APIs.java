@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.transpiler.asm;
+package blue.origami.asm;
 
 import java.util.Objects;
 

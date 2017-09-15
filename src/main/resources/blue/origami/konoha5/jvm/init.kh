@@ -1,11 +1,11 @@
 # jvm/init.kh
 
-Bool       = boolean
-Byte       = byte
-Int        = int
-Int64      = long
-Float      = double
-String     = String
+#Bool       = boolean
+#Byte       = byte
+#Int        = int
+#Int64      = long
+#Float      = double
+#String     = String
 
 # Type Inference
 +:a:a:a      =
@@ -29,12 +29,12 @@ String     = String
 #true:Bool       = true
 #false:Bool      = false
 
-==:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|eq
-!=:Bool:Bool:Bool      = S|blue/origami/transpiler/asm/APIs|ne
+==:Bool:Bool:Bool      = S|blue/origami/asm/APIs|eq
+!=:Bool:Bool:Bool      = S|blue/origami/asm/APIs|ne
 &&:Bool:Bool:Bool      = X|band
 ||:Bool:Bool:Bool      = X|bor
-!:Bool:Bool            = S|blue/origami/transpiler/asm/APIs|not
-assert:Bool:()!!       = S|blue/origami/transpiler/asm/APIs|testAssert
+!:Bool:Bool            = S|blue/origami/asm/APIs|not
+assert:Bool:()!!       = S|blue/origami/asm/APIs|testAssert
 
 #Int 
 0:Int            = %d
@@ -46,20 +46,20 @@ assert:Bool:()!!       = S|blue/origami/transpiler/asm/APIs|testAssert
 /:Int:Int:Int    = O|idiv
 %:Int:Int:Int    = O|irem
 
-==:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|eq
-!=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|ne
-<:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|lt
->:Int:Int:Bool   = S|blue/origami/transpiler/asm/APIs|gt
-<=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|lte
->=:Int:Int:Bool  = S|blue/origami/transpiler/asm/APIs|gte
+==:Int:Int:Bool  = S|blue/origami/asm/APIs|eq
+!=:Int:Int:Bool  = S|blue/origami/asm/APIs|ne
+<:Int:Int:Bool   = S|blue/origami/asm/APIs|lt
+>:Int:Int:Bool   = S|blue/origami/asm/APIs|gt
+<=:Int:Int:Bool  = S|blue/origami/asm/APIs|lte
+>=:Int:Int:Bool  = S|blue/origami/asm/APIs|gte
 
 <<:Int:Int:Int   = O|ishl
 >>:Int:Int:Int   = O|ishr
 &&:Int:Int:Int   = O|iand
 ||:Int:Int:Int   = O|ior
 ^^:Int:Int:Int   = O|ixor
-~:Int:Int        = S|blue/origami/transpiler/asm/APIs|cmpl
-^:Int:Int:Int    = S|blue/origami/transpiler/asm/APIs|pow
+~:Int:Int        = S|blue/origami/asm/APIs|cmpl
+^:Int:Int:Int    = S|blue/origami/asm/APIs|pow
 ||:Int:Int       = S|java/lang/Math|abs
 
 # Float
@@ -74,51 +74,51 @@ Float->Int             = O|d2i
 /:Float:Float:Float    = O|ddiv
 %:Float:Float:Float    = O|drem
 
-==:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|eq
-!=:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|ne
-<:Float:Float:Bool   = S|blue/origami/transpiler/asm/APIs|lt
->:Float:Float:Bool   = S|blue/origami/transpiler/asm/APIs|gt
-<=:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|lte
->=:Float:Float:Bool  = S|blue/origami/transpiler/asm/APIs|gte
+==:Float:Float:Bool  = S|blue/origami/asm/APIs|eq
+!=:Float:Float:Bool  = S|blue/origami/asm/APIs|ne
+<:Float:Float:Bool   = S|blue/origami/asm/APIs|lt
+>:Float:Float:Bool   = S|blue/origami/asm/APIs|gt
+<=:Float:Float:Bool  = S|blue/origami/asm/APIs|lte
+>=:Float:Float:Bool  = S|blue/origami/asm/APIs|gte
 ^:Float:Float:Float  = S|java/lang/Math|pow
 ||:Float:Int         = S|java/lang/Math|abs
 rand:Float@          = S|java/lang/Math|random
 
 #String
-char->String           = O|blue/origami/transpiler/asm/APIs|toch
-String--->Int!!        = S|blue/origami/transpiler/asm/APIs|toint
-String--->Float!!      = S|blue/origami/transpiler/asm/APIs|todouble
-Int-->String           = S|blue/origami/transpiler/asm/APIs|toString
-Float-->String         = S|blue/origami/transpiler/asm/APIs|toString
+char->String           = O|blue/origami/asm/APIs|toch
+String--->Int!!        = S|blue/origami/asm/APIs|toint
+String--->Float!!      = S|blue/origami/asm/APIs|todouble
+Int-->String           = S|blue/origami/asm/APIs|toString
+Float-->String         = S|blue/origami/asm/APIs|toString
 
 ||:String:Int             = V|java/lang/String|length
 ++:String:String:String   = V|java/lang/String|concat
-==:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|eq
-!=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|ne
-<:String:String:Bool      = S|blue/origami/transpiler/asm/APIs|lt
->:String:String:Bool      = S|blue/origami/transpiler/asm/APIs|gt
-<=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|lte
->=:String:String:Bool     = S|blue/origami/transpiler/asm/APIs|gte
-println:String:()         = S|blue/origami/transpiler/asm/APIs|p
+==:String:String:Bool     = S|blue/origami/asm/APIs|eq
+!=:String:String:Bool     = S|blue/origami/asm/APIs|ne
+<:String:String:Bool      = S|blue/origami/asm/APIs|lt
+>:String:String:Bool      = S|blue/origami/asm/APIs|gt
+<=:String:String:Bool     = S|blue/origami/asm/APIs|lte
+>=:String:String:Bool     = S|blue/origami/asm/APIs|gte
+println:String:()         = S|blue/origami/asm/APIs|p
 
 ## AnyRef
-any==>Bool              = S|blue/origami/transpiler/asm/APIs|unboxZ
-Bool==>any              = S|blue/origami/transpiler/asm/APIs|box
-any==>Int               = S|blue/origami/transpiler/asm/APIs|unboxI
-Int==>any               = S|blue/origami/transpiler/asm/APIs|box
-any==>Float             = S|blue/origami/transpiler/asm/APIs|unboxD
-Float==>any             = S|blue/origami/transpiler/asm/APIs|box
+any==>Bool              = S|blue/origami/asm/APIs|unboxZ
+Bool==>any              = S|blue/origami/asm/APIs|box
+any==>Int               = S|blue/origami/asm/APIs|unboxI
+Int==>any               = S|blue/origami/asm/APIs|box
+any==>Float             = S|blue/origami/asm/APIs|unboxD
+Float==>any             = S|blue/origami/asm/APIs|box
 upcast                  = %s
 cast                    = C
 
-any==>byte              = S|blue/origami/transpiler/asm/APIs|unboxB
-byte==>any              = S|blue/origami/transpiler/asm/APIs|box
-any==>char              = S|blue/origami/transpiler/asm/APIs|unboxC
-char==>any              = S|blue/origami/transpiler/asm/APIs|box
-any==>int64             = S|blue/origami/transpiler/asm/APIs|unboxL
-int64==>any             = S|blue/origami/transpiler/asm/APIs|box
+any==>byte              = S|blue/origami/asm/APIs|unboxB
+byte==>any              = S|blue/origami/asm/APIs|box
+any==>char              = S|blue/origami/asm/APIs|unboxC
+char==>any              = S|blue/origami/asm/APIs|box
+any==>int64             = S|blue/origami/asm/APIs|unboxL
+int64==>any             = S|blue/origami/asm/APIs|box
 
-## a*, a[], Stream[a]
+## a*, a{}, Stream[a]
 
 ||:a*:Int                         = V|blue/origami/konoha5/List$|size
 []:a*:Int:a                       = V|blue/origami/konoha5/List$|geti
@@ -135,16 +135,16 @@ map:Stream[a]:a->Int:Stream[Int]         = S|blue/origami/konoha5/List$|map
 map:Stream[a]:a->Float:Stream[Float]     = S|blue/origami/konoha5/List$|map
 reduce:Stream[a]:a:a,a->a:a              = S|blue/origami/konoha5/List$|reduce
 
-a[]->a*                            = -
-||:a[]:Int                         = V|blue/origami/konoha5/List$|size
-[]:a[]:Int:a                       = V|blue/origami/konoha5/List$|geti
-[]=:a[]:Int:a:()                   = V|blue/origami/konoha5/List$|seti
-push:a[]:a:()                      = V|blue/origami/konoha5/List|push
-pop:a[]:a                          = V|blue/origami/konoha5/List|pop
+a{}->a*                            = -
+||:a{}:Int                         = V|blue/origami/konoha5/List$|size
+[]:a{}:Int:a                       = V|blue/origami/konoha5/List$|geti
+[]=:a{}:Int:a:()                   = V|blue/origami/konoha5/List$|seti
+push:a{}:a:()                      = V|blue/origami/konoha5/List|push
+pop:a{}:a                          = V|blue/origami/konoha5/List|pop
 
-a[]->Stream'[a]                    = V|blue/origami/konoha5/List$|stream
-Stream'[a]->a[]                    = S|blue/origami/konoha5/List$|list
-bind:Stream'[a]:a[]                = S|blue/origami/konoha5/List$|listM
+a{}->Stream'[a]                    = V|blue/origami/konoha5/List$|stream
+Stream'[a]->a{}                    = S|blue/origami/konoha5/List$|list
+bind:Stream'[a]:a{}                = S|blue/origami/konoha5/List$|listM
 
 forEach:Stream'[a]:a->():()              = S|blue/origami/konoha5/List$|forEach
 filter:Stream'[a]:a->Bool:Stream'[a]     = S|blue/origami/konoha5/List$|filter
@@ -153,7 +153,7 @@ map:Stream'[a]:a->Int:Stream'[Int]       = S|blue/origami/konoha5/List$|map
 map:Stream'[a]:a->Float:Stream'[Float]   = S|blue/origami/konoha5/List$|map
 reduce:Stream'[a]:a:a,a->a:a             = S|blue/origami/konoha5/List$|reduce
 
-## Int*, Int[], Stream[Int]
+## Int*, Int{}, Stream[Int]
 
 ||:Int*:Int                        = V|blue/origami/konoha5/List$Int|size
 []:Int*:Int:Int                    = V|blue/origami/konoha5/List$Int|geti
@@ -173,16 +173,16 @@ map:Stream[Int]:Int->Int:Stream[Int]         = S|blue/origami/konoha5/List$Int|m
 map:Stream[Int]:Int->Float:Stream[Float]     = S|blue/origami/konoha5/List$Int|map
 reduce:Stream[Int]:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|reduce
 
-||:Int[]:Int                       = V|blue/origami/konoha5/List$Int|size
-[]:Int[]:Int:Int                   = V|blue/origami/konoha5/List$Int|geti
-[]=:Int[]:Int:Int:()               = V|blue/origami/konoha5/List$Int|seti
-push:Int[]:Int:()                  = V|blue/origami/konoha5/List$Int|push
-pop:Int[]:Int                      = V|blue/origami/konoha5/List$Int|pop
+||:Int{}:Int                       = V|blue/origami/konoha5/List$Int|size
+[]:Int{}:Int:Int                   = V|blue/origami/konoha5/List$Int|geti
+[]=:Int{}:Int:Int:()               = V|blue/origami/konoha5/List$Int|seti
+push:Int{}:Int:()                  = V|blue/origami/konoha5/List$Int|push
+pop:Int{}:Int                      = V|blue/origami/konoha5/List$Int|pop
 
-Int[]->Int*                        = -
-Int[]->Stream'[Int]                = V|blue/origami/konoha5/List$Int|stream
-Stream'[Int]->Int[]                = S|blue/origami/konoha5/List$Int|list
-bind:Stream'[Int]:Int[]            = S|blue/origami/konoha5/List$Int|listM
+Int{}->Int*                        = -
+Int{}->Stream'[Int]                = V|blue/origami/konoha5/List$Int|stream
+Stream'[Int]->Int{}                = S|blue/origami/konoha5/List$Int|list
+bind:Stream'[Int]:Int{}            = S|blue/origami/konoha5/List$Int|listM
 
 forEach:Stream'[Int]:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
 filter:Stream'[Int]:Int->Bool:Stream'[Int]    = S|blue/origami/konoha5/List$Int|filter
@@ -206,19 +206,19 @@ forEach:Dict'[a]:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
 
 #Option
 Some:a:a?                            = -
-some?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isSome
-none?:a?:Bool                        = S|blue/origami/transpiler/asm/APIs|isNone
+Some?:a?:Bool                        = S|blue/origami/asm/APIs|isSome
+None?:a?:Bool                        = S|blue/origami/asm/APIs|isNone
 |?:a?:a:a                            = X|orElse
-forEach:a?:a->():()                  = S|blue/origami/transpiler/asm/APIs|forEach
-map:a?:a->b:b?                       = S|blue/origami/transpiler/asm/APIs|map
-flatMap:a?:a->b?:b?                  = S|blue/origami/transpiler/asm/APIs|flatMap
+forEach:a?:a->():()                  = S|blue/origami/asm/APIs|forEach
+map:a?:a->b:b?                       = S|blue/origami/asm/APIs|map
+flatMap:a?:a->b?:b?                  = S|blue/origami/asm/APIs|flatMap
 
-Some:Bool:Bool?                      = S|blue/origami/transpiler/asm/APIs|box
-Bool?--->Bool                        = S|blue/origami/transpiler/asm/APIs|unwrapZ
-Some:Int:Int?                        = S|blue/origami/transpiler/asm/APIs|box
-Int?--->Int                          = S|blue/origami/transpiler/asm/APIs|unwrapI
-Some:Float:Float?                    = S|blue/origami/transpiler/asm/APIs|box
-Float?--->Float                      = S|blue/origami/transpiler/asm/APIs|unwrapD
+Some:Bool:Bool?                      = S|blue/origami/asm/APIs|box
+Bool?--->Bool                        = S|blue/origami/asm/APIs|unwrapZ
+Some:Int:Int?                        = S|blue/origami/asm/APIs|box
+Int?--->Int                          = S|blue/origami/asm/APIs|unwrapI
+Some:Float:Float?                    = S|blue/origami/asm/APIs|box
+Float?--->Float                      = S|blue/origami/asm/APIs|unwrapD
 
 # MathLib
 sin:Float:Float                      = S|java/lang/Math|sin

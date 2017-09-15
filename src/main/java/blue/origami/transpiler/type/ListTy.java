@@ -21,7 +21,7 @@ public class ListTy extends MonadTy {
 	@Override
 	public void strOut(StringBuilder sb) {
 		OStrings.append(sb, this.innerTy);
-		sb.append(this.isMutable() ? "[]" : "*");
+		sb.append(this.isMutable() ? "{}" : "[]");
 	}
 
 }
