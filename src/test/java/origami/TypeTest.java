@@ -55,6 +55,12 @@ public class TypeTest {
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
 	}
 
+	public void testAdHoc() throws Throwable {
+		runScript("f(a)=2a+1;f", "a->b");
+		runScript("f(a)=2a+1;f(1);f", "Int->Int");
+		runScript("f(a)=2a+1;f(1.0);f", "Float->Float");
+	}
+
 	public void testOption() throws Throwable {
 		runScript("Some(1)", "Option[Int]");
 		runScript("Some(1) >>= (\\n Some(n+1))", "Option[Int]");
