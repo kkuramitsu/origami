@@ -7,6 +7,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import blue.origami.util.ODebug;
 
 public interface FunctionUnit {
 
@@ -47,8 +48,16 @@ public interface FunctionUnit {
 		// }
 		Code code = typeCheck(env, fcx, pnames, pats, ret, code0);
 		dom.reset();
-		this.setParamTypes(
-				Arrays.stream(dom.dupParamTypes(this.getParamTypes())).map(t -> t.finalTy()).toArray(Ty[]::new));
+		this.setParamTypes(Arrays.stream(this.getParamTypes()).map(ty -> {
+			boolean hasMutation = ty.hasMutation();
+			ty = ty.dupVar(dom);
+			ty = ty.finalTy();
+			if (!hasMutation || ty.isMutable()) {
+				ODebug.trace("FIXME maybe immutable %s", ty);
+				ty = ty.toImmutable();
+			}
+			return ty;
+		}).toArray(Ty[]::new));
 		int vars = dom.usedVars();
 		this.setReturnType(dom.dupRetType(this.getReturnType()).finalTy());
 		if (vars == 0 && dom.usedVars() > vars) {

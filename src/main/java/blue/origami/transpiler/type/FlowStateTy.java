@@ -15,6 +15,11 @@ public class FlowStateTy extends Ty {
 	}
 
 	@Override
+	public boolean hasMutation() {
+		return this.hasMutation;
+	}
+
+	@Override
 	public void hasMutation(boolean b) {
 		this.hasMutation = b;
 	}

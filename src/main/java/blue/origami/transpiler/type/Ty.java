@@ -193,8 +193,11 @@ public abstract class Ty implements TypeApi, OStrings {
 		return this;
 	}
 
-	public void hasMutation(boolean b) {
+	public boolean hasMutation() {
+		return false;
+	}
 
+	public void hasMutation(boolean b) {
 	}
 
 	public Ty finalTy() {

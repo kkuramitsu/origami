@@ -14,6 +14,11 @@ public class FlowDataTy extends DataTy {
 	private boolean hasMutation = false;
 
 	@Override
+	public boolean hasMutation() {
+		return this.hasMutation;
+	}
+
+	@Override
 	public void hasMutation(boolean b) {
 		this.hasMutation = b;
 	}
