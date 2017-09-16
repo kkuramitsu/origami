@@ -30,52 +30,12 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		this.body = body;
 	}
 
+	public TFunction(Tree<?> name, Ty returnType, String[] paramNames, Ty[] paramTypes, Tree<?> body) {
+		this(false, name, returnType, paramNames, paramTypes, body);
+	}
+
 	public boolean isPublic() {
 		return this.isPublic;
-	}
-
-	@Override
-	public void used(TEnv env) {
-		if (this.isUnused()) {
-			super.used(env);
-			Code code = this.typeBody(env, new FunctionContext(), this.body);
-			if (code.showError(env)) {
-				// env.reportError(this.at, TFmt.function_S_remains_undefined,
-				// this.name);
-				this.setExpired();
-				return;
-			}
-			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
-				ODebug.showBlue(TFmt.Template.toString(), () -> {
-					ODebug.println("%s : %s", this.name, this.getFuncType());
-				});
-			} else {
-				ODebug.trace("static %s %s generated=%s", this.name, this.getFuncType(), code.getType(),
-						this.generated);
-				if (this.generated == null) {
-					boolean isAbstract = this.isAbstract(code);
-					if (isAbstract) {
-						ODebug.trace("ABSTRACT=%s %s %s ret=%s", isAbstract, this.name, this.getFuncType(),
-								code.getType());
-						code = this.typeBody(env, new FunctionContext(), this.body);
-						isAbstract = this.isAbstract(code);
-						// ODebug.trace("ABSTRACT=%s %s %s ret=%s", isAbstract,
-						// this.name, this.getFuncType(),
-						assert (!this.isAbstract(code));
-					}
-					Transpiler tr = env.getTranspiler();
-					this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
-							this.paramTypes, this.returnType, code);
-					ODebug.trace("generating %s", this.generated);
-					this.setExpired();
-				}
-			}
-		}
-	}
-
-	@Override
-	public boolean isAbstract() {
-		return this.generated == null;
 	}
 
 	@Override
@@ -86,6 +46,11 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 	void setExpired() {
 		this.paramNames = null;
 		this.body = null;
+	}
+
+	@Override
+	public boolean isAbstract() {
+		return false;
 	}
 
 	@Override
@@ -123,9 +88,6 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		return null;
 	}
 
-	// let add(a, b) =
-	// a[0] + b[0]
-
 	// let reverse(a) =
 	// dup = {}
 	// [0 to < |a|].forEach(\i dup.push(a[|a|-1-i]))
@@ -135,16 +97,38 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 	// a = {}
 	// reverse(a)
 
-	// boolean hasUntypedPArams() {
-	// return TArrays.testSomeTrue(t -> t.isUn(), this.getParamTypes());
-	// }
+	@Override
+	public void used(TEnv env) {
+		if (this.isUnused()) {
+			super.used(env);
+			Code code = this.typeBody(env, new FunctionContext(), this.body);
+			if (code.showError(env)) {
+				this.setExpired();
+				return;
+			}
+			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
+				this.isGeneric = true;
+				ODebug.showBlue(TFmt.Template.toString(), () -> {
+					ODebug.println("%s : %s", this.name, this.getFuncType());
+				});
+			} else {
+				ODebug.trace("static %s %s generated=%s", this.name, this.getFuncType(), code.getType(),
+						this.generated);
+				this.isGeneric = false;
+				if (this.generated == null) {
+					Transpiler tr = env.getTranspiler();
+					boolean hasAbstract = this.isAbstract(code);
+					this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
+							this.paramTypes, this.returnType, hasAbstract ? env.parseCode(env, this.body) : code);
+				}
+				this.setExpired();
+			}
+		}
+	}
 
 	public Template generate(TEnv env) {
-		Transpiler tr = env.getTranspiler();
-		Template tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, this.paramTypes,
-				this.returnType, this.body);
-		this.setExpired();
-		return tp;
+		this.used(env);
+		return this;
 	}
 
 	@Override
@@ -158,13 +142,17 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		}
 		VarDomain dom = new VarDomain(this.getParamNames());
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
+		Ty ret = dom.dupRetType(this.getReturnType());
 		Transpiler tr = env.getTranspiler();
 		String key = polykey(this.name, this.funcId, p);
 		Template tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
-			tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, this.getReturnType(),
-					this.body);
+			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
+			tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, this.body);
+			ODebug.showBlue(TFmt.Template.toString(), () -> {
+				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret.finalTy(), p));
+			});
 			setGenerated(key, tp);
 			tp.used(env);
 		}

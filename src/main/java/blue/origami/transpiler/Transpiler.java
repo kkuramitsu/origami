@@ -27,8 +27,6 @@ import blue.origami.transpiler.rule.RangeExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarDomain;
-import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -310,89 +308,55 @@ public class Transpiler extends TEnv {
 	public Template defineFunction(String name, String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		final TEnv env = this.newEnv();
 		final String lname = this.generator.safeName(name);
-		final CodeTemplate tp = this.generator.newFuncTemplate(env, name, lname, returnType, paramTypes);
+		final CodeTemplate tp = this.generator.newTemplate(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
-		env.add(FunctionContext.class, fcx);
-		for (int i = 0; i < paramNames.length; i++) {
-			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
-		}
-		Code code = env.catchCode(() -> body.asType(env, returnType));
-		tp.nomAll();
+		Code code = FunctionUnit.typeCheck(env, fcx, paramNames, paramTypes, returnType, body);
 		this.generator.defineFunction(this, false, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}
 
-	public Template defineFunction0(boolean isPublic, String name, VarDomain dom, String[] paramNames, Ty[] paramTypes,
+	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Tree<?> body) {
-		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
-		this.add(name, tp);
-		final TEnv env = this.newEnv();
-		FunctionContext fcx = new FunctionContext(null);
-		env.add(FunctionContext.class, fcx);
-		for (int i = 0; i < paramNames.length; i++) {
-			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
-		}
-		Code code0 = env.parseCode(env, body);
-		Code code = env.catchCode(() -> code0.asType(env, returnType));
-		tp.nomAll();
-		ODebug.showBlue("TypedTree1", () -> {
-			OConsole.println("%s %s", lname, tp.getFuncType());
-			code.dump();
-
-		});
-		// assert (!returnType.isUntyped());
-		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
-		return tp;
+		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, this.parseCode(this, body));
 	}
 
 	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, Tree<?> body) {
-		final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) : returnType;
+			Ty returnType, Code code0) {
+		// final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) :
+		// returnType;
 		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, ret, paramTypes);
+		final CodeTemplate tp = this.generator.newTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 
 		final TEnv env = this.newEnv();
 		FunctionContext fcx = new FunctionContext(null);
-		env.add(FunctionContext.class, fcx);
-		for (int i = 0; i < paramNames.length; i++) {
-			env.add(paramNames[i], fcx.newVariable(paramNames[i], paramTypes[i]));
-		}
-		Code code0 = env.parseCode(env, body);
-		Code code = env.catchCode(() -> code0.asType(env, ret));
-		tp.asError(code.hasSome(c -> c.isError()));
-		if (ret != returnType) {
-			ret.toImmutable();
-		}
-		ODebug.trace("Typed Error=%s %s", code.hasSome(c -> c.isError()), tp);
-		tp.nomAll();
-		ODebug.showBlue("TypedTree3", () -> {
-			OConsole.println("%s %s", lname, tp.getFuncType());
-			code.dump();
-		});
+		Code code = FunctionUnit.typeCheck(env, fcx, paramNames, paramTypes, returnType, code0);
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}
 
-	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, Code body) {
-		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
-		this.add(name, tp);
-		tp.asError(body.hasSome(c -> c.isError()));
-		ODebug.showBlue(TFmt.TypedTree.toString(), () -> {
-			OConsole.println("%s %s", lname, tp.getFuncType());
-			body.dump();
-		});
-		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), body);
-		return tp;
-	}
+	//
+	// public Template defineFunction(boolean isPublic, String name, int seq,
+	// String[] paramNames, Ty[] paramTypes,
+	// Ty returnType, Code body) {
+	// final String lname = isPublic ? name : this.getLocalName(name);
+	// final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname,
+	// returnType, paramTypes);
+	// this.add(name, tp);
+	// // tp.asError(body.hasSome(c -> c.isError()));
+	// ODebug.showBlue(TFmt.TypedTree.toString(), () -> {
+	// OConsole.println("%s %s", lname, tp.getFuncType());
+	// body.dump();
+	// });
+	// this.generator.defineFunction(this, isPublic, lname, paramNames,
+	// tp.getParamTypes(), tp.getReturnType(), body);
+	// return tp;
+	// }
 
 	public CodeTemplate newTemplate(String name, Ty ret, Ty[] pats) {
 		final String lname = this.getLocalName(name);
-		return this.generator.newFuncTemplate(this, name, lname, ret, pats);
+		return this.generator.newTemplate(this, name, lname, ret, pats);
 	}
 
 	private String getLocalName(String name) {

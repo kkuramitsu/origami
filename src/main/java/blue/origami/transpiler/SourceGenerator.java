@@ -78,7 +78,7 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
-	public CodeTemplate newFuncTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeTemplate newTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");

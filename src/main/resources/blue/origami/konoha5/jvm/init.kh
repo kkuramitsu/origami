@@ -8,8 +8,8 @@
 #String     = String
 
 # Type Inference
-+:a:a:a      =
--:a:a:a      =
++:a:b:c      =
+-:a:b:c      =
 *:a:b:c      =
 /:a:b:c      =
 %:a:b:c      =

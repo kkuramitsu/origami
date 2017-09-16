@@ -3,6 +3,8 @@ package blue.origami.transpiler.type;
 import java.util.ArrayList;
 import java.util.List;
 
+import blue.origami.util.ODebug;
+
 public class VarLogger {
 	public final static VarLogger Update = new VarLogger();
 	public final static VarLogger Nop = new VarLogger();
@@ -32,6 +34,11 @@ public class VarLogger {
 				this.logs = new ArrayList<>(8);
 			}
 			this.logs.add(new VarLog(v));
+		}
+		assert (v.id > 26);
+		if (v.id < 26) {
+			ODebug.trace("FIXME var %s do not mutate", this);
+			return true;
 		}
 		v.resolvedTy = ty;
 		return true;

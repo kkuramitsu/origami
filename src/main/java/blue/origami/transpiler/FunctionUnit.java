@@ -36,7 +36,6 @@ public interface FunctionUnit {
 		//
 		Ty[] pats = this.getParamTypes();
 		final Ty ret = this.getReturnType();
-		boolean dyn = ret.hasVar();
 		final TEnv env = env0.newEnv();
 		// String name = this.getName();
 		// if (name != null) {
@@ -46,24 +45,30 @@ public interface FunctionUnit {
 		// ODebug.trace("name=%s, %s", name, tp);
 		// tr.add(name, tp);
 		// }
-		env.add(FunctionContext.class, fcx);
-		fcx.enter();
-		for (int i = 0; i < pnames.length; i++) {
-			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
-		}
-		// Code code0 = env.parseCode(env, body);
-		Code code = env.catchCode(() -> code0.asType(env, ret));
-		fcx.exit();
-		if (dyn) {
-			ret.toImmutable();
-		}
+		Code code = typeCheck(env, fcx, pnames, pats, ret, code0);
 		dom.reset();
 		this.setParamTypes(
 				Arrays.stream(dom.dupParamTypes(this.getParamTypes())).map(t -> t.finalTy()).toArray(Ty[]::new));
 		int vars = dom.usedVars();
 		this.setReturnType(dom.dupRetType(this.getReturnType()).finalTy());
-		if (dom.usedVars() > vars) {
+		if (vars == 0 && dom.usedVars() > vars) {
 			return new ErrorCode(this.getSource(), TFmt.ambiguous_type__S, this.getReturnType());
+		}
+		return code;
+	}
+
+	public static Code typeCheck(final TEnv env, FunctionContext fcx, String[] pnames, Ty[] pats, final Ty ret,
+			Code code0) {
+		boolean dyn = ret.hasVar();
+		env.add(FunctionContext.class, fcx);
+		fcx.enter();
+		for (int i = 0; i < pnames.length; i++) {
+			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
+		}
+		Code code = env.catchCode(() -> code0.asType(env, ret));
+		fcx.exit();
+		if (dyn) {
+			ret.toImmutable();
 		}
 		return code;
 	}

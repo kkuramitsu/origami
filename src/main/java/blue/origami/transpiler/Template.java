@@ -135,9 +135,9 @@ public abstract class Template {
 		}
 		sb.append(":");
 		sb.append(this.getReturnType());
-		if (!this.isPure()) {
-			sb.append("@");
-		}
+		// if (!this.isPure()) {
+		// sb.append("@");
+		// }
 		return sb.toString();
 	}
 
@@ -152,6 +152,7 @@ public abstract class Template {
 			if (next.isAbstract() && !allowAbstractMatch) {
 				continue;
 			}
+			ODebug.trace("trying %s", next);
 			int nextCost = match(env, next, ret, p, maxCost);
 			ODebug.log(() -> ODebug.p("cost=%d,%s", nextCost, next));
 			if (nextCost < mapCost) {
