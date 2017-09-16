@@ -132,14 +132,9 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 	// a = {}
 	// reverse(a)
 
-	boolean hasAnyRef() {
-		for (Ty t : this.getParamTypes()) {
-			if (t.isAnyRef()) {
-				return true;
-			}
-		}
-		return false;
-	}
+	// boolean hasUntypedPArams() {
+	// return TArrays.testSomeTrue(t -> t.isUn(), this.getParamTypes());
+	// }
 
 	public Template generate(TEnv env) {
 		Transpiler tr = env.getTranspiler();

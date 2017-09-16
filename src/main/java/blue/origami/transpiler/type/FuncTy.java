@@ -182,26 +182,28 @@ public class FuncTy extends Ty {
 	}
 
 	public Template genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
-		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
+		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
 		Transpiler tr = env.getTranspiler();
-		String[] names = { "_f" };
+		String[] names = { "f" };
 		Ty[] params = { fromTy };
 
 		Ty[] fromTypes = fromTy.getParamTypes();
 		Ty[] toTypes = toTy.getParamTypes();
 		String[] fnames = TArrays.names(toTypes.length);
 		List<Code> l = new ArrayList<>();
-		l.add(new NameCode("_f"));
+		l.add(new NameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {
 			Code p = new NameCode(String.valueOf((char) ('a' + c)));
-			// Template tp = env.findTypeMap(env, toTypes[c], fromTypes[c]);
-			// ODebug.trace(":::::::: %s => %s %s", toTypes[c], fromTypes[c],
-			// tp);
-			l.add(new CastCode(fromTypes[c], p));
+			l.add(new CastCode(fromTypes[c], p)); // Any->Int & (Int->Int? &
+													// Int?->Any?) ==> c->d
+			// ODebug.trace("[%d] %s->%s %s", c, toTypes[c], fromTypes[c],
+			// env.findTypeMap(env, toTypes[c], fromTypes[c]));
 		}
+		// ODebug.trace("[ret] %s->%s", fromTy.getReturnType(),
+		// toTy.getReturnType());
 		Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
-		body = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);
-		return tr.defineFunction(mapKey(fromTy, toTy), names, params, toTy, body);
+		FuncCode func = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);
+		return tr.defineFunction(mapKey(fromTy, toTy), names, params, toTy, func);
 	}
 
 }

@@ -68,7 +68,7 @@ public class OptionTy extends MonadTy {
 	@Override
 	public int costMapTo(TEnv env, Ty ty) {
 		if (ty.isOption()) {
-			if (this.getInnerTy().isAnyRef() || ty.getInnerTy().isAnyRef()) {
+			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
 				return CastCode.BESTCAST;
 			}
 		}
@@ -78,7 +78,7 @@ public class OptionTy extends MonadTy {
 	@Override
 	public Template findMapTo(TEnv env, Ty ty) {
 		if (ty.isOption()) {
-			if (this.getInnerTy().isAnyRef() || ty.getInnerTy().isAnyRef()) {
+			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
 				return new TConvTemplate("anycast", this, ty, CastCode.BESTCAST, "%s");
 			}
 		}

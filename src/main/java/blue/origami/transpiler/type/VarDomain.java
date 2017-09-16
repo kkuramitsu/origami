@@ -30,7 +30,7 @@ public class VarDomain {
 	public Ty[] paramTypes(String[] names, Ty[] paramTypes) {
 		Ty[] p = paramTypes.clone();
 		for (int i = 0; i < paramTypes.length; i++) {
-			if (p[i].isAnyRef()) {
+			if (p[i].isNULL()) {
 				p[i] = this.newVarTy(null, -1);
 			}
 		}
@@ -38,8 +38,7 @@ public class VarDomain {
 	}
 
 	public Ty retType(Ty retType) {
-		return retType.isAnyRef()
-				? this.newVarTy(null, -1/* Integer.MAX_VALUE */) : retType;
+		return retType.isNULL() ? this.newVarTy(null, -1/* Integer.MAX_VALUE */) : retType;
 	}
 
 	public Ty resolvedAt(int index) {
@@ -47,7 +46,7 @@ public class VarDomain {
 	}
 
 	public static Ty newVarTy(VarDomain dom, String name) {
-		return dom == null ? Ty.tAnyRef : dom.newVarTy(name);
+		return dom == null ? Ty.tAny : dom.newVarTy(name);
 	}
 
 	public Ty newVarTy(String name) {

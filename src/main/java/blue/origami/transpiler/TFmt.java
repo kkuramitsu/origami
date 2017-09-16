@@ -7,7 +7,7 @@ public enum TFmt implements LocaleFormat {
 	error, warning, notice, info, version, //
 	// Hack mode
 	ParserError, //
-	Syntax_Tree, Template, Generated_ByteCode,
+	SyntaxTree, Template, TypedTree, GeneratedByteCode,
 	// Message
 	Checked,
 	// syntax analysis

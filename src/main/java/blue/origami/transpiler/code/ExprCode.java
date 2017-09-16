@@ -142,13 +142,13 @@ public class ExprCode extends CodeN implements CallCode {
 				this.args[i] = this.args[i].asType(env, gParamTypes[i]);
 				if (!defined.isAbstract()) {
 					if (dpats[i] instanceof VarTy) {
-						ODebug.trace("must upcast %s => %s", gParamTypes[i], gParamTypes[i]);
+						ODebug.trace("MUST upcast %s => %s", gParamTypes[i], gParamTypes[i]);
 						this.args[i] = new BoxCastCode(gParamTypes[i], this.args[i]);
 					}
 					if (dpats[i] instanceof FuncTy && dpats[i].hasVar()) {
 						Ty anyTy = dpats[i].dupVar(null); // AnyRef
-						Template conv = env.findTypeMap(env, gParamTypes[i], anyTy);
-						ODebug.trace("must funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
+						Template conv = env.findTypeMap(env, gParamTypes[i].finalTy(), anyTy.finalTy());
+						ODebug.trace("MUST funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
 						this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
 					}
 				}

@@ -28,12 +28,13 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tString = new StringTy();
 
 	// Hidden Type
-	public static final Ty tAnyRef = new AnyTy();
+	public static final Ty tAny = new AnyTy();
 	public static final Ty tByte = new SimpleTy("Byte");
 	public static final Ty tInt64 = new SimpleTy("Int64");
 	public static final Ty tFloat32 = new SimpleTy("Float32");
 	public static final Ty tChar = new SimpleTy("Char");
 
+	public static final Ty tNULL = new SimpleTy("?");
 	public static final Ty tThis = new SimpleTy("_");
 	public static final Ty tAuto = new SimpleTy("auto");
 
@@ -229,8 +230,12 @@ interface TypeApi {
 		return real() instanceof VarTy;
 	}
 
-	public default boolean isAnyRef() {
+	public default boolean isAny() {
 		return real() instanceof AnyTy;
+	}
+
+	public default boolean isNULL() {
+		return real() == Ty.tNULL;
 	}
 
 	public default boolean isOption() {

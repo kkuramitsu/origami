@@ -71,14 +71,16 @@ public class ODebug extends OConsole {
 	}
 
 	public static void stackTrace(String fmt, Object... args) {
-		StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
-		println(loc(stacks[2]) + OStrings.format(fmt, args));
-		int c = 0;
-		for (StackTraceElement s : stacks) {
-			if (c > 3 && c < 14) {
-				println(String.format("[%d] %s", c, s));
+		if (debugged) {
+			StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+			println(loc(stacks[2]) + OStrings.format(fmt, args));
+			int c = 0;
+			for (StackTraceElement s : stacks) {
+				if (c > 3 && c < 14) {
+					println(String.format("[%d] %s", c, s));
+				}
+				c++;
 			}
-			c++;
 		}
 	}
 

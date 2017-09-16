@@ -446,7 +446,7 @@ interface TEnvApi {
 	public static Ty getHiddenType(String tsig) {
 		if (hiddenMap.isEmpty()) {
 			hiddenMap.put("()", Ty.tVoid);
-			hiddenMap.put("any", Ty.tAnyRef);
+			hiddenMap.put("any", Ty.tAny);
 			hiddenMap.put("byte", Ty.tByte);
 			hiddenMap.put("char", Ty.tChar);
 			hiddenMap.put("int64", Ty.tInt64);

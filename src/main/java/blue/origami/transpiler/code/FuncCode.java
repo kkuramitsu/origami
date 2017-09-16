@@ -7,6 +7,7 @@ import blue.origami.transpiler.FunctionUnit;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
@@ -80,6 +81,9 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
 			this.inner = this.typeBody(env, fcx, inner);
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
+		}
+		if (ret.isFunc()) {
+			ODebug.trace("TODO: %s as %s", this.getType(), ret);
 		}
 		return this.castType(env, ret);
 	}

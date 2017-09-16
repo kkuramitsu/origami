@@ -230,11 +230,14 @@ public class Transpiler extends TEnv {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		ODebug.showBlue(TFmt.Syntax_Tree.toString(), () -> {
+		ODebug.showBlue(TFmt.SyntaxTree.toString(), () -> {
 			OConsole.println(t);
 		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
+		ODebug.showBlue(TFmt.Checked.toString(), () -> {
+			code.dump();
+		});
 		this.generator.emitTopLevel(env, code);
 
 		Object result = this.generator.wrapUp();
@@ -346,7 +349,7 @@ public class Transpiler extends TEnv {
 
 	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Tree<?> body) {
-		final Ty ret = (returnType.isAnyRef()) ? new VarTy("ret", Integer.MAX_VALUE) : returnType;
+		final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) : returnType;
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, ret, paramTypes);
 		this.add(name, tp);
@@ -379,7 +382,7 @@ public class Transpiler extends TEnv {
 		final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		tp.asError(body.hasSome(c -> c.isError()));
-		ODebug.showBlue("TypedTree2", () -> {
+		ODebug.showBlue(TFmt.TypedTree.toString(), () -> {
 			OConsole.println("%s %s", lname, tp.getFuncType());
 			body.dump();
 		});
