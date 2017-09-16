@@ -22,8 +22,8 @@
 <=:a:a:Bool  = 
 
 ||:a:Int       = 
-[]:b[]:Int:b   =
-[]=:b[]:Int:b:() =
+[]:b{}:Int:b   =
+[]=:b{}:Int:b:() =
 
 # Bool
 #true:Bool       = true

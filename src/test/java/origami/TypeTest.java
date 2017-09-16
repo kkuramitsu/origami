@@ -55,6 +55,21 @@ public class TypeTest {
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
 	}
 
+	public void testOption() throws Throwable {
+		runScript("Some(1)", "Option[Int]");
+		runScript("Some(1) >>= (\\n Some(n+1))", "Option[Int]");
+	}
+
+	public void testData() throws Throwable {
+		runScript("f(p) = p.x + p.y; f", "[x,y]->Float");
+	}
+
+	public void testMutation() throws Throwable {
+		// runScript("f(a,b)=a[0]+b[0];f", "(a[],a[])->a");
+		runScript("f()={1,2};f", "()->Int[]");
+		runScript("f(a)=a[0]=1;f", "Int{}->()");
+	}
+
 	//
 	public static void runScript(String text, String checked) throws Throwable {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");

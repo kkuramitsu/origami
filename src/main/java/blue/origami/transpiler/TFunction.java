@@ -55,9 +55,12 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 				if (this.generated == null) {
 					boolean isAbstract = this.isAbstract(code);
 					if (isAbstract) {
-						ODebug.trace("abstract=%s %s %s ret=%s", isAbstract, this.name, this.getFuncType(),
+						ODebug.trace("ABSTRACT=%s %s %s ret=%s", isAbstract, this.name, this.getFuncType(),
 								code.getType());
 						code = this.typeBody(env, new FunctionContext(), this.body);
+						isAbstract = this.isAbstract(code);
+						// ODebug.trace("ABSTRACT=%s %s %s ret=%s", isAbstract,
+						// this.name, this.getFuncType(),
 						assert (!this.isAbstract(code));
 					}
 					Transpiler tr = env.getTranspiler();

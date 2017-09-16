@@ -57,6 +57,11 @@ public class EvalTest {
 		// {a=1;{b=a;b}}
 	}
 
+	public void testOption() throws Throwable {
+		runScript("Some(1)", "1");
+		runScript("Some(1) >>= (\\n Some(n+1))", "2");
+	}
+
 	//
 	public static void runScript(String text, String checked) throws Throwable {
 		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");

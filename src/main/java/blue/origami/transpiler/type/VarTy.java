@@ -1,6 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.NameHint;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class VarTy extends Ty {
@@ -8,7 +9,7 @@ public class VarTy extends Ty {
 	private String name;
 	Ty resolvedTy;
 	final int id;
-	boolean hasMutation = true;
+	boolean hasMutation = false;
 
 	public VarTy(String varName, int id) {
 		this.name = varName;
@@ -46,6 +47,14 @@ public class VarTy extends Ty {
 	@Override
 	public void hasMutation(boolean b) {
 		this.hasMutation = b;
+		if (this.resolvedTy != null) {
+			this.resolvedTy.hasMutation(b);
+		}
+	}
+
+	@Override
+	public boolean isMutable() {
+		return this.resolvedTy == null ? this.hasMutation : this.resolvedTy.isMutable();
 	}
 
 	@Override
@@ -68,7 +77,15 @@ public class VarTy extends Ty {
 
 	@Override
 	public Ty finalTy() {
-		return this.resolvedTy == null ? this : this.resolvedTy.finalTy();
+		if (this.resolvedTy == null) {
+			return this;
+		}
+		Ty ty = this.resolvedTy.finalTy();
+		if (ty.isMutable() && !this.hasMutation) {
+			ODebug.trace("FIXME maybe immutable %s", ty);
+			return ty.toImmutable();
+		}
+		return ty;
 	}
 
 	private boolean lt(VarTy vt) {

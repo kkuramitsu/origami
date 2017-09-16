@@ -143,11 +143,15 @@ public abstract class Template {
 
 	public static Template select(TEnv env, List<Template> founds, Ty ret, Ty[] p, int maxCost) {
 		Template selected = null;
+		boolean allowAbstractMatch = TArrays.testSomeTrue(t -> t.hasVar(), p);
 		// ODebug.trace("unselected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
 		// p));
 		int mapCost = maxCost - 1;
 		for (int i = 0; i < founds.size(); i++) {
 			Template next = founds.get(i);
+			if (next.isAbstract() && !allowAbstractMatch) {
+				continue;
+			}
 			int nextCost = match(env, next, ret, p, maxCost);
 			ODebug.log(() -> ODebug.p("cost=%d,%s", nextCost, next));
 			if (nextCost < mapCost) {
@@ -158,14 +162,12 @@ public abstract class Template {
 				break;
 			}
 		}
-		// ODebug.trace("selected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
-		// p));
-		if (TArrays.testSomeTrue(t -> t.hasVar(), p)) {
+		if (allowAbstractMatch) {
 			Template abst = founds.get(founds.size() - 1);
 			if (abst != selected && abst.isAbstract()) {
 				int nextCost = match(env, abst, ret, p, maxCost);
-				if (nextCost == mapCost) {
-					ODebug.log(() -> ODebug.p("ABST cost=%s,%s", nextCost, abst));
+				if (nextCost <= mapCost) {
+					ODebug.log(() -> ODebug.p("ABSTRACT cost=%s,%s", nextCost, abst));
 					return abst;
 				}
 			}
