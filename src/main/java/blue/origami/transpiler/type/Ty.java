@@ -154,7 +154,8 @@ public abstract class Ty implements TypeApi, OStrings {
 	@Override
 	public final boolean equals(Object t) {
 		if (t instanceof Ty) {
-			return this.acceptTy(false, (Ty) t, VarLogger.Nop);
+			return this.toString().equals(t.toString());
+			// return this.acceptTy(false, (Ty) t, VarLogger.Nop);
 		}
 		return false;
 	}

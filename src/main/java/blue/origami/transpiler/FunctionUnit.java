@@ -61,7 +61,7 @@ public interface FunctionUnit {
 				boolean hasMutation = ty.hasMutation();
 				ty = ty.dupVar(dom);
 				ty = ty.finalTy();
-				if (!hasMutation || ty.isMutable()) {
+				if (!hasMutation && ty.isMutable()) {
 					ODebug.trace("FIXME maybe immutable %s", ty);
 					ty = ty.toImmutable();
 				}

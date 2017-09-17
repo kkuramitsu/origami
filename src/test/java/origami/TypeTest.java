@@ -53,7 +53,9 @@ public class TypeTest {
 
 	public void testLambda() throws Throwable {
 		runScript("\\n n+1", "Int->Int");
+		runScript("\\a : Int a+1", "Int->Int");
 		runScript("\\() 1", "()->Int");
+		runScript("\\a \\b a+b", "(a,b)->(a|b)");
 	}
 
 	public void testTemplate() throws Throwable {
@@ -67,6 +69,11 @@ public class TypeTest {
 		runScript("f(a)=2a+1;f(1.0);f", "Float->Float");
 	}
 
+	public void testIdentity() throws Throwable {
+		runScript("f(a)=a;f", "a->a");
+		runScript("f(a)=a;f(f);f", "(a->a)->(a->a)");
+	}
+
 	public void testOption() throws Throwable {
 		runScript("Some(1)", "Option[Int]");
 		runScript("Some(1) >>= (\\n Some(n+1))", "Option[Int]");
@@ -77,8 +84,8 @@ public class TypeTest {
 	}
 
 	public void testMutation() throws Throwable {
-		runScript2("f(a,b)=a[0]+b[0];f", "(a[],a[])->a");
-		runScript2("f()={1,2};f", "()->Int[]");
+		runScript("f()={1,2};f", "()->Int[]");
+		runScript("f(a)=a[0];f", "a[]->a");
 		runScript2("f(a)=a[0]=1;f", "Int{}->()");
 	}
 

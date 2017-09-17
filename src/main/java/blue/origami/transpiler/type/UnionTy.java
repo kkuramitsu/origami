@@ -5,11 +5,11 @@ import java.util.Arrays;
 
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.code.Code;
-import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class UnionTy extends Ty {
 
+	boolean isFinalized = false;
 	Ty[] choice;
 
 	public UnionTy(Ty... choice) {
@@ -39,26 +39,37 @@ public class UnionTy extends Ty {
 
 	@Override
 	public Ty finalTy() {
-		Ty[] choice = Arrays.stream(this.choice).map(t -> t.finalTy()).toArray(Ty[]::new);
-		if (choice.length == 1) {
-			return choice[0];
-		}
-		ArrayList<Ty> l = new ArrayList<>();
-		for (Ty c : choice) {
-			if (!this.contains(l, c)) {
-				l.add(c);
+		if (!this.isFinalized) {
+			if (this.choice.length == 1) {
+				return this.choice[0].finalTy();
 			}
+			this.isFinalized = true;
+			Ty[] choice = Arrays.stream(this.choice).map(t -> t.finalTy()).toArray(Ty[]::new);
+			ArrayList<Ty> l = new ArrayList<>();
+			for (Ty c : choice) {
+				if (!this.contains(l, c)) {
+					l.add(c);
+				}
+			}
+			if (l.size() == 1) {
+				return l.get(0);
+			}
+			this.choice = l.toArray(new Ty[l.size()]);
 		}
-		if (l.size() == 1) {
-			return l.get(0);
-		}
-		return new UnionTy(l.toArray(new Ty[l.size()]));
+		return this;
 	}
 
 	private boolean contains(ArrayList<Ty> l, Ty c) {
 		for (Ty ty : l) {
 			if (ty == c) {
 				return true;
+			}
+			if (c.isMutable() && !ty.isMutable()) {
+				// ODebug.trace("Union.contains %s %s %s %s", ty, c,
+				// c.toImmutable(), ty == c.toImmutable());
+				if (ty.equals(c.toImmutable())) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -72,7 +83,7 @@ public class UnionTy extends Ty {
 	// f(b)
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		ODebug.trace("UNION %s => %s", codeTy, this);
+		// ODebug.trace("UNION %s => %s", codeTy, this);
 		if (codeTy.isUnion()) {
 			UnionTy u = (UnionTy) codeTy.real();
 			ArrayList<Ty> l = new ArrayList<>();
@@ -91,7 +102,7 @@ public class UnionTy extends Ty {
 		Ty matched = this.contains(sub, codeTy, logs);
 		if (matched != null) {
 			logs.updateUnion(this, matched);
-			ODebug.trace("UNION matched %s", codeTy);
+			// ODebug.trace("UNION matched %s", codeTy);
 			return true;
 		}
 		return false;
@@ -99,7 +110,7 @@ public class UnionTy extends Ty {
 
 	private Ty contains(boolean sub, Ty codeTy, VarLogger logs) {
 		for (Ty ty : this.choice) {
-			ODebug.trace("UNION[] %s => %s", codeTy, ty);
+			// ODebug.trace("UNION[] %s => %s", codeTy, ty);
 			if (ty.acceptTy(sub, codeTy, logs)) {
 				return ty;
 			}

@@ -67,7 +67,7 @@ public class FuncTy extends Ty {
 			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
 		}
 		sb.append("->");
-		sb.append(returnType);
+		sb.append(group(returnType));
 	}
 
 	@Override
