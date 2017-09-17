@@ -27,6 +27,7 @@ import blue.origami.transpiler.rule.RangeExpr;
 import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
@@ -308,27 +309,40 @@ public class Transpiler extends TEnv {
 		final CodeTemplate tp = this.generator.newTemplate(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
-		Code code = FunctionUnit.typeCheck(env, fcx, paramNames, paramTypes, returnType, body);
+		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
+		Code code = fu.typeCheck(env, fcx, null, body);
 		this.generator.defineFunction(this, false, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}
 
 	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, Tree<?> body) {
-		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, this.parseCode(this, body));
+			Ty returnType, VarDomain dom, Tree<?> body) {
+		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
+				this.parseCode(this, body));
 	}
 
 	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, Code code0) {
+			Ty returnType, VarDomain dom, Code code0) {
 		// final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) :
 		// returnType;
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final CodeTemplate tp = this.generator.newTemplate(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
-
-		final TEnv env = this.newEnv();
 		FunctionContext fcx = new FunctionContext(null);
-		Code code = FunctionUnit.typeCheck(env, fcx, paramNames, paramTypes, returnType, code0);
+		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
+
+		Code code = fu.typeCheck(this, fcx, dom, code0);
+		if (fu.getReturnType().isUnion()) {
+			Ty ret = code.getType();
+			ODebug.trace("UNION %s => %s", fu.getReturnType(), ret);
+			fu.setReturnType(ret);
+			if (ret.isUnion()) {
+				code = new ErrorCode(code.getSource(), TFmt.ambiguous_type__S, fu.getReturnType());
+			}
+		}
+		if (code.showError(this)) {
+			return tp;
+		}
 		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
 		return tp;
 	}

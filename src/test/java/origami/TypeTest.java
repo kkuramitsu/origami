@@ -21,6 +21,7 @@ import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.OConsole;
 
 public class TypeTest {
 
@@ -57,7 +58,7 @@ public class TypeTest {
 	}
 
 	public void testAdHoc() throws Throwable {
-		runScript("f(a)=2a+1;f", "a->b");
+		runScript2("f(a)=2a+1;f", "a->b");
 		runScript("f(a)=2a+1;f(1);f", "Int->Int");
 		runScript("f(a)=2a+1;f(1.0);f", "Float->Float");
 	}
@@ -72,9 +73,9 @@ public class TypeTest {
 	}
 
 	public void testMutation() throws Throwable {
-		// runScript("f(a,b)=a[0]+b[0];f", "(a[],a[])->a");
-		runScript("f()={1,2};f", "()->Int[]");
-		// runScript("f(a)=a[0]=1;f", "Int{}->()");
+		runScript2("f(a,b)=a[0]+b[0];f", "(a[],a[])->a");
+		runScript2("f()={1,2};f", "()->Int[]");
+		runScript2("f(a)=a[0]=1;f", "Int{}->()");
 	}
 
 	//
@@ -85,6 +86,17 @@ public class TypeTest {
 		System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
 		if (checked != null) {
 			assert (checked.equals(ty.toString())) : ty + " != " + checked;
+		}
+	}
+
+	public static void runScript2(String text, String checked) throws Throwable {
+		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
+		Transpiler env = new Transpiler(g, "jvm");
+		Ty ty = env.testType(text);
+		if (checked.equals(ty.toString())) {
+			System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
+		} else {
+			System.out.printf(OConsole.color(OConsole.Red, "%s %s :: %s \n"), TFmt.Checked, text, ty);
 		}
 	}
 

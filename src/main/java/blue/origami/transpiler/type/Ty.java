@@ -249,6 +249,10 @@ interface TypeApi {
 		return real() instanceof FuncTy;
 	}
 
+	public default boolean isUnion() {
+		return real() instanceof UnionTy;
+	}
+
 	public default boolean isData() {
 		return real() instanceof DataTy;
 	}
@@ -270,7 +274,7 @@ interface TypeApi {
 	}
 
 	public default boolean isSpecific() {
-		return !this.isVoid();
+		return !this.isVoid() && !this.isUnion();
 	}
 
 	public default Code getDefaultValue() {

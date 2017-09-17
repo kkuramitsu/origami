@@ -55,7 +55,7 @@ public class FuncTy extends Ty {
 	}
 
 	private static String group(Ty ty) {
-		return (ty.isFunc()) ? "(" + ty + ")" : ty.toString();
+		return (ty.isFunc() || ty.isUnion()) ? "(" + ty + ")" : ty.toString();
 	}
 
 	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {

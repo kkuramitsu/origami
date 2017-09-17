@@ -100,11 +100,11 @@ public class VarTy extends Ty {
 				return this.acceptTy(sub, varTy.resolvedTy, logs);
 			}
 			if (this.id != varTy.id) {
-				return this.lt(varTy) ? logs.update(varTy, this) : logs.update(this, varTy);
+				return this.lt(varTy) ? logs.updateVar(varTy, this) : logs.updateVar(this, varTy);
 			}
 			return true;
 		}
-		if (logs.update(this, codeTy) && this.name != null) {
+		if (logs.updateVar(this, codeTy) && this.name != null) {
 			// ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s",
 			// this.getName(), codeTy));
 		}

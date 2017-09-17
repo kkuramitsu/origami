@@ -124,7 +124,7 @@ public class ExprCode extends CodeN implements CallCode {
 
 	static String msgHint(TEnv env, List<Template> l) {
 		StringBuilder sb = new StringBuilder();
-		OStrings.joins(sb, l, ", ", tp -> tp.getName() + ": " + tp.getFuncType());
+		OStrings.joins(sb, l, ", ", tp -> tp.isAbstract() ? "" : tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
 			return "";
 		}

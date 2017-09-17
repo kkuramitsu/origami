@@ -1,6 +1,7 @@
 package blue.origami.transpiler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -17,6 +18,7 @@ import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.UnionTy;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.Handled;
@@ -291,8 +293,8 @@ interface TEnvApi {
 			String name = key;
 			if (key.indexOf('>') > 0) {
 				if ((loc = key.indexOf("--->")) > 0) {
-					Ty f = this.checkType(key.substring(0, loc));
-					Ty t = this.checkType(key.substring(loc + 4));
+					Ty f = this.parseTypeDesc(key.substring(0, loc));
+					Ty t = this.parseTypeDesc(key.substring(loc + 4));
 					name = f + "->" + t;
 					Template tp = new TConvTemplate(name, f, t, CastCode.BADCONV, value);
 					env().add(name, tp);
@@ -300,29 +302,29 @@ interface TEnvApi {
 					return;
 				}
 				if ((loc = key.indexOf("-->")) > 0) {
-					Ty f = this.checkType(key.substring(0, loc));
-					Ty t = this.checkType(key.substring(loc + 3));
+					Ty f = this.parseTypeDesc(key.substring(0, loc));
+					Ty t = this.parseTypeDesc(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, CastCode.CONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("==>")) > 0) {
-					Ty f = this.checkType(key.substring(0, loc));
-					Ty t = this.checkType(key.substring(loc + 3));
+					Ty f = this.parseTypeDesc(key.substring(0, loc));
+					Ty t = this.parseTypeDesc(key.substring(loc + 3));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, CastCode.CAST, value));
 					return;
 				}
 				if ((loc = key.indexOf("->")) > 0) {
-					Ty f = this.checkType(key.substring(0, loc));
-					Ty t = this.checkType(key.substring(loc + 2));
+					Ty f = this.parseTypeDesc(key.substring(0, loc));
+					Ty t = this.parseTypeDesc(key.substring(loc + 2));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCONV, value));
 					return;
 				}
 				if ((loc = key.indexOf("=>")) > 0) {
-					Ty f = this.checkType(key.substring(0, loc));
-					Ty t = this.checkType(key.substring(loc + 2));
+					Ty f = this.parseTypeDesc(key.substring(0, loc));
+					Ty t = this.parseTypeDesc(key.substring(loc + 2));
 					name = f + "->" + t;
 					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCAST, value));
 					return;
@@ -332,12 +334,12 @@ interface TEnvApi {
 			env().add(name, new CodeTemplate(name, Ty.tVoid, TArrays.emptyTypes, value));
 		} else {
 			String name = key.substring(0, loc);
-			String[] tsigs = key.substring(loc + 1).split(":");
-			Ty ret = this.checkType(tsigs[tsigs.length - 1]);
-			if (tsigs.length > 1) {
-				Ty[] p = new Ty[tsigs.length - 1];
+			String[] tdescs = key.substring(loc + 1).split(":");
+			Ty ret = this.parseTypeDesc(tdescs[tdescs.length - 1]);
+			if (tdescs.length > 1) {
+				Ty[] p = new Ty[tdescs.length - 1];
 				for (int i = 0; i < p.length; i++) {
-					p[i] = this.checkType(tsigs[i]);
+					p[i] = this.parseTypeDesc(tdescs[i]);
 				}
 				Template tp = new CodeTemplate(name, ret, p, value);
 				env().add(name, tp);
@@ -397,42 +399,47 @@ interface TEnvApi {
 		return env().get(tsig, Ty.class);
 	}
 
-	default Ty checkType(String tsig) {
+	default Ty parseTypeDesc(String tsig) {
 		Ty ty = this.getType(tsig);
 		if (ty == null) {
+			if (tsig.startsWith("|")) {
+				Ty[] choice = Arrays.stream(tsig.substring(1).split("\\|")).map(s -> parseTypeDesc(s))
+						.toArray(Ty[]::new);
+				return new UnionTy(choice);
+			}
 			int loc = 0;
 			if ((loc = tsig.indexOf("->")) > 0) {
 				int loc2 = tsig.indexOf(',');
-				Ty tt = checkType(tsig.substring(loc + 2));
+				Ty tt = parseTypeDesc(tsig.substring(loc + 2));
 				if (loc2 > 0) {
 					String param = tsig.substring(0, loc);
-					Ty ft1 = checkType(param.substring(0, loc2));
-					Ty ft2 = checkType(param.substring(loc2 + 1));
+					Ty ft1 = parseTypeDesc(param.substring(0, loc2));
+					Ty ft2 = parseTypeDesc(param.substring(loc2 + 1));
 					return Ty.tFunc(tt, ft1, ft2);
 				} else {
-					Ty ft = checkType(tsig.substring(0, loc));
+					Ty ft = parseTypeDesc(tsig.substring(0, loc));
 					return Ty.tFunc(tt, ft);
 				}
 			}
 			if (tsig.endsWith("*")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 1));
 				return Ty.tList(ty);
 			}
 			if (tsig.endsWith("[]")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 2));
+				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 2));
 				return Ty.tList(ty);
 			}
 			if (tsig.endsWith("{}")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 2));
+				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 2));
 				return Ty.tArray(ty);
 			}
 			if (tsig.endsWith("?")) {
-				ty = checkType(tsig.substring(0, tsig.length() - 1));
+				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 1));
 				return Ty.tOption(ty);
 			}
 			if (tsig.endsWith("]")) {
 				loc = tsig.indexOf('[');
-				ty = checkType(tsig.substring(loc + 1, tsig.length() - 1));
+				ty = parseTypeDesc(tsig.substring(loc + 1, tsig.length() - 1));
 				return Ty.tMonad(tsig.substring(0, loc), ty);
 			}
 			ty = getHiddenType(tsig);

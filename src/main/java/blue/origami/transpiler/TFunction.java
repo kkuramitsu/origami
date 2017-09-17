@@ -119,7 +119,7 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 					Transpiler tr = env.getTranspiler();
 					boolean hasAbstract = this.isAbstract(code);
 					this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
-							this.paramTypes, this.returnType, hasAbstract ? env.parseCode(env, this.body) : code);
+							this.paramTypes, this.returnType, null, hasAbstract ? env.parseCode(env, this.body) : code);
 				}
 				this.setExpired();
 			}
@@ -143,19 +143,20 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		VarDomain dom = new VarDomain(this.getParamNames());
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Ty ret = dom.dupRetType(this.getReturnType());
-		Transpiler tr = env.getTranspiler();
 		String key = polykey(this.name, this.funcId, p);
 		Template tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
-			// ODebug.trace("Partial Evaluation: %s : %s => %s", this.name,
-			// this.getFuncType(), Ty.tFunc(ret, p));
-			tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, this.body);
+			Transpiler tr = env.getTranspiler();
+			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
+			final Template tp2 = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, dom,
+					this.body);
 			ODebug.showBlue(TFmt.Template_Specialization, () -> {
-				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret.finalTy(), p));
+				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), tp2.getFuncType());
 			});
-			setGenerated(key, tp);
-			tp.used(env);
+			setGenerated(key, tp2);
+			tp2.used(env);
+			return tp2;
 		}
 		return tp;
 	}

@@ -8,8 +8,10 @@
 #String     = String
 
 # Type Inference
-+:a:b:c      =
--:a:b:c      =
+#+:a:b:c      =
+#-:a:b:c      =
++:a:b:|a|b    =
+-:a:b:|a|b    =
 *:a:b:c      =
 /:a:b:c      =
 %:a:b:c      =
@@ -22,7 +24,7 @@
 <=:a:a:Bool  = 
 
 ||:a:Int       = 
-[]:b{}:Int:b   =
+[]:|b[]|b{}:Int:b   =
 []=:b{}:Int:b:() =
 
 # Bool

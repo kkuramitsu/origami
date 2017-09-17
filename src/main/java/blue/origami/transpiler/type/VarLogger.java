@@ -9,7 +9,11 @@ public class VarLogger {
 	public final static VarLogger Update = new VarLogger();
 	public final static VarLogger Nop = new VarLogger();
 
-	static class VarLog {
+	static abstract class BackLog {
+		abstract void abort();
+	}
+
+	static class VarLog extends BackLog {
 		Ty prevTy;
 		VarTy varTy;
 
@@ -17,23 +21,57 @@ public class VarLogger {
 			this.prevTy = v.resolvedTy;
 			this.varTy = v;
 		}
+
+		@Override
+		void abort() {
+			this.varTy.resolvedTy = this.prevTy;
+		}
 	}
 
-	List<VarLog> logs = null;
+	static class UnionLog extends BackLog {
+		Ty[] prevChoice;
+		UnionTy unionTy;
+
+		UnionLog(UnionTy u) {
+			this.prevChoice = u.choice;
+			this.unionTy = u;
+		}
+
+		@Override
+		void abort() {
+			this.unionTy.choice = this.prevChoice;
+		}
+	}
+
+	List<BackLog> logs = null;
+
+	void add(BackLog log) {
+		if (this.logs == null) {
+			this.logs = new ArrayList<>(8);
+		}
+		this.logs.add(log);
+	}
+
+	public void abort() {
+		if (this.logs != null) {
+			for (int i = this.logs.size() - 1; i >= 0; i--) {
+				BackLog log = this.logs.get(i);
+				log.abort();
+			}
+			this.logs = null;
+		}
+	}
 
 	public boolean isUpdate() {
 		return this != Nop;
 	}
 
-	public boolean update(VarTy v, Ty ty) {
+	public boolean updateVar(VarTy v, Ty ty) {
 		if (this == Nop) {
 			return false;
 		}
 		if (this != Update) {
-			if (this.logs == null) {
-				this.logs = new ArrayList<>(8);
-			}
-			this.logs.add(new VarLog(v));
+			this.add(new VarLog(v));
 		}
 		assert (v.id > 26);
 		if (v.id < 26) {
@@ -44,14 +82,15 @@ public class VarLogger {
 		return true;
 	}
 
-	public void abort() {
-		if (this.logs != null) {
-			for (int i = this.logs.size() - 1; i >= 0; i--) {
-				VarLog log = this.logs.get(i);
-				log.varTy.resolvedTy = log.prevTy;
-			}
-			this.logs = null;
+	public boolean updateUnion(UnionTy u, Ty... choice) {
+		if (this == Nop) {
+			return true;
 		}
+		if (this != Update) {
+			this.add(new UnionLog(u));
+		}
+		u.choice = choice;
+		return true;
 	}
 
 }
