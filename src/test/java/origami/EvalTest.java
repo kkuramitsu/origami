@@ -20,6 +20,22 @@ public class EvalTest {
 		runScript("{1,2,3}", "{1,2,3}");
 	}
 
+	public void testBoolean() throws Throwable {
+		runScript("true && true", "true");
+		runScript("true || true", "true");
+		runScript("!false", "true");
+		runScript("!true", "false");
+	}
+
+	public void testInt() throws Throwable {
+		runScript("-1", "-1");
+		runScript("2+-3", "-1");
+		runScript("1+2*3", "7");
+		runScript("(1+2)*3", "9");
+		runScript("7/2", "3");
+		runScript("7%2", "1");
+	}
+
 	public void testBinary() throws Throwable {
 		runScript("1+1.0", "2.0");
 		runScript("1.0+1", "2.0");

@@ -38,6 +38,10 @@ public class TypeTest {
 		runScript("{1,2,3}", "Int{}");
 	}
 
+	public void testHelloWorld() throws Throwable {
+		runScript("println('hello,world')", "()");
+	}
+
 	public void testBinary() throws Throwable {
 		runScript("1+1.0", "Float");
 		runScript("1.0+1", "Float");
