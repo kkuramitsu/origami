@@ -108,7 +108,7 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 			}
 			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
 				this.isGeneric = true;
-				ODebug.showBlue(TFmt.Template.toString(), () -> {
+				ODebug.showBlue(TFmt.Template, () -> {
 					ODebug.println("%s : %s", this.name, this.getFuncType());
 				});
 			} else {
@@ -148,9 +148,10 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		Template tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
-			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
+			// ODebug.trace("Partial Evaluation: %s : %s => %s", this.name,
+			// this.getFuncType(), Ty.tFunc(ret, p));
 			tp = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, this.body);
-			ODebug.showBlue(TFmt.Template.toString(), () -> {
+			ODebug.showBlue(TFmt.Template_Specialization, () -> {
 				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret.finalTy(), p));
 			});
 			setGenerated(key, tp);

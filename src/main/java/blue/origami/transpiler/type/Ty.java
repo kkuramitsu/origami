@@ -194,7 +194,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	public boolean hasMutation() {
-		return false;
+		return this.isMutable();
 	}
 
 	public void hasMutation(boolean b) {

@@ -48,6 +48,7 @@ public class TypeTest {
 
 	public void testLambda() throws Throwable {
 		runScript("\\n n+1", "Int->Int");
+		runScript("\\() 1", "()->Int");
 	}
 
 	public void testTemplate() throws Throwable {
@@ -73,7 +74,7 @@ public class TypeTest {
 	public void testMutation() throws Throwable {
 		// runScript("f(a,b)=a[0]+b[0];f", "(a[],a[])->a");
 		runScript("f()={1,2};f", "()->Int[]");
-		runScript("f(a)=a[0]=1;f", "Int{}->()");
+		// runScript("f(a)=a[0]=1;f", "Int{}->()");
 	}
 
 	//

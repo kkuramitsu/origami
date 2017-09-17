@@ -53,7 +53,7 @@ public final class FuncRefCode extends CommonCode {
 
 	@Override
 	public boolean showError(TEnv env) {
-		if (this.template.isAbstract()) {
+		if (this.template.isAbstract() || this.template.isGeneric()) {
 			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this.name, this.template.getFuncType());
 			return true;
 		}

@@ -25,11 +25,11 @@ public class Ohack extends Okonoha {
 
 	@Override
 	public boolean isVerbose() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean isDebug() {
-		return true;
+		return false;
 	}
 }

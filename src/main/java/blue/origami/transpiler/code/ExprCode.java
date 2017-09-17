@@ -153,7 +153,8 @@ public class ExprCode extends CodeN implements CallCode {
 					}
 				}
 			}
-			if (defined.isMutation()) {
+			if (defined.isMutation() && !defined.isAbstract()) {
+				ODebug.trace("MUTATION %s", this.args[0].getType());
 				this.args[0].getType().hasMutation(true);
 			}
 			this.setTemplate(defined);
@@ -176,7 +177,8 @@ public class ExprCode extends CodeN implements CallCode {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, dpats[i]);
 			}
-			if (defined.isMutation()) {
+			if (defined.isMutation() && !defined.isAbstract()) {
+				ODebug.trace("MUTATION %s", this.args[0].getType());
 				this.args[0].getType().hasMutation(true);
 			}
 			this.setTemplate(defined);

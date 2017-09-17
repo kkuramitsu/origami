@@ -71,7 +71,7 @@ public class AsmClassLoader extends ClassLoader {
 	private String dumpDirectory = null;
 
 	void dump(String className, byte[] byteCode) {
-		ODebug.showCyan(TFmt.GeneratedByteCode.toString(), () -> {
+		ODebug.showCyan(TFmt.Generated_ByteCode.toString(), () -> {
 			int index = className.lastIndexOf('.');
 			String classFileName = className.substring(index + 1) + ".class";
 			if (this.dumpDirectory != null) {

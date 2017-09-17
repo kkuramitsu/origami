@@ -228,14 +228,11 @@ public class Transpiler extends TEnv {
 		Parser p = env.get(Parser.class);
 		CodeTree defaultTree = new CodeTree();
 		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
-		ODebug.showBlue(TFmt.SyntaxTree.toString(), () -> {
+		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
 			OConsole.println(t);
 		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
-		ODebug.showBlue(TFmt.Checked.toString(), () -> {
-			code.dump();
-		});
 		this.generator.emitTopLevel(env, code);
 
 		Object result = this.generator.wrapUp();
