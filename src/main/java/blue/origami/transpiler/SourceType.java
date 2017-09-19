@@ -5,8 +5,10 @@ import java.util.Arrays;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.SimpleTy;
+import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMap;
+import blue.origami.util.ODebug;
 
 public class SourceType extends TypeMap<String> {
 
@@ -51,12 +53,12 @@ public class SourceType extends TypeMap<String> {
 	}
 
 	@Override
-	protected String key(FuncTy funcTy) {
+	protected String keyForeignFuncType(FuncTy funcTy) {
 		return "F" + funcTy.toString();
 	}
 
 	@Override
-	protected String gen(FuncTy funcTy) {
+	protected String genForeignFuncType(FuncTy funcTy) {
 		String funcdef = this.env.getSymbolOrElse("functypedef", null);
 		if (funcdef != null) {
 			String typeName = "F" + this.seq() + this.comment(funcTy.toString());
@@ -68,12 +70,23 @@ public class SourceType extends TypeMap<String> {
 	}
 
 	@Override
-	protected String key(DataTy dataTy) {
+	protected String keyForeignTupleType(TupleTy tupleTy) {
+		return "T" + tupleTy.toString();
+	}
+
+	@Override
+	protected String genForeignTupleType(TupleTy tupleTy) {
+		ODebug.TODO();
+		return tupleTy.toString();
+	}
+
+	@Override
+	protected String keyForeignDataType(DataTy dataTy) {
 		return dataTy.names().toString();
 	}
 
 	@Override
-	protected String gen(DataTy dataTy) {
+	protected String genForeingDataType(DataTy dataTy) {
 		return dataTy.toString();
 	}
 

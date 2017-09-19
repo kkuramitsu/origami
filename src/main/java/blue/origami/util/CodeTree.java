@@ -34,15 +34,15 @@ public class CodeTree extends Tree<CodeTree> {
 
 	@Override
 	protected CodeTree dupImpl() {
-		CodeTree t = new CodeTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(), this.size(),
-				this.getValue());
+		CodeTree t = new CodeTree(this.getTag(), this.getSource(), this.getSourcePosition(), this.getLength(),
+				this.size(), this.getValue());
 		// t.rule = this.rule;
 		return t;
 	}
 
 	@Override
 	protected RuntimeException newNoSuchLabel(Symbol label) {
-		throw new ErrorCode(this, TFmt.YY1_does_not_exist, "$" + label);
+		throw new ErrorCode(this, TFmt.YY1_does_not_exist_in_YY2, label, this.getTag());
 	}
 
 	@Override

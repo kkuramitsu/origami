@@ -171,6 +171,6 @@ public class DataTy extends Ty {
 
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
-		return codeType.mapType(this);
+		return codeType.mapForeignDataType(this);
 	}
 }

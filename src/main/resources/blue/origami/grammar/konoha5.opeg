@@ -614,7 +614,7 @@ ConditionalExpr =
 
 BindExpr =
 	OrExpr
-	{$left '>>=' _ $right(OrExpr) #BindExpr }*
+	{$left '>>=' _ $right(FuncExpr/OrExpr) #BindExpr }*
 
 OrExpr =
 	AndExpr {$left OR $right(AndExpr)  }*
@@ -692,9 +692,12 @@ PROD =
 	/ "*" #MulExpr
 	/ ("%" / [Mm] 'od' EOT) #ModExpr
 
+example CastExpr&Expression '''
+(String)1
+'''
+
 CastExpr =
-	{ "(" $type(Type) ")" $expr(CastExpr) #CastExpr }
-	{ "(" $type(Type) '!!' _ ")" $expr(CastExpr) #UnsafeCastExpr }
+	{ "(" $type(Type) ('!!' _ #UnsafeCastExpr / #CastExpr ) ")" $recv(CastExpr)  }
 	/ UnaryExpr
 
 UnaryExpr
@@ -716,7 +719,9 @@ POSTOP =
 	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
 	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
-	/ 'to' EOT $type(Type) #CastExpr
+	/ TO $type(Type) ('!!' _ #UnsafeCastExpr / #CastExpr )
+
+TO = 'to' EOT / 'as' EOT / '=>' _
 
 ARGU
 	= "(" $param(Arguments) ")"
@@ -901,7 +906,7 @@ Quantity = {
 
 /* Type */
 
-example Type bool
+example Type String
 example Type Int*
 example Type ()
 example Type Dict[Int]
@@ -913,6 +918,8 @@ example Type {name, age}
 example Type #JSON type of 1
 example Type [km/h]
 
+// (a,b)->a->b
+
 Type =
 	PrimaryType
 	{$base TSUFFIX }*
@@ -921,9 +928,9 @@ TSUFFIX =
     / '*' _   #ListType
     / "[" ']' _  #ArrayType
     / "[" $param(Type) ']' _  #MonadType
-    / "<" $param(Type) '>' _  #MonadType
+    / "{" $param(Type) '}' _  #StateType
     / '?' _   #OptionType
-    / "->" $type(PrimaryType) #FuncType
+    / "->" $type(Type) #FuncType
 
 "typeof" = [Tt] 'ype' _ [Oo] 'f' EOT
 
@@ -932,7 +939,7 @@ PrimaryType =
 	/ { '#' $name(Identifier) $type(PrimaryType) #TagType }
 	/ { '_' #ClassType } _
 	/ ClassType
-	/ FuncType
+//	/ FuncType
 	/ TupleType
 	/ "(" Type ")"
 	/ {'()' #ClassType }
@@ -940,24 +947,24 @@ PrimaryType =
 	/ RecordType
 	/ UnitType
 
-ClassType =
-	!TKEYWORD TypeName
-	// {$base (("<" $param(TypeParams) ">") / ("[" $param(TypeParams) "]")) #GenericType }?
+//ClassType = !TKEYWORD TypeName
 
-TypeParams = {
-	( $(Type) ("," $(Type))* )?
-}
+ClassType = TypeName
 
 TypeName = {
 	[A-Za-z_\x80-\xF7]
 	[A-Za-z0-9_.\x80-\xF7]*
-	[']?
+	[']*
 	#ClassType
 } _
 
 TKEYWORD
 	= [Pp] 'ublic' !W
 	/ [Ll] 'et' !W
+
+TypeParams = {
+	( $(Type) ("," $(Type))* )?
+}
 
 VarType = ['] {
 	[A-Za-z_] [A-Za-z0-9_]*

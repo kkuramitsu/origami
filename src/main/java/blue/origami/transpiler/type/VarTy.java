@@ -23,7 +23,7 @@ public class VarTy extends Ty {
 
 	public String getName() {
 		if (this.name == null) {
-			return "#" + this.id;
+			return "?"; // "#" + this.id;
 		}
 		return this.id < 27 ? this.name : this.name + "#" + this.id;
 	}

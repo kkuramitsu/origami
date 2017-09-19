@@ -12,7 +12,7 @@ public class CastExpr implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
-		Code expr = env.parseCode(env, t.get(_expr));
+		Code expr = env.parseCode(env, t.get(_recv));
 		Tree<?> type = t.get(_type);
 		String name = type.getString();
 		// switch (name) {

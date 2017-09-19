@@ -122,7 +122,7 @@ public class FuncTy extends Ty {
 
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
-		return codeType.mapType(this);
+		return codeType.mapForeignFuncType(this);
 	}
 
 	@Override

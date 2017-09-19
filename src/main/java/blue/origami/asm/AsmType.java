@@ -26,6 +26,7 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
+import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMap;
 import blue.origami.transpiler.type.VarTy;
@@ -168,7 +169,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected String key(FuncTy funcTy) {
+	protected String keyForeignFuncType(FuncTy funcTy) {
 		StringBuilder sb = new StringBuilder();
 		OStrings.joins(sb, Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new),
 				"");
@@ -178,7 +179,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected Class<?> gen(FuncTy funcTy) {
+	protected Class<?> genForeignFuncType(FuncTy funcTy) {
 		Method m = new Method(nameApply(funcTy.getReturnType()), this.ti(funcTy.getReturnType()),
 				this.ts(funcTy.getParamTypes()));
 		String cname1 = "T$" + classLoader.seq();
@@ -192,12 +193,34 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected String key(DataTy dataTy) {
+	protected String keyForeignTupleType(TupleTy tupleTy) {
+		StringBuilder sb = new StringBuilder();
+		OStrings.joins(sb, Arrays.stream(tupleTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new),
+				"");
+		return sb.toString();
+	}
+
+	@Override
+	protected Class<?> genForeignTupleType(TupleTy tupleTy) {
+		String cname1 = "T$" + classLoader.seq();
+		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Data$.class), null);
+		for (int i = 0; i < tupleTy.getParamSize(); i++) {
+			FieldNode fn = new FieldNode(ACC_PUBLIC, "_" + i, this.desc(tupleTy.getParamTypes()[i]), null, null);
+			fn.accept(cw1);
+		}
+		addDefaultConstructor(cw1, Object.class);
+		cw1.visitEnd();
+		return loadClass(cname1, cw1);
+	}
+
+	@Override
+	protected String keyForeignDataType(DataTy dataTy) {
 		return dataTy.size() == 0 ? "{}" : OStrings.joins(dataTy.names(), ",");
 	}
 
 	@Override
-	protected Class<?> gen(DataTy dataTy) {
+	protected Class<?> genForeingDataType(DataTy dataTy) {
 		String[] names = dataTy.names();
 		String cname1 = "D$" + this.seq();
 		String[] infs = Arrays.stream(names).map(x -> Type.getInternalName(this.gen(x))).toArray(String[]::new);

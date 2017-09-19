@@ -15,6 +15,7 @@
 *:a:b:c      =
 /:a:b:c      =
 %:a:b:c      =
+++:a:a:a     =
 
 ==:a:a:Bool  =
 !=:a:a:Bool  = 

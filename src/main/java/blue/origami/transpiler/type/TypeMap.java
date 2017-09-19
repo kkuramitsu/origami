@@ -73,33 +73,49 @@ public abstract class TypeMap<C> {
 
 	protected abstract C mapDefaultType(String prefix, Ty ty, C inner);
 
-	public final C mapType(FuncTy funcTy) {
-		String key = this.key(funcTy);
+	/** FuncType **/
+
+	public final C mapForeignFuncType(FuncTy funcTy) {
+		String key = this.keyForeignFuncType(funcTy);
 		C c = this.typeMap.get(key);
 		if (c == null) {
-			c = this.gen(funcTy);
+			c = this.genForeignFuncType(funcTy);
 			this.typeMap.put(key, c);
 		}
 		return c;
 	}
 
-	protected abstract String key(FuncTy funcTy);
+	protected abstract String keyForeignFuncType(FuncTy funcTy);
 
-	protected abstract C gen(FuncTy funcTy);
+	protected abstract C genForeignFuncType(FuncTy funcTy);
 
-	public final C mapType(DataTy dataTy) {
-		String key = this.key(dataTy);
+	public final C mapForeignTupleType(TupleTy tupleTy) {
+		String key = this.keyForeignTupleType(tupleTy);
 		C c = this.typeMap.get(key);
 		if (c == null) {
-			c = this.gen(dataTy);
+			c = this.genForeignTupleType(tupleTy);
 			this.typeMap.put(key, c);
 		}
 		return c;
 	}
 
-	protected abstract String key(DataTy dataTy);
+	protected abstract String keyForeignTupleType(TupleTy tupleTy);
 
-	protected abstract C gen(DataTy dataTy);
+	protected abstract C genForeignTupleType(TupleTy tupleTy);
+
+	public final C mapForeignDataType(DataTy dataTy) {
+		String key = this.keyForeignDataType(dataTy);
+		C c = this.typeMap.get(key);
+		if (c == null) {
+			c = this.genForeingDataType(dataTy);
+			this.typeMap.put(key, c);
+		}
+		return c;
+	}
+
+	protected abstract String keyForeignDataType(DataTy dataTy);
+
+	protected abstract C genForeingDataType(DataTy dataTy);
 
 	public final Ty fieldTy(String name) {
 		NameHint hint = this.env.findGlobalNameHint(this.env, name);
