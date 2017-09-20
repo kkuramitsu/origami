@@ -21,9 +21,16 @@ public class VarTy extends Ty {
 		return (this.name != null && NameHint.isOneLetterName(this.name));
 	}
 
+	public String getId() {
+		if (this.name == null) {
+			return "#" + this.id;
+		}
+		return this.id < 27 ? this.name : this.name + "#" + this.id;
+	}
+
 	public String getName() {
 		if (this.name == null) {
-			return "?"; // "#" + this.id;
+			return "?";
 		}
 		return this.id < 27 ? this.name : this.name + "#" + this.id;
 	}
@@ -76,7 +83,7 @@ public class VarTy extends Ty {
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.resolvedTy == null ? VarDomain.newVarTy(dom, this.getName()) : this.resolvedTy.dupVar(dom);
+		return this.resolvedTy == null ? VarDomain.newVarTy(dom, this.getId()) : this.resolvedTy.dupVar(dom);
 	}
 
 	@Override

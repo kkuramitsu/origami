@@ -73,9 +73,9 @@ public class VarLogger {
 		if (this != Update) {
 			this.add(new VarLog(v));
 		}
-		assert (v.id > 26);
 		if (v.id < 26) {
-			ODebug.trace("FIXME var %s do not mutate", this);
+			ODebug.trace("FIXME: var %s do not mutate", this);
+			assert (v.id > 26);
 			return true;
 		}
 		v.resolvedTy = ty;

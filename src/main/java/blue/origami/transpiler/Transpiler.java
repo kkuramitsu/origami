@@ -234,8 +234,10 @@ public class Transpiler extends TEnv {
 		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
+		if (code.showError(env)) {
+			return;
+		}
 		this.generator.emitTopLevel(env, code);
-
 		Object result = this.generator.wrapUp();
 
 		if (code.getType() != Ty.tVoid) {

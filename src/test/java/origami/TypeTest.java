@@ -69,6 +69,10 @@ public class TypeTest {
 		runScript("f(a)=2a+1;f(1.0);f", "Float->Float");
 	}
 
+	public void testHighOrderFunc() throws Throwable {
+		runScript("f(g,a,b)=g(a,b);f", "((a,b)->c,a,b)->c");
+	}
+
 	public void testIdentity() throws Throwable {
 		runScript("f(a)=a;f", "a->a");
 		runScript("f(a)=a;f(f);f", "(a->a)->(a->a)");

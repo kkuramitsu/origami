@@ -56,7 +56,7 @@ public interface FunctionUnit {
 			ret.toImmutable();
 		}
 		if (dom != null) {
-			dom.reset();
+			dom.useMemo();
 			this.setParamTypes(Arrays.stream(this.getParamTypes()).map(ty -> {
 				boolean hasMutation = ty.hasMutation();
 				ty = ty.dupVar(dom);

@@ -4,6 +4,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.CastCode;
 
 public class VarDomain {
+
 	private VarTy[] dom;
 	private String[] names;
 	private int len = 0;
@@ -51,6 +52,7 @@ public class VarDomain {
 
 	public Ty newVarTy(String name) {
 		String n = this.useMemo ? name : NameHint.safeName(name);
+		// ODebug.trace("%s -> %s", name, n);
 		for (int i = 0; i < this.len; i++) {
 			if (this.names[i].equals(n)) {
 				return this.dom[i];
@@ -106,7 +108,7 @@ public class VarDomain {
 
 	private boolean useMemo = false;
 
-	public void reset() {
+	public void useMemo() {
 		this.len = 0;
 		this.useMemo = true;
 	}

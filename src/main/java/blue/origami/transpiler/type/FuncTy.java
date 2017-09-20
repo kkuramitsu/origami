@@ -61,7 +61,7 @@ public class FuncTy extends Ty {
 	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
-			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
+			OStrings.joins(sb, paramTypes, ",");
 			sb.append(")");
 		} else {
 			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
@@ -87,8 +87,9 @@ public class FuncTy extends Ty {
 	@Override
 	public Ty dupVar(VarDomain dom) {
 		if (this.hasVar()) {
-			return Ty.tFunc(this.returnType.dupVar(dom),
-					Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new));
+			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new);
+			Ty ret = this.returnType.dupVar(dom);
+			return Ty.tFunc(ret, p);
 		}
 		return this;
 	}
