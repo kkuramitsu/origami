@@ -74,6 +74,8 @@ public class VarDomain {
 		for (int i = 0; i < dParamTypes.length; i++) {
 			gParamTypes[i] = dParamTypes[i].dupVar(this);
 			if (codeTy != null) {
+				// ODebug.trace("[%d] %s as %s %s", i, codeTy[i], dParamTypes[i],
+				// gParamTypes[i]);
 				gParamTypes[i].acceptTy(true, codeTy[i], VarLogger.Update);
 			}
 		}

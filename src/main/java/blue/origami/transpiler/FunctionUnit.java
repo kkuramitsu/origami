@@ -5,6 +5,7 @@ import java.util.Arrays;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
@@ -55,7 +56,7 @@ public interface FunctionUnit {
 		if (dyn) {
 			ret.toImmutable();
 		}
-		if (dom != null) {
+		if (dom != null && !(this instanceof FuncCode)) {
 			dom.useMemo();
 			this.setParamTypes(Arrays.stream(this.getParamTypes()).map(ty -> {
 				boolean hasMutation = ty.hasMutation();

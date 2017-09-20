@@ -71,6 +71,7 @@ public class TypeTest {
 
 	public void testHighOrderFunc() throws Throwable {
 		runScript("f(g,a,b)=g(a,b);f", "((a,b)->c,a,b)->c");
+		// f(\a \b a+b, 1, 2)
 	}
 
 	public void testIdentity() throws Throwable {
