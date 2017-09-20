@@ -291,7 +291,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	static String nameApply(Ty t) {
-		switch (t.toString()) {
+		switch (t.finalTy().toString()) {
 		case "Bool":
 			return "applyZ";
 		case "Int":

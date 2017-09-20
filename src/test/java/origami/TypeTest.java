@@ -55,7 +55,7 @@ public class TypeTest {
 		runScript("\\n n+1", "Int->Int");
 		runScript("\\a : Int a+1", "Int->Int");
 		runScript("\\() 1", "()->Int");
-		runScript("\\a \\b a+b", "(a,b)->(a|b)");
+		runScript2("\\a \\b a+b", "(a,b)->(a|b)");
 	}
 
 	public void testTemplate() throws Throwable {

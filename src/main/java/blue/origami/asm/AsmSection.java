@@ -702,8 +702,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		FuncTy funcType = (FuncTy) code.args()[0].getType();
 		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
 		String cname = Type.getInternalName(this.ts.toClass(funcType));
-		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmGenerator.nameApply(funcType.getReturnType()), desc,
-				true);
+		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmType.nameApply(funcType.getReturnType()), desc, true);
 		return;
 	}
 	//
