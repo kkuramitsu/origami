@@ -947,9 +947,11 @@ PrimaryType =
 	/ RecordType
 	/ UnitType
 
-//ClassType = !TKEYWORD TypeName
+ClassType = !TKEYWORD TypeName
 
-ClassType = TypeName
+TKEYWORD
+	= [Pp] 'ublic' !W
+	/ [Ll] 'et' !W
 
 TypeName = {
 	[A-Za-z_\x80-\xF7]
@@ -958,9 +960,6 @@ TypeName = {
 	#ClassType
 } _
 
-TKEYWORD
-	= [Pp] 'ublic' !W
-	/ [Ll] 'et' !W
 
 TypeParams = {
 	( $(Type) ("," $(Type))* )?

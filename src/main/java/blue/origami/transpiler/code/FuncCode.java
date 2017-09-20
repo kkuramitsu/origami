@@ -134,13 +134,16 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 
 	@Override
 	public boolean showError(TEnv env) {
-		FuncTy funcTy = (FuncTy) this.getType();
-		// funcTy.isGeneric()
-		if (isGenericFunc(funcTy)) {
-			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this, funcTy);
-			return true;
+		if (!this.getInner().showError(env)) {
+			FuncTy funcTy = (FuncTy) this.getType();
+			// funcTy.isGeneric()
+			if (isGenericFunc(funcTy)) {
+				env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this, funcTy);
+				return true;
+			}
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	@Override

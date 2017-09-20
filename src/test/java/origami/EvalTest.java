@@ -47,6 +47,11 @@ public class EvalTest {
 		runScript("0x10", "16");
 	}
 
+	public void testRec() throws Throwable {
+		runScript("sum(a: Int) = if a == 0 then 0 else a + sum(a-1);sum(3)", "6");
+		runScript("sum(a) = if a == 0 then 0 else a + sum(a-1);sum(3)", "6");
+	}
+
 	public void testConst() throws Throwable {
 		runScript("a = 1\na", "1");
 	}

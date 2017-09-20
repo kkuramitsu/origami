@@ -126,4 +126,10 @@ public class VarDomain {
 		return memoed[n];
 	}
 
+	public static Ty rename(Ty t) {
+		VarDomain dom = new VarDomain(memoed);
+		dom.useMemo();
+		return dom.dupRetType(t);
+	}
+
 }

@@ -58,6 +58,11 @@ public class TypeTest {
 		runScript2("\\a \\b a+b", "(a,b)->(a|b)");
 	}
 
+	public void testRec() throws Throwable {
+		runScript("sum(a: Int) = if a == 0 then 0 else a + sum(a-1);sum", "Int->Int");
+		runScript2("sum(a) = if a == 0 then 0 else a + sum(a-1);sum", "a->Int");
+	}
+
 	public void testTemplate() throws Throwable {
 		runScript("f(a)=|a|;f", "a->Int");
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
