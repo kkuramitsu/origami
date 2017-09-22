@@ -40,7 +40,7 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 			text = text.substring(2);
 			radix = 16;
 			base = int.class;
-		} else if (text.startsWith("0")) {
+		} else if (text.startsWith("0") && !text.startsWith("0.")) {
 			radix = 8;
 			base = int.class;
 		}
