@@ -187,7 +187,7 @@ FuncDecl = LetFuncDecl / {
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(( ":as" / "->" ) Type)?
-	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
+	( $body(Block) / "=" __  $body(FuncMatchExpr/Expression))
 } / CFuncDecl
 
 Params = {
@@ -212,7 +212,7 @@ LetFuncDecl = {
 	$name(Identifier)
 	("(" $param(Params) ")" / $param(LetParams))
 	$type(":as" Type)?
-	( "=" __  $body(FuncMatchExpr/Expression) / $body(Block))
+	( $body(Block) / "=" __  $body(FuncMatchExpr/Expression))
 }
 
 LetParams = {
@@ -624,7 +624,7 @@ OR =
 	/ [Oo] 'r' _ 'else' EOT #OrElseExpr
 	/ [Oo] 'r' EOT #OrExpr
 	/ '||' !'|' _　#OrExpr
-	
+
 AndExpr =
 	EqExpr {$left AND $right(EqExpr) #AndExpr }*
 
