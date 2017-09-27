@@ -31,6 +31,10 @@ public class ScriptTest {
 		runScript("/konoha5-test/fact.k", 0);
 	}
 
+	public void testTake() throws Throwable {
+		runScript("/konoha5-test/take.k", 0);
+	}
+
 	// public void testFib() throws Throwable {
 	// runScript("/konoha5-test/fib.k", 0);
 	// }

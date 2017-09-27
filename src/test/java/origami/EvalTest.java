@@ -60,6 +60,7 @@ public class EvalTest {
 		runScript("a=[1,2];a", "[1,2]");
 		runScript("a=[1,2];a[1]", "2");
 		runScript("a=[1,2].map(\\n n+1);a", "[2,3]");
+		runScript("1::[]", "[1]");
 	}
 
 	public void testIntArray() throws Throwable {

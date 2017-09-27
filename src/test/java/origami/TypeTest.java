@@ -89,6 +89,11 @@ public class TypeTest {
 		runScript("Some(1) >>= (\\n Some(n+1))", "Option[Int]");
 	}
 
+	public void testIntList() throws Throwable {
+		runScript("a=[1,2];a", "Int[]");
+		runScript("1::[]", "Int[]");
+	}
+
 	public void testData() throws Throwable {
 		runScript("f(p) = p.x + p.y; f", "[x,y]->Float");
 	}
