@@ -22,7 +22,7 @@ if [ -e target/origami-*run.jar ]; then
 	# origami
 	sudo cat << 'EOF' > /usr/local/bin/origami
 #!/bin/sh
-CLICOLOR=1 exec java -ea -jar /usr/local/lib/origami.jar $@
+CLICOLOR=1 exec java -ea -Duser.language=ja -Duser.country=JP -jar /usr/local/lib/origami.jar $@
 
 EOF
 	sudo chmod a+x /usr/local/bin/origami

@@ -234,6 +234,9 @@ public class Transpiler extends TEnv {
 		});
 		this.generator.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
+		if (code.getType().isAmbigous()) {
+			code = new ErrorCode(code, TFmt.ambiguous_type__S, code.getType());
+		}
 		if (code.showError(env)) {
 			return;
 		}

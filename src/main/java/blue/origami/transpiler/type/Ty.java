@@ -194,6 +194,10 @@ public abstract class Ty implements TypeApi, OStrings {
 		return this;
 	}
 
+	public boolean isAmbigous() {
+		return this.hasVar() || this.isUnion();
+	}
+
 	public boolean isMutable() {
 		return false;
 	}

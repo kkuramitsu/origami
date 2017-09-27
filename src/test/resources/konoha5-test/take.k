@@ -1,0 +1,9 @@
+
+take(a, n) = {
+	b = {}
+	[0 to <n].forEach(\n b.push(a[n]))
+	b
+}
+
+take
+
