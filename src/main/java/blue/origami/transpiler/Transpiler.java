@@ -103,7 +103,13 @@ public class Transpiler extends TEnv {
 		this.add("Int", Ty.tInt);
 		this.add("Float", Ty.tFloat);
 		this.add("String", Ty.tString);
-		this.add("Data", Ty.tData());
+		this.add("a", VarDomain.var(0));
+		this.add("b", VarDomain.var(1));
+		this.add("c", VarDomain.var(2));
+		this.add("d", VarDomain.var(3));
+		this.add("e", VarDomain.var(4));
+		this.add("f", VarDomain.var(5));
+		// this.add("Data", Ty.tData());
 		this.addNameDecl(this, "i,j,k,m,n", Ty.tInt);
 		this.addNameDecl(this, "x,y,z,w", Ty.tFloat);
 		this.addNameDecl(this, "s,t,u,name", Ty.tString);

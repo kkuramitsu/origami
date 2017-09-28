@@ -923,8 +923,8 @@ Type =
 	{$base TSUFFIX }*
 
 TSUFFIX =
-    / '*' _   #ListType
-    / "[" ']' _  #ArrayType
+    / "[" ']' _  #ListType
+    / "{" '}' _  #ArrayType
     / "[" $param(Type) ']' _  #MonadType
     / "{" $param(Type) '}' _  #StateType
     / '?' _   #OptionType
@@ -937,7 +937,6 @@ PrimaryType =
 	/ { '#' $name(Identifier) $type(PrimaryType) #TagType }
 	/ { '_' #ClassType } _
 	/ ClassType
-//	/ FuncType
 	/ TupleType
 	/ "(" Type ")"
 	/ {'()' #ClassType }
@@ -957,7 +956,6 @@ TypeName = {
 	[']*
 	#ClassType
 } _
-
 
 TypeParams = {
 	( $(Type) ("," $(Type))* )?

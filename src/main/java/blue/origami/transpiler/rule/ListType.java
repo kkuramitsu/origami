@@ -6,10 +6,10 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
 
-public class ArrayType implements ParseRule, Symbols {
+public class ListType implements ParseRule, Symbols {
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
-		return new TypeCode(Ty.tArray(ty));
+		return new TypeCode(Ty.tList(ty));
 	}
 }

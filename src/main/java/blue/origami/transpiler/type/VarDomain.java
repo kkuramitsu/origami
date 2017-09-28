@@ -33,13 +33,16 @@ public class VarDomain {
 		for (int i = 0; i < paramTypes.length; i++) {
 			if (p[i].isNULL()) {
 				p[i] = this.newVarTy(null, -1);
+			} else {
+				p[i] = p[i].dupVar(this);
 			}
+
 		}
 		return p;
 	}
 
 	public Ty retType(Ty retType) {
-		return retType.isNULL() ? this.newVarTy(null, -1/* Integer.MAX_VALUE */) : retType;
+		return retType.isNULL() ? this.newVarTy(null, -1) : retType.dupVar(this);
 	}
 
 	public Ty resolvedAt(int index) {
