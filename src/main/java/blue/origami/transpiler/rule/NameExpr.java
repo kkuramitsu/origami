@@ -9,8 +9,8 @@ public class NameExpr implements ParseRule {
 
 	@Override
 	public Code apply(TEnv env, Tree<?> t) {
-		String name = t.getString();
-		env.addParsedName(name);
+		// String name = t.getString();
+		// env.addParsedName(name);
 		return new NameCode(t);
 	}
 

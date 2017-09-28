@@ -4,12 +4,11 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Template;
-import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OConsole;
@@ -126,15 +125,15 @@ interface CodeAPI {
 			return self;
 		}
 		Ty f = self.getType();
-		Template tp = env.findTypeMap(env, f, ret);
+		CodeMap arrow = env.findTypeMap(env, f, ret);
 		// ODebug.trace("found map %s", tp);
-		if (tp == TConvTemplate.Stupid) {
+		if (arrow == CodeMap.StupidArrow) {
 			ODebug.log(() -> {
 				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);
 			});
 			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
 		}
-		return new CastCode(ret, tp, self);
+		return new CastCode(ret, arrow, self);
 	}
 
 	public default Code bind(Ty ret) {

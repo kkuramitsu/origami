@@ -11,18 +11,18 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
-public class TFunction extends Template implements NameInfo, FunctionUnit {
+public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 	static int seq = 0;
 	private int funcId;
 	protected boolean isPublic = false;
 	Tree<?> at;
 	protected String[] paramNames;
 	protected Tree<?> body;
-	private Template generated = null;
+	private CodeMap generated = null;
 
 	public TFunction(boolean isPublic, Tree<?> name, Ty returnType, String[] paramNames, Ty[] paramTypes,
 			Tree<?> body) {
-		super(name.getString(), returnType, paramTypes);
+		super(0, name.getString(), "(uncompiled)", returnType, paramTypes);
 		this.at = name;
 		this.funcId = seq++;
 		this.isPublic = isPublic;
@@ -83,11 +83,6 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		this.returnType = ret;
 	}
 
-	@Override
-	public String format(Object... args) {
-		return null;
-	}
-
 	// let reverse(a) =
 	// dup = {}
 	// [0 to < |a|].forEach(\i dup.push(a[|a|-1-i]))
@@ -107,14 +102,14 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 				return;
 			}
 			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
-				this.isGeneric = true;
+				// this.isGeneric = true;
 				ODebug.showBlue(TFmt.Template, () -> {
 					ODebug.println("%s : %s", this.name, this.getFuncType());
 				});
 			} else {
 				ODebug.trace("static %s %s generated=%s", this.name, this.getFuncType(), code.getType(),
 						this.generated);
-				this.isGeneric = false;
+				// this.isGeneric = false;
 				if (this.generated == null) {
 					Transpiler tr = env.getTranspiler();
 					boolean hasAbstract = this.isAbstract(code);
@@ -126,13 +121,13 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		}
 	}
 
-	public Template generate(TEnv env) {
+	public CodeMap generate(TEnv env) {
 		this.used(env);
 		return this;
 	}
 
 	@Override
-	public Template generate(TEnv env, Ty[] params) {
+	public CodeMap generate(TEnv env, Ty[] params) {
 		this.used(env);
 		if (this.generated != null) {
 			return this.generated;
@@ -144,12 +139,12 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Ty ret = dom.dupRetType(this.getReturnType());
 		String key = polykey(this.name, this.funcId, p);
-		Template tp = getGenerated(key);
+		CodeMap tp = getGenerated(key);
 		ODebug.trace("sigkey=%s %s", key, tp);
 		if (tp == null) {
 			Transpiler tr = env.getTranspiler();
 			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
-			final Template tp2 = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, dom,
+			final CodeMap tp2 = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, dom,
 					this.body);
 			ODebug.showBlue(TFmt.Template_Specialization, () -> {
 				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), tp2.getFuncType());
@@ -173,13 +168,13 @@ public class TFunction extends Template implements NameInfo, FunctionUnit {
 		return sb.toString();
 	}
 
-	static HashMap<String, Template> polyMap = new HashMap<>();
+	static HashMap<String, CodeMap> polyMap = new HashMap<>();
 
-	static Template getGenerated(String sigkey) {
+	static CodeMap getGenerated(String sigkey) {
 		return polyMap.get(sigkey);
 	}
 
-	static void setGenerated(String sigkey, Template tp) {
+	static void setGenerated(String sigkey, CodeMap tp) {
 		polyMap.put(sigkey, tp);
 	}
 

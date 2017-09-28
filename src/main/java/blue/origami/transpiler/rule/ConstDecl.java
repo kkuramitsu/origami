@@ -2,7 +2,7 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DeclCode;
@@ -36,7 +36,7 @@ public class ConstDecl extends SyntaxRule implements ParseRule {
 			}
 			if (!right.showError(env)) {
 				Transpiler tp = env.getTranspiler();
-				Template defined = tp.defineConst(this.isPublic, name, type, right);
+				CodeMap defined = tp.defineConst(this.isPublic, name, type, right);
 				env.add(name, defined);
 			}
 		} catch (ErrorCode e) {

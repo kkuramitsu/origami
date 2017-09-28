@@ -52,9 +52,9 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
-	public CodeTemplate newConstTemplate(TEnv env, String lname, Ty ret) {
+	public CodeMap newConstMap(TEnv env, String lname, Ty ret) {
 		String template = String.format(env.fmt("constname", "name", "%s"), lname);
-		return new ConstTemplate(lname, ret, template);
+		return new ConstMap(lname, ret, template);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class SourceGenerator extends Generator {
 	}
 
 	@Override
-	public CodeTemplate newTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");
@@ -91,7 +91,7 @@ public class SourceGenerator extends Generator {
 			param = sb.toString();
 		}
 		String template = env.format("funccall", "%s(%s)", lname, param);
-		return new CodeTemplate(sname, returnType, paramTypes, template);
+		return new CodeMap(0, template, sname, returnType, paramTypes);
 	}
 
 	@Override

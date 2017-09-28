@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.CodeMap;
 
 public interface CallCode extends Code {
-	public Template getTemplate();
+	public CodeMap getTemplate();
 
 	public default boolean hasTemplate() {
 		return this.getTemplate() != null;

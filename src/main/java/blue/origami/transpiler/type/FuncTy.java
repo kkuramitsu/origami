@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.CastCode;
@@ -58,7 +58,7 @@ public class FuncTy extends Ty {
 		return (ty.isFunc() || ty.isUnion()) ? "(" + ty + ")" : ty.toString();
 	}
 
-	static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
+	public static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
 			OStrings.joins(sb, paramTypes, ",");
@@ -151,7 +151,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Template findMapTo(TEnv env, Ty ty) {
+	public CodeMap findMapTo(TEnv env, Ty ty) {
 		if (ty.isFunc()) {
 			FuncTy toTy = (FuncTy) ty.real();
 			int cost = this.costMapTo(env, ty);
@@ -182,7 +182,7 @@ public class FuncTy extends Ty {
 		return sb.toString();
 	}
 
-	public Template genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
+	public CodeMap genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
 		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
 		Transpiler tr = env.getTranspiler();
 		String[] names = { "f" };

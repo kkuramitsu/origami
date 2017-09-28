@@ -9,10 +9,10 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
 import blue.origami.konoha5.Data$;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
@@ -123,7 +123,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 	// I,+,
 	@Override
 	public void pushCall(TEnv env, CallCode code) {
-		final Template tp = code.getTemplate();
+		final CodeMap tp = code.getTemplate();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
 			this.pushCall(env, code, def[1]);
@@ -159,6 +159,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 		case "V":
 		case "INVOKEVIRTUAL":
 			desc = this.ts.desc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			ODebug.trace("::::: desc=%s, %s", desc, tp);
 			this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, def[1], def[2], desc, false);
 			return;
 		case "I":
@@ -665,7 +666,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 
 	@Override
 	public void pushFuncRef(TEnv env, FuncRefCode code) {
-		Template tp = code.getRef();
+		CodeMap tp = code.getRef();
 		// ODebug.trace("funcref %s %s", code.getType(), tp);
 		Class<?> c = this.ts.loadFuncRefClass(env, tp);
 		String cname = Type.getInternalName(c);

@@ -34,7 +34,7 @@ public abstract class Generator implements CodeBuilder {
 
 	public abstract void emitTopLevel(TEnv env, Code code);
 
-	public abstract CodeTemplate newConstTemplate(TEnv env, String lname, Ty ret);
+	public abstract CodeMap newConstMap(TEnv env, String lname, Ty ret);
 
 	public abstract void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr);
 
@@ -52,7 +52,7 @@ public abstract class Generator implements CodeBuilder {
 		return name;
 	}
 
-	public abstract CodeTemplate newTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes);
+	public abstract CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes);
 
 	public abstract void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code);
@@ -99,7 +99,7 @@ public abstract class Generator implements CodeBuilder {
 		return code;
 	}
 
-	public Template genTestBinFunc(TEnv env, String op, Code right) {
+	public CodeMap genTestBinFunc(TEnv env, String op, Code right) {
 		Transpiler tr = env.getTranspiler();
 		Ty ty = right.getType();
 		String[] names = { "a", "b" };

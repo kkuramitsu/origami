@@ -1,9 +1,8 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.util.OStrings;
 
 public class OptionTy extends MonadTy {
@@ -76,10 +75,10 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public Template findMapTo(TEnv env, Ty ty) {
+	public CodeMap findMapTo(TEnv env, Ty ty) {
 		if (ty.isOption()) {
 			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
-				return new TConvTemplate("anycast", this, ty, CastCode.BESTCAST, "%s");
+				return new CodeMap(CastCode.BESTCAST, "anycast", "%s", this, ty);
 			}
 		}
 		return null;

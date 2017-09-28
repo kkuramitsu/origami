@@ -6,7 +6,7 @@ import java.util.List;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.FuncCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
@@ -20,7 +20,7 @@ import blue.origami.util.OStrings;
 public class ExprCode extends CodeN implements CallCode {
 
 	protected String name;
-	private Template tp;
+	private CodeMap tp;
 
 	public ExprCode(String name, Code... args) {
 		super(args);
@@ -28,19 +28,19 @@ public class ExprCode extends CodeN implements CallCode {
 		this.tp = null;
 	}
 
-	public ExprCode(Template tp, Code... args) {
+	public ExprCode(CodeMap tp, Code... args) {
 		super(tp.getReturnType(), args);
 		this.name = tp.getName();
 		this.setTemplate(tp);
 	}
 
 	@Override
-	public Template getTemplate() {
+	public CodeMap getTemplate() {
 		assert (this.tp != null);
 		return this.tp;
 	}
 
-	public void setTemplate(Template tp) {
+	public void setTemplate(CodeMap tp) {
 		this.tp = tp;
 	}
 
@@ -57,7 +57,7 @@ public class ExprCode extends CodeN implements CallCode {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
-			List<Template> founds = env.findTemplates(this.name, this.args.length);
+			List<CodeMap> founds = env.findCodeMaps(this.name, this.args.length);
 			this.typeArgs(env, founds);
 			Ty[] p = Arrays.stream(this.args).map(c -> c.getType()).toArray(Ty[]::new);
 			// ODebug.trace("founds=%s", founds);
@@ -68,7 +68,7 @@ public class ExprCode extends CodeN implements CallCode {
 				return this.asMatched(env, founds.get(0).generate(env, p), ret);
 			}
 			this.typeArgs(env, founds);
-			Template selected = Template.select(env, founds, ret, p, this.maxCost());
+			CodeMap selected = CodeMap.select(env, founds, ret, p, this.maxCost());
 			if (selected == null) {
 				return this.asMismatched(env, founds).castType(env, ret);
 			}
@@ -81,19 +81,19 @@ public class ExprCode extends CodeN implements CallCode {
 		return CastCode.BADCONV;
 	}
 
-	protected Code asUnfound(TEnv env, List<Template> l) {
-		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
+	protected Code asUnfound(TEnv env, List<CodeMap> l) {
+		env.findList(this.name, CodeMap.class, l, (tt) -> !tt.isExpired());
 		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
-	protected Code asMismatched(TEnv env, List<Template> l) {
+	protected Code asMismatched(TEnv env, List<CodeMap> l) {
 		if (l.get(0).isMutation() && !this.args[0].getType().isMutable()) {
 			throw new ErrorCode(this, TFmt.not_mutable_SSS, this.name, this.msgArgs(), msgHint(env, l));
 		}
 		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
-	protected void typeArgs(TEnv env, List<Template> l) {
+	protected void typeArgs(TEnv env, List<CodeMap> l) {
 		for (int i = 0; i < this.args.length; i++) {
 			Ty pt = this.getCommonParamType(l, i);
 			// ODebug.trace("common[%d] %s", i, pt);
@@ -103,7 +103,7 @@ public class ExprCode extends CodeN implements CallCode {
 		}
 	}
 
-	private Ty getCommonParamType(List<Template> l, int n) {
+	private Ty getCommonParamType(List<CodeMap> l, int n) {
 		// Ty ty = l.get(0).getParamTypes()[n];
 		// ODebug.trace("DD %s", l);
 		// for (int i = 1; i < l.size(); i++) {
@@ -122,7 +122,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return sb.toString();
 	}
 
-	static String msgHint(TEnv env, List<Template> l) {
+	static String msgHint(TEnv env, List<CodeMap> l) {
 		StringBuilder sb = new StringBuilder();
 		OStrings.joins(sb, l, ", ", tp -> tp.isAbstract() ? "" : tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
@@ -131,7 +131,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return " \t" + TFmt.hint + " " + sb;
 	}
 
-	private Code asMatched(TEnv env, Template defined, Ty t) {
+	private Code asMatched(TEnv env, CodeMap defined, Ty t) {
 		Ty[] dpats = defined.getParamTypes();
 		Ty dret = defined.getReturnType();
 		if (defined.isGeneric()) {
@@ -147,7 +147,7 @@ public class ExprCode extends CodeN implements CallCode {
 					}
 					if (dpats[i] instanceof FuncTy && dpats[i].hasVar()) {
 						Ty anyTy = dpats[i].dupVar(null); // AnyRef
-						Template conv = env.findTypeMap(env, gParamTypes[i].finalTy(), anyTy.finalTy());
+						CodeMap conv = env.findTypeMap(env, gParamTypes[i].finalTy(), anyTy.finalTy());
 						ODebug.trace("MUST funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
 						this.args[i] = new FuncCastCode(anyTy, conv, this.args[i]);
 					}
@@ -167,7 +167,7 @@ public class ExprCode extends CodeN implements CallCode {
 				}
 				if (defined.getReturnType() instanceof FuncTy && defined.getReturnType().hasVar()) {
 					Ty anyTy = defined.getReturnType().dupVar(null); // AnyRef
-					Template conv = env.findTypeMap(env, dRetType, anyTy);
+					CodeMap conv = env.findTypeMap(env, dRetType, anyTy);
 					ODebug.trace("MUST funccast %s => %s :: %s", anyTy, dRetType, conv);
 					result = new FuncCastCode(dRetType, conv, result);
 				}
@@ -231,12 +231,12 @@ class OptionExprCode extends ExprCode implements CallCode {
 	}
 
 	@Override
-	protected Code asUnfound(TEnv env, List<Template> l) {
+	protected Code asUnfound(TEnv env, List<CodeMap> l) {
 		return this.args[0];
 	}
 
 	@Override
-	protected Code asMismatched(TEnv env, List<Template> l) {
+	protected Code asMismatched(TEnv env, List<CodeMap> l) {
 		return this.args[0];
 	}
 

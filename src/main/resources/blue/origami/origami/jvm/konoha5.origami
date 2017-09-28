@@ -1,37 +1,6 @@
-# jvm/init.kh
-
-#Bool       = boolean
-#Byte       = byte
-#Int        = int
-#Int64      = long
-#Float      = double
-#String     = String
-
-# Type Inference
-#+:a:b:c      =
-#-:a:b:c      =
-+:a:b:|a|b    =
--:a:b:|a|b    =
-*:a:b:c      =
-/:a:b:c      =
-%:a:b:c      =
-++:a:a:a     =
-
-==:a:a:Bool  =
-!=:a:a:Bool  = 
->:a:a:Bool   =
->=:a:a:Bool  = 
-<:a:a:Bool   =
-<=:a:a:Bool  = 
-
-||:a:Int       = 
-[]:|b[]|b{}:Int:b   =
-[]=:b{}:Int:b:() =
+# Konoha5 origami.file
 
 # Bool
-#true:Bool       = true
-#false:Bool      = false
-
 ==:Bool:Bool:Bool      = S|blue/origami/asm/APIs|eq
 !=:Bool:Bool:Bool      = S|blue/origami/asm/APIs|ne
 &&:Bool:Bool:Bool      = X|band
@@ -222,8 +191,3 @@ Some:Int:Int?                        = S|blue/origami/asm/APIs|box
 Int?--->Int                          = S|blue/origami/asm/APIs|unwrapI
 Some:Float:Float?                    = S|blue/origami/asm/APIs|box
 Float?--->Float                      = S|blue/origami/asm/APIs|unwrapD
-
-# MathLib
-sin:Float:Float                      = S|java/lang/Math|sin
-cos:Float:Float                      = S|java/lang/Math|cos
-tan:Float:Float                      = S|java/lang/Math|tan

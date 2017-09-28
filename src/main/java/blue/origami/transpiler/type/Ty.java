@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.IntCode;
@@ -302,7 +301,7 @@ interface TypeApi {
 		return CastCode.STUPID;
 	}
 
-	public default Template findMapTo(TEnv env, Ty toTy) {
+	public default CodeMap findMapTo(TEnv env, Ty toTy) {
 		return null;
 	}
 
@@ -310,7 +309,7 @@ interface TypeApi {
 		return CastCode.STUPID;
 	}
 
-	public default Template findMapFrom(TEnv env, Ty fromTy) {
+	public default CodeMap findMapFrom(TEnv env, Ty fromTy) {
 		return null;
 	}
 
@@ -332,9 +331,9 @@ class VoidTy extends SimpleTy {
 	}
 
 	@Override
-	public Template findMapFrom(TEnv env, Ty fromTy) {
+	public CodeMap findMapFrom(TEnv env, Ty fromTy) {
 		String format = env.getSymbol("(Void)", "(void)%s");
-		return new TConvTemplate("", fromTy, Ty.tVoid, CastCode.SAME, format);
+		return new CodeMap(CastCode.SAME, "(Void)", format, fromTy, Ty.tVoid);
 	}
 
 }

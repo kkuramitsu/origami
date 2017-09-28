@@ -1,11 +1,6 @@
 package blue.origami.transpiler;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.asm.AsmGenerator;
@@ -36,18 +31,18 @@ import blue.origami.util.OStrings;
 
 public class Transpiler extends TEnv {
 	final OOption options;
-	private final String target;
+	private final OrigamiLoader loader;
 	private final Generator generator;
 
 	boolean isFriendly = true;
 
 	public Transpiler(Grammar grammar, Parser p, String target, OOption options) {
 		super(null);
-		this.target = "/blue/origami/konoha5/" + target + "/";
+		this.loader = new OrigamiLoader(this, target);
 		this.options = options;
 		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceGenerator(this);
 		this.initEnv(grammar, p);
-		this.loadLibrary("init.kh");
+		this.loader.loadOrigamiFile("konoha5.origami");
 		this.generator.init();
 	}
 
@@ -112,58 +107,6 @@ public class Transpiler extends TEnv {
 		this.addNameDecl(this, "i,j,k,m,n", Ty.tInt);
 		this.addNameDecl(this, "x,y,z,w", Ty.tFloat);
 		this.addNameDecl(this, "s,t,u,name", Ty.tString);
-	}
-
-	private void loadLibrary(String file) {
-		try {
-			String path = this.target + file;
-			File f = new File(path);
-			InputStream s = f.isFile() ? new FileInputStream(path) : Transpiler.class.getResourceAsStream(path);
-			if (s == null) {
-				System.out.println("FIXME: unsupported " + path);
-			}
-			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
-			String line = null;
-			String name = null;
-			String delim = null;
-			StringBuilder text = null;
-			while ((line = reader.readLine()) != null) {
-				if (text == null) {
-					if (line.startsWith("#")) {
-						continue;
-					}
-					int loc = line.indexOf(" =");
-					if (loc <= 0) {
-						continue;
-					}
-					name = line.substring(0, loc).trim();
-					String value = line.substring(loc + 2).trim();
-					// System.out.printf("%2$s : %1$s\n", value, name);
-					if (value == null) {
-						continue;
-					}
-					if (value.equals("'''") || value.equals("\"\"\"")) {
-						delim = value;
-						text = new StringBuilder();
-					} else {
-						this.defineSymbol(name, value);
-					}
-				} else {
-					if (line.trim().equals(delim)) {
-						this.defineSymbol(name, text.toString());
-						text = null;
-					} else {
-						if (text.length() > 0) {
-							text.append("\n");
-						}
-						text.append(line);
-					}
-				}
-			}
-			reader.close();
-		} catch (Exception e) {
-			OConsole.exit(1, e);
-		}
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
@@ -297,10 +240,10 @@ public class Transpiler extends TEnv {
 
 	int functionId = 0;
 
-	public Template defineConst(boolean isPublic, String name, Ty type, Code expr) {
+	public CodeMap defineConst(boolean isPublic, String name, Ty type, Code expr) {
 		TEnv env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
-		CodeTemplate tp = this.generator.newConstTemplate(env, lname, type);
+		CodeMap tp = this.generator.newConstMap(env, lname, type);
 		this.add(name, tp);
 		this.generator.defineConst(this, isPublic, lname, type, expr);
 		return tp;
@@ -308,10 +251,10 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
-	public Template defineFunction(String name, String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+	public CodeMap defineFunction(String name, String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		final TEnv env = this.newEnv();
 		final String lname = this.generator.safeName(name);
-		final CodeTemplate tp = this.generator.newTemplate(env, name, lname, returnType, paramTypes);
+		final CodeMap tp = this.generator.newCodeMap(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
 		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
@@ -320,18 +263,18 @@ public class Transpiler extends TEnv {
 		return tp;
 	}
 
-	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
+	public CodeMap defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, VarDomain dom, Tree<?> body) {
 		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
 				this.parseCode(this, body));
 	}
 
-	public Template defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
+	public CodeMap defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, VarDomain dom, Code code0) {
 		// final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) :
 		// returnType;
 		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeTemplate tp = this.generator.newTemplate(this, name, lname, returnType, paramTypes);
+		final CodeMap tp = this.generator.newCodeMap(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
 		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
@@ -370,9 +313,9 @@ public class Transpiler extends TEnv {
 	// return tp;
 	// }
 
-	public CodeTemplate newTemplate(String name, Ty ret, Ty[] pats) {
+	public CodeMap newCodeMap(String name, Ty ret, Ty[] pats) {
 		final String lname = this.getLocalName(name);
-		return this.generator.newTemplate(this, name, lname, ret, pats);
+		return this.generator.newCodeMap(this, name, lname, ret, pats);
 	}
 
 	private String getLocalName(String name) {

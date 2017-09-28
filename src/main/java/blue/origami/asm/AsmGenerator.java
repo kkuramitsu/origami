@@ -1,5 +1,7 @@
 package blue.origami.asm;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -7,8 +9,8 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
-import blue.origami.transpiler.CodeTemplate;
-import blue.origami.transpiler.ConstTemplate;
+import blue.origami.transpiler.CodeMap;
+import blue.origami.transpiler.ConstMap;
 import blue.origami.transpiler.Generator;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
@@ -102,25 +104,29 @@ public class AsmGenerator extends Generator implements Opcodes {
 				Class<?> c = AsmType.classLoader.loadClass(this.cname0);
 				java.lang.reflect.Method m = c.getMethod(evalName);
 				return m.invoke(null);
+			} catch (InvocationTargetException e) {
+				e.getTargetException().printStackTrace();
+				return null;
 			} catch (NoSuchMethodException e) {
 				return null;
 			} catch (Exception e) {
 				e.printStackTrace();
-				return e;
+				return null;
 			}
 		}
 		return null;
+
 	}
 
 	@Override
-	public CodeTemplate newConstTemplate(TEnv env, String lname, Ty ret) {
+	public CodeMap newConstMap(TEnv env, String lname, Ty ret) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("F|");
 		sb.append(this.cname());
 		sb.append("|");
 		sb.append(lname);
 		String template = sb.toString();
-		return new ConstTemplate(lname, ret, template);
+		return new ConstMap(lname, ret, template);
 	}
 
 	@Override
@@ -137,7 +143,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 	}
 
 	@Override
-	public CodeTemplate newTemplate(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 		// "(D)D", false);
 		StringBuilder sb = new StringBuilder();
@@ -146,7 +152,7 @@ public class AsmGenerator extends Generator implements Opcodes {
 		sb.append("|");
 		sb.append(lname);
 		String template = sb.toString();
-		return new CodeTemplate(sname, returnType, paramTypes, template);
+		return new CodeMap(sname, template, returnType, paramTypes);
 	}
 
 	@Override

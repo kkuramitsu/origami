@@ -1,14 +1,13 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.CodeTemplate;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OStrings;
 
 public class CastCode extends Code1 implements CallCode {
-	public CastCode(Ty ret, Template tp, Code inner) {
+	public CastCode(Ty ret, CodeMap tp, Code inner) {
 		super(ret, inner);
 		this.setTemplate(tp);
 		// ODebug.trace("CAST *****(%s => %s) %s", inner.getType(), ret, inner);
@@ -18,14 +17,14 @@ public class CastCode extends Code1 implements CallCode {
 		this(ret, null, inner);
 	}
 
-	private Template tp;
+	private CodeMap tp;
 
-	public void setTemplate(Template tp) {
+	public void setTemplate(CodeMap tp) {
 		this.tp = tp;
 	}
 
 	@Override
-	public Template getTemplate() {
+	public CodeMap getTemplate() {
 		return this.tp;
 	}
 
@@ -71,17 +70,6 @@ public class CastCode extends Code1 implements CallCode {
 	public static final int BADCONV = 64;
 	public static final int STUPID = 256;
 
-	public static class TConvTemplate extends CodeTemplate {
-
-		public static final TConvTemplate Stupid = new TConvTemplate("stupid", Ty.tVoid, Ty.tVoid, STUPID, "%s");
-
-		public TConvTemplate(String name, Ty fromType, Ty returnType, int mapCost, String template) {
-			super(name, returnType, new Ty[] { fromType }, template);
-			this.setMapCost(mapCost);
-		}
-
-	}
-
 	public static class MutableCode extends CastCode {
 
 		public MutableCode(Code inner) {
@@ -108,7 +96,7 @@ public class CastCode extends Code1 implements CallCode {
 
 	public static class FuncCastCode extends CastCode {
 
-		public FuncCastCode(Ty ty, Template tp, Code inner) {
+		public FuncCastCode(Ty ty, CodeMap tp, Code inner) {
 			super(ty, tp, inner);
 		}
 

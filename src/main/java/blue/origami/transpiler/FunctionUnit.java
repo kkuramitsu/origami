@@ -106,7 +106,7 @@ public interface FunctionUnit {
 		return code.hasSome(c -> c.isError());
 	}
 
-	public static FunctionUnit wrap(Tree<?> s, String[] paramNames, Template tp) {
+	public static FunctionUnit wrap(Tree<?> s, String[] paramNames, CodeMap tp) {
 		return new FunctionUnitWrapper(s, paramNames, tp);
 	}
 
@@ -115,9 +115,9 @@ public interface FunctionUnit {
 class FunctionUnitWrapper implements FunctionUnit {
 	Tree<?> at;
 	String[] paramNames;
-	Template tp;
+	CodeMap tp;
 
-	public FunctionUnitWrapper(Tree<?> s, String[] paramNames, Template tp) {
+	public FunctionUnitWrapper(Tree<?> s, String[] paramNames, CodeMap tp) {
 		this.at = s;
 		this.tp = tp;
 		this.paramNames = paramNames;

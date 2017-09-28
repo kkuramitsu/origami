@@ -1,9 +1,8 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.CastCode.TConvTemplate;
 
 class AnyTy extends SimpleTy {
 
@@ -22,9 +21,9 @@ class AnyTy extends SimpleTy {
 	}
 
 	@Override
-	public Template findMapTo(TEnv env, Ty toTy) {
+	public CodeMap findMapTo(TEnv env, Ty toTy) {
 		String format = env.getSymbol("cast", "(%s)%s");
-		return new TConvTemplate("", this, toTy, CastCode.BESTCAST, format);
+		return new CodeMap(CastCode.BESTCAST, "anycast", format, this, toTy);
 	}
 
 	@Override
@@ -33,9 +32,9 @@ class AnyTy extends SimpleTy {
 	}
 
 	@Override
-	public Template findMapFrom(TEnv env, Ty fromTy) {
+	public CodeMap findMapFrom(TEnv env, Ty fromTy) {
 		String format = env.getSymbol("upcast", "%s");
-		return new TConvTemplate("", fromTy, this, CastCode.BESTCAST, format);
+		return new CodeMap(CastCode.BESTCAST, "upcast", format, fromTy, this);
 	}
 
 }

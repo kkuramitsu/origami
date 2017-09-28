@@ -5,10 +5,10 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.type.Ty;
 
-public class ConstTemplate extends CodeTemplate {
+public class ConstMap extends CodeMap {
 
-	public ConstTemplate(String name, Ty returnType, String template) {
-		super(name, returnType, TArrays.emptyTypes, template);
+	public ConstMap(String name, Ty returnType, String template) {
+		super(0, name, template, returnType, TArrays.emptyTypes);
 	}
 
 	@Override

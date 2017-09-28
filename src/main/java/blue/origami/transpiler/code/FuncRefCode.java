@@ -5,15 +5,15 @@ import java.util.List;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
 public final class FuncRefCode extends CommonCode {
 	private String name;
-	private Template template;
+	private CodeMap template;
 
-	public FuncRefCode(String name, Template tp) {
+	public FuncRefCode(String name, CodeMap tp) {
 		super(tp.getFuncType());
 		this.name = name;
 		this.template = tp;
@@ -23,7 +23,7 @@ public final class FuncRefCode extends CommonCode {
 		return this.name;
 	}
 
-	public Template getRef() {
+	public CodeMap getRef() {
 		return this.template;
 	}
 
@@ -31,14 +31,14 @@ public final class FuncRefCode extends CommonCode {
 	public Code asType(TEnv env, Ty ret) {
 		if (ret.isFunc()) {
 			FuncTy funcTy = (FuncTy) ret.real();
-			List<Template> l = env.findTemplates(this.name, funcTy.getParamSize());
+			List<CodeMap> l = env.findCodeMaps(this.name, funcTy.getParamSize());
 			if (l.size() == 0) {
 				return this.asUnfound(env, l, funcTy);
 			}
 			if (l.size() == 1) {
 				return this.asMatched(env, l.get(0).generate(env, funcTy.getParamTypes()), ret);
 			}
-			Template selected = Template.select(env, l, funcTy.getReturnType(), funcTy.getParamTypes(), 0);
+			CodeMap selected = CodeMap.select(env, l, funcTy.getReturnType(), funcTy.getParamTypes(), 0);
 			if (selected == null) {
 				return this.asMismatched(env, l, funcTy);
 			}
@@ -60,18 +60,18 @@ public final class FuncRefCode extends CommonCode {
 		return false;
 	}
 
-	private Code asMatched(TEnv env, Template selected, Ty ret) {
+	private Code asMatched(TEnv env, CodeMap selected, Ty ret) {
 		this.template = selected;
 		this.setType(selected.getFuncType());
 		return this.castType(env, ret);
 	}
 
-	private Code asUnfound(TEnv env, List<Template> l, FuncTy funcTy) {
-		env.findList(this.name, Template.class, l, (tt) -> !tt.isExpired());
+	private Code asUnfound(TEnv env, List<CodeMap> l, FuncTy funcTy) {
+		env.findList(this.name, CodeMap.class, l, (tt) -> !tt.isExpired());
 		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 
-	private Code asMismatched(TEnv env, List<Template> l, FuncTy funcTy) {
+	private Code asMismatched(TEnv env, List<CodeMap> l, FuncTy funcTy) {
 		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 

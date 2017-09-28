@@ -1,7 +1,6 @@
 package blue.origami.transpiler;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -11,15 +10,12 @@ import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.transpiler.code.CastCode.TConvTemplate;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.UnionTy;
-import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
@@ -255,109 +251,9 @@ interface TEnvTraits {
 interface TEnvApi {
 	TEnv env();
 
-	// protected void defineSymbol(String key, String symbol) {
-	// if (!this.isDefined(key)) {
-	// if (symbol != null) {
-	// int s = symbol.indexOf("$|");
-	// while (s >= 0) {
-	// int e = symbol.indexOf('|', s + 2);
-	// String skey = symbol.substring(s + 2, e);
-	// // if (this.symbolMap.get(skey) != null) {
-	// symbol = symbol.replace("$|" + skey + "|", this.s(skey));
-	// // }
-	// e = s;
-	// s = symbol.indexOf("$|");
-	// if (e == s) {
-	// break; // avoid infinite looping
-	// }
-	// // System.out.printf("'%s': %s\n", key, symbol);
-	// }
-	// }
-	// this.symbolMap.put(key, symbol);
-	// }
-	// }
-
-	public default void defineSymbol(String key, String value) {
-		boolean pure = true;
-		boolean faulty = false;
-		if (key.endsWith("!!")) {
-			key = key.substring(0, key.length() - 2);
-			faulty = true;
-		}
-		if (key.endsWith("@")) {
-			key = key.substring(0, key.length() - 1);
-			pure = false;
-		}
-		int loc = key.indexOf(':');
-		if (loc == -1) {
-			String name = key;
-			if (key.indexOf('>') > 0) {
-				if ((loc = key.indexOf("--->")) > 0) {
-					Ty f = this.parseTypeDesc(key.substring(0, loc));
-					Ty t = this.parseTypeDesc(key.substring(loc + 4));
-					name = f + "->" + t;
-					Template tp = new TConvTemplate(name, f, t, CastCode.BADCONV, value);
-					env().add(name, tp);
-					tp.asFaulty(faulty);
-					return;
-				}
-				if ((loc = key.indexOf("-->")) > 0) {
-					Ty f = this.parseTypeDesc(key.substring(0, loc));
-					Ty t = this.parseTypeDesc(key.substring(loc + 3));
-					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, CastCode.CONV, value));
-					return;
-				}
-				if ((loc = key.indexOf("==>")) > 0) {
-					Ty f = this.parseTypeDesc(key.substring(0, loc));
-					Ty t = this.parseTypeDesc(key.substring(loc + 3));
-					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, CastCode.CAST, value));
-					return;
-				}
-				if ((loc = key.indexOf("->")) > 0) {
-					Ty f = this.parseTypeDesc(key.substring(0, loc));
-					Ty t = this.parseTypeDesc(key.substring(loc + 2));
-					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCONV, value));
-					return;
-				}
-				if ((loc = key.indexOf("=>")) > 0) {
-					Ty f = this.parseTypeDesc(key.substring(0, loc));
-					Ty t = this.parseTypeDesc(key.substring(loc + 2));
-					name = f + "->" + t;
-					env().add(name, new TConvTemplate(name, f, t, CastCode.BESTCAST, value));
-					return;
-				}
-				System.out.println("FIXME: " + key);
-			}
-			env().add(name, new CodeTemplate(name, Ty.tVoid, TArrays.emptyTypes, value));
-		} else {
-			String name = key.substring(0, loc);
-			String[] tdescs = key.substring(loc + 1).split(":");
-			Ty ret = this.parseTypeDesc(tdescs[tdescs.length - 1]);
-			if (tdescs.length > 1) {
-				Ty[] p = new Ty[tdescs.length - 1];
-				for (int i = 0; i < p.length; i++) {
-					p[i] = this.parseTypeDesc(tdescs[i]);
-				}
-				Template tp = new CodeTemplate(name, ret, p, value);
-				env().add(name, tp);
-				tp.asFaulty(faulty);
-				tp.asPure(pure);
-			} else {
-				Template tp = new CodeTemplate(name, ret, TArrays.emptyTypes, value);
-				env().add(name, tp);
-				env().add(key, tp);
-				tp.asFaulty(faulty);
-				tp.asPure(pure);
-			}
-		}
-	}
-
 	public default String getSymbolOrElse(String key, String def) {
-		CodeTemplate tp = env().get(key, CodeTemplate.class);
-		return tp == null ? def : tp.template;
+		CodeMap tp = env().get(key, CodeMap.class);
+		return tp == null ? def : tp.getDefined();
 	}
 
 	public default String getSymbol(String... keys) {
@@ -370,20 +266,20 @@ interface TEnvApi {
 		return keys[keys.length - 1];
 	}
 
-	public default Template getTemplate(String... keys) {
+	public default CodeMap getTemplate(String... keys) {
 		for (int i = 0; i < keys.length - 1; i++) {
-			Template tp = env().get(keys[i], Template.class);
+			CodeMap tp = env().get(keys[i], CodeMap.class);
 			if (tp != null) {
 				return tp;
 			}
 		}
 		String last = keys[keys.length - 1];
-		return last == null ? null : new CodeTemplate(last);
+		return last == null ? null : new CodeMap(last);
 	}
 
 	public default String fmt(String... keys) {
 		for (int i = 0; i < keys.length - 1; i++) {
-			Template tp = env().get(keys[i], Template.class);
+			CodeMap tp = env().get(keys[i], CodeMap.class);
 			if (tp != null) {
 				return tp.getDefined();
 			}
@@ -397,78 +293,6 @@ interface TEnvApi {
 
 	public default Ty getType(String tsig) {
 		return env().get(tsig, Ty.class);
-	}
-
-	default Ty parseTypeDesc(String tsig) {
-		Ty ty = this.getType(tsig);
-		if (ty == null) {
-			if (tsig.startsWith("|")) {
-				Ty[] choice = Arrays.stream(tsig.substring(1).split("\\|")).map(s -> parseTypeDesc(s))
-						.toArray(Ty[]::new);
-				return new UnionTy(choice);
-			}
-			int loc = 0;
-			if ((loc = tsig.indexOf("->")) > 0) {
-				int loc2 = tsig.indexOf(',');
-				Ty tt = parseTypeDesc(tsig.substring(loc + 2));
-				if (loc2 > 0) {
-					String param = tsig.substring(0, loc);
-					Ty ft1 = parseTypeDesc(param.substring(0, loc2));
-					Ty ft2 = parseTypeDesc(param.substring(loc2 + 1));
-					return Ty.tFunc(tt, ft1, ft2);
-				} else {
-					Ty ft = parseTypeDesc(tsig.substring(0, loc));
-					return Ty.tFunc(tt, ft);
-				}
-			}
-			if (tsig.endsWith("*")) {
-				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 1));
-				return Ty.tList(ty);
-			}
-			if (tsig.endsWith("[]")) {
-				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 2));
-				return Ty.tList(ty);
-			}
-			if (tsig.endsWith("{}")) {
-				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 2));
-				return Ty.tArray(ty);
-			}
-			if (tsig.endsWith("?")) {
-				ty = parseTypeDesc(tsig.substring(0, tsig.length() - 1));
-				return Ty.tOption(ty);
-			}
-			if (tsig.endsWith("]")) {
-				loc = tsig.indexOf('[');
-				ty = parseTypeDesc(tsig.substring(loc + 1, tsig.length() - 1));
-				return Ty.tMonad(tsig.substring(0, loc), ty);
-			}
-			ty = getHiddenType(tsig);
-		}
-		assert (ty != null) : "undefined '" + tsig + "'";
-		return ty;
-	}
-
-	static HashMap<String, Ty> hiddenMap = new HashMap<>();
-
-	public static Ty getHiddenType(String tsig) {
-		if (hiddenMap.isEmpty()) {
-			hiddenMap.put("()", Ty.tVoid);
-			hiddenMap.put("any", Ty.tAny);
-			hiddenMap.put("byte", Ty.tByte);
-			hiddenMap.put("char", Ty.tChar);
-			hiddenMap.put("int64", Ty.tInt64);
-			hiddenMap.put("a", VarDomain.var(0));
-			hiddenMap.put("b", VarDomain.var(1));
-			hiddenMap.put("c", VarDomain.var(2));
-		}
-		return hiddenMap.get(tsig);
-	}
-
-	public default void addParsedName(String name) {
-		// Transpiler tr = env().getTranspiler();
-		// if (!NameHint.isOneLetterName(name)) {
-		// tr.addParsedName1(name);
-		// }
 	}
 
 	public default NameHint addNameDecl(TEnv env, String names, Ty t) {
@@ -566,11 +390,11 @@ interface TEnvApi {
 		return def.get();
 	}
 
-	public default Template findTypeMap(TEnv env, Ty fromTy0, Ty toTy0) {
+	public default CodeMap findTypeMap(TEnv env, Ty fromTy0, Ty toTy0) {
 		Ty fromTy = fromTy0.finalTy();
 		Ty toTy = toTy0.finalTy();
 		String key = FuncTy.mapKey(fromTy, toTy);
-		Template tp = env.get(key, Template.class);
+		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			// ODebug.trace("found %s => %s %s", fromTy, toTy, tp);
 			return tp;
@@ -587,7 +411,7 @@ interface TEnvApi {
 			env.getTranspiler().add(key, tp);
 			return tp;
 		}
-		return TConvTemplate.Stupid;
+		return CodeMap.StupidArrow;
 	}
 
 	public default int mapCost(TEnv env, Ty fromTy0, Ty toTy0, VarLogger logs) {
@@ -597,7 +421,7 @@ interface TEnvApi {
 		Ty fromTy = fromTy0.finalTy();
 		Ty toTy = toTy0.finalTy();
 		String key = FuncTy.mapKey(fromTy, toTy);
-		Template tp = env.get(key, Template.class);
+		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			return tp.mapCost();
 		}
@@ -608,9 +432,9 @@ interface TEnvApi {
 		return toTy.costMapFrom(env, fromTy);
 	}
 
-	public default List<Template> findTemplates(String name, int paramSize) {
-		List<Template> l = new ArrayList<>(8);
-		env().findList(name, Template.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == paramSize);
+	public default List<CodeMap> findCodeMaps(String name, int paramSize) {
+		List<CodeMap> l = new ArrayList<>(8);
+		env().findList(name, CodeMap.class, l, (tt) -> !tt.isExpired() && tt.getParamSize() == paramSize);
 		return l;
 	}
 

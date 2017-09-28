@@ -1,0 +1,24 @@
+# common origami.file
+
+# Type Inference
+# 
+#+:a:b:c     =
+#-:a:b:c     =
++:a:b:|a|b   =
+-:a:b:|a|b   =
+*:a:b:c      =
+/:a:b:c      =
+%:a:b:c      =
+++:a:a:a     =
+
+==:a:a:Bool  =
+!=:a:a:Bool  = 
+>:a:a:Bool   =
+>=:a:a:Bool  = 
+<:a:a:Bool   =
+<=:a:a:Bool  = 
+
+||:a:Int       = 
+[]:|a[]|a{}:Int:a   =
+[]=:a{}:Int:a:() =
+

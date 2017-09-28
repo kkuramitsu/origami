@@ -20,7 +20,7 @@ import blue.origami.konoha5.Func;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.Template;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.NameCode;
@@ -335,7 +335,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	private HashMap<String, Class<?>> refMap = null;
 
-	Class<?> loadFuncRefClass(TEnv env, Template tp) {
+	Class<?> loadFuncRefClass(TEnv env, CodeMap tp) {
 		if (this.refMap == null) {
 			this.refMap = new HashMap<>();
 		}
