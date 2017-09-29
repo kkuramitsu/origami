@@ -3,7 +3,6 @@ package blue.origami.transpiler.type;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.CastCode;
-import blue.origami.util.OStrings;
 
 public class OptionTy extends MonadTy {
 
@@ -11,6 +10,11 @@ public class OptionTy extends MonadTy {
 		super(name, ty);
 		this.innerTy = ty;
 		// assert !(ty instanceof OptionTy);
+	}
+
+	@Override
+	public Ty newType(String name, Ty ty) {
+		return new OptionTy(name, ty);
 	}
 
 	@Override
@@ -55,13 +59,6 @@ public class OptionTy extends MonadTy {
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
 		return codeType.mapType("Option", this.innerTy);
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append("Option[");
-		OStrings.append(sb, this.innerTy);
-		sb.append("]");
 	}
 
 	@Override

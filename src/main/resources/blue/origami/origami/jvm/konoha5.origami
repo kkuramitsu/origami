@@ -90,15 +90,15 @@ char==>any              = S|blue/origami/asm/APIs|box
 any==>int64             = S|blue/origami/asm/APIs|unboxL
 int64==>any             = S|blue/origami/asm/APIs|box
 
-## a*, a{}, Stream[a]
+## a[], a{}, Stream[a]
 
-||:a*:Int                         = V|blue/origami/konoha5/List$|size
-[]:a*:Int:a                       = V|blue/origami/konoha5/List$|geti
-bind:a*:a*                        = V|blue/origami/konoha5/List$|bind
+||:a[]:Int                         = V|blue/origami/konoha5/List$|size
+[]:a[]:Int:a                       = V|blue/origami/konoha5/List$|geti
+=:a[]:a[]                          = V|blue/origami/konoha5/List$|bind
 
-a*->Stream[a]                     = V|blue/origami/konoha5/List$|stream
-Stream[a]->a*                     = S|blue/origami/konoha5/List$|list
-bind:Stream[a]:a*                 = S|blue/origami/konoha5/List$|list
+a[]->Stream[a]                     = V|blue/origami/konoha5/List$|stream
+Stream[a]->a[]                     = S|blue/origami/konoha5/List$|list
+=:Stream[a]:a[]                 = S|blue/origami/konoha5/List$|list
 
 forEach:Stream[a]:a->():()               = S|blue/origami/konoha5/List$|forEach
 filter:Stream[a]:a->Bool:Stream[a]       = S|blue/origami/konoha5/List$|filter
@@ -107,36 +107,35 @@ map:Stream[a]:a->Int:Stream[Int]         = S|blue/origami/konoha5/List$|map
 map:Stream[a]:a->Float:Stream[Float]     = S|blue/origami/konoha5/List$|map
 reduce:Stream[a]:a:a,a->a:a              = S|blue/origami/konoha5/List$|reduce
 
-a{}->a*                            = -
+a{}->a[]                            = -
 ||:a{}:Int                         = V|blue/origami/konoha5/List$|size
 []:a{}:Int:a                       = V|blue/origami/konoha5/List$|geti
 []=:a{}:Int:a:()                   = V|blue/origami/konoha5/List$|seti
 push:a{}:a:()                      = V|blue/origami/konoha5/List|push
 pop:a{}:a                          = V|blue/origami/konoha5/List|pop
 
-a{}->Stream'[a]                    = V|blue/origami/konoha5/List$|stream
-Stream'[a]->a{}                    = S|blue/origami/konoha5/List$|list
-bind:Stream'[a]:a{}                = S|blue/origami/konoha5/List$|listM
+a{}->Stream{a}                    = V|blue/origami/konoha5/List$|stream
+Stream{a}->a{}                    = S|blue/origami/konoha5/List$|list
+=:Stream{a}:a{}                = S|blue/origami/konoha5/List$|listM
 
-forEach:Stream'[a]:a->():()              = S|blue/origami/konoha5/List$|forEach
-filter:Stream'[a]:a->Bool:Stream'[a]     = S|blue/origami/konoha5/List$|filter
-map:Stream'[a]:a->b:Stream'[b]           = S|blue/origami/konoha5/List$|map
-map:Stream'[a]:a->Int:Stream'[Int]       = S|blue/origami/konoha5/List$|map
-map:Stream'[a]:a->Float:Stream'[Float]   = S|blue/origami/konoha5/List$|map
-reduce:Stream'[a]:a:a,a->a:a             = S|blue/origami/konoha5/List$|reduce
+forEach:Stream{a}:a->():()              = S|blue/origami/konoha5/List$|forEach
+filter:Stream{a}:a->Bool:Stream{a}     = S|blue/origami/konoha5/List$|filter
+map:Stream{a}:a->b:Stream{b}           = S|blue/origami/konoha5/List$|map
+map:Stream{a}:a->Int:Stream{Int}       = S|blue/origami/konoha5/List$|map
+map:Stream{a}:a->Float:Stream{Float}   = S|blue/origami/konoha5/List$|map
+reduce:Stream{a}:a:a,a->a:a             = S|blue/origami/konoha5/List$|reduce
 
-## Int*, Int{}, Stream[Int]
+## Int[], Int{}, Stream[Int]
 
-||:Int*:Int                        = V|blue/origami/konoha5/List$Int|size
-[]:Int*:Int:Int                    = V|blue/origami/konoha5/List$Int|geti
-bind:Int*:Int*                     = V|blue/origami/konoha5/List$Int|bind
-cons:Int:Int*:Int*                 = S|blue/origami/konoha5/List$Int|cons
-tail:Int*:Int:Int*                 = V|blue/origami/konoha5/List$Int|tail
+||:Int[]:Int                        = V|blue/origami/konoha5/List$Int|size
+[]:Int[]:Int:Int                    = V|blue/origami/konoha5/List$Int|geti
+=:Int[]:Int[]                     = V|blue/origami/konoha5/List$Int|bind
+cons:Int:Int[]:Int[]                 = S|blue/origami/konoha5/List$Int|cons
+tail:Int[]:Int:Int[]                 = V|blue/origami/konoha5/List$Int|tail
 
-
-Int*->Stream[Int]                  = V|blue/origami/konoha5/List$Int|stream
-Stream[Int]->Int*                  = S|blue/origami/konoha5/List$Int|list
-bind:Stream[Int]:Int*              = S|blue/origami/konoha5/List$Int|list
+Int[]->Stream[Int]                  = V|blue/origami/konoha5/List$Int|stream
+Stream[Int]->Int[]                  = S|blue/origami/konoha5/List$Int|list
+=:Stream[Int]:Int[]              = S|blue/origami/konoha5/List$Int|list
 
 forEach:Stream[Int]:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
 filter:Stream[Int]:Int->Bool:Stream[Int]     = S|blue/origami/konoha5/List$Int|filter
@@ -151,17 +150,17 @@ reduce:Stream[Int]:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|r
 push:Int{}:Int:()                  = V|blue/origami/konoha5/List$Int|push
 pop:Int{}:Int                      = V|blue/origami/konoha5/List$Int|pop
 
-Int{}->Int*                        = -
-Int{}->Stream'[Int]                = V|blue/origami/konoha5/List$Int|stream
-Stream'[Int]->Int{}                = S|blue/origami/konoha5/List$Int|list
-bind:Stream'[Int]:Int{}            = S|blue/origami/konoha5/List$Int|listM
+Int{}->Int[]                        = -
+Int{}->Stream{Int}                = V|blue/origami/konoha5/List$Int|stream
+Stream{Int}->Int{}                = S|blue/origami/konoha5/List$Int|listM
+=:Stream{Int}:Int{}            = S|blue/origami/konoha5/List$Int|listM
 
-forEach:Stream'[Int]:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
-filter:Stream'[Int]:Int->Bool:Stream'[Int]    = S|blue/origami/konoha5/List$Int|filter
-map:Stream'[Int]:Int->a:Stream'[a]            = S|blue/origami/konoha5/List$Int|map
-map:Stream'[Int]:Int->Int:Stream'[Int]        = S|blue/origami/konoha5/List$Int|map
-map:Stream'[Int]:Int->Float:Stream'[Float]    = S|blue/origami/konoha5/List$Int|map
-reduce:Stream'[Int]:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|reduce
+forEach:Stream{Int}:Int->():()               = S|blue/origami/konoha5/List$Int|forEach
+filter:Stream{Int}:Int->Bool:Stream{Int}    = S|blue/origami/konoha5/List$Int|filter
+map:Stream{Int}:Int->a:Stream{a}            = S|blue/origami/konoha5/List$Int|map
+map:Stream{Int}:Int->Int:Stream{Int}        = S|blue/origami/konoha5/List$Int|map
+map:Stream{Int}:Int->Float:Stream{Float}    = S|blue/origami/konoha5/List$Int|map
+reduce:Stream{Int}:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|reduce
 
 # Dict[a]
 ||:Dict[a]:Int                       = V|blue/origami/konoha5/Dict$|size
@@ -169,12 +168,12 @@ reduce:Stream'[Int]:Int:Int,Int->Int:Int      = S|blue/origami/konoha5/List$Int|
 Dict[a]->String*                     = V|blue/origami/konoha5/Dict$|keys
 forEach:Dict[a]:String,a->():()      = V|blue/origami/konoha5/Dict$|forEach
 
-# Dict'[a]
-||:Dict'[a]:Int                      = V|blue/origami/konoha5/Dict|size
-[]:Dict'[a]:String:a?                = V|blue/origami/konoha5/Dict|get
-[]=:Dict'[a]:String:a:()             = V|blue/origami/konoha5/Dict|set
-Dict'[a]->String*                    = V|blue/origami/konoha5/Dict|keys
-forEach:Dict'[a]:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
+# Dict{a}
+||:Dict{a}:Int                      = V|blue/origami/konoha5/Dict|size
+[]:Dict{a}:String:a?                = V|blue/origami/konoha5/Dict|get
+[]=:Dict{a}:String:a:()             = V|blue/origami/konoha5/Dict|set
+Dict{a}->String*                    = V|blue/origami/konoha5/Dict|keys
+forEach:Dict{a}:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
 
 #Option
 Some:a:a?                            = -

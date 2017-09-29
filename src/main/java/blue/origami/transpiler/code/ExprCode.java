@@ -3,10 +3,10 @@ package blue.origami.transpiler.code;
 import java.util.Arrays;
 import java.util.List;
 
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.FuncCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
@@ -213,15 +213,15 @@ public class ExprCode extends CodeN implements CallCode {
 		});
 	}
 
-	public static ExprCode option(String name, Code... args) {
-		return new OptionExprCode(name, args);
+	public static ExprCode option1(String name, Code... args) {
+		return new OptionalExprCode(name, args);
 	}
 
 }
 
-class OptionExprCode extends ExprCode implements CallCode {
+class OptionalExprCode extends ExprCode implements CallCode {
 
-	OptionExprCode(String name, Code... code) {
+	OptionalExprCode(String name, Code... code) {
 		super(name, code);
 	}
 

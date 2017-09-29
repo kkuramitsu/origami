@@ -1,18 +1,21 @@
 package blue.origami.transpiler.type;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import blue.origami.util.OConsole;
 import blue.origami.util.OStrings;
 
 public class MonadTy extends Ty {
 	protected String name;
 	protected Ty innerTy;
+	protected boolean isMutable;
 
-	public MonadTy(String name, Ty ty) {
+	public MonadTy(String name, boolean isMutable, Ty ty) {
 		this.name = name;
 		this.innerTy = ty;
+		this.isMutable = isMutable;
+		assert (!name.endsWith("'"));
+	}
+
+	public MonadTy(String name, Ty ty) {
+		this(name, false, ty);
 	}
 
 	@Override
@@ -21,14 +24,7 @@ public class MonadTy extends Ty {
 	}
 
 	public Ty newType(String name, Ty ty) {
-		try {
-			Constructor<?> c = this.getClass().getConstructor(String.class, Ty.class);
-			return (Ty) c.newInstance(name, ty);
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			OConsole.exit(1, e);
-			return null;
-		}
+		return new MonadTy(name, this.isMutable, ty);
 	}
 
 	public boolean equalsName(String name) {
@@ -37,13 +33,12 @@ public class MonadTy extends Ty {
 
 	@Override
 	public boolean isMutable() {
-		return this.name.endsWith("'") || this.getInnerTy().isMutable();
+		return this.isMutable || this.getInnerTy().isMutable();
 	}
 
 	@Override
 	public Ty toImmutable() {
-		String name = this.isMutable() ? this.name.substring(0, this.name.length() - 1) : this.name;
-		return Ty.tMonad(name, this.getInnerTy().toImmutable());
+		return Ty.tMonad(this.name, this.getInnerTy().toImmutable());
 	}
 
 	@Override
@@ -60,7 +55,7 @@ public class MonadTy extends Ty {
 	public Ty dupVar(VarDomain dom) {
 		Ty inner = this.innerTy.dupVar(dom);
 		if (inner != this.innerTy) {
-			return Ty.tMonad(this.name, inner);
+			return Ty.tMonad(this.name, this.isMutable, inner);
 		}
 		return this;
 	}
@@ -69,7 +64,7 @@ public class MonadTy extends Ty {
 	public Ty finalTy() {
 		Ty ty = this.innerTy.finalTy();
 		if (this.innerTy != ty) {
-			return Ty.tMonad(this.name, ty);
+			return Ty.tMonad(this.name, this.isMutable, ty);
 		}
 		return this;
 	}
@@ -90,9 +85,9 @@ public class MonadTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append(this.name);
-		sb.append("[");
+		sb.append(this.isMutable ? "{" : "[");
 		OStrings.append(sb, this.innerTy);
-		sb.append("]");
+		sb.append(this.isMutable ? "}" : "]");
 	}
 
 }

@@ -5,8 +5,13 @@ import blue.origami.transpiler.code.DataDictCode;
 
 public class DictTy extends MonadTy {
 
-	public DictTy(String name, Ty innerType) {
-		super(name, innerType);
+	public DictTy(String name, boolean isMutable, Ty innerType) {
+		super(name, isMutable, innerType);
+	}
+
+	@Override
+	public Ty newType(String name, Ty ty) {
+		return new ListTy(name, this.isMutable(), ty);
 	}
 
 	@Override

@@ -8,10 +8,12 @@ import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
+import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
@@ -41,12 +43,12 @@ public abstract class Ty implements TypeApi, OStrings {
 
 	static {
 		typeMemoMap.put("Option", new OptionTy("Option", tVoid));
-		typeMemoMap.put("List", new ListTy("List", tVoid));
-		typeMemoMap.put("List'", new ListTy("List'", tVoid));
-		typeMemoMap.put("Stream", new MonadTy("Stream", tVoid));
-		typeMemoMap.put("Stream'", new MonadTy("Stream'", tVoid));
-		typeMemoMap.put("Dict", new DictTy("Dict", tVoid));
-		typeMemoMap.put("Dict'", new DictTy("Dict'", tVoid));
+		typeMemoMap.put("List", new ListTy("List", false, tVoid));
+		typeMemoMap.put("List'", new ListTy("List", true, tVoid));
+		typeMemoMap.put("Dict", new DictTy("Dict", false, tVoid));
+		typeMemoMap.put("Dict'", new DictTy("Dict", true, tVoid));
+		typeMemoMap.put("Stream", new MonadTy("Stream", false, tVoid));
+		typeMemoMap.put("Stream'", new MonadTy("Stream", true, tVoid));
 	}
 
 	/* DynamicType */
@@ -88,6 +90,26 @@ public abstract class Ty implements TypeApi, OStrings {
 		return typeMemoMap.get(name) instanceof MonadTy;
 	}
 
+	public static final String parseMonadName(Tree<?> t) {
+		String name = t.getString();
+		if (isDefinedMonad(name)) {
+			return name;
+		}
+		throw new ErrorCode(t, TFmt.undefined_type__YY1, name);
+	}
+
+	public static final String parseStateName(Tree<?> t) {
+		String name = t.getString();
+		if (isDefinedMonad(name + "'")) {
+			return name;
+		}
+		throw new ErrorCode(t, TFmt.undefined_type__YY1, name);
+	}
+
+	public static final Ty tMonad(String name, boolean isMutable, Ty ty) {
+		return isMutable ? tState(name, ty) : tMonad(name, ty);
+	}
+
 	public static final Ty tMonad(String name, Ty ty) {
 		MonadTy monad = (MonadTy) typeMemoMap.get(name);
 		assert (monad != null) : "undefined " + name;
@@ -98,12 +120,22 @@ public abstract class Ty implements TypeApi, OStrings {
 		return reg(key, () -> monad.newType(name, ty));
 	}
 
+	public static final Ty tState(String name, Ty ty) {
+		MonadTy monad = (MonadTy) typeMemoMap.get(name + "'");
+		assert (monad != null) : "undefined " + name;
+		if (!ty.isNonMemo()) {
+			return monad.newType(name, ty);
+		}
+		String key = name + "{" + ty + "}";
+		return reg(key, () -> monad.newType(name, ty));
+	}
+
 	public static final ListTy tList(Ty ty) {
 		return (ListTy) tMonad("List", ty);
 	}
 
 	public static final ListTy tArray(Ty ty) {
-		return (ListTy) tMonad("List'", ty);
+		return (ListTy) tState("List", ty);
 	}
 
 	public static final DataTy tRecord(String... names) {

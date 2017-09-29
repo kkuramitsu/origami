@@ -5,17 +5,20 @@ import blue.origami.transpiler.code.DataListCode;
 import blue.origami.util.OStrings;
 
 public class ListTy extends MonadTy {
-	public static String ImmutableName = "List";
-	public static String MutableName = "List'";
 
-	public ListTy(String name, Ty innerType) {
-		super(name, innerType);
+	public ListTy(String name, boolean isMutable, Ty innerType) {
+		super(name, isMutable, innerType);
 		assert (innerType != null);
 	}
 
 	@Override
+	public Ty newType(String name, Ty ty) {
+		return new ListTy(name, this.isMutable(), ty);
+	}
+
+	@Override
 	public Code getDefaultValue() {
-		return new DataListCode((ListTy) Ty.tMonad(this.name, this.innerTy));
+		return new DataListCode((ListTy) Ty.tMonad(this.name, this.isMutable(), this.innerTy));
 	}
 
 	@Override

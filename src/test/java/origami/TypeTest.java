@@ -16,6 +16,7 @@
 
 package origami;
 
+import blue.origami.nez.parser.Parser;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.transpiler.TFmt;
@@ -105,9 +106,26 @@ public class TypeTest {
 	}
 
 	//
+
+	static Grammar g = null;
+	static Parser p = null;
+
+	static Grammar g() throws Throwable {
+		if (g == null) {
+			g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
+		}
+		return g;
+	}
+
+	static Parser p() throws Throwable {
+		if (p == null) {
+			p = g().newParser();
+		}
+		return p;
+	}
+
 	public static void runScript(String text, String checked) throws Throwable {
-		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
-		Transpiler env = new Transpiler(g, "jvm");
+		Transpiler env = new Transpiler(g(), p(), "jvm", null);
 		Ty ty = env.testType(text);
 		System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
 		if (checked != null) {
@@ -116,8 +134,7 @@ public class TypeTest {
 	}
 
 	public static void runScript2(String text, String checked) throws Throwable {
-		Grammar g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
-		Transpiler env = new Transpiler(g, "jvm");
+		Transpiler env = new Transpiler(g(), p(), "jvm", null);
 		Ty ty = env.testType(text);
 		if (checked.equals(ty.toString())) {
 			System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);

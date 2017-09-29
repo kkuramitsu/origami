@@ -224,6 +224,11 @@ public class OrigamiLoader {
 			ty = this.parseType(tdesc.substring(loc + 1, tdesc.length() - 1));
 			return Ty.tMonad(tdesc.substring(0, loc), ty);
 		}
+		if (tdesc.endsWith("}")) {
+			loc = tdesc.indexOf('{');
+			ty = this.parseType(tdesc.substring(loc + 1, tdesc.length() - 1));
+			return Ty.tState(tdesc.substring(0, loc), ty);
+		}
 		ty = getHiddenType(tdesc);
 		assert (ty != null) : "undefined '" + tdesc + "'";
 		return ty;

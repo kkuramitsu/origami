@@ -125,19 +125,19 @@ interface CodeAPI {
 			return self;
 		}
 		Ty f = self.getType();
-		CodeMap arrow = env.findTypeMap(env, f, ret);
+		CodeMap tp = env.findTypeMap(env, f, ret);
 		// ODebug.trace("found map %s", tp);
-		if (arrow == CodeMap.StupidArrow) {
+		if (tp == CodeMap.StupidArrow) {
 			ODebug.log(() -> {
 				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);
 			});
 			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
 		}
-		return new CastCode(ret, arrow, self);
+		return new CastCode(ret, tp, self);
 	}
 
 	public default Code bind(Ty ret) {
-		return ExprCode.option("bind", self());
+		return ExprCode.option1("=", self());
 	}
 
 	public default Ty guessType() {
