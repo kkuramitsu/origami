@@ -71,7 +71,7 @@ public class MonadTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy.isMonad(this.name)) {
+		if (codeTy.isMonad(this.name, this.isMutable())) {
 			return this.innerTy.acceptTy(false, codeTy.getInnerTy(), logs);
 		}
 		return this.acceptVarTy(sub, codeTy, logs);

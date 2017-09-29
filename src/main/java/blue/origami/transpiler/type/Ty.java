@@ -313,10 +313,10 @@ interface TypeApi {
 		return real() instanceof DictTy;
 	}
 
-	public default boolean isMonad(String name) {
+	public default boolean isMonad(String name, boolean isMutable) {
 		Ty ty = real();
 		if (ty instanceof MonadTy) {
-			return ((MonadTy) ty).equalsName(name);
+			return ((MonadTy) ty).equalsName(name) && ty.isMutable() == isMutable;
 		}
 		return false;
 	}
