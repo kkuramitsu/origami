@@ -39,6 +39,7 @@ import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
+import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.ListTy;
@@ -598,6 +599,23 @@ public class AsmSection implements TCodeSection, Opcodes {
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "unbox" + Type.getDescriptor(c), desc, false);
 		} else {
 			this.mBuilder.checkCast(Type.getType(c));
+		}
+	}
+
+	@Override
+	public void pushTuple(TEnv env, TupleCode code) {
+		Class<?> c = code.getType().mapType(this.ts);
+		String cname = Type.getInternalName(c);
+		this.mBuilder.visitTypeInsn(NEW, cname);
+		this.mBuilder.dup();
+		this.mBuilder.visitMethodInsn(INVOKESPECIAL, cname, "<init>", "()V", false);
+		int cnt = 0;
+		for (Code sub : code) {
+			this.mBuilder.dup();
+			sub.emitCode(env, this);
+			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, this.ts.tupleAt(cnt),
+					this.ts.desc(sub.getType()));
+			cnt++;
 		}
 	}
 

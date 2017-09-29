@@ -17,7 +17,7 @@ public class TupleTy extends Ty {
 
 	@Override
 	public boolean isNonMemo() {
-		return TArrays.testSomeTrue(t -> t.isNonMemo(), this.getParamTypes());
+		return this.memoName == null;
 	}
 
 	public int getParamSize() {
@@ -39,9 +39,9 @@ public class TupleTy extends Ty {
 	// }
 
 	static void stringfy(StringBuilder sb, Ty... paramTypes) {
-		sb.append("(");
-		OStrings.joins(sb, paramTypes, ",");
-		sb.append(")");
+		// sb.append("(");
+		OStrings.joins(sb, paramTypes, "*");
+		// sb.append(")");
 	}
 
 	@Override
@@ -85,13 +85,16 @@ public class TupleTy extends Ty {
 
 	@Override
 	public Ty finalTy() {
-		Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.finalTy()).toArray(Ty[]::new);
-		return Ty.tTuple(p);
+		if (this.memoName != null) {
+			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.finalTy()).toArray(Ty[]::new);
+			return Ty.tTuple(p);
+		}
+		return this;
 	}
 
 	@Override
 	public <C> C mapType(TypeMap<C> codeType) {
-		return codeType.mapForeignTupleType(this);
+		return codeType.forTupleType(this);
 	}
 
 	// @Override

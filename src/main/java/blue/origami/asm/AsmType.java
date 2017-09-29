@@ -17,10 +17,11 @@ import org.objectweb.asm.tree.FieldNode;
 
 import blue.origami.konoha5.Data$;
 import blue.origami.konoha5.Func;
+import blue.origami.konoha5.Tuple$;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.NameCode;
@@ -169,7 +170,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected String keyForeignFuncType(FuncTy funcTy) {
+	protected String keyFuncType(FuncTy funcTy) {
 		StringBuilder sb = new StringBuilder();
 		OStrings.joins(sb, Arrays.stream(funcTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new),
 				"");
@@ -179,7 +180,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected Class<?> genForeignFuncType(FuncTy funcTy) {
+	protected Class<?> genFuncType(FuncTy funcTy) {
 		Method m = new Method(nameApply(funcTy.getReturnType()), this.ti(funcTy.getReturnType()),
 				this.ts(funcTy.getParamTypes()));
 		String cname1 = "T$" + classLoader.seq();
@@ -193,34 +194,39 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 	}
 
 	@Override
-	protected String keyForeignTupleType(TupleTy tupleTy) {
+	protected String keyTupleType(TupleTy tupleTy) {
 		StringBuilder sb = new StringBuilder();
 		OStrings.joins(sb, Arrays.stream(tupleTy.getParamTypes()).map(ty -> this.descFunc(ty)).toArray(String[]::new),
 				"");
 		return sb.toString();
 	}
 
+	String tupleAt(int cnt) {
+		return "_" + cnt;
+	}
+
 	@Override
-	protected Class<?> genForeignTupleType(TupleTy tupleTy) {
+	protected Class<?> genTupleType(TupleTy tupleTy) {
 		String cname1 = "T$" + classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-		cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Data$.class), null);
+		cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Tuple$.class), null);
 		for (int i = 0; i < tupleTy.getParamSize(); i++) {
-			FieldNode fn = new FieldNode(ACC_PUBLIC, "_" + i, this.desc(tupleTy.getParamTypes()[i]), null, null);
+			FieldNode fn = new FieldNode(ACC_PUBLIC, this.tupleAt(i), this.desc(tupleTy.getParamTypes()[i]), null,
+					null);
 			fn.accept(cw1);
 		}
-		addDefaultConstructor(cw1, Object.class);
+		addDefaultConstructor(cw1, Tuple$.class);
 		cw1.visitEnd();
 		return loadClass(cname1, cw1);
 	}
 
 	@Override
-	protected String keyForeignDataType(DataTy dataTy) {
+	protected String keyDataType(DataTy dataTy) {
 		return dataTy.size() == 0 ? "{}" : OStrings.joins(dataTy.names(), ",");
 	}
 
 	@Override
-	protected Class<?> genForeingDataType(DataTy dataTy) {
+	protected Class<?> genDataType(DataTy dataTy) {
 		String[] names = dataTy.names();
 		String cname1 = "D$" + this.seq();
 		String[] infs = Arrays.stream(names).map(x -> Type.getInternalName(this.gen(x))).toArray(String[]::new);

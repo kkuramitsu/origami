@@ -53,12 +53,12 @@ public class SourceType extends TypeMap<String> {
 	}
 
 	@Override
-	protected String keyForeignFuncType(FuncTy funcTy) {
+	protected String keyFuncType(FuncTy funcTy) {
 		return "F" + funcTy.toString();
 	}
 
 	@Override
-	protected String genForeignFuncType(FuncTy funcTy) {
+	protected String genFuncType(FuncTy funcTy) {
 		String funcdef = this.env.getSymbolOrElse("functypedef", null);
 		if (funcdef != null) {
 			String typeName = "F" + this.seq() + this.comment(funcTy.toString());
@@ -70,23 +70,23 @@ public class SourceType extends TypeMap<String> {
 	}
 
 	@Override
-	protected String keyForeignTupleType(TupleTy tupleTy) {
+	protected String keyTupleType(TupleTy tupleTy) {
 		return "T" + tupleTy.toString();
 	}
 
 	@Override
-	protected String genForeignTupleType(TupleTy tupleTy) {
+	protected String genTupleType(TupleTy tupleTy) {
 		ODebug.TODO();
 		return tupleTy.toString();
 	}
 
 	@Override
-	protected String keyForeignDataType(DataTy dataTy) {
+	protected String keyDataType(DataTy dataTy) {
 		return dataTy.names().toString();
 	}
 
 	@Override
-	protected String genForeingDataType(DataTy dataTy) {
+	protected String genDataType(DataTy dataTy) {
 		return dataTy.toString();
 	}
 
