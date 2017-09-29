@@ -18,7 +18,8 @@
 <:a:a:Bool   =
 <=:a:a:Bool  = 
 
-||:a:Int       = 
-[]:|a[]|a{}:Int:a   =
+=:a:a        =
+||:a:Int     = 
+[]:|a[]|a{}:Int:a =
 []=:a{}:Int:a:() =
 

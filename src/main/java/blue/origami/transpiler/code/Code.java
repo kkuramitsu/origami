@@ -137,7 +137,7 @@ interface CodeAPI {
 	}
 
 	public default Code bind(Ty ret) {
-		return ExprCode.option1("=", self());
+		return ExprCode.option("=", self());
 	}
 
 	public default Ty guessType() {

@@ -231,8 +231,7 @@ public class CodeMap implements NameInfo {
 		}
 		for (int i = 0; i < params.length; i++) {
 			mapCost += env.mapCost(env, params[i], p[i], logs);
-			// ODebug.trace("mapCost[%d]=%d %s => %s", i, mapCost, params[i],
-			// p[i]);
+			// ODebug.trace("mapCost[%d]=%d %s => %s", i, mapCost, params[i], p[i]);
 			if (mapCost >= maxCost) {
 				logs.abort();
 				return mapCost;
@@ -245,8 +244,8 @@ public class CodeMap implements NameInfo {
 		// if (dom != null) {
 		// mapCost += dom.mapCost();
 		// }
-		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		logs.abort();
+		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		return mapCost;
 	}
 

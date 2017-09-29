@@ -213,7 +213,7 @@ public class ExprCode extends CodeN implements CallCode {
 		});
 	}
 
-	public static ExprCode option1(String name, Code... args) {
+	public static ExprCode option(String name, Code... args) {
 		return new OptionalExprCode(name, args);
 	}
 

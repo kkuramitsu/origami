@@ -15,19 +15,19 @@ import blue.origami.transpiler.type.UnionTy;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.OConsole;
 
-public class OrigamiLoader {
+public class CodeMapLoader {
 	final Transpiler env;
 	final String common;
 	final String base;
 	final HashMap<String, String> keyMap = new HashMap<>();
 
-	OrigamiLoader(Transpiler env, String target) {
+	CodeMapLoader(Transpiler env, String target) {
 		this.env = env;
-		this.base = "/blue/origami/origami/" + target + "/";
+		this.base = "/blue/origami/codemap/" + target + "/";
 		this.common = this.base.replace(target, "common");
 	}
 
-	public void loadOrigamiFile(String file) {
+	public void loadCodeMap(String file) {
 		try {
 			this.load(this.common + file);
 		} catch (Throwable e) {
@@ -42,7 +42,7 @@ public class OrigamiLoader {
 	private void load(String path) throws Throwable {
 		// String path = this.base + file;
 		File f = new File(path);
-		InputStream s = f.isFile() ? new FileInputStream(path) : OrigamiLoader.class.getResourceAsStream(path);
+		InputStream s = f.isFile() ? new FileInputStream(path) : CodeMapLoader.class.getResourceAsStream(path);
 		if (s == null) {
 			throw new FileNotFoundException(path);
 		}
@@ -59,7 +59,7 @@ public class OrigamiLoader {
 				if (line.startsWith("#")) {
 					if (line.startsWith("#include")) {
 						for (String file : TArrays.ltrim2(line.split("\\S"))) {
-							this.loadOrigamiFile(file);
+							this.loadCodeMap(file);
 						}
 					}
 					if (line.startsWith("#require")) {

@@ -80,6 +80,10 @@ public class EvalTest {
 		// {a=1;{b=a;b}}
 	}
 
+	public void testBind() throws Throwable {
+		runScript("f(a,n)={m=a[n];m};f([0,1], 0)", "0");
+	}
+
 	public void testOption() throws Throwable {
 		runScript("Some(1)", "1");
 		runScript("Some(1) >>= (\\n Some(n+1))", "2");

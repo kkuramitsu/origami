@@ -52,6 +52,14 @@ public class TypeTest {
 		runScript("a = 1\na", "Int");
 	}
 
+	public void testParamType() throws Throwable {
+		runScript("f(a:Int)=a;f", "Int->Int");
+		runScript("f(a:Option[a])=a;f", "Option[a]->Option[a]");
+		runScript("f(a:a[])=a;f", "a[]->a[]");
+		runScript("f(a:a{}):a{}=a;f", "a{}->a{}");
+		runScript("f(a:a{})=a;f", "a{}->a[]");
+	}
+
 	public void testLambda() throws Throwable {
 		runScript("\\n n+1", "Int->Int");
 		runScript("\\a : Int a+1", "Int->Int");
@@ -67,6 +75,8 @@ public class TypeTest {
 	public void testTemplate() throws Throwable {
 		runScript("f(a)=|a|;f", "a->Int");
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
+		runScript("f(a,n)={m=a[n];m};f", "(a[],Int)->a");
+		runScript("f(a,n)={m=a[n];m};f([0,1], 0);f", "(Int[],Int)->Int");
 	}
 
 	public void testAdHoc() throws Throwable {

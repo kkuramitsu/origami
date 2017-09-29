@@ -31,18 +31,18 @@ import blue.origami.util.OStrings;
 
 public class Transpiler extends TEnv {
 	final OOption options;
-	private final OrigamiLoader loader;
+	private final CodeMapLoader loader;
 	private final Generator generator;
 
 	boolean isFriendly = true;
 
 	public Transpiler(Grammar grammar, Parser p, String target, OOption options) {
 		super(null);
-		this.loader = new OrigamiLoader(this, target);
+		this.loader = new CodeMapLoader(this, target);
 		this.options = options;
 		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceGenerator(this);
 		this.initEnv(grammar, p);
-		this.loader.loadOrigamiFile("konoha5.origami");
+		this.loader.loadCodeMap("konoha5.codemap");
 		this.generator.init();
 	}
 
