@@ -40,10 +40,17 @@ public class MultiCode extends CodeN {
 		return this.args[this.args.length - 1].getType();
 	}
 
+	boolean noScope = false;
+
+	public MultiCode asNoScope() {
+		this.noScope = true;
+		return this;
+	}
+
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.args.length > 0) {
-			TEnv lenv = env.newEnv();
+			TEnv lenv = this.noScope ? env : env.newEnv();
 			final int last = this.args.length - 1;
 			for (int i = 0; i < last; i++) {
 				final int n = i;

@@ -1,14 +1,27 @@
 package blue.origami.transpiler.rule;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.DeclCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.GetCode;
+import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.SetCode;
+import blue.origami.transpiler.code.SugarCode;
+import blue.origami.transpiler.code.TupleCode;
+import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
+import blue.origami.transpiler.type.TupleTy;
+import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
 public class AssignExpr implements ParseRule, Symbols {
@@ -22,10 +35,56 @@ public class AssignExpr implements ParseRule, Symbols {
 		if (left instanceof GetIndexCode) {
 			return new ExprCode("[]=", ((GetIndexCode) left).recv, ((GetIndexCode) left).index, right);
 		}
+		if (left instanceof TupleCode) {
+			return new TupleAssignCode((TupleCode) left, right);
+		}
 		ODebug.log(() -> {
 			ODebug.p("No Assignment %s %s", left.getClass().getSimpleName(), left);
 		});
 		throw new ErrorCode(t.get(_right), TFmt.no_more_assignment);
 	}
 
+}
+
+class TupleAssignCode extends SugarCode {
+
+	private TupleCode left;
+	private Code right;
+
+	public TupleAssignCode(TupleCode left, Code right) {
+		this.left = left;
+		this.right = right;
+	}
+
+	@Override
+	public Code asType(TEnv env, Ty ret) {
+		Ty[] ts = new Ty[this.left.size()];
+		for (int i = 0; i < ts.length; i++) {
+			ts[i] = Ty.tUntyped();
+		}
+		TupleTy tupleTy = new TupleTy(null, ts);
+		this.right = this.right.asType(env, tupleTy);
+		String[] names = Arrays.stream(this.left.args()).map(n -> {
+			if (n instanceof NameCode) {
+				return ((NameCode) n).getName();
+			} else {
+				throw new ErrorCode(n, TFmt.not_name);
+			}
+		}).toArray(String[]::new);
+		ArrayList<LetCode> l = new ArrayList<>();
+		for (int i = 0; i < names.length; i++) {
+			if (!names[i].equals("_")) {
+				l.add(new LetCode(names[i], new TupleIndexCode(this.right, i)));
+			}
+		}
+		ODebug.trace("::: %s", l);
+		if (env.get(FunctionContext.class) == null) {
+			l.forEach(c -> c.defineAsGlobal(env, false));
+			return new DeclCode();
+		}
+		if (l.size() == 1) {
+			return l.get(0).asType(env, Ty.tVoid);
+		}
+		return new MultiCode(l.stream().map(c -> c.asType(env, Ty.tVoid)).toArray(Code[]::new));
+	}
 }

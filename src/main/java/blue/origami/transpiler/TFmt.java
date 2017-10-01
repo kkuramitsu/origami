@@ -17,7 +17,8 @@ public enum TFmt implements LocaleFormat {
 	no_more_assignment, not_function__YY1, hint, YY1_does_not_exist_in_YY2, YY1_have_a_YY2_type, //
 	redefined_name__YY1, type_error_YY1_YY2, patterns_are_different, required_first_argument, //
 	undefined_SSS, mismatched_SSS, mismatched_parameter_size_S_S, not_mutable_SSS, //
-	function_S_remains_undefined, ambiguous_type__S, abstract_function_YY1__YY2; //
+	function_S_remains_undefined, ambiguous_type__S, abstract_function_YY1__YY2, //
+	not_tuple, bad_tuple__YY1, not_name; //
 
 	public static String quote(Object o) {
 		return OConsole.bold("'" + o + "'");

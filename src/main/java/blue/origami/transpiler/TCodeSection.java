@@ -24,6 +24,7 @@ import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.TupleCode;
+import blue.origami.transpiler.code.TupleIndexCode;
 
 public interface TCodeSection {
 
@@ -56,6 +57,8 @@ public interface TCodeSection {
 	// public void pushArray(TEnv env, TArrayCode code);
 
 	public void pushTuple(TEnv env, TupleCode code);
+
+	public void pushTupleIndex(TEnv env, TupleIndexCode code);
 
 	public void pushData(TEnv env, DataCode code);
 

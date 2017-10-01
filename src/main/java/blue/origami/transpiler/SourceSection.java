@@ -26,6 +26,7 @@ import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.TupleCode;
+import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
@@ -219,6 +220,12 @@ public class SourceSection extends SourceSectionLib implements TCodeSection {
 
 	@Override
 	public void pushTuple(TEnv env, TupleCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void pushTupleIndex(TEnv env, TupleIndexCode code) {
 		// TODO Auto-generated method stub
 
 	}

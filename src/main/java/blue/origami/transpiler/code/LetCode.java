@@ -1,9 +1,11 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
@@ -66,6 +68,27 @@ public class LetCode extends Code1 {
 			// }
 		}
 		return this;
+	}
+
+	public Code defineAsGlobal(TEnv env, boolean isPublic) {
+		Code right = this.getInner();
+		try {
+			if (this.declType == null) {
+				this.declType = Ty.tUntyped();
+				right = right.bind(this.declType).asType(env, this.declType);
+				this.declType = right.getType();
+			} else {
+				right = right.bind(this.declType).asType(env, this.declType);
+			}
+			if (!right.showError(env)) {
+				Transpiler tp = env.getTranspiler();
+				CodeMap defined = tp.defineConst(isPublic, this.name, this.declType, right);
+				env.add(this.name, defined);
+			}
+		} catch (ErrorCode e) {
+			e.showError(env);
+		}
+		return new DeclCode();
 	}
 
 	@Override

@@ -40,6 +40,7 @@ import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
 import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.TupleCode;
+import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.ListTy;
@@ -617,6 +618,15 @@ public class AsmSection implements TCodeSection, Opcodes {
 					this.ts.desc(sub.getType()));
 			cnt++;
 		}
+	}
+
+	@Override
+	public void pushTupleIndex(TEnv env, TupleIndexCode code) {
+		Class<?> c = code.getInner().getType().mapType(this.ts);
+		String cname = Type.getInternalName(c);
+		code.getInner().emitCode(env, this);
+		this.mBuilder.visitFieldInsn(GETFIELD, cname/* internal */, this.ts.tupleAt(code.getIndex()),
+				this.ts.desc(code.getType()));
 	}
 
 	@Override

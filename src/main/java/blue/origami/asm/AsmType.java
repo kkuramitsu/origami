@@ -207,7 +207,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 
 	@Override
 	protected Class<?> genTupleType(TupleTy tupleTy) {
-		String cname1 = "T$" + classLoader.seq();
+		String cname1 = "Tuple$" + classLoader.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		cw1.visit(V1_8, ACC_PUBLIC, cname1, null/* signatrue */, Type.getInternalName(Tuple$.class), null);
 		for (int i = 0; i < tupleTy.getParamSize(); i++) {
