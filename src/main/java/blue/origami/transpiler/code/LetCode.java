@@ -39,10 +39,6 @@ public class LetCode extends Code1 {
 		return this.declType;
 	}
 
-	// public boolean isDuplicated() {
-	// return this.isDuplicated;
-	// }
-
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
@@ -58,14 +54,9 @@ public class LetCode extends Code1 {
 			env.add(this.name, var);
 			this.index = var.getIndex();
 
-			this.inner = this.inner.bind(this.declType).asType(env, this.declType);
+			this.inner = this.inner.bindAs(env, this.declType);
 			ODebug.trace("let %s %s %s", this.name, this.declType, this.inner.getType());
 			this.setType(Ty.tVoid);
-			;
-			// if () {
-			// this.isDuplicated = true;
-			// ODebug.trace("duplicated local name %s", this.name);
-			// }
 		}
 		return this;
 	}
@@ -73,13 +64,7 @@ public class LetCode extends Code1 {
 	public Code defineAsGlobal(TEnv env, boolean isPublic) {
 		Code right = this.getInner();
 		try {
-			if (this.declType == null) {
-				this.declType = Ty.tUntyped();
-				right = right.bind(this.declType).asType(env, this.declType);
-				this.declType = right.getType();
-			} else {
-				right = right.bind(this.declType).asType(env, this.declType);
-			}
+			right = right.bindAs(env, this.declType);
 			if (!right.showError(env)) {
 				Transpiler tp = env.getTranspiler();
 				CodeMap defined = tp.defineConst(isPublic, this.name, this.declType, right);
@@ -88,7 +73,7 @@ public class LetCode extends Code1 {
 		} catch (ErrorCode e) {
 			e.showError(env);
 		}
-		return new DeclCode();
+		return new DoneCode();
 	}
 
 	@Override

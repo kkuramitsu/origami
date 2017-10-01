@@ -84,6 +84,13 @@ public class EvalTest {
 		runScript("f(a,n)={m=a[n];m};f([0,1], 0)", "0");
 	}
 
+	public void testTuple() throws Throwable {
+		runScript("(1, true)", "(1,true)");
+		runScript("a=(1, true);a", "(1,true)");
+		runScript("(a,b)=(1, \"a\");a", "1");
+		runScript("f(a,b)=(a,b);f(1,false)", "(1,false)");
+	}
+
 	public void testOption() throws Throwable {
 		runScript("Some(1)", "1");
 		runScript("Some(1) >>= (\\n Some(n+1))", "2");

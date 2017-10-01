@@ -136,8 +136,8 @@ interface CodeAPI {
 		return new CastCode(ret, tp, self);
 	}
 
-	public default Code bind(Ty ret) {
-		return ExprCode.option("=", self());
+	public default Code bindAs(TEnv env, Ty ret) {
+		return ExprCode.option("=", self()).asType(env, ret);
 	}
 
 	public default Ty guessType() {

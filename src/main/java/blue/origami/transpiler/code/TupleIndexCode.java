@@ -20,6 +20,11 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
+	public Code bindAs(TEnv env, Ty ret) {
+		return this.asType(env, ret);
+	}
+
+	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty ty = this.inner.getType();

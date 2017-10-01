@@ -1,5 +1,6 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OStrings;
 
@@ -7,8 +8,8 @@ public interface ValueCode extends Code {
 	public Object getValue();
 
 	@Override
-	public default Code bind(Ty ret) {
-		return this;
+	public default Code bindAs(TEnv env, Ty ret) {
+		return this.asType(env, ret);
 	}
 
 	@Override

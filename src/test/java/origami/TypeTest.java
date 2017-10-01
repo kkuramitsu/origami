@@ -105,6 +105,13 @@ public class TypeTest {
 		runScript("1::[]", "Int[]");
 	}
 
+	public void testTuple() throws Throwable {
+		runScript("(1, \"a\")", "Int*String");
+		runScript("a=(1, \"a\");a", "Int*String");
+		runScript("(a,b)=(1, \"a\");a", "Int");
+		runScript("f(a,b)=(a,b);f", "(a,b)->a*b");
+	}
+
 	public void testData() throws Throwable {
 		runScript("f(p) = p.x + p.y; f", "[x,y]->Float");
 	}

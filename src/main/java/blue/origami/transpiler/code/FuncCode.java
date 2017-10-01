@@ -23,7 +23,7 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 	FunctionContext funcContext = null;
 
 	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Tree<?> body) {
-		super(new DeclCode());
+		super(new DoneCode());
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;

@@ -8,7 +8,7 @@ import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DeclCode;
+import blue.origami.transpiler.code.DoneCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.GetCode;
@@ -80,7 +80,7 @@ class TupleAssignCode extends SugarCode {
 		ODebug.trace("::: %s", l);
 		if (env.get(FunctionContext.class) == null) {
 			l.forEach(c -> c.defineAsGlobal(env, false));
-			return new DeclCode();
+			return new DoneCode();
 		}
 		if (l.size() == 1) {
 			return l.get(0).asType(env, Ty.tVoid);

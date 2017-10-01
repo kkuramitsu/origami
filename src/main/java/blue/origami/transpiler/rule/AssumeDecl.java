@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DeclCode;
+import blue.origami.transpiler.code.DoneCode;
 import blue.origami.transpiler.type.Ty;
 
 public class AssumeDecl implements ParseRule, Symbols {
@@ -15,7 +15,7 @@ public class AssumeDecl implements ParseRule, Symbols {
 			String[] names = this.parseNames(sub.get(_name));
 			env.addNameDecl(env.getTranspiler(), names, type);
 		}
-		return new DeclCode();
+		return new DoneCode();
 	}
 
 	final static String[] emptyNames = new String[0];

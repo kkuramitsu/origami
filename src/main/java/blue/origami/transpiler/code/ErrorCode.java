@@ -14,7 +14,7 @@ import blue.origami.util.OStrings;
 public class ErrorCode extends RuntimeException implements Code {
 
 	private final TLog log;
-	private final CommonCode dummy = new DeclCode();
+	private final CommonCode dummy = new DoneCode();
 
 	public ErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
 		super();

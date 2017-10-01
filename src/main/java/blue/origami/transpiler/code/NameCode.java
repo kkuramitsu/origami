@@ -46,6 +46,11 @@ public class NameCode extends CommonCode implements ParseRule {
 	}
 
 	@Override
+	public Code bindAs(TEnv env, Ty ret) {
+		return this.asType(env, ret);
+	}
+
+	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);

@@ -2,11 +2,8 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DeclCode;
-import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.type.Ty;
 
 public class ConstDecl extends SyntaxRule implements ParseRule {
@@ -26,23 +23,8 @@ public class ConstDecl extends SyntaxRule implements ParseRule {
 		String name = t.getStringAt(_name, "");
 		Code right = env.parseCode(env, t.get(_expr));
 		Ty type = t.has(_type) ? env.parseType(env, t.get(_type, null), null) : null;
-		try {
-			if (type == null) {
-				type = Ty.tUntyped();
-				right = right.bind(type).asType(env, type);
-				type = right.getType();
-			} else {
-				right = right.bind(type).asType(env, type);
-			}
-			if (!right.showError(env)) {
-				Transpiler tp = env.getTranspiler();
-				CodeMap defined = tp.defineConst(this.isPublic, name, type, right);
-				env.add(name, defined);
-			}
-		} catch (ErrorCode e) {
-			e.showError(env);
-		}
-		return new DeclCode();
+		LetCode let = new LetCode(name, type, right);
+		return let.defineAsGlobal(env, this.isPublic);
 	}
 
 }
