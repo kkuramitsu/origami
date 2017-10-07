@@ -19,27 +19,33 @@ public class CodeMapLoader {
 	final Transpiler env;
 	final String common;
 	final String base;
+	final String defaul;
 	final HashMap<String, String> keyMap = new HashMap<>();
 
 	CodeMapLoader(Transpiler env, String target) {
 		this.env = env;
 		this.base = "/blue/origami/codemap/" + target + "/";
 		this.common = this.base.replace(target, "common");
+		this.defaul = this.base.replace(target, "default");
 	}
 
 	public void loadCodeMap(String file) {
 		try {
-			this.load(this.common + file);
+			this.load(this.common + file, false);
 		} catch (Throwable e) {
 		}
 		try {
-			this.load(this.base + file);
+			this.load(this.base + file, false);
 		} catch (Throwable e) {
 			OConsole.exit(1, e);
 		}
+		try {
+			this.load(this.defaul + file, true);
+		} catch (Throwable e) {
+		}
 	}
 
-	private void load(String path) throws Throwable {
+	private void load(String path, boolean isDefault) throws Throwable {
 		// String path = this.base + file;
 		File f = new File(path);
 		InputStream s = f.isFile() ? new FileInputStream(path) : CodeMapLoader.class.getResourceAsStream(path);

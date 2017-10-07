@@ -18,6 +18,7 @@ package blue.origami.nez.ast;
 
 import java.util.ArrayList;
 
+import blue.origami.util.OConsole;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OStrings;
 
@@ -25,12 +26,6 @@ public interface SourcePosition {
 	public Source getSource();
 
 	public long getSourcePosition();
-
-	// public int getLineNum();
-	//
-	// public int getColumn();
-	//
-	// public String formatSourceMessage(String type, String msg);
 
 	// Utils
 
@@ -128,7 +123,8 @@ public interface SourcePosition {
 		appendFileLine(sb, s.getSource(), s.getSourcePosition(), mtype);
 		OStrings.appendFormat(sb, format, args);
 		if (!s.isUnknownPosition()) {
-			sb.append(getTextAround(s.getSource(), s.getSourcePosition(), "\n"));
+			sb.append("\n");
+			extractTextAround(sb, s.getSource(), (int) s.getSourcePosition());
 		}
 	}
 
@@ -163,7 +159,53 @@ public interface SourcePosition {
 		return formatMessage(s, fmt.notice(), fmt, args);
 	}
 
-	public static String getTextAround(Source s, long pos, String delim) {
+	static int getch(Source s, int pos) {
+		if (pos >= 0 && pos < s.length()) {
+			return s.byteAt(pos);
+		}
+		return '\n';
+	}
+
+	public static void extractTextAround(StringBuilder sb, Source s, int pos) {
+		String quote = "";
+		int startIndex = pos - 1;
+		while (true) {
+			int ch = getch(s, startIndex);
+			if (ch == '\n') {
+				startIndex = startIndex + 1;
+				break;
+			}
+			if (pos - startIndex > 72 && ch < 128) {
+				quote = " ...";
+				break;
+			}
+			startIndex = startIndex - 1;
+		}
+		int endIndex = pos;
+		while (true) {
+			int ch = getch(s, endIndex);
+			if (ch == '\n') {
+				break;
+			}
+			if (endIndex - startIndex > 72 && ch < 128) {
+				break;
+			}
+			endIndex = endIndex + 1;
+		}
+		sb.append(quote);
+		sb.append(s.subString(startIndex, endIndex));
+		sb.append("\n");
+		sb.append(quote);
+		for (int i = startIndex; i <= endIndex; i++) {
+			if (i == pos) {
+				sb.append(OConsole.bold("^"));
+				break;
+			}
+			sb.append(" ");
+		}
+	}
+
+	public static String getTextAround2(Source s, long pos, String delim) {
 		int ch = 0;
 		if (pos < 0) {
 			pos = 0;
