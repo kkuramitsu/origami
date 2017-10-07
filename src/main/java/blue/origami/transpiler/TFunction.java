@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncRefCode;
@@ -11,17 +10,16 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
-public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
+public class TFunction extends CodeMap implements NameInfo, FuncUnit {
 	static int seq = 0;
 	private int funcId;
 	protected boolean isPublic = false;
-	Tree<?> at;
-	protected String[] paramNames;
-	protected Tree<?> body;
+	AST at;
+	protected AST[] paramNames;
+	protected AST body;
 	private CodeMap generated = null;
 
-	public TFunction(boolean isPublic, Tree<?> name, Ty returnType, String[] paramNames, Ty[] paramTypes,
-			Tree<?> body) {
+	public TFunction(boolean isPublic, AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		super(0, name.getString(), "(uncompiled)", returnType, paramTypes);
 		this.at = name;
 		this.funcId = seq++;
@@ -30,7 +28,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 		this.body = body;
 	}
 
-	public TFunction(Tree<?> name, Ty returnType, String[] paramNames, Ty[] paramTypes, Tree<?> body) {
+	public TFunction(AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		this(false, name, returnType, paramNames, paramTypes, body);
 	}
 
@@ -59,7 +57,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 	}
 
 	@Override
-	public Tree<?> getSource() {
+	public AST getSource() {
 		return this.at;
 	}
 
@@ -69,7 +67,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 	}
 
 	@Override
-	public String[] getParamNames() {
+	public AST[] getParamSource() {
 		return this.paramNames;
 	}
 
@@ -97,7 +95,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 		if (this.isUnused()) {
 			super.used(env);
 			Code code = this.typeBody(env, new FunctionContext(), this.body);
-			if (code.showError(env)) {
+			if (code == null) {
 				this.setExpired();
 				return;
 			}
@@ -113,7 +111,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 				if (this.generated == null) {
 					Transpiler tr = env.getTranspiler();
 					boolean hasAbstract = this.isAbstract(code);
-					this.generated = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames,
+					this.generated = tr.defineFunction(this.isPublic, this.at, this.funcId, this.paramNames,
 							this.paramTypes, this.returnType, null, hasAbstract ? env.parseCode(env, this.body) : code);
 				}
 				this.setExpired();
@@ -144,8 +142,8 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 		if (tp == null) {
 			Transpiler tr = env.getTranspiler();
 			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
-			final CodeMap tp2 = tr.defineFunction(this.isPublic, this.name, this.funcId, this.paramNames, p, ret, dom,
-					this.body);
+			final CodeMap tp2 = tr.defineFunction(this.isPublic, this.getSource(), this.funcId, this.paramNames, p, ret,
+					dom, this.body);
 			ODebug.showBlue(TFmt.Template_Specialization, () -> {
 				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), tp2.getFuncType());
 			});
@@ -184,7 +182,7 @@ public class TFunction extends CodeMap implements NameInfo, FunctionUnit {
 	}
 
 	@Override
-	public Code newCode(TEnv env, Tree<?> s) {
+	public Code newCode(TEnv env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.LetCode;
@@ -19,11 +19,10 @@ public class ConstDecl extends SyntaxRule implements ParseRule {
 	}
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
-		String name = t.getStringAt(_name, "");
+	public Code apply(TEnv env, AST t) {
 		Code right = env.parseCode(env, t.get(_expr));
-		Ty type = t.has(_type) ? env.parseType(env, t.get(_type, null), null) : null;
-		LetCode let = new LetCode(name, type, right);
+		Ty type = t.has(_type) ? env.parseType(env, t.get(_type), null) : null;
+		LetCode let = new LetCode(t.get(_name), type, right);
 		return let.defineAsGlobal(env, this.isPublic);
 	}
 

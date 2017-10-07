@@ -442,7 +442,7 @@ match x
 '''
 
 example MatchExpr '''
-match x
+match x with
   | 0 => 1
   | 1 => 2
   | 1,2 => {
@@ -450,11 +450,13 @@ match x
   }
   | (1 to <5) => x
   | None => x
+  | Some(x) => x
+  | (1, x) => x
   | otherwise => x
 '''
 
 MatchExpr = {
-	[Mm] 'atch' EOT $expr(Expression) __
+	[Mm] 'atch' EOT $expr(Expression) ([Ww] 'ith')? __
 	$body(Rules)
 	#MatchExpr
 }
@@ -471,72 +473,76 @@ Rules = {
 }
 
 RuleExpr = {
-	( [Cc] 'ase' !W / '|') _ $expr(CaseExpr) __
-	("=>" / ":" ) __
+	( [Cc] 'ase' !W / '|') _ $expr(TopCase) __
+	( [=\-] ">" / ":" ) __
 	$body(Expression)
 	#CaseExpr
 }
 
 DefaultRuleExpr = {
 	([Dd] 'efault' / [Oo] 'therwise') __
-	("=>" / ":" ) __
+	([=\-] ">" / ":" ) __
 	$body(Expression)
   #AnyCaseExpr
 }
 
-MatchValue = Constant
+TopCase =
+	AnyCase
+	/ SomeCase
+	/ NoneCase
+	/ RangeCase
+	/ TupleCase
+	/ ListCase
+	/ DataCase
+	/ ValuesCase
+	/ ValueCase
 
-MatchValues = {
-	$(MatchValue)
-	(( "|" / "," ) $(MatchValue))+
-}
+InnerCase =
+	NameCase
+	/ AnyCase
+	/ SomeCase
+	/ NoneCase
+	/ RangeCase
+	/ TupleCase
+	/ ListCase
+	/ DataCase
+	/ ValueCase
 
-CaseExpr =
-	AnyCaseExpr
-	/ NoneCaseExpr
-	/ RangeCaseExpr
-	/ ValueCaseExpr
-	/ ListCaseExpr
-	/ DataCaseExpr
-
-AnyCaseExpr = {
+AnyCase = {
 	([Oo] 'therwise' EOT / "_")
 	#AnyCase
 }
 
-NoneCaseExpr = {
+SomeCase = {
+	[Ss] ('ome') "(" $name(Identifier) ")"
+	#SomeCase
+}
+
+NoneCase = {
 	[Nn] ('one' / 'ull' / 'UIL' / 'il' ) EOT
 	#NoneCase
 }
 
-RangeCaseExpr = {
-	("("
-	$start(MatchValue)
-  ( [Tt] 'o' _
-	  ("<" #RangeUntilCase / #RangeCase)
-	/ '..'
-	  ("<" #RangeUntilCase / "." #RangeCase)
-	)
-	$end(MatchValue)
-	")") / (
-  $start(MatchValue)
-  ( [Tt] 'o' _
-    ("<" #RangeUntilCase / #RangeCase)
-  / '..'
-    ("<" #RangeUntilCase / "." #RangeCase)
-  )
-  $end(MatchValue)
-  )
+RangeCase = {
+	( "(" RANGEc ")" ) / RANGEc
 }
 
-ValueCaseExpr = {
-	($list(MatchValues) / $value(MatchValue))
+RANGEc = $start(Constant) TOc $end(Constant)
+TOc = [Tt] 'o' _ ("<" #RangeUntilCase / #RangeCase)
+
+ValueCase = {
+	$value(Constant)
   	#ValueCase
+}
+
+ValuesCase = {
+	$(Constant) (( "|" / "," ) $(Constant))+
+  	#ValuesCase
 }
 
 // a(>0)(<10)
 
-NameCaseExpr = {
+NameCase = {
 	$name(Identifier)
 	$suffix(Quantity)?
 	$where(NameWhereExpr)?
@@ -558,19 +564,38 @@ WHEREOP =
 	/ '?'  #WherePredExpr
 	/ '!'  #WhereNotPredExpr
 
+// (1,2)
+
 example MatchExpr '''
 match a
-  | [it(>1), *] => a
+  | (1,1) => 1
+  | (1,0) => 1
+  | (0,1) => 1
+  | (0,0) => 0
+'''
+
+TupleCase = {
+	"("
+	$(InnerCase) ("," $(InnerCase))+
+	#TupleCase
+	")"
+}
+
+// [1,2]
+
+example MatchExpr '''
+match a
+  | [it(>1), ...] => a
   | [1, a*] => a
   | [[n,n'(>0)], a*] => a
   | [] => a
 '''
 
-ListCaseExpr = {
+ListCase = {
 	"["
-	$(NameCaseExpr/CaseExpr)?
-	("," $(NameCaseExpr/CaseExpr))*
-	(","? ("..." / "*") #ListMoreCase / #ListCase)
+	$(InnerCase)?
+	("," $(InnerCase))*
+	(","? "..." #ListMoreCase / #ListCase)
 	"]"
 }
 
@@ -578,25 +603,25 @@ ListCaseExpr = {
 
 example MatchExpr '''
 match x
-  | {left, right, *} => x
+  | {left, right, ...} => x
   | {left: {left, right}, right} => x
   | {name, age(>20), ...} => x
   | {} => x
 '''
 
-DataCaseExpr = {
+DataCase = {
 	"{"
-	$(DataNameCaseExpr/NameCaseExpr)?
-	("," $(DataNameCaseExpr/NameCaseExpr))*
-	(","? ("..." / "*") #DataMoreCase / #DataCase)
+	$(DataNameCase/NameCase)?
+	("," $(DataNameCase/NameCase))*
+	(","? "..." #DataMoreCase / #DataCase)
 	"}"
 }
 
-DataNameCaseExpr = {
+DataNameCase = {
 	$name(Identifier)
 	$suffix(Quantity)?
     ":"
-	$cond(CaseExpr)
+	$cond(InnerCase)
   	#NameCase
 }
 

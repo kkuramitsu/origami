@@ -1,5 +1,6 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionContext.Variable;
@@ -16,14 +17,15 @@ public class LetCode extends Code1 {
 	private String name;
 	private int index = -1;
 
-	public LetCode(String name, Code expr) {
-		this(name, null, expr);
+	public LetCode(AST name, Ty type, Code expr) {
+		super(expr);
+		this.setSource(name);
+		this.name = name.getString();
+		this.declType = type == null ? Ty.tUntyped() : type;
 	}
 
-	public LetCode(String name, Ty type, Code expr) {
-		super(expr);
-		this.name = name;
-		this.declType = type == null ? Ty.tUntyped() : type;
+	public LetCode(String name, Code expr) {
+		this(AST.getName(name), null, expr);
 	}
 
 	public LetCode asImplicit() {
@@ -50,7 +52,7 @@ public class LetCode extends Code1 {
 			if (this.isImplicit) {
 
 			}
-			Variable var = fcx.newVariable(this.name, this.index, this.declType);
+			Variable var = fcx.newVariable(this.getSource(), this.index, this.declType);
 			env.add(this.name, var);
 			this.index = var.getIndex();
 

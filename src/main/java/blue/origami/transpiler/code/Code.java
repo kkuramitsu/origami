@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
@@ -21,9 +21,9 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 		return this;
 	}
 
-	public Code setSource(Tree<?> t);
+	public Code setSource(AST t);
 
-	public Tree<?> getSource();
+	public AST getSource();
 
 	public Code[] args();
 
@@ -131,7 +131,7 @@ interface CodeAPI {
 			ODebug.log(() -> {
 				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);
 			});
-			return new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
+			throw new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
 		}
 		return new CastCode(ret, tp, self);
 	}
@@ -181,7 +181,7 @@ interface CodeAPI {
 }
 
 abstract class CommonCode implements Code {
-	private Tree<?> at;
+	private AST at;
 	private Ty typed;
 
 	protected CommonCode(Ty t) {
@@ -194,10 +194,10 @@ abstract class CommonCode implements Code {
 	}
 
 	@Override
-	public Tree<?> getSource() {
+	public AST getSource() {
 		if (this.at == null) {
 			for (Code c : this.args()) {
-				Tree<?> at = c.getSource();
+				AST at = c.getSource();
 				if (at != null) {
 					return at;
 				}
@@ -207,7 +207,7 @@ abstract class CommonCode implements Code {
 	}
 
 	@Override
-	public Code setSource(Tree<?> s) {
+	public Code setSource(AST s) {
 		if (this.at == null) {
 			this.at = s;
 		}

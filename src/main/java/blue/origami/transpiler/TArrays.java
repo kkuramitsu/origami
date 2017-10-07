@@ -11,6 +11,7 @@ public class TArrays {
 	public static final Ty[] emptyTypes = new Ty[0];
 	public static final Code[] emptyCodes = new Code[0];
 	public static final String[] emptyNames = new String[0];
+	public static final AST[] emptyTrees = new AST[0];
 
 	public static Ty[] join(Ty first, Ty... params) {
 		Ty[] p = new Ty[params.length + 1];

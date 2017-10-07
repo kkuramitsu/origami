@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
@@ -12,7 +12,7 @@ import blue.origami.transpiler.type.VarLogger;
 public class GetCode extends Code1 {
 	final String name;
 
-	public GetCode(Code recv, Tree<?> nameTree) {
+	public GetCode(Code recv, AST nameTree) {
 		super(recv);
 		this.name = nameTree.getString();
 		this.setSource(nameTree);

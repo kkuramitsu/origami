@@ -1,9 +1,8 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.FuncParam;
+import blue.origami.transpiler.AST;
+import blue.origami.transpiler.FuncUnit;
 import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.FunctionUnit;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -13,16 +12,16 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
-public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
+public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 
-	String[] paramNames;
+	AST[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
 
-	Tree<?> body = null;
+	AST body = null;
 	FunctionContext funcContext = null;
 
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Tree<?> body) {
+	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, AST body) {
 		super(new DoneCode());
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -30,7 +29,7 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 		this.body = body;
 	}
 
-	public FuncCode(String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		super(body);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -44,7 +43,7 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 	}
 
 	@Override
-	public String[] getParamNames() {
+	public AST[] getParamSource() {
 		return this.paramNames;
 	}
 
@@ -68,7 +67,6 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 		this.returnType = ret;
 	}
 
-	@Override
 	public int getStartIndex() {
 		return this.funcContext.getStartIndex();
 	}
@@ -171,7 +169,7 @@ public class FuncCode extends Code1 implements FuncParam, FunctionUnit {
 			} else {
 				for (int i = 0; i < this.paramNames.length; i++) {
 					sb.Keyword("\\");
-					sb.Name(this.paramNames[i]);
+					sb.Name(this.paramNames[i].getString());
 					sb.append(" ");
 				}
 			}

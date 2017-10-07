@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
@@ -185,12 +186,12 @@ public class FuncTy extends Ty {
 	public CodeMap genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
 		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
 		Transpiler tr = env.getTranspiler();
-		String[] names = { "f" };
+		AST[] names = AST.getNames("f");
 		Ty[] params = { fromTy };
 
 		Ty[] fromTypes = fromTy.getParamTypes();
 		Ty[] toTypes = toTy.getParamTypes();
-		String[] fnames = TArrays.names(toTypes.length);
+		AST[] fnames = AST.getNames(TArrays.names(toTypes.length));
 		List<Code> l = new ArrayList<>();
 		l.add(new NameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {

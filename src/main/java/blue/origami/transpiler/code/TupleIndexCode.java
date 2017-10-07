@@ -27,6 +27,7 @@ public class TupleIndexCode extends Code1 {
 	@Override
 	public Code asType(TEnv env, Ty ret) {
 		if (this.isUntyped()) {
+			this.inner = this.inner.asType(env, Ty.tUntyped());
 			Ty ty = this.inner.getType();
 			if (!ty.isTuple()) {
 				throw new ErrorCode(this.inner, TFmt.not_tuple);

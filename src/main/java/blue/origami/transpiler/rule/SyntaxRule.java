@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
@@ -10,42 +10,40 @@ import blue.origami.transpiler.type.Ty;
 
 public class SyntaxRule extends LoggerRule implements Symbols {
 
-	final static String[] emptyNames = new String[0];
+	// public String[] parseNames(TEnv env, AST names) {
+	// if (names == null) {
+	// return emptyNames;
+	// }
+	// String[] p = new String[names.size()];
+	// int i = 0;
+	// for (AST sub : names) {
+	// p[i] = sub.getString();
+	// i++;
+	// }
+	// return p;
+	// }
 
-	public String[] parseNames(TEnv env, Tree<?> names) {
-		if (names == null) {
-			return emptyNames;
-		}
-		String[] p = new String[names.size()];
-		int i = 0;
-		for (Tree<?> sub : names) {
-			p[i] = sub.getString();
-			i++;
-		}
-		return p;
-	}
-
-	public String[] parseParamNames(TEnv env, Tree<?> params) {
+	public AST[] parseParamNames(TEnv env, AST params) {
 		if (params == null) {
-			return emptyNames;
+			return TArrays.emptyTrees;
 		} else if (params.has(_name)) {
-			return new String[] { params.getStringAt(_name, "") };
+			return new AST[] { params.get(_name) };
 		} else {
-			String[] paramNames = new String[params.size()];
+			AST[] paramNames = new AST[params.size()];
 			int i = 0;
-			for (Tree<?> sub : params) {
-				paramNames[i] = sub.getStringAt(_name, "");
+			for (AST sub : params) {
+				paramNames[i] = sub.get(_name);
 				i++;
 			}
 			return paramNames;
 		}
 	}
 
-	Ty parseReturnType(TEnv env, Tree<?> type) {
+	Ty parseReturnType(TEnv env, AST type) {
 		return this.parseReturnType(env, null, type);
 	}
 
-	Ty parseReturnType(TEnv env, String name, Tree<?> type) {
+	Ty parseReturnType(TEnv env, String name, AST type) {
 		if (type != null) {
 			return env.parseType(env, type, null);
 		}
@@ -57,32 +55,32 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		return Ty.tNULL;
 	}
 
-	Ty[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params) {
-		return this.parseParamTypes(env, paramNames, params, null);
+	Ty[] parseParamTypes(TEnv env, AST params) {
+		return this.parseParamTypes(env, params, null);
 	}
 
-	Ty[] parseParamTypes(TEnv env, String[] paramNames, Tree<?> params, Ty defaultType) {
+	Ty[] parseParamTypes(TEnv env, AST params, Ty defaultType) {
 		if (params == null) {
 			return TArrays.emptyTypes;
 		}
-		Ty[] p = new Ty[paramNames.length];
-		if (params.has(_name) && p.length == 1) {
-			p[0] = this.parseParamType(env, params, paramNames[0], params.get(_type, null), defaultType);
-			return p;
+		if (params.has(_name)) {
+			return new Ty[] { this.parseParamType(env, params.get(_name), params.get(_type), defaultType) };
 		}
+		Ty[] p = new Ty[params.size()];
 		int i = 0;
-		for (Tree<?> sub : params) {
-			p[i] = this.parseParamType(env, sub, paramNames[i], sub.get(_type, null), defaultType);
+		for (AST sub : params) {
+			p[i] = this.parseParamType(env, sub.get(_name), sub.get(_type), defaultType);
 			i++;
 		}
 		return p;
 	}
 
-	Ty parseParamType(TEnv env, Tree<?> param, String name, Tree<?> type, Ty defaultType) {
+	Ty parseParamType(TEnv env, AST param, AST type, Ty defaultType) {
 		Ty ty = null;
 		if (type != null) {
 			ty = env.parseType(env, type, null);
 		}
+		String name = param.getString();
 		if (ty == null && name != null) {
 			if (name.endsWith("?")) {
 				ty = Ty.tBool;
@@ -110,7 +108,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 	}
 	//
 	// // name
-	// public Ty parseTypeArity(TEnv env, Ty ty, Tree<?> param) {
+	// public Ty parseTypeArity(TEnv env, Ty ty, AST param) {
 	// if (param.has(_suffix)) {
 	// String suffix = param.getStringAt(_suffix, "");
 	// // if (ty != null && suffix.equals("?")) {
@@ -127,13 +125,13 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 	// return ty;
 	// }
 
-	public Ty[] parseTypes(TEnv env, Tree<?> types) {
+	public Ty[] parseTypes(TEnv env, AST types) {
 		if (types == null) {
 			return TArrays.emptyTypes;
 		}
 		Ty[] p = new Ty[types.size()];
 		int i = 0;
-		for (Tree<?> sub : types) {
+		for (AST sub : types) {
 			p[i] = env.parseType(env, sub, null);
 			i++;
 		}

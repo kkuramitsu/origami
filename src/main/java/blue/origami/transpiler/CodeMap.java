@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import java.util.List;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
@@ -164,7 +163,7 @@ public class CodeMap implements NameInfo {
 	}
 
 	@Override
-	public Code newCode(TEnv env, Tree<?> s) {
+	public Code newCode(TEnv env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

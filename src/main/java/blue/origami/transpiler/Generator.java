@@ -3,13 +3,10 @@ package blue.origami.transpiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.Tree;
-import blue.origami.transpiler.code.BinaryCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.CodeBuilder;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.MultiCode;
-import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.type.Ty;
 
 public abstract class Generator implements CodeBuilder {
@@ -68,9 +65,9 @@ public abstract class Generator implements CodeBuilder {
 		}
 	}
 
-	protected ArrayList<Tree<?>> exampleList = null;
+	protected ArrayList<AST> exampleList = null;
 
-	public void addExample(String name, Tree<?> t) {
+	public void addExample(String name, AST t) {
 		if (this.exampleList == null) {
 			this.exampleList = new ArrayList<>(0);
 		}
@@ -89,7 +86,7 @@ public abstract class Generator implements CodeBuilder {
 		}
 		if (!code.isGenerative() && this.exampleList != null) {
 			ArrayList<Code> asserts = new ArrayList<>();
-			for (Tree<?> t : this.exampleList) {
+			for (AST t : this.exampleList) {
 				Code body = env.parseCode(env, t).asType(env, Ty.tBool);
 				asserts.add(new ExprCode("assert", body));
 			}
@@ -99,17 +96,18 @@ public abstract class Generator implements CodeBuilder {
 		return code;
 	}
 
-	public CodeMap genTestBinFunc(TEnv env, String op, Code right) {
-		Transpiler tr = env.getTranspiler();
-		Ty ty = right.getType();
-		String[] names = { "a", "b" };
-		Ty[] params = { ty, ty };
-		Code name = new NameCode("a", 0, ty, 0);
-		MultiCode body = new MultiCode(new ExprCode("assert", new BinaryCode(op, name, new NameCode("b", 1, ty, 0))),
-				name);
-		return tr.defineFunction("test" + op + ty, names, params, ty, body);
-	}
-
+	// public CodeMap genTestBinFunc(TEnv env, String op, Code right) {
+	// Transpiler tr = env.getTranspiler();
+	// Ty ty = right.getType();
+	// String[] names = { "a", "b" };
+	// Ty[] params = { ty, ty };
+	// Code name = new NameCode("a", 0, ty, 0);
+	// MultiCode body = new MultiCode(new ExprCode("assert", new BinaryCode(op,
+	// name, new NameCode("b", 1, ty, 0))),
+	// name);
+	// return tr.defineFunction("test" + op + ty, names, params, ty, body);
+	// }
+	//
 	// public abstract String arrowName(Ty fromTy, Ty toTy);
 
 	// public Template genFuncConvFunc(TEnv env, FuncTy fromTy, FuncTy toTy) {

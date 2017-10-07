@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
@@ -19,7 +19,7 @@ public class LogCode extends Code1 {
 	}
 
 	@Override
-	public Code setSource(Tree<?> t) {
+	public Code setSource(AST t) {
 		this.inner.setSource(t);
 		this.log.setSource(t);
 		return this;

@@ -1,22 +1,15 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TemplateCode;
-import blue.origami.transpiler.type.Ty;
 
 public class TemplateExpr implements ParseRule {
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
-		Code[] elements = new Code[t.size()];
-		int c = 0;
-		for (Tree<?> sub : t) {
-			elements[c] = env.parseCode(env, sub).asType(env, Ty.tString);
-			c++;
-		}
-		return new TemplateCode(elements);
+	public Code apply(TEnv env, AST t) {
+		return new TemplateCode(t.subMap(sub -> env.parseCode(env, sub), Code[]::new));
 	}
 
 }

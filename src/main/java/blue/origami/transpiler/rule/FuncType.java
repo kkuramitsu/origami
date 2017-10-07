@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
@@ -11,10 +11,10 @@ public class FuncType implements ParseRule, Symbols {
 	public final static Symbol _TupleType = Symbol.unique("TupleType");
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		Ty ret = env.parseType(env, t.get(_type), null);
 		if (t.has(_base)) {
-			Tree<?> from = t.get(_base);
+			AST from = t.get(_base);
 			if (from.getTag() == _TupleType) {
 				Ty[] a = new Ty[from.size()];
 				for (int i = 0; i < from.size(); i++) {
@@ -26,7 +26,7 @@ public class FuncType implements ParseRule, Symbols {
 				return new TypeCode(Ty.tFunc(ret, fromTy));
 			}
 		} else {
-			Tree<?> params = t.get(_param);
+			AST params = t.get(_param);
 			Ty[] a = new Ty[params.size()];
 			for (int i = 0; i < params.size(); i++) {
 				a[i] = env.parseType(env, params.get(i), null);

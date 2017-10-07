@@ -3,7 +3,7 @@ package blue.origami.transpiler.type;
 import java.util.Set;
 import java.util.TreeSet;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
@@ -76,7 +76,7 @@ public class DataTy extends Ty {
 		return this.fields.contains(field);
 	}
 
-	public Ty fieldTy(TEnv env, Tree<?> s, String name) {
+	public Ty fieldTy(TEnv env, AST s, String name) {
 		if (this.hasField(name)) {
 			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint != null) {
@@ -105,7 +105,7 @@ public class DataTy extends Ty {
 		return this;
 	}
 
-	// public void checkSetField(Tree<?> at, String name) {
+	// public void checkSetField(AST at, String name) {
 	// if (!this.isMutable) {
 	// throw new ErrorCode(TFmt.immutable_data);
 	// } else {
@@ -119,7 +119,7 @@ public class DataTy extends Ty {
 	// }
 	//
 	// //
-	// public void checkGetField(Tree<?> at, String name) {
+	// public void checkGetField(AST at, String name) {
 	// DSymbol f = DSymbol.unique(name);
 	// if (!this.hasField(f)) {
 	// if (this.isGrowing()) {

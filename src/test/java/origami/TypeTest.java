@@ -77,6 +77,7 @@ public class TypeTest {
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
 		runScript("f(a,n)={m=a[n];m};f", "(a[],Int)->a");
 		runScript("f(a,n)={m=a[n];m};f([0,1], 0);f", "(Int[],Int)->Int");
+		runScript("f(a, b) =\n  | (1, 1) -> 1\n  | (1, 0) -> 1\nf", "(Int,Int)->Int");
 	}
 
 	public void testAdHoc() throws Throwable {

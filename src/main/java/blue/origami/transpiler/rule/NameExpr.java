@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
@@ -8,7 +8,7 @@ import blue.origami.transpiler.code.NameCode;
 public class NameExpr implements ParseRule {
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		// String name = t.getString();
 		// env.addParsedName(name);
 		return new NameCode(t);
@@ -19,7 +19,7 @@ public class NameExpr implements ParseRule {
 
 		public void used(TEnv env);
 
-		public Code newCode(TEnv env, Tree<?> s);
+		public Code newCode(TEnv env, AST s);
 	}
 
 }

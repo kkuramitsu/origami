@@ -1,40 +1,34 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
-import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
-public class NameCode extends CommonCode implements ParseRule {
-
-	@Override
-	public Code apply(TEnv env, Tree<?> t) {
-		return new NameCode(t);
-	}
+public class NameCode extends CommonCode {
 
 	private final String name;
 	private final int seq;
 	private final int refLevel;
 
-	public NameCode(Tree<?> name) {
-		this(name.getString(), -1, null, 0);
-		this.setSource(name);
-	}
-
-	public NameCode(String name) {
+	public NameCode(AST name) {
 		this(name, -1, null, 0);
 	}
 
-	public NameCode(String name, int seq, Ty ty, int refLevel) {
+	public NameCode(String name) {
+		this(AST.getName(name));
+	}
+
+	public NameCode(AST name, int seq, Ty ty, int refLevel) {
 		super(ty);
-		this.name = name;
+		this.name = name.getString();
 		this.seq = seq;
 		this.refLevel = refLevel;
+		this.setSource(name);
 	}
 
 	public String getName() {

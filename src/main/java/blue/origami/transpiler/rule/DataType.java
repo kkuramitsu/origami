@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
@@ -21,10 +21,10 @@ public class DataType implements ParseRule {
 	}
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		String[] names = new String[t.size()];
 		int c = 0;
-		for (Tree<?> sub : t) {
+		for (AST sub : t) {
 			String name = sub.getString();
 			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint == null) {

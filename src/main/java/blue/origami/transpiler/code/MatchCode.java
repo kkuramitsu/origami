@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
@@ -37,6 +38,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		for (Code c : this.args) {
 			RuleCode r = (RuleCode) c;
 			Ty ty = r.inferType();
+			// ODebug.trace(":::::: %s %s", c, ty);
 			if (ty != null) {
 				infTy = ty;
 				if (!infTy.hasVar()) {
@@ -57,7 +59,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			if (fcx == null || fcx.size() == 0) {
 				throw new ErrorCode(TFmt.required_first_argument);
 			}
-			this.targetCode = fcx.getFirstArgument().newCode(env, null);
+			this.targetCode = fcx.getArgumentsPattern(env);
 		}
 		Ty targetTy = this.inferTargetType();
 		Code desugar = null;
@@ -77,7 +79,6 @@ public class MatchCode extends CodeN implements CodeBuilder {
 
 	private Code desugarRule(TEnv env, Code targetCode0, Ty targetTy) {
 		Code targetCode = targetCode0.asType(env, targetTy);
-		ODebug.trace("target %s", targetCode.getType());
 		targetTy = targetCode.getType();
 		LetCode decl = new LetCode("it", targetCode);
 		targetCode = new NameCode("it");
@@ -139,8 +140,6 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			List<Code> ands = new ArrayList<>();
 			this.caseCode.makeCondCode(target, targetTy, ands);
 			this.args[0] = this.and(ands);
-			;
-			;
 			Set<String> names = new HashSet<>();
 			this.findNames(this.args[1], names);
 			ODebug.trace("names %s", names);
@@ -253,7 +252,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			}
 			if (this.name != null && this.target != null) {
 				if (names.contains(this.name)) {
-					vars.add(new LetCode(this.name, this.targetTy, this.target));
+					vars.add(new LetCode(AST.getName(this.name), this.targetTy, this.target));
 				}
 			}
 		}
@@ -455,7 +454,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("{");
-			OStrings.joins(sb, this.args, ", ");
+			OStrings.joins(sb, this.args, ",");
 			sb.append("}");
 		}
 
@@ -483,6 +482,50 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	}
 
 	// [X,Y,Z]
+	public static class TupleCase extends Case {
+
+		public TupleCase(Case[] list) {
+			super(list);
+			assert (list.length > 1) : "tuple " + 1;
+		}
+
+		@Override
+		public boolean match(Case prev) {
+			return prev instanceof TupleCase;
+		}
+
+		@Override
+		public void strOut(StringBuilder sb) {
+			sb.append("(");
+			OStrings.joins(sb, this.args, ",");
+			sb.append(")");
+		}
+
+		private Case caseAt(int index) {
+			return (Case) this.args[index];
+		}
+
+		@Override
+		public Ty inferType() {
+			Ty[] ts = new Ty[this.args.length];
+			for (int i = 0; i < this.args.length; i++) {
+				ts[i] = Ty.tUntyped();
+			}
+			return Ty.tTuple(ts);
+		}
+
+		@Override
+		public void extractCondCode(List<Code> ands) {
+			int len = this.args.length;
+			for (int i = 0; i < len; i++) {
+				Case c = this.caseAt(i);
+				c.makeCondCode(this.tupleAt(this.target, i), this.targetTy.getInnerTy(), ands);
+			}
+		}
+
+	}
+
+	// [X,Y,Z]
 	public static class ListCase extends Case {
 
 		public ListCase(Case[] list) {
@@ -497,7 +540,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		@Override
 		public void strOut(StringBuilder sb) {
 			sb.append("[");
-			OStrings.joins(sb, this.args, ", ");
+			OStrings.joins(sb, this.args, ",");
 			sb.append("]");
 		}
 
@@ -514,12 +557,12 @@ public class MatchCode extends CodeN implements CodeBuilder {
 
 		@Override
 		public Ty inferType() {
-			for (Code c : this.args) {
-				Ty ty = c.getType();
-				if (ty != null) {
-					return Ty.tList(ty);
-				}
-			}
+			// for (Code c : this.args) {
+			// Ty ty = ((Case) c).inferType();
+			// if (ty != null) {
+			// return Ty.tList(ty);
+			// }
+			// }
 			return Ty.tList(Ty.tUntyped());
 		}
 

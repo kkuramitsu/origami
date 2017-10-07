@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
@@ -10,13 +9,17 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
-public interface FunctionUnit {
+public interface FuncUnit {
 
-	public Tree<?> getSource();
+	public AST getSource();
+
+	public AST[] getParamSource();
 
 	public String getName();
 
-	public String[] getParamNames();
+	public default String[] getParamNames() {
+		return Arrays.stream(this.getParamSource()).map(t -> t.getString()).toArray(String[]::new);
+	}
 
 	public Ty[] getParamTypes();
 
@@ -26,7 +29,7 @@ public interface FunctionUnit {
 
 	public void setReturnType(Ty ret);
 
-	public default Code typeBody(TEnv env, FunctionContext fcx, Tree<?> body) {
+	public default Code typeBody(TEnv env, FunctionContext fcx, AST body) {
 		return typeBody(env, fcx, env.parseCode(env, body));
 	}
 
@@ -40,6 +43,7 @@ public interface FunctionUnit {
 	}
 
 	public default Code typeCheck(final TEnv env0, FunctionContext fcx, VarDomain dom, Code code0) {
+		final AST[] ps = this.getParamSource();
 		final String[] pnames = this.getParamNames();
 		final Ty[] pats = this.getParamTypes();
 		final Ty ret = this.getReturnType();
@@ -49,10 +53,13 @@ public interface FunctionUnit {
 		env.add(FunctionContext.class, fcx);
 		fcx.enter();
 		for (int i = 0; i < pnames.length; i++) {
-			env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
+			env.add(pnames[i], fcx.newVariable(ps[i], pats[i]));
 		}
 		Code code = env.catchCode(() -> code0.asType(env, ret));
 		fcx.exit();
+		if (code.showError(env)) {
+			return null;
+		}
 		if (dyn) {
 			ret.toImmutable();
 		}
@@ -106,27 +113,26 @@ public interface FunctionUnit {
 		return code.hasSome(c -> c.isError());
 	}
 
-	public static FunctionUnit wrap(Tree<?> s, String[] paramNames, CodeMap tp) {
+	public static FuncUnit wrap(AST s, AST[] paramNames, CodeMap tp) {
 		return new FunctionUnitWrapper(s, paramNames, tp);
 	}
 
 }
 
-class FunctionUnitWrapper implements FunctionUnit {
-	Tree<?> at;
-	String[] paramNames;
+class FunctionUnitWrapper implements FuncUnit {
+	AST at;
+	AST[] paramNames;
 	CodeMap tp;
 
-	public FunctionUnitWrapper(Tree<?> s, String[] paramNames, CodeMap tp) {
+	public FunctionUnitWrapper(AST s, AST[] paramNames, CodeMap tp) {
 		this.at = s;
-		this.tp = tp;
 		this.paramNames = paramNames;
+		this.tp = tp;
 	}
 
 	@Override
-	public Tree<?> getSource() {
-		// TODO Auto-generated method stub
-		return null;
+	public AST getSource() {
+		return this.at;
 	}
 
 	@Override
@@ -135,7 +141,7 @@ class FunctionUnitWrapper implements FunctionUnit {
 	}
 
 	@Override
-	public String[] getParamNames() {
+	public AST[] getParamSource() {
 		return this.paramNames;
 	}
 

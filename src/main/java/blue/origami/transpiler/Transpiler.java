@@ -5,8 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.asm.AsmGenerator;
 import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserCode.ParserErrorException;
 import blue.origami.nez.parser.ParserSource;
@@ -23,7 +21,6 @@ import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.util.CodeTree;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -176,8 +173,7 @@ public class Transpiler extends TEnv {
 
 	void emitCode(TEnv env, Source sc) throws Throwable {
 		Parser p = env.get(Parser.class);
-		CodeTree defaultTree = new CodeTree();
-		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
+		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
 			OConsole.println(t);
 		});
@@ -207,8 +203,7 @@ public class Transpiler extends TEnv {
 	public Code testCode(String text) throws Throwable {
 		Source sc = ParserSource.newStringSource("<test>", 1, text);
 		Parser p = this.get(Parser.class);
-		CodeTree defaultTree = new CodeTree();
-		Tree<?> t = (CodeTree) p.parse(sc, 0, defaultTree, defaultTree);
+		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		this.generator.setup();
 		return this.parseCode(this, t).asType(this, Ty.tUntyped());
 	}
@@ -232,9 +227,9 @@ public class Transpiler extends TEnv {
 		}
 	}
 
-	public void addExample(String name, Tree<?> tree) {
-		if (tree.is(Symbol.unique("MultiExpr"))) {
-			for (Tree<?> t : tree) {
+	public void addExample(String name, AST tree) {
+		if (tree.is("MultiExpr")) {
+			for (AST t : tree) {
 				this.generator.addExample(name, t);
 			}
 		} else {
@@ -257,33 +252,27 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
-	public CodeMap defineFunction(String name, String[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+	public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		final TEnv env = this.newEnv();
 		final String lname = this.generator.safeName(name);
 		final CodeMap tp = this.generator.newCodeMap(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
-		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
+		FuncUnit fu = FuncUnit.wrap(null, paramNames, tp);
 		Code code = fu.typeCheck(env, fcx, null, body);
-		this.generator.defineFunction(this, false, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
+		this.generator.defineFunction(this, false, lname, AST.names(paramNames), tp.getParamTypes(), tp.getReturnType(),
+				code);
 		return tp;
 	}
 
-	public CodeMap defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
-			Ty returnType, VarDomain dom, Tree<?> body) {
-		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
-				this.parseCode(this, body));
-	}
-
-	public CodeMap defineFunction(boolean isPublic, String name, int seq, String[] paramNames, Ty[] paramTypes,
+	public CodeMap defineFunction(boolean isPublic, AST aname, int seq, AST[] paramNames, Ty[] paramTypes,
 			Ty returnType, VarDomain dom, Code code0) {
-		// final Ty ret = (returnType.isNULL()) ? new VarTy("ret*", -1) :
-		// returnType;
+		final String name = aname.getString();
 		final String lname = isPublic ? name : this.getLocalName(name);
 		final CodeMap tp = this.generator.newCodeMap(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
-		FunctionUnit fu = FunctionUnit.wrap(null, paramNames, tp);
+		FuncUnit fu = FuncUnit.wrap(aname, paramNames, tp);
 
 		Code code = fu.typeCheck(this, fcx, dom, code0);
 		if (fu.getReturnType().isUnion()) {
@@ -297,27 +286,16 @@ public class Transpiler extends TEnv {
 		if (code.showError(this)) {
 			return tp;
 		}
-		this.generator.defineFunction(this, isPublic, lname, paramNames, tp.getParamTypes(), tp.getReturnType(), code);
+		this.generator.defineFunction(this, isPublic, lname, AST.names(paramNames), tp.getParamTypes(),
+				tp.getReturnType(), code);
 		return tp;
 	}
 
-	//
-	// public Template defineFunction(boolean isPublic, String name, int seq,
-	// String[] paramNames, Ty[] paramTypes,
-	// Ty returnType, Code body) {
-	// final String lname = isPublic ? name : this.getLocalName(name);
-	// final CodeTemplate tp = this.generator.newFuncTemplate(this, name, lname,
-	// returnType, paramTypes);
-	// this.add(name, tp);
-	// // tp.asError(body.hasSome(c -> c.isError()));
-	// ODebug.showBlue(TFmt.TypedTree.toString(), () -> {
-	// OConsole.println("%s %s", lname, tp.getFuncType());
-	// body.dump();
-	// });
-	// this.generator.defineFunction(this, isPublic, lname, paramNames,
-	// tp.getParamTypes(), tp.getReturnType(), body);
-	// return tp;
-	// }
+	public CodeMap defineFunction(boolean isPublic, AST name, int seq, AST[] paramNames, Ty[] paramTypes, Ty returnType,
+			VarDomain dom, AST body) {
+		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
+				this.parseCode(this, body));
+	}
 
 	public CodeMap newCodeMap(String name, Ty ret, Ty[] pats) {
 		final String lname = this.getLocalName(name);

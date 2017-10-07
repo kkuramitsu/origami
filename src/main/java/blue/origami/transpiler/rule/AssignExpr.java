@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
@@ -26,7 +26,7 @@ import blue.origami.util.ODebug;
 
 public class AssignExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
 		if (left instanceof GetCode) {

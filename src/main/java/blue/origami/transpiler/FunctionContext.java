@@ -3,9 +3,9 @@ package blue.origami.transpiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
@@ -29,19 +29,19 @@ public class FunctionContext {
 		this(null);
 	}
 
-	public Variable newVariable(String name, Ty type) {
+	public Variable newVariable(AST name, Ty type) {
 		Variable v = new Variable(name, this.index(), type);
 		this.varList.add(v);
 		return v;
 	}
 
-	public Variable newVariable(String name, int index, Ty type) {
+	public Variable newVariable(AST name, int index, Ty type) {
 		if (index == -1) {
 			Variable v = new Variable(name, this.index(), type);
 			this.varList.add(v);
 			return v;
 		} else {
-			Variable v = this.get(name, index);
+			Variable v = this.get(name.getString(), index);
 			ODebug.trace("%s %s", v, type);
 			return v;
 		}
@@ -66,8 +66,11 @@ public class FunctionContext {
 		return this.varList.size();
 	}
 
-	public Variable getFirstArgument() {
-		return this.varList.get(0);
+	public Code getArgumentsPattern(TEnv env) {
+		if (this.varList.size() == 1) {
+			return this.varList.get(0).newCode(env, null);
+		}
+		return new TupleCode(this.varList.stream().map(v -> v.newCode(env, null)).toArray(Code[]::new));
 	}
 
 	public void enter() {
@@ -133,10 +136,18 @@ public class FunctionContext {
 	// }
 
 	public static class Variable implements NameInfo {
+		AST at;
 		String name;
 		int seq;
 		int closureLevel = 0;
 		Ty type;
+
+		Variable(AST name, int seq, Ty type) {
+			this.at = name;
+			this.name = name.getString();
+			this.seq = seq;
+			this.type = type;
+		}
 
 		Variable(String name, int seq, Ty type) {
 			this.name = name;
@@ -166,13 +177,14 @@ public class FunctionContext {
 		}
 
 		@Override
-		public Code newCode(TEnv env, Tree<?> s) {
+		public Code newCode(TEnv env, AST s) {
+			s = s == null ? this.at : s;
 			if (this.closureLevel > 0) {
 				HashMap<String, Code> closureMap = env.get(FunctionContext.class).closureMap;
 				closureMap.put(this.getName(),
-						new NameCode(this.name, this.seq, this.type, this.closureLevel - 1).setSource(s));
+						new NameCode(this.at, this.seq, this.type, this.closureLevel - 1).setSource(s));
 			}
-			return new NameCode(this.name, this.seq, this.type, this.closureLevel).setSource(s);
+			return new NameCode(this.at, this.seq, this.type, this.closureLevel).setSource(s);
 		}
 
 		@Override

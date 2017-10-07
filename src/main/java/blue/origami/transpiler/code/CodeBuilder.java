@@ -78,6 +78,10 @@ public interface CodeBuilder {
 		return new ExprCode("tail", c, v(index));
 	}
 
+	public default Code tupleAt(Code c, int index) {
+		return new TupleIndexCode(c, index);
+	}
+
 	public default Code op(Code c, String op, Code c2) {
 		return new BinaryCode(op, c, c2);
 	}

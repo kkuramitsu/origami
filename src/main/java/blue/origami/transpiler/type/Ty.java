@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TEnv;
@@ -65,7 +65,7 @@ public abstract class Ty implements TypeApi, OStrings {
 		return new VarTy(null, -1);
 	}
 
-	public static final VarTy tUntyped(Tree<?> s) {
+	public static final VarTy tUntyped(AST s) {
 		return new VarTy(null, -1);
 	}
 
@@ -90,7 +90,7 @@ public abstract class Ty implements TypeApi, OStrings {
 		return typeMemoMap.get(name) instanceof MonadTy;
 	}
 
-	public static final String parseMonadName(Tree<?> t) {
+	public static final String parseMonadName(AST t) {
 		String name = t.getString();
 		if (isDefinedMonad(name)) {
 			return name;
@@ -98,7 +98,7 @@ public abstract class Ty implements TypeApi, OStrings {
 		throw new ErrorCode(t, TFmt.undefined_type__YY1, name);
 	}
 
-	public static final String parseStateName(Tree<?> t) {
+	public static final String parseStateName(AST t) {
 		String name = t.getString();
 		if (isDefinedMonad(name + "'")) {
 			return name;

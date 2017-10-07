@@ -1,13 +1,13 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 
 public class NoneCode extends CommonCode implements ValueCode {
 
-	public NoneCode(Tree<?> s) {
+	public NoneCode(AST s) {
 		super(Ty.tOption(Ty.tUntyped(s)));
 		this.setSource(s);
 	}

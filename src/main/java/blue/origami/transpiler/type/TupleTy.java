@@ -12,7 +12,7 @@ public class TupleTy extends Ty {
 	public TupleTy(String memoName, Ty... paramTypes) {
 		this.memoName = memoName;
 		this.paramTypes = paramTypes;
-		assert (this.paramTypes.length > 1);
+		assert (this.paramTypes.length > 1) : "tuple size " + this.paramTypes.length;
 	}
 
 	@Override

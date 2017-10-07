@@ -18,6 +18,7 @@ import org.objectweb.asm.tree.FieldNode;
 import blue.origami.konoha5.Data$;
 import blue.origami.konoha5.Func;
 import blue.origami.konoha5.Tuple$;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
@@ -353,7 +354,7 @@ public class AsmType extends TypeMap<Class<?>> implements Opcodes {
 			Code[] p = new Code[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {
-				p[i] = new NameCode("a", i, paramTypes[i], 0);
+				p[i] = new NameCode(AST.getName("a"), i, paramTypes[i], 0);
 				paramNames[i] = "a";
 			}
 			Code body = new ExprCode(tp, p);

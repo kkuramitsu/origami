@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.TLog;
@@ -24,7 +24,7 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	protected abstract Code newCode(Number value);
 
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		TLog log = null;
 		String text = t.getString().replace("_", "");
 		int radix = 10;

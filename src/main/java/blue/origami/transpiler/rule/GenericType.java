@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -10,10 +10,10 @@ import blue.origami.transpiler.type.Ty;
 
 public class GenericType implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
 		String name = ty.toString();
-		Tree<?> params = t.get(_param);
+		AST params = t.get(_param);
 		Ty[] p = new Ty[params.size()];
 		for (int i = 0; i < p.length; i++) {
 			p[i] = env.parseType(env, params.get(i), null);

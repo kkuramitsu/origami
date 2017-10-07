@@ -1,6 +1,6 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -11,9 +11,9 @@ import blue.origami.transpiler.type.Ty;
 
 public class IndexExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, Tree<?> t) {
+	public Code apply(TEnv env, AST t) {
 		Code recv = env.parseCode(env, t.get(_recv));
-		Code[] params = env.parseParams(env, t, _param);
+		Code[] params = env.parseSubCode(env, t.get(_param));
 		if (params.length != 1) {
 			throw new ErrorCode(t.get(_param), TFmt.mismatched_parameter_size_S_S, params.length, 1);
 		}

@@ -7,8 +7,6 @@ import java.util.function.Supplier;
 
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -333,7 +331,7 @@ interface TEnvApi {
 		return hint;
 	}
 
-	public default Code parseCode(TEnv env, Tree<?> t) {
+	public default Code parseCode(TEnv env, AST t) {
 		String name = t.getTag().getSymbol();
 		Code node = null;
 		try {
@@ -366,8 +364,7 @@ interface TEnvApi {
 		return node;
 	}
 
-	public default Code[] parseParams(TEnv env, Tree<?> t, Symbol param) {
-		Tree<?> p = t.get(param, null);
+	public default Code[] parseSubCode(TEnv env, AST p) {
 		Code[] params = new Code[p.size()];
 		for (int i = 0; i < p.size(); i++) {
 			params[i] = parseCode(env, p.get(i));
@@ -375,7 +372,16 @@ interface TEnvApi {
 		return params;
 	}
 
-	public default Ty parseType(TEnv env, Tree<?> t, Supplier<Ty> def) {
+	// public default Code[] parseParams(TEnv env, AST t, Symbol param) {
+	// AST p = t.get(param);
+	// Code[] params = new Code[p.size()];
+	// for (int i = 0; i < p.size(); i++) {
+	// params[i] = parseCode(env, p.get(i));
+	// }
+	// return params;
+	// }
+
+	public default Ty parseType(TEnv env, AST t, Supplier<Ty> def) {
 		if (t != null) {
 			try {
 				Code node = parseCode(env, t);

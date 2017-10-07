@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Tree;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
@@ -70,12 +70,12 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public Tree<?> getSource() {
+	public AST getSource() {
 		return this.dummy.getSource();
 	}
 
 	@Override
-	public Code setSource(Tree<?> t) {
+	public Code setSource(AST t) {
 		this.dummy.setSource(t);
 		this.log.setSource(t);
 		return this;
