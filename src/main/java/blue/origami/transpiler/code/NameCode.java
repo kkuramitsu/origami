@@ -63,9 +63,11 @@ public class NameCode extends CommonCode {
 			String var = this.parseName(name, i);
 			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
-				RuntimeException e = new ErrorCode(this, TFmt.undefined_name__YY1, this.name);
-				// e.printStackTrace();
-				throw e;
+				NameHint hint = env.findNameHint(env, name);
+				if (hint != null) {
+					return new ErrorCode(this, TFmt.undefined_name__YY1__YY2, this.name, hint.getType());
+				}
+				return new ErrorCode(this, TFmt.undefined_name__YY1, this.name);
 			}
 			ref.used(env);
 			mul = this.mul(mul, ref.newCode(env, this.getSource()));
