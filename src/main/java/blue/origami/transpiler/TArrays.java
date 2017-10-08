@@ -1,6 +1,7 @@
 package blue.origami.transpiler;
 
 import java.lang.reflect.Array;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import blue.origami.transpiler.code.Code;
@@ -13,12 +14,20 @@ public class TArrays {
 	public static final String[] emptyNames = new String[0];
 	public static final AST[] emptyTrees = new AST[0];
 
-	public static Ty[] join(Ty first, Ty... params) {
-		Ty[] p = new Ty[params.length + 1];
-		p[0] = first;
-		System.arraycopy(params, 0, p, 1, params.length);
+	public static <T> T[] join(IntFunction<T[]> gen, T a, @SuppressWarnings("unchecked") T... as) {
+		T[] p = gen.apply(as.length + 1);
+		p[0] = a;
+		System.arraycopy(as, 0, p, 1, as.length);
 		return p;
+
 	}
+	//
+	// public static Ty[] join(Ty first, Ty... params) {
+	// Ty[] p = new Ty[params.length + 1];
+	// p[0] = first;
+	// System.arraycopy(params, 0, p, 1, params.length);
+	// return p;
+	// }
 
 	public static Code[] join(Code first, Code... params) {
 		Code[] p = new Code[params.length + 1];

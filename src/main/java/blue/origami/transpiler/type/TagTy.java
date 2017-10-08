@@ -1,5 +1,9 @@
 package blue.origami.transpiler.type;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import blue.origami.transpiler.TArrays;
 import blue.origami.util.OStrings;
 
 public class TagTy extends Ty {
@@ -97,6 +101,26 @@ public class TagTy extends Ty {
 		OStrings.append(sb, this.innerTy);
 		sb.append(" #");
 		OStrings.joins(sb, this.names, " #");
+	}
+
+	public static String[] joins(String[] ns, String[] names) {
+		if (ns.length == 1) {
+			if (Arrays.stream(names).anyMatch(n -> n.equals(ns[0]))) {
+				return names;
+			}
+			return TArrays.join(String[]::new, ns[0], names);
+		}
+		if (names.length == 1) {
+			return joins(names, ns);
+		}
+		HashSet<String> set = new HashSet<>();
+		Arrays.stream(ns).forEach(n -> {
+			set.add(n);
+		});
+		Arrays.stream(names).forEach(n -> {
+			set.add(n);
+		});
+		return set.toArray(new String[set.size()]);
 	}
 
 }

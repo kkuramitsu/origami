@@ -6,15 +6,12 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
 
-public class TupleType implements ParseRule, Symbols {
-	// public final static Symbol _TupleType = Symbol.unique("TupleType");
+public class RightTagType implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(TEnv env, AST t) {
-		Ty[] a = new Ty[t.size()];
-		for (int i = 0; i < t.size(); i++) {
-			a[i] = env.parseType(env, t.get(i), null);
-		}
-		return new TypeCode(Ty.tTuple(a));
+		Ty inner = env.parseType(env, t.get(_base), null);
+		String tag = t.get(_name).getString();
+		return new TypeCode(Ty.tTag(inner, tag));
 	}
 }

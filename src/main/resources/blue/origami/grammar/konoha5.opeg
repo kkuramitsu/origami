@@ -930,15 +930,17 @@ Quantity = {
 /* Type */
 
 example Type String
-example Type Int*
 example Type ()
 example Type Dict[Int]
 example Type () -> int
 example Type int -> int -> int
 example Type (int, int)
+example Type Int * Int
 example Type {}
 example Type {name, age}
-example Type #JSON type of 1
+example Type #JSON String
+example Type String #JSON
+example Type #JSON String #JSON
 example Type [km/h]
 
 // (a,b)->a->b
@@ -954,17 +956,19 @@ TSUFFIX =
     / "{" $param(Type) '}' _  #StateType
     / '?' _   #OptionType
     / "->" $type(Type) #FuncType
-
+	/ '*' _ $type(Type) #RightTupleType
+	/ '#' $name(Identifier) #RightTagType
+	
 "typeof" = [Tt] 'ype' _ [Oo] 'f' EOT
 
 PrimaryType =
 	{ "typeof" $expr(Expression) #ExprType }
-	/ { '#' $name(Identifier) $type(PrimaryType) #TagType }
+	/ { '#' $name(Identifier) $type(Type) #TagType }
 	/ { '_' #ClassType } _
 	/ ClassType
 	/ TupleType
 	/ "(" Type ")"
-	/ {'()' #ClassType }
+	/ {'()' #ClassType } _
 	/ DataType
 	/ RecordType
 	/ UnitType

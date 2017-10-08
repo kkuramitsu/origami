@@ -162,15 +162,20 @@ public abstract class Ty implements TypeApi, OStrings {
 		return (FuncTy) reg(key, () -> new FuncTy(key, returnType, paramTypes));
 	}
 
-	public static final TupleTy tTuple(Ty... paramTypes) {
-		if (TArrays.testSomeTrue(t -> t.isNonMemo(), paramTypes)) {
-			return new TupleTy(null, paramTypes);
+	public static final TupleTy tTuple(Ty... ts) {
+		if (TArrays.testSomeTrue(t -> t.isNonMemo(), ts)) {
+			return new TupleTy(null, ts);
 		}
-		String key = TupleTy.stringfy(paramTypes);
-		return (TupleTy) reg(key, () -> new TupleTy(key, paramTypes));
+		String key = TupleTy.stringfy(ts);
+		return (TupleTy) reg(key, () -> new TupleTy(key, ts));
 	}
 
 	public static Ty tTag(Ty inner, String... names) {
+		if (inner instanceof TagTy) {
+			TagTy tag = (TagTy) inner;
+			inner = tag.getInnerTy();
+			names = TagTy.joins(names, tag.names);
+		}
 		Arrays.sort(names);
 		return new TagTy(inner, names);
 	}
