@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
 import blue.origami.util.OStrings;
@@ -31,7 +31,7 @@ public class LogCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushLog(env, this);
 	}
 

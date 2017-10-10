@@ -26,7 +26,7 @@ import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
 
-public interface TCodeSection {
+public interface CodeSection {
 
 	public void pushNone(TEnv env, NoneCode code);
 

@@ -10,8 +10,8 @@ import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
 import blue.origami.transpiler.CodeMap;
+import blue.origami.transpiler.CodeMapper;
 import blue.origami.transpiler.ConstMap;
-import blue.origami.transpiler.Generator;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Transpiler;
@@ -19,7 +19,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
-public class AsmGenerator extends Generator implements Opcodes {
+public class AsmGenerator extends CodeMapper implements Opcodes {
 
 	private AsmType ts;
 
@@ -144,8 +144,6 @@ public class AsmGenerator extends Generator implements Opcodes {
 
 	@Override
 	public CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
-		// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
-		// "(D)D", false);
 		StringBuilder sb = new StringBuilder();
 		sb.append("S|");
 		sb.append(this.cname());

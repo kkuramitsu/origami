@@ -9,16 +9,19 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.type.Ty;
 
-public abstract class Generator implements CodeBuilder {
-	protected boolean isVerbose = false;
+public abstract class CodeMapper implements CodeBuilder {
+	// protected boolean isVerbose = false;
+	//
+	// public void setVerbose(boolean debug) {
+	// this.isVerbose = debug;
+	// }
+	//
+	// public boolean isVerbose() {
+	// return this.isVerbose;
+	// }
 
-	public void setVerbose(boolean debug) {
-		this.isVerbose = debug;
-	}
-
-	public boolean isVerbose() {
-		return this.isVerbose;
-	}
+	protected ArrayList<AST> exampleList = null;
+	protected ArrayList<FuncMap> funcList = null;
 
 	public abstract void init();
 
@@ -30,6 +33,10 @@ public abstract class Generator implements CodeBuilder {
 	protected abstract Object wrapUp();
 
 	public abstract void emitTopLevel(TEnv env, Code code);
+
+	public String getUniqueConstName(String name) {
+		return name;
+	}
 
 	public abstract CodeMap newConstMap(TEnv env, String lname, Ty ret);
 
@@ -49,14 +56,16 @@ public abstract class Generator implements CodeBuilder {
 		return name;
 	}
 
+	public String getUniqueFuncName(String name, Ty... paramTypes) {
+		return name;
+	}
+
 	public abstract CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes);
 
 	public abstract void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code);
 
-	protected ArrayList<TFunction> funcList = null;
-
-	public void addFunction(String name, TFunction f) {
+	public void addFunction(String name, FuncMap f) {
 		if (f.isPublic) {
 			if (this.funcList == null) {
 				this.funcList = new ArrayList<>(0);
@@ -64,8 +73,6 @@ public abstract class Generator implements CodeBuilder {
 			this.funcList.add(f);
 		}
 	}
-
-	protected ArrayList<AST> exampleList = null;
 
 	public void addExample(String name, AST t) {
 		if (this.exampleList == null) {
@@ -76,7 +83,7 @@ public abstract class Generator implements CodeBuilder {
 
 	public Code emitHeader(TEnv env, Code code) {
 		if (this.funcList != null) {
-			for (TFunction f : this.funcList) {
+			for (FuncMap f : this.funcList) {
 				if (f.isExpired()) {
 					continue;
 				}

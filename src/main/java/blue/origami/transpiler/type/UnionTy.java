@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.code.Code;
+import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
 public class UnionTy extends Ty {
@@ -77,7 +78,25 @@ public class UnionTy extends Ty {
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return new UnionTy(Arrays.stream(this.choice).map(t -> t.dupVar(dom)).toArray(Ty[]::new));
+		ArrayList<Ty> l = new ArrayList<>(this.choice.length);
+		this.append(l, this);
+		return new UnionTy(l.stream().map(t -> t.dupVar(dom)).toArray(Ty[]::new));
+	}
+
+	private void append(ArrayList<Ty> l, Ty ty) {
+		if (ty instanceof UnionTy) {
+			UnionTy uty = (UnionTy) ty;
+			for (Ty t : uty.choice) {
+				this.append(l, t.real());
+			}
+		} else {
+			for (Ty t : l) {
+				if (ty == t) {
+					return;
+				}
+			}
+			l.add(ty);
+		}
 	}
 
 	// f(b)
@@ -86,6 +105,9 @@ public class UnionTy extends Ty {
 		// ODebug.trace("UNION %s => %s", codeTy, this);
 		if (codeTy.isUnion()) {
 			UnionTy u = (UnionTy) codeTy.real();
+			if (u == this) {
+				return true;
+			}
 			ArrayList<Ty> l = new ArrayList<>();
 			for (Ty t : u.choice) {
 				t = this.contains(sub, t, logs);
@@ -110,7 +132,7 @@ public class UnionTy extends Ty {
 
 	private Ty contains(boolean sub, Ty codeTy, VarLogger logs) {
 		for (Ty ty : this.choice) {
-			// ODebug.trace("UNION[] %s => %s", codeTy, ty);
+			ODebug.trace("UNION[] %s => %s", codeTy, ty);
 			if (ty.acceptTy(sub, codeTy, logs)) {
 				return ty;
 			}
@@ -119,7 +141,7 @@ public class UnionTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		return null;
 	}
 }

@@ -163,7 +163,7 @@ public class CodeMap implements NameInfo {
 	}
 
 	@Override
-	public Code newCode(TEnv env, AST s) {
+	public Code newNameCode(TEnv env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 
@@ -246,6 +246,14 @@ public class CodeMap implements NameInfo {
 		logs.abort();
 		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
 		return mapCost;
+	}
+
+}
+
+class SourceMap extends CodeMap {
+
+	public SourceMap(String name, String source, Ty returnType, Ty[] paramTypes) {
+		super(name, source, returnType, paramTypes);
 	}
 
 }

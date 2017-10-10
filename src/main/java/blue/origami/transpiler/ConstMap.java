@@ -16,7 +16,7 @@ public class ConstMap extends CodeMap {
 	}
 
 	@Override
-	public Code newCode(TEnv env, AST s) {
+	public Code newNameCode(TEnv env, AST s) {
 		return new ExprCode(this, TArrays.emptyCodes).setSource(s);
 	}
 

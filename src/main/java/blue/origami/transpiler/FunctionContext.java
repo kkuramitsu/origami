@@ -68,9 +68,9 @@ public class FunctionContext {
 
 	public Code getArgumentsPattern(TEnv env) {
 		if (this.varList.size() == 1) {
-			return this.varList.get(0).newCode(env, null);
+			return this.varList.get(0).newNameCode(env, null);
 		}
-		return new TupleCode(this.varList.stream().map(v -> v.newCode(env, null)).toArray(Code[]::new));
+		return new TupleCode(this.varList.stream().map(v -> v.newNameCode(env, null)).toArray(Code[]::new));
 	}
 
 	public void enter() {
@@ -177,7 +177,7 @@ public class FunctionContext {
 		}
 
 		@Override
-		public Code newCode(TEnv env, AST s) {
+		public Code newNameCode(TEnv env, AST s) {
 			s = s == null ? this.at : s;
 			if (this.closureLevel > 0) {
 				HashMap<String, Code> closureMap = env.get(FunctionContext.class).closureMap;

@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.List;
 
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OStrings;
@@ -74,7 +74,7 @@ public class MultiCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushMulti(env, this);
 	}
 

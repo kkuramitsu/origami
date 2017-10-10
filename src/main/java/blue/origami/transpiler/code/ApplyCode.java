@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.List;
 
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
@@ -60,7 +60,7 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushApply(env, this);
 	}
 

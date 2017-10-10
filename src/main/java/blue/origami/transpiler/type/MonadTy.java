@@ -78,7 +78,7 @@ public class MonadTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.mapType(this.name, this.innerTy);
 	}
 

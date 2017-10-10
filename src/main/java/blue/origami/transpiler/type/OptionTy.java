@@ -57,7 +57,7 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.mapType("Option", this.innerTy);
 	}
 

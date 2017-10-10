@@ -24,7 +24,7 @@ import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OConsole;
 
-public class TypeTest {
+public class TypeTest extends CommandTest {
 
 	public void testLiteral() throws Throwable {
 		runScript("()", "()");
@@ -124,7 +124,6 @@ public class TypeTest {
 	}
 
 	//
-
 	static Grammar g = null;
 	static Parser p = null;
 

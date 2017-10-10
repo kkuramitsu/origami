@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
@@ -34,7 +34,7 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 
 	public Ty getType();
 
-	public void emitCode(TEnv env, TCodeSection sec);
+	public void emitCode(TEnv env, CodeSection sec);
 
 	// public void dumpCode(SyntaxHighlight sh);
 

@@ -262,7 +262,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	// return ty == Ty.tThis ? dt : ty;
 	// }
 
-	public abstract <C> C mapType(TypeMap<C> codeType);
+	public abstract <C> C mapType(TypeMapper<C> codeType);
 
 }
 

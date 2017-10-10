@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
@@ -50,7 +50,7 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushCall(env, this);
 	}
 

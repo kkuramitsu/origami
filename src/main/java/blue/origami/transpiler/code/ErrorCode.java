@@ -4,7 +4,7 @@ import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.type.Ty;
@@ -82,7 +82,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushError(env, this);
 	}
 

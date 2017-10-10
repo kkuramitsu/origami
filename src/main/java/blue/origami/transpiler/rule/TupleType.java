@@ -7,7 +7,6 @@ import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
 
 public class TupleType implements ParseRule, Symbols {
-	// public final static Symbol _TupleType = Symbol.unique("TupleType");
 
 	@Override
 	public Code apply(TEnv env, AST t) {

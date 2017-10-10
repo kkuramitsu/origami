@@ -92,7 +92,7 @@ public class TagTy extends Ty {
 	// }
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		return this.innerTy.mapType(codeType);
 	}
 

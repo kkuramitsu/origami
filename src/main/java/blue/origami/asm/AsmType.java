@@ -30,12 +30,12 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMap;
+import blue.origami.transpiler.type.TypeMapper;
 import blue.origami.transpiler.type.VarTy;
 import blue.origami.util.ODebug;
 import blue.origami.util.OStrings;
 
-public class AsmType extends TypeMap<Class<?>> implements Opcodes {
+public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 
 	public AsmType(TEnv env) {

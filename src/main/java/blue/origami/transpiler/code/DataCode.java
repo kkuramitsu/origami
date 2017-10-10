@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
@@ -78,7 +78,7 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushData(env, this);
 	}
 

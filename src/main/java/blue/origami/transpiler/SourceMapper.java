@@ -9,14 +9,14 @@ import java.util.Map;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
-public class SourceGenerator extends Generator {
+public class SourceMapper extends CodeMapper {
 	protected SourceType ts;
 	protected SourceSection head;
 	protected SourceSection data;
 	protected SourceSection eval;
 	// private SourceSection body = this.head;
 
-	public SourceGenerator(Transpiler tr) {
+	public SourceMapper(Transpiler tr) {
 		this.ts = new SourceType(tr);
 	}
 
@@ -153,7 +153,7 @@ public class SourceGenerator extends Generator {
 							if (!key.equals(nextNode)) {
 								// System.out.println("Cyclic " + key + " => " +
 								// nextNode);
-								SourceGenerator.this.crossRefNames.add(nextNode);
+								SourceMapper.this.crossRefNames.add(nextNode);
 							}
 						}
 					}

@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TFunction;
+import blue.origami.transpiler.FuncMap;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
@@ -21,12 +21,12 @@ public class FuncDecl extends SyntaxRule implements ParseRule {
 		Ty returnType = this.parseReturnType(env, name, t.get(_type));
 		Transpiler tr = env.getTranspiler();
 		if (this.isPublic && !tr.isShellMode()) {
-			TFunction tf = env.get(name, TFunction.class);
+			FuncMap tf = env.get(name, FuncMap.class);
 			if (tf != null) {
 				env.reportWarning(t.get(_name), TFmt.redefined_name__YY1, name);
 			}
 		}
-		TFunction tf = new TFunction(this.isPublic, t.get(_name), returnType, paramNames, paramTypes, t.get(_body));
+		FuncMap tf = new FuncMap(this.isPublic, t.get(_name), returnType, paramNames, paramTypes, t.get(_body));
 		tr.addFunction(env, name, tf);
 		return new DoneCode();
 	}

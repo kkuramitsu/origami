@@ -10,16 +10,16 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.util.ODebug;
 
-public class TFunction extends CodeMap implements NameInfo, FuncUnit {
+public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	static int seq = 0;
 	private int funcId;
 	protected boolean isPublic = false;
-	AST at;
+	private AST at;
 	protected AST[] paramNames;
 	protected AST body;
 	private CodeMap generated = null;
 
-	public TFunction(boolean isPublic, AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
+	public FuncMap(boolean isPublic, AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		super(0, name.getString(), "(uncompiled)", returnType, paramTypes);
 		this.at = name;
 		this.funcId = seq++;
@@ -28,7 +28,7 @@ public class TFunction extends CodeMap implements NameInfo, FuncUnit {
 		this.body = body;
 	}
 
-	public TFunction(AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
+	public FuncMap(AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		this(false, name, returnType, paramNames, paramTypes, body);
 	}
 
@@ -81,20 +81,15 @@ public class TFunction extends CodeMap implements NameInfo, FuncUnit {
 		this.returnType = ret;
 	}
 
-	// let reverse(a) =
-	// dup = {}
-	// [0 to < |a|].forEach(\i dup.push(a[|a|-1-i]))
-	// dup
-
-	// let f(n) =
-	// a = {}
-	// reverse(a)
+	boolean isTyping = false;
 
 	@Override
 	public void used(TEnv env) {
 		if (this.isUnused()) {
 			super.used(env);
+			this.isTyping = true;
 			Code code = this.typeBody(env, new FunctionContext(), this.body);
+			this.isTyping = false;
 			if (code == null) {
 				this.setExpired();
 				return;
@@ -133,12 +128,17 @@ public class TFunction extends CodeMap implements NameInfo, FuncUnit {
 		if (this.body == null) {
 			throw new ErrorCode(this.getSource(), TFmt.function_S_remains_undefined, this.name);
 		}
+		if (this.isTyping) {
+			// return env.getTranspiler().newCodeMap(this.getName(), this.getReturnType(),
+			// this.getParamTypes());
+			return new CodeMap(0, "rec", ""/* abstract */, this.getReturnType(), this.getParamTypes());
+		}
 		VarDomain dom = new VarDomain(this.getParamNames());
 		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
 		Ty ret = dom.dupRetType(this.getReturnType());
 		String key = polykey(this.name, this.funcId, p);
 		CodeMap tp = getGenerated(key);
-		ODebug.trace("sigkey=%s %s", key, tp);
+		ODebug.trace("polykey=%s %s", key, tp);
 		if (tp == null) {
 			Transpiler tr = env.getTranspiler();
 			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
@@ -182,7 +182,7 @@ public class TFunction extends CodeMap implements NameInfo, FuncUnit {
 	}
 
 	@Override
-	public Code newCode(TEnv env, AST s) {
+	public Code newNameCode(TEnv env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

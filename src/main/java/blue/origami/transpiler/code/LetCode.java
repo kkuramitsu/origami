@@ -4,7 +4,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionContext.Variable;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
@@ -79,7 +79,7 @@ public class LetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushLet(env, this);
 	}
 

@@ -10,7 +10,7 @@ import java.util.Set;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
@@ -116,7 +116,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 
 	}
 
@@ -184,7 +184,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(TEnv env, TCodeSection sec) {
+		public void emitCode(TEnv env, CodeSection sec) {
 		}
 
 		@Override
@@ -258,7 +258,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(TEnv env, TCodeSection sec) {
+		public void emitCode(TEnv env, CodeSection sec) {
 		}
 
 	}

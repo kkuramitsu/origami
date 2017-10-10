@@ -29,7 +29,7 @@ import blue.origami.util.OStrings;
 public class Transpiler extends TEnv {
 	final OOption options;
 	private final CodeMapLoader loader;
-	private final Generator generator;
+	private final CodeMapper generator;
 
 	boolean isFriendly = true;
 
@@ -37,7 +37,7 @@ public class Transpiler extends TEnv {
 		super(null);
 		this.loader = new CodeMapLoader(this, target);
 		this.options = options;
-		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceGenerator(this);
+		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceMapper(this);
 		this.initEnv(grammar, p);
 		this.loader.loadCodeMap("konoha5.codemap");
 		this.generator.init();
@@ -220,7 +220,7 @@ public class Transpiler extends TEnv {
 
 	// Buffering
 
-	public void addFunction(TEnv env, String name, TFunction f) {
+	public void addFunction(TEnv env, String name, FuncMap f) {
 		this.add(name, f);
 		if (f.isPublic()) {
 			this.generator.addFunction(name, f);
@@ -252,6 +252,11 @@ public class Transpiler extends TEnv {
 
 	// FuncDecl
 
+	public CodeMap newCodeMap(String name, Ty returnType, Ty... paramTypes) {
+		final String lname = this.generator.safeName(name);
+		return this.generator.newCodeMap(this, name, lname, returnType, paramTypes);
+	}
+
 	public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		final TEnv env = this.newEnv();
 		final String lname = this.generator.safeName(name);
@@ -277,7 +282,7 @@ public class Transpiler extends TEnv {
 		Code code = fu.typeCheck(this, fcx, dom, code0);
 		if (fu.getReturnType().isUnion()) {
 			Ty ret = code.getType();
-			ODebug.trace("UNION %s => %s", fu.getReturnType(), ret);
+			// ODebug.trace("UNION %s => %s", fu.getReturnType(), ret);
 			fu.setReturnType(ret);
 			if (ret.isUnion()) {
 				code = new ErrorCode(code.getSource(), TFmt.ambiguous_type__S, fu.getReturnType());
@@ -297,10 +302,10 @@ public class Transpiler extends TEnv {
 				this.parseCode(this, body));
 	}
 
-	public CodeMap newCodeMap(String name, Ty ret, Ty[] pats) {
-		final String lname = this.getLocalName(name);
-		return this.generator.newCodeMap(this, name, lname, ret, pats);
-	}
+	// public CodeMap newCodeMap(String name, Ty ret, Ty[] pats) {
+	// final String lname = this.getLocalName(name);
+	// return this.generator.newCodeMap(this, name, lname, ret, pats);
+	// }
 
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);

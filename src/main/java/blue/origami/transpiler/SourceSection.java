@@ -30,7 +30,7 @@ import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
-public class SourceSection extends SourceSectionLib implements TCodeSection {
+public class SourceSection extends SourceSectionLib implements CodeSection {
 
 	public SourceSection(SourceType ts) {
 		super(ts);
@@ -232,7 +232,7 @@ public class SourceSection extends SourceSectionLib implements TCodeSection {
 
 }
 
-abstract class SourceSectionLib implements TCodeSection {
+abstract class SourceSectionLib implements CodeSection {
 	protected SourceType ts;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;

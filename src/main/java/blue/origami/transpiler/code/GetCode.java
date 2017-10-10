@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
@@ -47,7 +47,7 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushGet(env, this);
 	}
 

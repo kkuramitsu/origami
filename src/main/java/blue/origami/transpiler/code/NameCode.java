@@ -1,8 +1,8 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.AST;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TCodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
@@ -50,7 +50,7 @@ public class NameCode extends CommonCode {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref != null) {
 				ref.used(env);
-				return ref.newCode(env, this.getSource()).castType(env, ret);
+				return ref.newNameCode(env, this.getSource()).castType(env, ret);
 			}
 			return this.parseNames(env, this.name, ret);
 		}
@@ -70,7 +70,7 @@ public class NameCode extends CommonCode {
 				return new ErrorCode(this, TFmt.undefined_name__YY1, this.name);
 			}
 			ref.used(env);
-			mul = this.mul(mul, ref.newCode(env, this.getSource()));
+			mul = this.mul(mul, ref.newNameCode(env, this.getSource()));
 		}
 		return mul.asType(env, ret);
 	}
@@ -96,7 +96,7 @@ public class NameCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		try {
 			sec.pushName(env, this);
 		} catch (Exception e) {

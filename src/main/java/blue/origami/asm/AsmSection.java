@@ -11,7 +11,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import blue.origami.konoha5.Data$;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
@@ -48,7 +48,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.ODebug;
 
-public class AsmSection implements TCodeSection, Opcodes {
+public class AsmSection implements CodeSection, Opcodes {
 	private final static String APIs = Type.getInternalName(APIs.class);
 
 	AsmType ts;
@@ -185,7 +185,7 @@ public class AsmSection implements TCodeSection, Opcodes {
 			return;
 		default:
 			ODebug.trace("undefined call '%s' %s", tp.getDefined(), code.getClass().getName());
-			assert (tp.getDefined().length() > 0);
+			assert (tp.getDefined().length() > 0) : tp;
 		}
 	}
 

@@ -132,7 +132,7 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		if (this.resolvedTy == null) {
 			return codeType.mapType("a");
 		} else {

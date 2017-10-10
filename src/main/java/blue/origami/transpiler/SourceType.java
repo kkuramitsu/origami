@@ -7,10 +7,10 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.SimpleTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMap;
+import blue.origami.transpiler.type.TypeMapper;
 import blue.origami.util.ODebug;
 
-public class SourceType extends TypeMap<String> {
+public class SourceType extends TypeMapper<String> {
 
 	SourceSection head;
 

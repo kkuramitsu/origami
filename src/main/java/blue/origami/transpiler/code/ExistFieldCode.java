@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 
@@ -27,7 +27,7 @@ public class ExistFieldCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushExistField(env, this);
 	}
 

@@ -19,7 +19,7 @@ public class NameExpr implements ParseRule {
 
 		public void used(TEnv env);
 
-		public Code newCode(TEnv env, AST s);
+		public Code newNameCode(TEnv env, AST s);
 	}
 
 }

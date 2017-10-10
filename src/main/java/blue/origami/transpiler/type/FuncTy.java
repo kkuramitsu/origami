@@ -123,7 +123,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public <C> C mapType(TypeMap<C> codeType) {
+	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.forFuncType(this);
 	}
 

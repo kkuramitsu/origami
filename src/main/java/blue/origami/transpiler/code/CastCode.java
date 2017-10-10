@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TCodeSection;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.OStrings;
@@ -41,7 +41,7 @@ public class CastCode extends Code1 implements CallCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, TCodeSection sec) {
+	public void emitCode(TEnv env, CodeSection sec) {
 		sec.pushCast(env, this);
 	}
 

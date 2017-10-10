@@ -6,11 +6,11 @@ import java.util.function.Supplier;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TEnv;
 
-public abstract class TypeMap<C> {
+public abstract class TypeMapper<C> {
 	protected TEnv env;
 	protected final HashMap<String, C> typeMap = new HashMap<>();
 
-	public TypeMap(TEnv env) {
+	public TypeMapper(TEnv env) {
 		this.env = env;
 	}
 
