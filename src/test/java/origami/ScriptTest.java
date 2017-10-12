@@ -16,10 +16,6 @@ public class ScriptTest {
 		assert (true);
 	}
 
-	// public void testTest2() {
-	// assert(false);
-	// }
-
 	public void testHello() throws Throwable {
 		runScript("/konoha5-test/hello.k", 0);
 	}
