@@ -1,9 +1,9 @@
 package blue.origami.transpiler;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.util.OConsole;
+import blue.origami.util.OFormat;
 
-public enum TFmt implements LocaleFormat {
+public enum TFmt implements OFormat {
 	error, warning, notice, info, version, //
 	// Hack mode
 	ParserError, //

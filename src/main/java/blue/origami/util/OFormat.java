@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nez.ast;
+package blue.origami.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
-public interface LocaleFormat {
+public interface OFormat {
 
 	public String error();
 
@@ -83,8 +83,8 @@ public interface LocaleFormat {
 		}
 	}
 
-	public static LocaleFormat wrap(String fmt) {
-		class SimpleFormat implements LocaleFormat {
+	public static OFormat wrap(String fmt) {
+		class SimpleFormat implements OFormat {
 
 			private final String fmt;
 

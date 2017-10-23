@@ -1,8 +1,8 @@
 package blue.origami.nez.parser;
 
-import blue.origami.util.OptionalFactory;
+import blue.origami.util.OFactory;
 
-public interface ParserCompiler extends OptionalFactory<ParserCompiler> {
+public interface ParserCompiler extends OFactory<ParserCompiler> {
 	public ParserCode compile(ParserGrammar grammar);
 
 	@Override

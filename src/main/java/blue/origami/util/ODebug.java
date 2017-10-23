@@ -16,8 +16,6 @@
 
 package blue.origami.util;
 
-import blue.origami.nez.ast.LocaleFormat;
-
 public class ODebug extends OConsole {
 
 	private static boolean hacked = false;
@@ -44,7 +42,7 @@ public class ODebug extends OConsole {
 		show(key, Magenta, r);
 	}
 
-	public static void showBlue(LocaleFormat key, Runnable r) {
+	public static void showBlue(OFormat key, Runnable r) {
 		show(key.toString(), Blue, r);
 	}
 

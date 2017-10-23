@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.TArrays;
@@ -8,6 +7,7 @@ import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.TEnv;
 import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.util.OFormat;
 import blue.origami.util.OStrings;
 
 @SuppressWarnings("serial")
@@ -16,16 +16,16 @@ public class ErrorCode extends RuntimeException implements Code {
 	private final TLog log;
 	private final CommonCode dummy = new DoneCode();
 
-	public ErrorCode(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public ErrorCode(SourcePosition s, OFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(s, TLog.Error, fmt, args);
 	}
 
-	public ErrorCode(LocaleFormat fmt, Object... args) {
+	public ErrorCode(OFormat fmt, Object... args) {
 		this(SourcePosition.UnknownPosition, fmt, args);
 	}
 
-	public ErrorCode(Code at, LocaleFormat fmt, Object... args) {
+	public ErrorCode(Code at, OFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(at.getSource(), TLog.Error, fmt, args);
 	}

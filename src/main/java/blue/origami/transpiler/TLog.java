@@ -1,8 +1,8 @@
 package blue.origami.transpiler;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.util.OConsole;
+import blue.origami.util.OFormat;
 import blue.origami.util.OStrings;
 
 public class TLog implements OStrings {
@@ -17,11 +17,11 @@ public class TLog implements OStrings {
 
 	public SourcePosition s;
 	public final int level;
-	public final LocaleFormat format;
+	public final OFormat format;
 	public final Object[] args;
 	public TLog prev = null;
 
-	public TLog(TLog log, SourcePosition s, int level, LocaleFormat format, Object... args) {
+	public TLog(TLog log, SourcePosition s, int level, OFormat format, Object... args) {
 		this.s = s == null ? SourcePosition.UnknownPosition : s;
 		this.level = level;
 		this.format = format;
@@ -29,7 +29,7 @@ public class TLog implements OStrings {
 		this.prev = log;
 	}
 
-	public TLog(SourcePosition s, int level, LocaleFormat format, Object... args) {
+	public TLog(SourcePosition s, int level, OFormat format, Object... args) {
 		this(null, s, level, format, args);
 	}
 

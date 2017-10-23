@@ -16,8 +16,6 @@
 
 package blue.origami.util;
 
-import blue.origami.nez.ast.LocaleFormat;
-
 public class OConsole {
 
 	public static void exit(int status, Throwable e) {
@@ -26,7 +24,7 @@ public class OConsole {
 		System.exit(status);
 	}
 
-	public static void exit(int status, LocaleFormat message) {
+	public static void exit(int status, OFormat message) {
 		OConsole.println("EXIT " + message);
 		System.exit(status);
 	}

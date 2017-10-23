@@ -19,6 +19,7 @@ package blue.origami.nez.ast;
 import java.util.ArrayList;
 
 import blue.origami.util.OConsole;
+import blue.origami.util.OFormat;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OStrings;
 
@@ -118,7 +119,7 @@ public interface SourcePosition {
 		return s.subString(start, end);
 	}
 
-	public static void appendFormatMessage(StringBuilder sb, SourcePosition s, String mtype, LocaleFormat format,
+	public static void appendFormatMessage(StringBuilder sb, SourcePosition s, String mtype, OFormat format,
 			Object... args) {
 		appendFileLine(sb, s.getSource(), s.getSourcePosition(), mtype);
 		OStrings.appendFormat(sb, format, args);
@@ -141,21 +142,21 @@ public interface SourcePosition {
 		sb.append("] ");
 	}
 
-	public static String formatMessage(SourcePosition s, String mtype, LocaleFormat fmt, Object... args) {
+	public static String formatMessage(SourcePosition s, String mtype, OFormat fmt, Object... args) {
 		StringBuilder sb = new StringBuilder();
 		appendFormatMessage(sb, s, mtype, fmt, args);
 		return sb.toString();
 	}
 
-	public static String formatErrorMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public static String formatErrorMessage(SourcePosition s, OFormat fmt, Object... args) {
 		return formatMessage(s, fmt.error(), fmt, args);
 	}
 
-	public static String formatWarningMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public static String formatWarningMessage(SourcePosition s, OFormat fmt, Object... args) {
 		return formatMessage(s, fmt.warning(), fmt, args);
 	}
 
-	public static String formatNoticeMessage(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public static String formatNoticeMessage(SourcePosition s, OFormat fmt, Object... args) {
 		return formatMessage(s, fmt.notice(), fmt, args);
 	}
 

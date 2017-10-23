@@ -1,8 +1,8 @@
 package blue.origami.nez.peg;
 
-import blue.origami.nez.ast.LocaleFormat;
+import blue.origami.util.OFormat;
 
-public enum NezFmt implements LocaleFormat {
+public enum NezFmt implements OFormat {
 	error, warning, notice, //
 	syntax_error, unconsumed, //
 	YY0_is_duplicated_name, //

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
@@ -17,6 +16,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 import blue.origami.util.Handled;
 import blue.origami.util.ODebug;
+import blue.origami.util.OFormat;
 
 public class TEnv implements TEnvTraits, TEnvApi {
 	private TEnv parent;
@@ -233,15 +233,15 @@ interface TEnvTraits {
 		log.dump();
 	}
 
-	public default void reportError(SourcePosition s, LocaleFormat format, Object... args) {
+	public default void reportError(SourcePosition s, OFormat format, Object... args) {
 		new TLog(s, TLog.Error, format, args).dump();
 	}
 
-	public default void reportWarning(SourcePosition s, LocaleFormat format, Object... args) {
+	public default void reportWarning(SourcePosition s, OFormat format, Object... args) {
 		new TLog(s, TLog.Warning, format, args).dump();
 	}
 
-	public default void reportNotice(SourcePosition s, LocaleFormat format, Object... args) {
+	public default void reportNotice(SourcePosition s, OFormat format, Object... args) {
 		new TLog(s, TLog.Notice, format, args).dump();
 	}
 }

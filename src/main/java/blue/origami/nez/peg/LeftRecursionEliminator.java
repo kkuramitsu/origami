@@ -35,10 +35,10 @@ import blue.origami.nez.peg.expression.PTrap;
 import blue.origami.nez.peg.expression.PTree;
 import blue.origami.nez.peg.expression.PValue;
 import blue.origami.util.OOption;
-import blue.origami.util.OptionalFactory;
+import blue.origami.util.OFactory;
 
 public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecursionEliminator.LREContext>
-		implements OptionalFactory<LeftRecursionEliminator> {
+		implements OFactory<LeftRecursionEliminator> {
 
 	public class LREContext {
 		// if reach to expression named lookingNTName, return True

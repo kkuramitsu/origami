@@ -19,9 +19,9 @@ package blue.origami.main.tool;
 import blue.origami.nez.ast.Tree;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OOption;
-import blue.origami.util.OptionalFactory;
+import blue.origami.util.OFactory;
 
-public class OTreeWriter extends OCommonWriter implements OptionalFactory<OTreeWriter> {
+public class OTreeWriter extends OCommonWriter implements OFactory<OTreeWriter> {
 
 	@Override
 	public Class<?> keyClass() {

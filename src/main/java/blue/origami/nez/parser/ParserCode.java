@@ -17,11 +17,11 @@ package blue.origami.nez.parser;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeSetFunc;
+import blue.origami.util.OFormat;
 import blue.origami.util.OOption;
 
 public interface ParserCode {
@@ -35,7 +35,7 @@ public interface ParserCode {
 
 	}
 
-	default void perror(OOption options, SourcePosition s, LocaleFormat message) throws IOException {
+	default void perror(OOption options, SourcePosition s, OFormat message) throws IOException {
 		if (options.is(ParserOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
 		} else {
@@ -43,7 +43,7 @@ public interface ParserCode {
 		}
 	}
 
-	default void pwarn(OOption options, SourcePosition s, LocaleFormat message) throws IOException {
+	default void pwarn(OOption options, SourcePosition s, OFormat message) throws IOException {
 		if (options.is(ParserOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
 		} else {
@@ -54,9 +54,9 @@ public interface ParserCode {
 	@SuppressWarnings("serial")
 	public static class ParserErrorException extends IOException {
 		final SourcePosition s;
-		final LocaleFormat message;
+		final OFormat message;
 
-		public ParserErrorException(SourcePosition s, LocaleFormat message) {
+		public ParserErrorException(SourcePosition s, OFormat message) {
 			this.s = s;
 			this.message = message;
 		}

@@ -24,8 +24,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.LocaleFormat;
-
 public class OCommonWriter {
 	protected String fileName = null;
 	private PrintStream out;
@@ -85,7 +83,7 @@ public class OCommonWriter {
 		this.print(OStrings.format(fmt, args));
 	}
 
-	public final void printf(LocaleFormat fmt, Object... args) {
+	public final void printf(OFormat fmt, Object... args) {
 		this.print(OStrings.format(fmt, args));
 	}
 
@@ -94,7 +92,7 @@ public class OCommonWriter {
 		this.println();
 	}
 
-	public final void println(LocaleFormat fmt, Object... args) {
+	public final void println(OFormat fmt, Object... args) {
 		this.printf(fmt, args);
 		this.println();
 	}

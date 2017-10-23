@@ -1,14 +1,15 @@
 package blue.origami.nez.ast;
 
 import blue.origami.util.OConsole;
+import blue.origami.util.OFormat;
 
 public interface SourceLogger {
 
-	public void reportError(SourcePosition s, LocaleFormat fmt, Object... args);
+	public void reportError(SourcePosition s, OFormat fmt, Object... args);
 
-	public void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args);
+	public void reportWarning(SourcePosition s, OFormat fmt, Object... args);
 
-	public void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args);
+	public void reportNotice(SourcePosition s, OFormat fmt, Object... args);
 
 	public static class SimpleSourceLogger implements SourceLogger {
 		final static int Error = 31;
@@ -22,15 +23,15 @@ public interface SourceLogger {
 			OConsole.endColor();
 		}
 
-		public final void reportError(SourcePosition s, LocaleFormat fmt, Object... args) {
+		public final void reportError(SourcePosition s, OFormat fmt, Object... args) {
 			report(Error, SourcePosition.formatErrorMessage(s, fmt, args));
 		}
 
-		public final void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args) {
+		public final void reportWarning(SourcePosition s, OFormat fmt, Object... args) {
 			report(Warning, SourcePosition.formatWarningMessage(s, fmt, args));
 		}
 
-		public final void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args) {
+		public final void reportNotice(SourcePosition s, OFormat fmt, Object... args) {
 			report(Notice, SourcePosition.formatNoticeMessage(s, fmt, args));
 		}
 

@@ -33,10 +33,10 @@ import blue.origami.nez.peg.Stateful;
 import blue.origami.nez.peg.Typestate;
 import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.util.OOption;
-import blue.origami.util.OptionalFactory;
+import blue.origami.util.OFactory;
 
 public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
-		implements OptionalFactory<ParserGenerator<B, C>> {
+		implements OFactory<ParserGenerator<B, C>> {
 
 	protected abstract void setupSymbols();
 

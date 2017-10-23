@@ -1,8 +1,8 @@
 package blue.origami.main;
 
-import blue.origami.nez.ast.LocaleFormat;
+import blue.origami.util.OFormat;
 
-public enum MainFmt implements LocaleFormat {
+public enum MainFmt implements OFormat {
 	error, warning, notice, //
 	English, //
 	Tips__starting_with_an_empty_line_for_multiple_lines, //

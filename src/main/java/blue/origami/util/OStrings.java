@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.BaseStream;
 
-import blue.origami.nez.ast.LocaleFormat;
-
 public interface OStrings {
 
 	public void strOut(StringBuilder sb);
@@ -66,7 +64,7 @@ public interface OStrings {
 		}
 	}
 
-	public static String format(LocaleFormat fmt, Object... args) {
+	public static String format(OFormat fmt, Object... args) {
 		return format(fmt.toString(), args);
 	}
 
@@ -76,7 +74,7 @@ public interface OStrings {
 		return sb.toString();
 	}
 
-	public static void appendFormat(StringBuilder sb, LocaleFormat fmt, Object... args) {
+	public static void appendFormat(StringBuilder sb, OFormat fmt, Object... args) {
 		appendFormat(sb, fmt.toString(), args);
 	}
 

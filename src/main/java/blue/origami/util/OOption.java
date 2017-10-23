@@ -19,7 +19,6 @@ package blue.origami.util;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.SourceLogger;
 import blue.origami.nez.ast.SourcePosition;
 
@@ -132,11 +131,11 @@ public class OOption {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> c) {
+	private <T> T get(Class<T> c) {
 		return (T) this.classMap.get(c);
 	}
 
-	public <T extends OptionalFactory<T>> T newInstance(Class<? extends T> c) {
+	public <T extends OFactory<T>> T newInstance(Class<? extends T> c) {
 		T value = this.get(c);
 		if (value != null) {
 			value = value.clone();
@@ -152,8 +151,9 @@ public class OOption {
 	}
 
 	public void setClass(String path) throws Throwable {
-		Class<?> c = loadClass(OptionalFactory.class, path, "blue.origami.main.tool", "blue.origami.nezcc");
-		OptionalFactory<?> f = (OptionalFactory<?>) c.newInstance();
+		Class<?> c = loadClass(OFactory.class, path, "blue.origami.main.tool", "blue.origami.nezcc",
+				"blue.origami.codemap");
+		OFactory<?> f = (OFactory<?>) c.newInstance();
 		this.classMap.put(f.keyClass(), f);
 	}
 
@@ -216,15 +216,15 @@ public class OOption {
 		return log;
 	}
 
-	public final void reportError(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public final void reportError(SourcePosition s, OFormat fmt, Object... args) {
 		this.log().reportError(s, fmt, args);
 	}
 
-	public final void reportWarning(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public final void reportWarning(SourcePosition s, OFormat fmt, Object... args) {
 		this.log().reportWarning(s, fmt, args);
 	}
 
-	public final void reportNotice(SourcePosition s, LocaleFormat fmt, Object... args) {
+	public final void reportNotice(SourcePosition s, OFormat fmt, Object... args) {
 		this.log().reportNotice(s, fmt, args);
 	}
 

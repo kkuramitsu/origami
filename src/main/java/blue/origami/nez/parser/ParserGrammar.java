@@ -23,7 +23,7 @@ import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.Production;
 import blue.origami.nez.peg.Typestate;
 import blue.origami.util.OOption;
-import blue.origami.util.OptionalFactory;
+import blue.origami.util.OFactory;
 
 public class ParserGrammar extends Grammar {
 	private boolean isBinary = false;
@@ -166,7 +166,7 @@ public class ParserGrammar extends Grammar {
 		memo.init(this, this.memoPointMap);
 	}
 
-	public static class MemoPointAnalysis implements OptionalFactory<MemoPointAnalysis> {
+	public static class MemoPointAnalysis implements OFactory<MemoPointAnalysis> {
 		public void init(Grammar grammar, Map<String, MemoPoint> memoPointMap) {
 			for (Production p : grammar) {
 				Typestate ts = Typestate.compute(p);

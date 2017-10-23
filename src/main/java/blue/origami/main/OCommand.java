@@ -24,7 +24,6 @@ import java.util.Scanner;
 
 import blue.origami.OVersion;
 import blue.origami.main.tool.OTreeWriter;
-import blue.origami.nez.ast.LocaleFormat;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserOption;
@@ -32,6 +31,7 @@ import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
+import blue.origami.util.OFormat;
 import blue.origami.util.OOption;
 import blue.origami.util.OOption.OOptionKey;
 import blue.origami.util.OStrings;
@@ -192,7 +192,7 @@ public abstract class OCommand extends OConsole {
 		println(OStrings.format(fmt, args));
 	}
 
-	static void p2(String desc, LocaleFormat fmt, Object... args) {
+	static void p2(String desc, OFormat fmt, Object... args) {
 		print(desc);
 		println(OStrings.format(fmt, args));
 	}
@@ -203,7 +203,7 @@ public abstract class OCommand extends OConsole {
 		endColor();
 	}
 
-	public final static void p(int color, LocaleFormat fmt, Object... args) {
+	public final static void p(int color, OFormat fmt, Object... args) {
 		beginColor(color);
 		println(OStrings.format(fmt, args));
 		endColor();

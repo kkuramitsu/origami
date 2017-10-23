@@ -47,16 +47,6 @@ public abstract class OStringUtils {
 		}
 	}
 
-	// public final static byte[] utf8(String text, int padding) {
-	// byte[] u = utf8(text);
-	// if (padding > 0) {
-	// byte[] n = new byte[u.length + padding];
-	// System.arraycopy(u, 0, n, 0, u.length);
-	// u = n;
-	// }
-	// return u;
-	// }
-
 	/* format */
 
 	public final static void formatByte(StringBuilder sb, boolean quoted, int byteChar, String fmt, String escaped) {
