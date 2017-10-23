@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserGrammar;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.Production;
 import blue.origami.nez.peg.Stateful;
@@ -715,7 +715,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	@Override
 	public void init(OOption options) {
 		this.options = options;
-		this.treeConstruction = this.options.is(ParserOption.TreeConstruction, true);
+		this.treeConstruction = this.options.is(MainOption.TreeConstruction, true);
 	}
 
 	protected final boolean isTreeConstruction() {
@@ -731,7 +731,7 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 	}
 
 	protected final String getFileBaseName() {
-		String file = this.options.stringValue(ParserOption.GrammarFile, "parser.opeg");
+		String file = this.options.stringValue(MainOption.GrammarFile, "parser.opeg");
 		return SourcePosition.extractFileBaseName(file);
 	}
 

@@ -21,7 +21,7 @@ import blue.origami.nezcc.SourceGenerator;
 import blue.origami.nezcc.ParserGenerator;
 import blue.origami.util.OOption;
 
-public class Onezcc extends OCommand {
+public class Onezcc extends Main {
 
 	// protected void initOption(OOption options) {
 	// super.initOption(options);

@@ -18,8 +18,8 @@ package blue.origami.nez.parser.pass;
 
 import java.util.ArrayList;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.parser.ParserGrammar;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Rewriter;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -28,10 +28,10 @@ public abstract class ParserPass extends Rewriter<Void> {
 	public abstract ParserGrammar perform(ParserGrammar g, OOption options);
 
 	public final static ParserGrammar applyPass(ParserGrammar g, OOption options) {
-		if (!options.is(ParserOption.Optimized, true)) {
+		if (!options.is(MainOption.Optimized, true)) {
 			return g;
 		}
-		String[] pass = options.stringList(ParserOption.Pass);
+		String[] pass = options.stringList(MainOption.Pass);
 		if (pass.length > 0) {
 			return applyPass(g, options, loadPassClass(pass, options));
 		} else {
@@ -43,7 +43,7 @@ public abstract class ParserPass extends Rewriter<Void> {
 		ArrayList<Class<?>> l = new ArrayList<>();
 		for (String p : pass) {
 			try {
-				l.add(OOption.loadClass(ParserPass.class, p, options.stringList(ParserOption.PassPath)));
+				l.add(OOption.loadClass(ParserPass.class, p, options.stringList(MainOption.PassPath)));
 			} catch (ClassNotFoundException e) {
 				ODebug.traceException(e);
 			}

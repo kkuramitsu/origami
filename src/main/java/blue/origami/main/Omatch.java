@@ -20,22 +20,21 @@ import java.util.ArrayList;
 
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.util.OOption;
 
-public class Omatch extends OCommand {
+public class Omatch extends Main {
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);
-		options.set(ParserOption.TreeConstruction, false);
+		options.set(MainOption.ThrowingParserError, false);
+		options.set(MainOption.TreeConstruction, false);
 	}
 
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Parser parser = getParser(options);
-		if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
-			String t = options.stringValue(ParserOption.InlineGrammar, null);
+		if (options.stringValue(MainOption.InlineGrammar, null) != null) {
+			String t = options.stringValue(MainOption.InlineGrammar, null);
 			Source input = ParserSource.newStringSource(t);
 			int l = parser.match(input);
 			if (l == -1) {
@@ -44,7 +43,7 @@ public class Omatch extends OCommand {
 			}
 			return;
 		}
-		String[] files = options.stringList(ParserOption.InputFiles);
+		String[] files = options.stringList(MainOption.InputFiles);
 		ArrayList<String> failedFileList = new ArrayList<>();
 		this.checkInputSource(files);
 		for (String file : files) {

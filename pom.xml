@@ -102,7 +102,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>blue.origami.main.OCommand</mainClass>
+              <mainClass>blue.origami.main.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -245,7 +245,7 @@
       		</descriptorRefs>
       		<archive>
       			<manifest>
-      				<mainClass>blue.origami.main.OCommand</mainClass>
+      				<mainClass>blue.origami.main.Main</mainClass>
       			</manifest>
       		</archive>
           <finalName>origami-${project.version}-run</finalName>

@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
@@ -255,7 +255,7 @@ public abstract class Grammar extends AbstractList<Production> implements OStrin
 	}
 
 	public Parser newParser(OOption options) {
-		String start = options.stringValue(ParserOption.Start, null);
+		String start = options.stringValue(MainOption.Start, null);
 		if (start == null) {
 			return new Parser(this.getStartProduction(), options);
 		}

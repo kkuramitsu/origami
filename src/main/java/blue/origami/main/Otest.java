@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import blue.origami.nez.parser.ParserContext;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.TrapAction;
 import blue.origami.nez.peg.Expression;
 import blue.origami.nez.peg.Grammar;
@@ -34,9 +33,9 @@ public class Otest extends Oexample {
 	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.Coverage, true);
-		options.set(ParserOption.ThrowingParserError, true);
-		options.set(ParserOption.PartialFailure, true);
+		options.set(MainOption.Coverage, true);
+		options.set(MainOption.ThrowingParserError, true);
+		options.set(MainOption.PartialFailure, true);
 	}
 
 	public static class Coverage {
@@ -72,7 +71,7 @@ public class Otest extends Oexample {
 		public void init(OOption options, Grammar g) {
 			this.unameMap = new HashMap<>();
 			ArrayList<String> nameList = new ArrayList<>();
-			options.add(ParserOption.TrapActions, new TrapAction[] { this.newEnterAction(), this.newExitAction() });
+			options.add(MainOption.TrapActions, new TrapAction[] { this.newEnterAction(), this.newExitAction() });
 			int enterId = 0;
 			int exitId = 1;
 			this.init(g, enterId, exitId, nameList);

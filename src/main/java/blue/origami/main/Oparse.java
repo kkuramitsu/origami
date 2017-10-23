@@ -22,7 +22,6 @@ import blue.origami.main.tool.OTreeWriter;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.GrammarParser;
@@ -30,24 +29,24 @@ import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 
-public class Oparse extends OCommand {
+public class Oparse extends Main {
 
 	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);
-		options.set(ParserOption.PartialFailure, true);
+		options.set(MainOption.ThrowingParserError, false);
+		options.set(MainOption.PartialFailure, true);
 	}
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		String[] files = options.stringList(ParserOption.InputFiles);
+		String[] files = options.stringList(MainOption.InputFiles);
 		if (files.length > 0) {
 			Parser parser = this.getParser(options);
 			OTreeWriter treeWriter = options.newInstance(OTreeWriter.class);
 			treeWriter.init(options);
-			if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
-				Source input = ParserSource.newStringSource(options.stringValue(ParserOption.InlineGrammar, null));
+			if (options.stringValue(MainOption.InlineGrammar, null) != null) {
+				Source input = ParserSource.newStringSource(options.stringValue(MainOption.InlineGrammar, null));
 				Tree<?> node = parser.parse(input);
 				if (node != null) {
 					treeWriter.write(node);
@@ -109,11 +108,11 @@ public class Oparse extends OCommand {
 
 	@Override
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
-		file = options.stringValue(ParserOption.GrammarFile, file);
+		file = options.stringValue(MainOption.GrammarFile, file);
 		if (file == null) {
 			return new SourceGrammar();
 		}
-		return SourceGrammar.loadFile(file, options.stringList(ParserOption.GrammarPath));
+		return SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 	}
 
 	private Parser newParser(Grammar g, OOption options) throws IOException {

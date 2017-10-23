@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.parser.pass.ParserPass;
 import blue.origami.nez.parser.pass.TreeCheckerPass;
 import blue.origami.nez.peg.Duplicator;
@@ -76,7 +77,7 @@ public class ParserChecker {
 		TreeCheckerPass treeChecker = new TreeCheckerPass();
 		for (Production p : this.prodList) {
 			lrc.check(p.getExpression(), p);
-			if (this.options.is(ParserOption.StrictChecker, false)) {
+			if (this.options.is(MainOption.StrictChecker, false)) {
 				treeChecker.check(p, this.options);
 			}
 		}
@@ -89,7 +90,7 @@ public class ParserChecker {
 		// g.dump();
 		// }
 		g = ParserPass.applyPass(g, this.options);
-		if (this.options.is(ParserOption.PackratParsing, true)) {
+		if (this.options.is(MainOption.PackratParsing, true)) {
 			g.initMemoPoint();
 		}
 		return g;

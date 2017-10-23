@@ -17,7 +17,6 @@
 package blue.origami.main;
 
 import blue.origami.asm.APIs;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.util.OConsole;
@@ -29,10 +28,10 @@ public class Ocheck extends Okonoha {
 	public void exec(OOption options) throws Throwable {
 		int totalTestCount = 0;
 		int totalPassCount = 0;
-		String[] files = options.stringList(ParserOption.InputFiles);
+		String[] files = options.stringList(MainOption.InputFiles);
 		for (String file : files) {
 			try {
-				String target = options.stringValue(ParserOption.Target, "jvm");
+				String target = options.stringValue(MainOption.Target, "jvm");
 				Grammar g = this.getGrammar(options, "konoha5.opeg");
 				Transpiler env = new Transpiler(g, target, options);
 				env.loadScriptFile(file);

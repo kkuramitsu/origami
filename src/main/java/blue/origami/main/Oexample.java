@@ -26,7 +26,6 @@ import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.GrammarParser;
@@ -34,7 +33,7 @@ import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
-public class Oexample extends OCommand {
+public class Oexample extends Main {
 	HashMap<String, Parser> parserMap = new HashMap<>();
 	HashMap<String, Long> timeMap = new HashMap<>();
 	OTreeWriter treeWriter = null;
@@ -47,7 +46,7 @@ public class Oexample extends OCommand {
 	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, true);
+		options.set(MainOption.ThrowingParserError, true);
 		// options.set(ParserOption.PartialFailure, true);
 	}
 
@@ -56,7 +55,7 @@ public class Oexample extends OCommand {
 		Grammar g = this.getGrammar(options);
 		// g.dump();
 		this.treeWriter = options.newInstance(OTreeWriter.class);
-		if (options.is(ParserOption.Coverage, false)) {
+		if (options.is(MainOption.Coverage, false)) {
 			this.cov = new Coverage();
 			this.cov.init(options, g);
 		}
@@ -84,11 +83,11 @@ public class Oexample extends OCommand {
 	}
 
 	void loadExample(OOption options, Grammar g) throws IOException {
-		String path = options.stringValue(ParserOption.GrammarFile, null);
+		String path = options.stringValue(MainOption.GrammarFile, null);
 		if (path == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		Source s = ParserSource.newFileSource(path, options.stringList(ParserOption.GrammarPath));
+		Source s = ParserSource.newFileSource(path, options.stringList(MainOption.GrammarPath));
 		this.importFile(g, s, options);
 		this.desc = parseGrammarDescription(s);
 	}
@@ -158,7 +157,7 @@ public class Oexample extends OCommand {
 		String uname = g.getUniqueName(name);
 		Parser p = this.parserMap.get(uname);
 		if (p == null) {
-			options.set(ParserOption.Start, name);
+			options.set(MainOption.Start, name);
 			p = g.newParser(options);
 			if (p == null) {
 				options.reportError(nameNode, "undefined nonterminal: %s", name);

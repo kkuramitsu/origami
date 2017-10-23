@@ -22,9 +22,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.parser.ParserCompiler;
 import blue.origami.nez.parser.ParserGrammar;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserGrammar.MemoPoint;
 import blue.origami.nez.parser.pasm.PAsmAPI.SymbolDefFunc;
 import blue.origami.nez.parser.pasm.PAsmAPI.SymbolResetFunc;
@@ -98,7 +98,7 @@ public class PAsmCompiler implements ParserCompiler {
 			this.code = code;
 			this.grammar = grammar;
 			this.binaryGrammar = grammar.isBinaryGrammar();
-			this.TreeConstruction = options.is(ParserOption.TreeConstruction, true);
+			this.TreeConstruction = options.is(MainOption.TreeConstruction, true);
 		}
 
 		private PAsmCode compileAll() {

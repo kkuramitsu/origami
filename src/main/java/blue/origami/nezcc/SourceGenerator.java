@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.expression.ByteSet;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OConsole;
@@ -27,7 +27,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	public void init(OOption options) {
 		super.init(options);
 		this.defineSymbol("base", this.getFileBaseName());
-		String[] files = options.stringList(ParserOption.InputFiles);
+		String[] files = options.stringList(MainOption.InputFiles);
 		this.initDefaultSymbols();
 		for (String file : files) {
 			if (!file.endsWith(".nezcc")) {

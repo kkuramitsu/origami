@@ -22,11 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import blue.origami.OVersion;
+import blue.origami.Version;
 import blue.origami.main.tool.OTreeWriter;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.nez.peg.SourceGrammar;
 import blue.origami.util.OConsole;
@@ -36,12 +35,12 @@ import blue.origami.util.OOption;
 import blue.origami.util.OOption.OOptionKey;
 import blue.origami.util.OStrings;
 
-public abstract class OCommand extends OConsole {
+public abstract class Main extends OConsole {
 
 	public static void main(String[] args) {
 		OOption options = new OOption();
 		try {
-			OCommand com = newCommand(args, options);
+			Main com = newCommand(args, options);
 			com.exec(options);
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -51,17 +50,17 @@ public abstract class OCommand extends OConsole {
 
 	public static void start(String... args) throws Throwable {
 		OOption options = new OOption();
-		OCommand com = newCommand(args, options);
+		Main com = newCommand(args, options);
 		com.exec(options);
 	}
 
-	private static OCommand newCommand(String[] args, OOption options) {
+	private static Main newCommand(String[] args, OOption options) {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
 			if (className.indexOf('.') == -1) {
 				className = "blue.origami.main.O" + className;
 			}
-			OCommand cmd = (OCommand) Class.forName(className).newInstance();
+			Main cmd = (Main) Class.forName(className).newInstance();
 			cmd.initOption(options);
 			cmd.parseCommandOption(args, options);
 			return cmd;
@@ -74,22 +73,19 @@ public abstract class OCommand extends OConsole {
 	public abstract void exec(OOption options) throws Throwable;
 
 	protected void initOption(OOption options) {
-		options.set(ParserOption.GrammarPath, new String[] { "/blue/origami/grammar", "/blue/local" });
+		options.set(MainOption.GrammarPath, new String[] { "/blue/origami/grammar", "/blue/local" });
 	}
 
 	static HashMap<String, OOptionKey> optMap = new HashMap<>();
+
 	static {
-		optMap.put("-g", ParserOption.GrammarFile);
-		optMap.put("--grammar", ParserOption.GrammarFile);
-		optMap.put("-p", ParserOption.GrammarFile);
-		optMap.put("-e", ParserOption.InlineGrammar);
-		optMap.put("--expression", ParserOption.InlineGrammar);
-		optMap.put("-s", ParserOption.Start);
-		optMap.put("--start", ParserOption.Start);
-		// optMap.put("-f", "format");
-		// optMap.put("--format", "format");
-		// optMap.put("-d", "dir");
-		// optMap.put("--dir", "dir");
+		optMap.put("-g", MainOption.GrammarFile);
+		optMap.put("--grammar", MainOption.GrammarFile);
+		optMap.put("-p", MainOption.GrammarFile);
+		optMap.put("-e", MainOption.InlineGrammar);
+		optMap.put("--expression", MainOption.InlineGrammar);
+		optMap.put("-s", MainOption.Start);
+		optMap.put("--start", MainOption.Start);
 	}
 
 	private void parseCommandOption(String[] args, OOption options) {
@@ -103,7 +99,7 @@ public abstract class OCommand extends OConsole {
 				continue;
 			}
 			if (as.startsWith("-D")) {
-				options.setKeyValue(as.substring(2), ParserOption.Start);
+				options.setKeyValue(as.substring(2), MainOption.Start);
 				continue;
 			}
 			if (as.startsWith("-X")) {
@@ -124,15 +120,15 @@ public abstract class OCommand extends OConsole {
 			}
 			usage("undefined option: " + as);
 		}
-		options.set(ParserOption.InputFiles, fileList.toArray(new String[fileList.size()]));
+		options.set(MainOption.InputFiles, fileList.toArray(new String[fileList.size()]));
 	}
 
 	protected Grammar getGrammar(OOption options, String file) throws IOException {
-		file = options.stringValue(ParserOption.GrammarFile, file);
+		file = options.stringValue(MainOption.GrammarFile, file);
 		if (file == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		return SourceGrammar.loadFile(file, options.stringList(ParserOption.GrammarPath));
+		return SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 	}
 
 	protected Grammar getGrammar(OOption options) throws IOException {
@@ -146,8 +142,8 @@ public abstract class OCommand extends OConsole {
 
 	protected void displayVersion() {
 		p(bold(this.progName()) + "-" + this.version() + " (" + MainFmt.English + ") on Java JVM-"
-				+ System.getProperty("java.version") + "/" + OVersion.ProgName + "-" + OVersion.Version);
-		p(Yellow, OVersion.Copyright);
+				+ System.getProperty("java.version") + "/" + Version.ProgName + "-" + Version.Version);
+		p(Yellow, Version.Copyright);
 	}
 
 	protected String progName() {
@@ -155,7 +151,7 @@ public abstract class OCommand extends OConsole {
 	}
 
 	protected String version() {
-		return OVersion.Version;
+		return Version.Version;
 	}
 
 	protected static void usage(String msg) {

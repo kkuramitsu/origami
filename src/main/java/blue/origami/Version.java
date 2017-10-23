@@ -14,24 +14,16 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.main;
+package blue.origami;
 
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
+public class Version {
+	public final static String ProgName = "ORIGAMI";
+	public final static String CodeName = "Celery";
 
-public class Cpeg extends OCommand {
-
-	@Override
-	public void exec(OOption options) throws Throwable {
-		ODebug.TODO(this);
-		// GrammarWriter grammarWriter =
-		// options.newGrammarWriter(origami.main.tool.PEGWriter.class);
-		// if (options.is("raw", false)) {
-		// grammarWriter.writeGrammar(options, options.getGrammar());
-		// } else {
-		// Parser p = options.newParser();
-		// grammarWriter.writeGrammar(options, p.getGrammar());
-		// }
-	}
-
+	public final static int MainVersion = 0;
+	public final static int MinorVersion = 2;
+	public final static String Version = "" + MainVersion + "." + MinorVersion + "." + PatchLevel.REV;
+	public final static String Copyright = "Copyright 2017, Kimio Kuramitsu and ORIGAMI project";
+	public final static String License = "the Apache License, Version 2.0";
+	public final static String ClassPath = "blue.origami";
 }

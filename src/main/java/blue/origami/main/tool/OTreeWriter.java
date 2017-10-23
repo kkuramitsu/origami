@@ -18,8 +18,8 @@ package blue.origami.main.tool;
 
 import blue.origami.nez.ast.Tree;
 import blue.origami.util.OCommonWriter;
-import blue.origami.util.OOption;
 import blue.origami.util.OFactory;
+import blue.origami.util.OOption;
 
 public class OTreeWriter extends OCommonWriter implements OFactory<OTreeWriter> {
 

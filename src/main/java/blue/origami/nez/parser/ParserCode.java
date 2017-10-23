@@ -17,6 +17,7 @@ package blue.origami.nez.parser;
 
 import java.io.IOException;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
@@ -36,7 +37,7 @@ public interface ParserCode {
 	}
 
 	default void perror(OOption options, SourcePosition s, OFormat message) throws IOException {
-		if (options.is(ParserOption.ThrowingParserError, true)) {
+		if (options.is(MainOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
 		} else {
 			options.reportError(s, message);
@@ -44,7 +45,7 @@ public interface ParserCode {
 	}
 
 	default void pwarn(OOption options, SourcePosition s, OFormat message) throws IOException {
-		if (options.is(ParserOption.ThrowingParserError, true)) {
+		if (options.is(MainOption.ThrowingParserError, true)) {
 			throw new ParserErrorException(s, message);
 		} else {
 			options.reportWarning(s, message);

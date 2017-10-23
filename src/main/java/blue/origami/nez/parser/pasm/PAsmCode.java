@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import blue.origami.main.MainOption;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.parser.ParserCode;
 import blue.origami.nez.parser.ParserGrammar;
 import blue.origami.nez.parser.ParserGrammar.MemoPoint;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.TrapAction;
 import blue.origami.nez.parser.pasm.PAsmAPI.PAsmContext;
 import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
@@ -56,8 +56,8 @@ public class PAsmCode implements ParserCode {
 	@Override
 	public int match(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) {
 		PAsmContext px = new PAsmContext(s, pos, newTree, linkTree);
-		px.setTrap((TrapAction[]) this.options.get(ParserOption.TrapActions));
-		int w = this.options.intValue(ParserOption.WindowSize, 64);
+		px.setTrap((TrapAction[]) this.options.get(MainOption.TrapActions));
+		int w = this.options.intValue(MainOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
 			PAsmAPI.initMemo(px, w, this.getMemoPointSize());
 		}
@@ -72,8 +72,8 @@ public class PAsmCode implements ParserCode {
 	@Override
 	public Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
 		PAsmContext px = new PAsmContext(s, pos, newTree, linkTree);
-		px.setTrap((TrapAction[]) this.options.get(ParserOption.TrapActions));
-		int w = this.options.intValue(ParserOption.WindowSize, 64);
+		px.setTrap((TrapAction[]) this.options.get(MainOption.TrapActions));
+		int w = this.options.intValue(MainOption.WindowSize, 64);
 		if (this.getMemoPointSize() > 0 && w > 0) {
 			PAsmAPI.initMemo(px, w, this.getMemoPointSize());
 		}
@@ -87,7 +87,7 @@ public class PAsmCode implements ParserCode {
 			this.perror(this.options, SourcePosition.newInstance(s, px.getMaximumPosition()), NezFmt.syntax_error);
 			return null;
 		}
-		if (PAsmAPI.neof(px) && this.options.is(ParserOption.PartialFailure, false)) {
+		if (PAsmAPI.neof(px) && this.options.is(MainOption.PartialFailure, false)) {
 			this.pwarn(this.options, SourcePosition.newInstance(s, px.pos), NezFmt.unconsumed);
 		}
 		return px.tree;

@@ -1,23 +1,23 @@
 package origami;
 
-import blue.origami.main.OCommand;
+import blue.origami.main.Main;
 
 public class CommandTest {
 
 	public void testExample() throws Throwable {
-		OCommand.start("example", "-g", "konoha5.opeg");
+		Main.start("example", "-g", "konoha5.opeg");
 	}
 
 	public void testTest() throws Throwable {
-		OCommand.start("test", "-g", "konoha5.opeg");
+		Main.start("test", "-g", "konoha5.opeg");
 	}
 
 	public void testMatch() throws Throwable {
-		OCommand.start("match", "-g", "xml.opeg", "pom.xml");
+		Main.start("match", "-g", "xml.opeg", "pom.xml");
 	}
 
 	public void testParse() throws Throwable {
-		OCommand.start("parse", "-g", "xml.opeg", "pom.xml");
+		Main.start("parse", "-g", "xml.opeg", "pom.xml");
 	}
 
 }

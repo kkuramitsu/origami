@@ -15,7 +15,7 @@ import blue.origami.nez.parser.pasm.PAsmInst;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OOption;
 
-public class Opasm extends OCommand {
+public class Opasm extends Main {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Parser parser = this.getParser(options);

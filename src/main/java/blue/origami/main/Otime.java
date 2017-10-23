@@ -19,28 +19,27 @@ package blue.origami.main;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Tree;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.parser.ParserSource;
 import blue.origami.util.OOption;
 
-public class Otime extends OCommand {
+public class Otime extends Main {
 
 	@Override
 	protected void initOption(OOption options) {
 		super.initOption(options);
-		options.set(ParserOption.ThrowingParserError, false);
+		options.set(MainOption.ThrowingParserError, false);
 	}
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		if (options.stringValue(ParserOption.InlineGrammar, null) != null) {
+		if (options.stringValue(MainOption.InlineGrammar, null) != null) {
 			exit(1, "unavailable -t --text option");
 			return;
 		}
 		Parser parser = this.getParser(options);
 		double total = 0.0;
 		int len = 0;
-		String[] files = options.stringList(ParserOption.InputFiles);
+		String[] files = options.stringList(MainOption.InputFiles);
 		this.checkInputSource(files);
 		for (String file : files) {
 			System.out.printf("%s", file);

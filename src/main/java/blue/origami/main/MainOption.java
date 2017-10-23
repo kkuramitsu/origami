@@ -1,8 +1,8 @@
-package blue.origami.nez.parser;
+package blue.origami.main;
 
 import blue.origami.util.OOption.OOptionKey;
 
-public enum ParserOption implements OOptionKey {
+public enum MainOption implements OOptionKey {
 	Verbose, WindowSize, Pass, Optimized, PassPath, StrictChecker, TrapActions, //
 	TreeConstruction, PackratParsing, Coverage, GrammarFile, GrammarPath, Start, //
 	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles, Target, Debug;
@@ -14,6 +14,6 @@ public enum ParserOption implements OOptionKey {
 
 	@Override
 	public OOptionKey keyOf(String key) {
-		return ParserOption.valueOf(key);
+		return MainOption.valueOf(key);
 	}
 }

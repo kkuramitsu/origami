@@ -5,25 +5,24 @@ import java.util.Arrays;
 
 import blue.origami.PatchLevel;
 import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserOption;
 import blue.origami.nez.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;
 
-public class Otranscode extends OCommand {
+public class Otranscode extends Main {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		String[] files = options.stringList(ParserOption.InputFiles);
-		String target = options.stringValue(ParserOption.Target, "jvm");
+		String[] files = options.stringList(MainOption.InputFiles);
+		String target = options.stringValue(MainOption.Target, "jvm");
 		Transpiler[] trcc = this.newTranspiler(target, options);
 		for (String file : files) {
 			this.loadScriptFile(trcc, file);
 		}
 		ODebug.setHacked(this.isHacked());
-		ODebug.setVerbose(options.is(ParserOption.Verbose, this.isVerbose()));
-		ODebug.setDebug(options.is(ParserOption.Debug, this.isDebug()));
+		ODebug.setVerbose(options.is(MainOption.Verbose, this.isVerbose()));
+		ODebug.setDebug(options.is(MainOption.Debug, this.isDebug()));
 		Arrays.stream(trcc).forEach(tr -> {
 			tr.setShellMode(true);
 		});
