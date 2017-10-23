@@ -3,6 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FuncUnit;
 import blue.origami.transpiler.FunctionContext;
@@ -162,7 +163,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sb) {
+	public void dumpCode(SyntaxBuilder sb) {
 		sb.TypeAnnotation(this.getType(), () -> {
 			if (this.paramNames.length == 0) {
 				sb.Keyword("\\() ");

@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 
 public class BinaryCode extends ExprCode implements CodeBuilder {
 
@@ -32,7 +33,7 @@ public class BinaryCode extends ExprCode implements CodeBuilder {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.TypeAnnotation(this.getType(), () -> {
 			sh.Expr(this.args[0]);
 			sh.s();

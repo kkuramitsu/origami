@@ -5,6 +5,7 @@ import java.util.List;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
@@ -86,7 +87,7 @@ public final class FuncRefCode extends CommonCode {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.TypeAnnotation(this.getType(), () -> {
 			sh.Name(this.name);
 		});

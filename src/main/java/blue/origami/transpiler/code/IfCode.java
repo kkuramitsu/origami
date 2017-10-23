@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
@@ -71,7 +72,7 @@ public class IfCode extends CodeN {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sb) {
+	public void dumpCode(SyntaxBuilder sb) {
 		sb.Keyword("if ");
 		sb.Expr(this.args[0]);
 		sb.Keyword(" then ");

@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 
@@ -31,7 +32,7 @@ public class ReturnCode extends Code1 {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Expr(this.getInner());
 	}
 

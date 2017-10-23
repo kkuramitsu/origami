@@ -2,6 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
@@ -29,7 +30,7 @@ public class TypeCode extends CommonCode {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Type(this.value);
 	}
 

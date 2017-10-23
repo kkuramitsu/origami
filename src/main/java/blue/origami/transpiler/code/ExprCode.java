@@ -5,6 +5,7 @@ import java.util.List;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -199,7 +200,7 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sb) {
+	public void dumpCode(SyntaxBuilder sb) {
 		sb.TypeAnnotation(this.getType(), () -> {
 			sb.Name(this.name);
 			sb.Token("(");

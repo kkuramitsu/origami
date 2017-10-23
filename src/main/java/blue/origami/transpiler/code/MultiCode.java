@@ -4,6 +4,7 @@ import java.util.List;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
@@ -86,7 +87,7 @@ public class MultiCode extends CodeN {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.append("{");
 		sh.incIndent();
 		for (Code c : this.args) {

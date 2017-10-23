@@ -1,5 +1,6 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
@@ -53,7 +54,7 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Expr(this.inner);
 		sh.Token("#" + this.index);
 	}

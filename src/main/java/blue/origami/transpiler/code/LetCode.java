@@ -2,6 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.FunctionContext;
@@ -92,7 +93,7 @@ public class LetCode extends Code1 {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Keyword("let ");
 		sh.TypeAnnotation_(this.getDeclType(), () -> {
 			sh.Name(this.name);

@@ -1,11 +1,9 @@
-package blue.origami.transpiler.code;
+package blue.origami.common;
 
-import blue.origami.common.OConsole;
-import blue.origami.common.OStringUtils;
-import blue.origami.common.TLog;
+import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
-public class SyntaxHighlight extends OConsole {
+public class SyntaxBuilder extends OConsole {
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
 

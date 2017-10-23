@@ -1,5 +1,6 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -57,7 +58,7 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Expr(this.getInner());
 		sh.Token(".");
 		sh.Name(this.name);

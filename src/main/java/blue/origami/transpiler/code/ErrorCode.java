@@ -4,6 +4,7 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OFormat;
 import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
@@ -92,7 +93,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Error(this.log);
 	}
 

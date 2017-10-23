@@ -4,6 +4,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
@@ -100,7 +101,7 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Token(this.isMutable() ? "{" : "[");
 		for (int i = 0; i < this.args.length; i++) {
 			if (i > 0) {

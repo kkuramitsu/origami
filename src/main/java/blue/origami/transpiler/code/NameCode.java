@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.ODebug;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.NameHint;
@@ -111,7 +112,7 @@ public class NameCode extends CommonCode {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.TypeAnnotation_(this.getType(), () -> {
 			sh.Name(this.name);
 		});

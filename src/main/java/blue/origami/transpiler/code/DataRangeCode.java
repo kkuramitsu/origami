@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
@@ -30,7 +31,7 @@ public class DataRangeCode extends DataListCode {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sb) {
+	public void dumpCode(SyntaxBuilder sb) {
 		sb.Token(this.isMutable() ? "{" : "[");
 		sb.Expr(this.args[0]);
 		sb.Keyword(" to ");

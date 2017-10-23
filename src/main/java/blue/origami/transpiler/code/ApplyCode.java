@@ -4,6 +4,7 @@ import java.util.List;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
@@ -73,7 +74,7 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.TypeAnnotation(this.getType(), () -> {
 			this.args[0].dumpCode(sh);
 			sh.Token("(");

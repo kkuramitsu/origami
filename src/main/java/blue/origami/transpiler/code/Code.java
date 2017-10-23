@@ -7,6 +7,7 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
@@ -38,12 +39,12 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 
 	// public void dumpCode(SyntaxHighlight sh);
 
-	public default void dumpCode(SyntaxHighlight sh) {
+	public default void dumpCode(SyntaxBuilder sh) {
 		sh.append(this);
 	}
 
 	public default void dump() {
-		SyntaxHighlight sh = new SyntaxHighlight();
+		SyntaxBuilder sh = new SyntaxBuilder();
 		dumpCode(sh);
 		OConsole.println(sh.toString());
 	}

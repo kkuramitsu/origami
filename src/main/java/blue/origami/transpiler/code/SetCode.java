@@ -1,5 +1,6 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -59,7 +60,7 @@ public class SetCode extends CodeN {
 	}
 
 	@Override
-	public void dumpCode(SyntaxHighlight sh) {
+	public void dumpCode(SyntaxBuilder sh) {
 		sh.Expr(this.args[0]);
 		sh.Token(".");
 		sh.Name(this.name);
