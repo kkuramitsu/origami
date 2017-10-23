@@ -5,10 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.asm.AsmMapper;
 import blue.origami.nez.ast.Source;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserCode.ParserErrorException;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
+import blue.origami.parser.Parser;
+import blue.origami.parser.ParserSource;
+import blue.origami.parser.ParserCode.ParserErrorException;
+import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.rule.BinaryExpr;

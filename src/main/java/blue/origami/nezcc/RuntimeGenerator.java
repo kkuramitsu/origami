@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import blue.origami.nez.parser.ParserGrammar;
-import blue.origami.nez.peg.Expression;
-import blue.origami.nez.peg.expression.ByteSet;
-import blue.origami.nez.peg.expression.PAny;
-import blue.origami.nez.peg.expression.PMany;
+import blue.origami.parser.ParserGrammar;
+import blue.origami.parser.peg.ByteSet;
+import blue.origami.parser.peg.Expression;
+import blue.origami.parser.peg.PAny;
+import blue.origami.parser.peg.PMany;
 
 public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 

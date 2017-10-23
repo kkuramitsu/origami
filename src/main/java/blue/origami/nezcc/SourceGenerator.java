@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 import blue.origami.main.MainOption;
 import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.peg.expression.ByteSet;
+import blue.origami.parser.peg.ByteSet;
 import blue.origami.util.OCommonWriter;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;

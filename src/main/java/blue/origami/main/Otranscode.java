@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import blue.origami.PatchLevel;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.peg.Grammar;
+import blue.origami.parser.Parser;
+import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.util.ODebug;
 import blue.origami.util.OOption;

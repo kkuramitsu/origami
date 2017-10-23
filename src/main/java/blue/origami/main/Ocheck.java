@@ -17,7 +17,7 @@
 package blue.origami.main;
 
 import blue.origami.asm.APIs;
-import blue.origami.nez.peg.Grammar;
+import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;

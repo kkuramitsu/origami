@@ -3,8 +3,8 @@ package origami;
 import java.io.IOException;
 
 import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.peg.Grammar;
+import blue.origami.parser.Parser;
+import blue.origami.parser.peg.Grammar;
 
 public class ParserSample {
 

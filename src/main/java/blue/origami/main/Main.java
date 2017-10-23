@@ -23,11 +23,10 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import blue.origami.Version;
-import blue.origami.main.tool.OTreeWriter;
 import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.peg.Grammar;
-import blue.origami.nez.peg.SourceGrammar;
+import blue.origami.parser.Parser;
+import blue.origami.parser.peg.Grammar;
+import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.ODebug;
 import blue.origami.util.OFormat;

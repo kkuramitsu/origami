@@ -18,14 +18,13 @@ package blue.origami.main;
 
 import java.io.IOException;
 
-import blue.origami.main.tool.OTreeWriter;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.peg.Grammar;
-import blue.origami.nez.peg.GrammarParser;
-import blue.origami.nez.peg.SourceGrammar;
+import blue.origami.parser.Parser;
+import blue.origami.parser.ParserSource;
+import blue.origami.parser.peg.Grammar;
+import blue.origami.parser.peg.GrammarParser;
+import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.util.OConsole;
 import blue.origami.util.OOption;
 

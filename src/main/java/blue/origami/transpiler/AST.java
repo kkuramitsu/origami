@@ -9,9 +9,9 @@ import java.util.function.IntFunction;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.SourcePosition;
 import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.parser.ParserSource;
-import blue.origami.nez.parser.pasm.PAsmAPI.TreeFunc;
-import blue.origami.nez.parser.pasm.PAsmAPI.TreeSetFunc;
+import blue.origami.parser.ParserSource;
+import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
+import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.util.OStringUtils;
 import blue.origami.util.OStrings;
 

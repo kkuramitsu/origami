@@ -18,8 +18,8 @@ package blue.origami.main;
 
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.ast.Tree;
-import blue.origami.nez.parser.Parser;
-import blue.origami.nez.parser.ParserSource;
+import blue.origami.parser.Parser;
+import blue.origami.parser.ParserSource;
 import blue.origami.util.OOption;
 
 public class Otime extends Main {
