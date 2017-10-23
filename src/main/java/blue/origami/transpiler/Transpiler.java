@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import blue.origami.asm.AsmMapper;
-import blue.origami.nez.ast.Source;
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.OStrings;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.ParserCode.ParserErrorException;
@@ -21,12 +25,8 @@ import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
-import blue.origami.util.OStrings;
 
-public class Transpiler extends TEnv {
+public class Transpiler extends Env {
 	final OOption options;
 	private final CodeMapLoader loader;
 	private final CodeMapper generator;
@@ -124,7 +124,7 @@ public class Transpiler extends TEnv {
 		this.loadScriptFile(ParserSource.newStringSource(source, line, script));
 	}
 
-	public boolean loadScriptFile(Source sc) {
+	public boolean loadScriptFile(OSource sc) {
 		try {
 			this.emitCode(this, sc);
 			return true;
@@ -134,7 +134,7 @@ public class Transpiler extends TEnv {
 		}
 	}
 
-	public void testScriptFile(Source sc) throws Throwable {
+	public void testScriptFile(OSource sc) throws Throwable {
 		this.emitCode(this, sc);
 	}
 
@@ -171,7 +171,7 @@ public class Transpiler extends TEnv {
 		}
 	}
 
-	void emitCode(TEnv env, Source sc) throws Throwable {
+	void emitCode(Env env, OSource sc) throws Throwable {
 		Parser p = env.get(Parser.class);
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
@@ -201,7 +201,7 @@ public class Transpiler extends TEnv {
 	}
 
 	public Code testCode(String text) throws Throwable {
-		Source sc = ParserSource.newStringSource("<test>", 1, text);
+		OSource sc = ParserSource.newStringSource("<test>", 1, text);
 		Parser p = this.get(Parser.class);
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		this.generator.setup();
@@ -220,7 +220,7 @@ public class Transpiler extends TEnv {
 
 	// Buffering
 
-	public void addFunction(TEnv env, String name, FuncMap f) {
+	public void addFunction(Env env, String name, FuncMap f) {
 		this.add(name, f);
 		if (f.isPublic()) {
 			this.generator.addFunction(name, f);
@@ -242,7 +242,7 @@ public class Transpiler extends TEnv {
 	int functionId = 0;
 
 	public CodeMap defineConst(boolean isPublic, String name, Ty type, Code expr) {
-		TEnv env = this.newEnv();
+		Env env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
 		CodeMap tp = this.generator.newConstMap(env, lname, type);
 		this.add(name, tp);
@@ -258,7 +258,7 @@ public class Transpiler extends TEnv {
 	}
 
 	public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
-		final TEnv env = this.newEnv();
+		final Env env = this.newEnv();
 		final String lname = this.generator.safeName(name);
 		final CodeMap tp = this.generator.newCodeMap(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);

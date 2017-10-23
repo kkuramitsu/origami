@@ -16,9 +16,9 @@
 
 package blue.origami.parser;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.OSource;
+import blue.origami.common.Symbol;
 
 public interface TreeConstructor<T> {
-	public T newTree(Symbol tag, Source source, long pos, int len, int objectSize, Object value);
+	public T newTree(Symbol tag, OSource source, long pos, int len, int objectSize, Object value);
 }

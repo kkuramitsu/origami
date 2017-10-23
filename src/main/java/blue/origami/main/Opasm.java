@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.OCommonWriter;
+import blue.origami.common.OOption;
+import blue.origami.common.Symbol;
 import blue.origami.parser.Parser;
 import blue.origami.parser.pasm.Inop;
 import blue.origami.parser.pasm.PAsmCode;
 import blue.origami.parser.pasm.PAsmInst;
-import blue.origami.util.OCommonWriter;
-import blue.origami.util.OOption;
 
 public class Opasm extends Main {
 	@Override

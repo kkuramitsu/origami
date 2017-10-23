@@ -1,4 +1,4 @@
-package blue.origami.util;
+package blue.origami.common;
 
 public interface OFactory<T> extends Cloneable {
 	public Class<?> keyClass();

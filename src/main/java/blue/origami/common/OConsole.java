@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.common;
 
 public class OConsole {
 

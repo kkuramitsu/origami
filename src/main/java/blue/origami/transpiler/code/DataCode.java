@@ -1,14 +1,14 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TArrays;
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class DataCode extends CodeN {
 	protected String[] names;
@@ -21,8 +21,8 @@ public class DataCode extends CodeN {
 	}
 
 	public DataCode(Ty dt) { // DefaultValue
-		super(dt, TArrays.emptyCodes);
-		this.names = TArrays.emptyNames;
+		super(dt, OArrays.emptyCodes);
+		this.names = OArrays.emptyNames;
 		this.isMutable = dt.isMutable();
 	}
 
@@ -47,7 +47,7 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			DataTy dt = Ty.tData(this.names);
 			for (int i = 0; i < this.args.length; i++) {
@@ -78,7 +78,7 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushData(env, this);
 	}
 

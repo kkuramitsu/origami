@@ -32,13 +32,13 @@ public abstract class CodeMapper implements CodeBuilder {
 
 	protected abstract Object wrapUp();
 
-	public abstract void emitTopLevel(TEnv env, Code code);
+	public abstract void emitTopLevel(Env env, Code code);
 
 	public String getUniqueConstName(String name) {
 		return name;
 	}
 
-	public abstract CodeMap newConstMap(TEnv env, String lname, Ty ret);
+	public abstract CodeMap newConstMap(Env env, String lname, Ty ret);
 
 	public abstract void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr);
 
@@ -60,9 +60,9 @@ public abstract class CodeMapper implements CodeBuilder {
 		return name;
 	}
 
-	public abstract CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes);
+	public abstract CodeMap newCodeMap(Env env, String sname, String lname, Ty returnType, Ty... paramTypes);
 
-	public abstract void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+	public abstract void defineFunction(Env env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code);
 
 	public void addFunction(String name, FuncMap f) {
@@ -81,7 +81,7 @@ public abstract class CodeMapper implements CodeBuilder {
 		this.exampleList.add(t);
 	}
 
-	public Code emitHeader(TEnv env, Code code) {
+	public Code emitHeader(Env env, Code code) {
 		if (this.funcList != null) {
 			for (FuncMap f : this.funcList) {
 				if (f.isExpired()) {

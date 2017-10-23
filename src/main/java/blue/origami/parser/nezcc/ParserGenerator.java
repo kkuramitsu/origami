@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nezcc;
+package blue.origami.parser.nezcc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import blue.origami.common.OFactory;
+import blue.origami.common.OOption;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
 import blue.origami.main.MainOption;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.ByteSet;
@@ -32,8 +34,6 @@ import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Stateful;
 import blue.origami.parser.peg.Typestate;
-import blue.origami.util.OOption;
-import blue.origami.util.OFactory;
 
 public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		implements OFactory<ParserGenerator<B, C>> {

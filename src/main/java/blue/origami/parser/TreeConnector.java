@@ -16,7 +16,7 @@
 
 package blue.origami.parser;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 
 public interface TreeConnector<T> {
 	public void link(T parent, int index, Symbol label, T child);

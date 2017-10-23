@@ -8,11 +8,12 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.konoha5.Data$;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
@@ -46,7 +47,6 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.ListTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.ODebug;
 
 public class AsmSection implements CodeSection, Opcodes {
 	private final static String APIs = Type.getInternalName(APIs.class);
@@ -62,32 +62,32 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushNone(TEnv env, NoneCode code) {
+	public void pushNone(Env env, NoneCode code) {
 		this.mBuilder.visitInsn(ACONST_NULL);
 	}
 
 	@Override
-	public void pushBool(TEnv env, BoolCode code) {
+	public void pushBool(Env env, BoolCode code) {
 		this.mBuilder.push((boolean) code.getValue());
 	}
 
 	@Override
-	public void pushInt(TEnv env, IntCode code) {
+	public void pushInt(Env env, IntCode code) {
 		this.mBuilder.push((int) code.getValue());
 	}
 
 	@Override
-	public void pushDouble(TEnv env, DoubleCode code) {
+	public void pushDouble(Env env, DoubleCode code) {
 		this.mBuilder.push((double) code.getValue());
 	}
 
 	@Override
-	public void pushString(TEnv env, StringCode code) {
+	public void pushString(Env env, StringCode code) {
 		this.mBuilder.push((String) code.getValue());
 	}
 
 	@Override
-	public void pushCast(TEnv env, CastCode code) {
+	public void pushCast(Env env, CastCode code) {
 		Ty f = code.getInner().getType();
 		Ty t = code.getType();
 		Class<?> fc = this.ts.toClass(f);
@@ -124,7 +124,7 @@ public class AsmSection implements CodeSection, Opcodes {
 
 	// I,+,
 	@Override
-	public void pushCall(TEnv env, CallCode code) {
+	public void pushCall(Env env, CallCode code) {
 		final CodeMap tp = code.getTemplate();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
@@ -160,13 +160,13 @@ public class AsmSection implements CodeSection, Opcodes {
 			return;
 		case "V":
 		case "INVOKEVIRTUAL":
-			desc = this.ts.desc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(tp.getReturnType(), OArrays.ltrim(tp.getParamTypes()));
 			ODebug.trace("::::: desc=%s, %s", desc, tp);
 			this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, def[1], def[2], desc, false);
 			return;
 		case "I":
 		case "INVOKEINTERFACE":
-			desc = this.ts.desc(tp.getReturnType(), TArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(tp.getReturnType(), OArrays.ltrim(tp.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEINTERFACE, def[1], def[2], desc, false);
 			return;
 		case "N":
@@ -189,7 +189,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		}
 	}
 
-	private void pushCall(TEnv env, CallCode code, String ext) {
+	private void pushCall(Env env, CallCode code, String ext) {
 		Iterator<Code> iter = code.iterator();
 		Code first = iter.next();
 		Code second = iter.next();
@@ -239,7 +239,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		}
 	}
 
-	private void emitAsType(TEnv env, Code tempCode, Ty ret) {
+	private void emitAsType(Env env, Code tempCode, Ty ret) {
 		tempCode.asType(env, ret).emitCode(env, this);
 	}
 
@@ -496,7 +496,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushLet(TEnv env, LetCode code) {
+	public void pushLet(Env env, LetCode code) {
 		VarEntry var = this.addVariable(code.getName(), code.getDeclType());
 		Type typeDesc = this.ts.ti(this.varStack.varType);
 		// ODebug.trace("store %s %s %s", code.getName(), code.getDeclType(),
@@ -506,7 +506,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushName(TEnv env, NameCode code) {
+	public void pushName(Env env, NameCode code) {
 		// ODebug.trace("name=%s", code.getName());
 		if (code.getRefLevel() > 0) {
 			this.mBuilder.loadThis();
@@ -520,7 +520,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushIf(TEnv env, IfCode code) {
+	public void pushIf(Env env, IfCode code) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
@@ -541,29 +541,29 @@ public class AsmSection implements CodeSection, Opcodes {
 		// 1, new Object[] { "java/io/PrintStream" });
 	}
 
-	private void pushIfTrue(TEnv env, Code cond, Label jump) {
+	private void pushIfTrue(Env env, Code cond, Label jump) {
 		cond.emitCode(env, this);
 		this.mBuilder.visitJumpInsn(IFNE, jump);
 	}
 
-	private void pushIfFalse(TEnv env, Code cond, Label jump) {
+	private void pushIfFalse(Env env, Code cond, Label jump) {
 		cond.emitCode(env, this);
 		this.mBuilder.visitJumpInsn(IFEQ, jump);
 	}
 
 	@Override
-	public void pushReturn(TEnv env, ReturnCode code) {
+	public void pushReturn(Env env, ReturnCode code) {
 
 	}
 
 	@Override
-	public void pushMulti(TEnv env, MultiCode code) {
+	public void pushMulti(Env env, MultiCode code) {
 		for (Code sub : code) {
 			sub.emitCode(env, this);
 		}
 	}
 
-	void pushArray(TEnv env, Type ty, boolean boxing, Code... subs) {
+	void pushArray(Env env, Type ty, boolean boxing, Code... subs) {
 		this.mBuilder.push(subs.length);
 		this.mBuilder.newArray(ty);
 		int c = 0;
@@ -579,7 +579,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTemplate(TEnv env, TemplateCode code) {
+	public void pushTemplate(Env env, TemplateCode code) {
 		Type ty = Type.getType(String.class);
 		this.pushArray(env, ty, false, code.args());
 		this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "join", "([Ljava/lang/String;)Ljava/lang/String;", false);
@@ -604,7 +604,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTuple(TEnv env, TupleCode code) {
+	public void pushTuple(Env env, TupleCode code) {
 		Class<?> c = code.getType().mapType(this.ts);
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -621,7 +621,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTupleIndex(TEnv env, TupleIndexCode code) {
+	public void pushTupleIndex(Env env, TupleIndexCode code) {
 		Class<?> c = code.getInner().getType().mapType(this.ts);
 		String cname = Type.getInternalName(c);
 		code.getInner().emitCode(env, this);
@@ -630,7 +630,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushData(TEnv env, DataCode code) {
+	public void pushData(Env env, DataCode code) {
 		if (code.isRange()) {
 			ListTy dt = (ListTy) code.getType();
 			for (Code sub : code) {
@@ -688,12 +688,12 @@ public class AsmSection implements CodeSection, Opcodes {
 	// }
 
 	@Override
-	public void pushError(TEnv env, ErrorCode code) {
+	public void pushError(Env env, ErrorCode code) {
 		env.reportLog(code.getLog());
 	}
 
 	@Override
-	public void pushFuncRef(TEnv env, FuncRefCode code) {
+	public void pushFuncRef(Env env, FuncRefCode code) {
 		CodeMap tp = code.getRef();
 		// ODebug.trace("funcref %s %s", code.getType(), tp);
 		Class<?> c = this.ts.loadFuncRefClass(env, tp);
@@ -704,7 +704,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushFuncExpr(TEnv env, FuncCode code) {
+	public void pushFuncExpr(Env env, FuncCode code) {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = this.ts.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(), code.getParamNames(),
@@ -724,7 +724,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushApply(TEnv env, ApplyCode code) {
+	public void pushApply(Env env, ApplyCode code) {
 		for (Code sub : code) {
 			sub.emitCode(env, this);
 		}
@@ -741,9 +741,9 @@ public class AsmSection implements CodeSection, Opcodes {
 	// }
 
 	@Override
-	public void pushGet(TEnv env, GetCode code) {
+	public void pushGet(Env env, GetCode code) {
 		Code recv = code.args()[0];
-		String desc = this.ts.desc(code.getType(), TArrays.emptyTypes);
+		String desc = this.ts.desc(code.getType(), OArrays.emptyTypes);
 		recv.emitCode(env, this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		Class<?> base = this.ts.toClass(recv.getType());
@@ -756,7 +756,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushSet(TEnv env, SetCode code) {
+	public void pushSet(Env env, SetCode code) {
 		Code recv = code.args()[0];
 		Code right = code.args()[1];
 		String desc = this.ts.desc(Ty.tVoid, right.getType());
@@ -773,14 +773,14 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushExistField(TEnv env, ExistFieldCode code) {
+	public void pushExistField(Env env, ExistFieldCode code) {
 		code.getInner().emitCode(env, this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		this.mBuilder.instanceOf(Type.getType(ifield));
 	}
 
 	@Override
-	public void pushGroup(TEnv env, GroupCode code) {
+	public void pushGroup(Env env, GroupCode code) {
 		code.getInner().emitCode(env, this);
 
 	}

@@ -31,7 +31,7 @@ public interface NameHint {
 		return new NameDecl(name, t);
 	}
 
-	static NameHint find(TEnv env, boolean globalOnly, String name) {
+	static NameHint find(Env env, boolean globalOnly, String name) {
 		if (globalOnly) {
 			return env.get(name, NameHint.class, (d, c) -> d.isGloballyUsed() ? d : null);
 		} else {
@@ -39,7 +39,7 @@ public interface NameHint {
 		}
 	}
 
-	static NameHint lookupSubNames(TEnv env, boolean globalOnly, String name) {
+	static NameHint lookupSubNames(Env env, boolean globalOnly, String name) {
 		NameHint t = find(env, globalOnly, name);
 		if (t != null) {
 			return t;
@@ -54,7 +54,7 @@ public interface NameHint {
 		return null;
 	}
 
-	public static NameHint lookupNameHint(TEnv env, boolean globalOnly, String name) {
+	public static NameHint lookupNameHint(Env env, boolean globalOnly, String name) {
 		return lookupSubNames(env, globalOnly, shortName(name));
 	}
 

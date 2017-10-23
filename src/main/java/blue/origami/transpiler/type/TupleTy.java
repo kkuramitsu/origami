@@ -2,8 +2,8 @@ package blue.origami.transpiler.type;
 
 import java.util.Arrays;
 
-import blue.origami.transpiler.TArrays;
-import blue.origami.util.OStrings;
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 
 public class TupleTy extends Ty {
 	private String memoName;
@@ -55,7 +55,7 @@ public class TupleTy extends Ty {
 
 	@Override
 	public boolean hasVar() {
-		return TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
+		return OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
 	}
 
 	@Override

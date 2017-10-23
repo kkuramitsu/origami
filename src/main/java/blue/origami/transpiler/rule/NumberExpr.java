@@ -3,12 +3,12 @@ package blue.origami.transpiler.rule;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import blue.origami.common.ODebug;
+import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.Code;
-import blue.origami.util.ODebug;
 
 public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	public final Class<?> baseType;
@@ -24,7 +24,7 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	protected abstract Code newCode(Number value);
 
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		TLog log = null;
 		String text = t.getString().replace("_", "");
 		int radix = 10;

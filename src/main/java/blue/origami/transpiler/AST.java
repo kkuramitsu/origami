@@ -6,28 +6,29 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.OArrays;
+import blue.origami.common.OSource;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.OStrings;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
-import blue.origami.util.OStringUtils;
-import blue.origami.util.OStrings;
 
 public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, TreeFunc, TreeSetFunc {
 	protected Symbol tag;
-	protected Source s;
+	protected OSource s;
 	protected int pos;
 
-	AST(Symbol tag, Source s, int pos) {
+	AST(Symbol tag, OSource s, int pos) {
 		this.tag = tag;
 		this.s = s;
 		this.pos = pos;
 	}
 
 	@Override
-	public AST apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
+	public AST apply(Symbol tag, OSource s, int spos, int epos, int nsubs, Object value) {
 		if (nsubs == 0) {
 			return new ASTString(tag, s, spos, s.subString(spos, epos));
 		}
@@ -73,7 +74,7 @@ public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, Tr
 	// }
 
 	@Override
-	public final Source getSource() {
+	public final OSource getSource() {
 		return this.s;
 	}
 
@@ -189,7 +190,7 @@ public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, Tr
 	 * @return SourceContext
 	 */
 
-	public final Source toSource() {
+	public final OSource toSource() {
 		return ParserSource.newStringSource(this.getSource().getResourceName(),
 				this.getSource().linenum(this.getSourcePosition()), this.getString());
 	}
@@ -204,7 +205,7 @@ public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, Tr
 class ASTString extends AST {
 	protected String token;
 
-	ASTString(Symbol tag, Source s, int pos, String token) {
+	ASTString(Symbol tag, OSource s, int pos, String token) {
 		super(tag, s, pos);
 		this.token = token;
 	}
@@ -227,7 +228,7 @@ class ASTString extends AST {
 
 	@Override
 	public AST[] sub() {
-		return TArrays.emptyTrees;
+		return OArrays.emptyTrees;
 	}
 
 	@Override
@@ -268,7 +269,7 @@ class ASTNode extends AST {
 	// this.labels = EmptyLabels;
 	// }
 
-	protected ASTNode(Symbol tag, Source source, long pos, int len, int nsize) {
+	protected ASTNode(Symbol tag, OSource source, long pos, int len, int nsize) {
 		super(tag, source, (int) pos);
 		this.length = len;
 		this.subTree = new AST[nsize];
@@ -344,7 +345,7 @@ class ASTNode extends AST {
 
 	@Override
 	public final String getString() {
-		Source s = this.getSource();
+		OSource s = this.getSource();
 		if (s != null) {
 			long pos = this.getSourcePosition();
 			long epos = pos + this.length;

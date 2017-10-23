@@ -16,7 +16,7 @@
 
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 
 public interface Symbols {
 	public final static Symbol _public = Symbol.unique("public");

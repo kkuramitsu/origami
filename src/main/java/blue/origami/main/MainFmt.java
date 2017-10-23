@@ -1,6 +1,6 @@
 package blue.origami.main;
 
-import blue.origami.util.OFormat;
+import blue.origami.common.OFormat;
 
 public enum MainFmt implements OFormat {
 	error, warning, notice, //

@@ -1,4 +1,4 @@
-package blue.origami.util;
+package blue.origami.common;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;

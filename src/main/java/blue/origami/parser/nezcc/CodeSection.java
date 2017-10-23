@@ -1,4 +1,4 @@
-package blue.origami.nezcc;
+package blue.origami.parser.nezcc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,11 +6,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import blue.origami.common.OConsole;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.PNonTerminal;
 import blue.origami.parser.peg.Stateful;
 import blue.origami.parser.peg.Typestate;
-import blue.origami.util.OConsole;
 
 abstract class CodeSection<C> {
 

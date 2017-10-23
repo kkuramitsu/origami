@@ -18,11 +18,11 @@ package blue.origami.parser.pass;
 
 import java.util.ArrayList;
 
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
 import blue.origami.main.MainOption;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.Rewriter;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
 
 public abstract class ParserPass extends Rewriter<Void> {
 	public abstract ParserGrammar perform(ParserGrammar g, OOption options);

@@ -1,6 +1,6 @@
 package blue.origami.parser.peg;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 
 public class PTag extends PTerm {
 	public final Symbol tag;

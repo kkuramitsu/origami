@@ -18,7 +18,7 @@ package blue.origami.parser.pasm;
 
 import java.lang.reflect.Field;
 
-import blue.origami.util.OStringUtils;
+import blue.origami.common.OStringUtils;
 
 public abstract class PAsmInst extends PAsmAPI {
 	public PAsmInst next;

@@ -3,12 +3,13 @@ package blue.origami.transpiler;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class FunctionContext {
 
@@ -66,7 +67,7 @@ public class FunctionContext {
 		return this.varList.size();
 	}
 
-	public Code getArgumentsPattern(TEnv env) {
+	public Code getArgumentsPattern(Env env) {
 		if (this.varList.size() == 1) {
 			return this.varList.get(0).newNameCode(env, null);
 		}
@@ -99,7 +100,7 @@ public class FunctionContext {
 		if (this.closureMap != null && this.closureMap.size() > 0) {
 			return this.closureMap.keySet().toArray(new String[this.closureMap.size()]);
 		}
-		return TArrays.emptyNames;
+		return OArrays.emptyNames;
 	}
 
 	public Code[] getFieldCode() {
@@ -111,7 +112,7 @@ public class FunctionContext {
 			}
 			return p;
 		}
-		return TArrays.emptyCodes;
+		return OArrays.emptyCodes;
 	}
 
 	public Ty[] getFieldTypes() {
@@ -123,7 +124,7 @@ public class FunctionContext {
 			}
 			return p;
 		}
-		return TArrays.emptyTypes;
+		return OArrays.emptyTypes;
 	}
 
 	// public boolean isDuplicatedName(String name, Ty declType) {
@@ -172,12 +173,12 @@ public class FunctionContext {
 		}
 
 		@Override
-		public boolean isNameInfo(TEnv env) {
+		public boolean isNameInfo(Env env) {
 			return true;
 		}
 
 		@Override
-		public Code newNameCode(TEnv env, AST s) {
+		public Code newNameCode(Env env, AST s) {
 			s = s == null ? this.at : s;
 			if (this.closureLevel > 0) {
 				HashMap<String, Code> closureMap = env.get(FunctionContext.class).closureMap;
@@ -195,7 +196,7 @@ public class FunctionContext {
 		boolean isUsed = false;
 
 		@Override
-		public void used(TEnv env) {
+		public void used(Env env) {
 			this.isUsed = true;
 		}
 

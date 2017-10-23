@@ -3,9 +3,10 @@ package blue.origami.transpiler.rule;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
@@ -22,11 +23,10 @@ import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class AssignExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
 		if (left instanceof GetCode) {
@@ -57,7 +57,7 @@ class TupleAssignCode extends SugarCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		Ty[] ts = new Ty[this.left.size()];
 		for (int i = 0; i < ts.length; i++) {
 			ts[i] = Ty.tUntyped();

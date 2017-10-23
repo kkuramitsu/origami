@@ -1,15 +1,15 @@
 package blue.origami.parser.pasm;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.OSource;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.Symbol;
 import blue.origami.parser.ParserContext;
 import blue.origami.parser.TrapAction;
-import blue.origami.util.OStringUtils;
 
 public class PAsmAPI {
 
 	public static class NezParserContext implements ParserContext {
-		Source s;
+		OSource s;
 		int pos;
 		Object tree;
 		TreeLog treeLog;
@@ -19,7 +19,7 @@ public class PAsmAPI {
 		MemoEntry[] memos;
 		State uState;
 
-		NezParserContext(Source s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
+		NezParserContext(OSource s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
 			this.s = s;
 			this.pos = pos;
 			this.tree = null;
@@ -69,7 +69,7 @@ public class PAsmAPI {
 	}
 
 	public interface TreeFunc {
-		Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value);
+		Object apply(Symbol tag, OSource s, int spos, int epos, int nsubs, Object value);
 	}
 
 	public interface TreeSetFunc {
@@ -476,7 +476,7 @@ public class PAsmAPI {
 
 	public static class PAsmContext extends NezParserContext {
 
-		public PAsmContext(Source s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
+		public PAsmContext(OSource s, int pos, TreeFunc newFunc, TreeSetFunc setFunc) {
 			super(s, pos, newFunc, setFunc);
 			this.head_pos = pos;
 			initVM(this);

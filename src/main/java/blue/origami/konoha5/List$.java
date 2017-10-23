@@ -5,6 +5,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import blue.origami.common.OStrings;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncObjBool;
 import blue.origami.konoha5.Func.FuncObjFloat;
@@ -12,7 +13,6 @@ import blue.origami.konoha5.Func.FuncObjInt;
 import blue.origami.konoha5.Func.FuncObjObj;
 import blue.origami.konoha5.Func.FuncObjObjObj;
 import blue.origami.konoha5.Func.FuncObjVoid;
-import blue.origami.util.OStrings;
 
 public class List$ implements OStrings, FuncIntObj {
 	private Object[] arrays = null;

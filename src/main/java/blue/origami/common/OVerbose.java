@@ -1,4 +1,4 @@
-package blue.origami.util;
+package blue.origami.common;
 
 public class OVerbose {
 	public static boolean enabled = true;

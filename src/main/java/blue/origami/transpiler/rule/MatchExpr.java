@@ -2,9 +2,10 @@ package blue.origami.transpiler.rule;
 
 import java.util.ArrayList;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -19,12 +20,11 @@ import blue.origami.transpiler.code.MatchCode.RangeCase;
 import blue.origami.transpiler.code.MatchCode.RuleCode;
 import blue.origami.transpiler.code.MatchCode.TupleCase;
 import blue.origami.transpiler.code.MatchCode.ValuesCase;
-import blue.origami.util.ODebug;
 
 public class MatchExpr implements ParseRule, Symbols {
 
 	@Override
-	public Code apply(TEnv env, AST match) {
+	public Code apply(Env env, AST match) {
 		// ODebug.setDebug(true);
 		Code targetCode = (match.has(_expr)) ? //
 				env.parseCode(env, match.get(_expr)) : null; //
@@ -45,7 +45,7 @@ public class MatchExpr implements ParseRule, Symbols {
 		return new MatchCode(targetCode, optionalCase, l.toArray(new RuleCode[0]));
 	}
 
-	private Case parseCase(TEnv env, int a, AST t) {
+	private Case parseCase(Env env, int a, AST t) {
 		String tag = t.getTag().getSymbol();
 		switch (tag) {
 		case "AnyCase": {

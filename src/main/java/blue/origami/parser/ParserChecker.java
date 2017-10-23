@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 
+import blue.origami.common.OOption;
+import blue.origami.common.OStringUtils;
 import blue.origami.main.MainOption;
 import blue.origami.parser.pass.ParserPass;
 import blue.origami.parser.pass.TreeCheckerPass;
@@ -55,8 +57,6 @@ import blue.origami.parser.peg.PTrap;
 import blue.origami.parser.peg.PTree;
 import blue.origami.parser.peg.PValue;
 import blue.origami.parser.peg.Production;
-import blue.origami.util.OOption;
-import blue.origami.util.OStringUtils;
 
 public class ParserChecker {
 

@@ -17,20 +17,20 @@ package blue.origami.parser;
 
 import java.io.IOException;
 
+import blue.origami.common.OFormat;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.SourcePosition;
 import blue.origami.main.MainOption;
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
-import blue.origami.util.OFormat;
-import blue.origami.util.OOption;
 
 public interface ParserCode {
 	public ParserGrammar getParserGrammar();
 
-	public int match(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree);
+	public int match(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree);
 
-	public Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException;
+	public Object parse(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException;
 
 	public default void checkSyntaxError(OOption options, Object result) {
 

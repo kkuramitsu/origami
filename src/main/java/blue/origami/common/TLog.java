@@ -1,9 +1,4 @@
-package blue.origami.transpiler;
-
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.util.OConsole;
-import blue.origami.util.OFormat;
-import blue.origami.util.OStrings;
+package blue.origami.common;
 
 public class TLog implements OStrings {
 	public final static int Error = 1;

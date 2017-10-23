@@ -2,12 +2,13 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.util.ODebug;
 
 public interface FuncUnit {
 
@@ -29,11 +30,11 @@ public interface FuncUnit {
 
 	public void setReturnType(Ty ret);
 
-	public default Code typeBody(TEnv env, FunctionContext fcx, AST body) {
+	public default Code typeBody(Env env, FunctionContext fcx, AST body) {
 		return typeBody(env, fcx, env.parseCode(env, body));
 	}
 
-	public default Code typeBody(TEnv env0, FunctionContext fcx, Code code0) {
+	public default Code typeBody(Env env0, FunctionContext fcx, Code code0) {
 		String[] pnames = this.getParamNames();
 		VarDomain dom = new VarDomain(pnames);
 		this.setParamTypes(dom.paramTypes(pnames, this.getParamTypes()));
@@ -42,14 +43,14 @@ public interface FuncUnit {
 		return this.typeCheck(env0, fcx, dom, code0);
 	}
 
-	public default Code typeCheck(final TEnv env0, FunctionContext fcx, VarDomain dom, Code code0) {
+	public default Code typeCheck(final Env env0, FunctionContext fcx, VarDomain dom, Code code0) {
 		final AST[] ps = this.getParamSource();
 		final String[] pnames = this.getParamNames();
 		final Ty[] pats = this.getParamTypes();
 		final Ty ret = this.getReturnType();
 		boolean dyn = ret.hasVar();
 
-		final TEnv env = env0.newEnv();
+		final Env env = env0.newEnv();
 		env.add(FunctionContext.class, fcx);
 		fcx.enter();
 		for (int i = 0; i < pnames.length; i++) {
@@ -106,7 +107,7 @@ public interface FuncUnit {
 	}
 
 	public default boolean hasVarParams(Code code) {
-		return TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
+		return OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
 	}
 
 	public default boolean isError(Code code) {

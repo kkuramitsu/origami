@@ -5,13 +5,13 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import blue.origami.common.OStrings;
 import blue.origami.konoha5.Func.FuncIntBool;
 import blue.origami.konoha5.Func.FuncIntFloat;
 import blue.origami.konoha5.Func.FuncIntInt;
 import blue.origami.konoha5.Func.FuncIntIntInt;
 import blue.origami.konoha5.Func.FuncIntObj;
 import blue.origami.konoha5.Func.FuncIntVoid;
-import blue.origami.util.OStrings;
 
 public class List$Int implements OStrings, FuncIntInt {
 	protected int[] arrays = null;

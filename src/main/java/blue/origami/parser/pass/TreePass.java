@@ -18,7 +18,7 @@ package blue.origami.parser.pass;
 
 import java.util.List;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.PAny;
 import blue.origami.parser.peg.PByte;

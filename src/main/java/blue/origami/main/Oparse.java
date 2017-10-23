@@ -18,15 +18,15 @@ package blue.origami.main;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Tree;
+import blue.origami.common.OConsole;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.GrammarParser;
 import blue.origami.parser.peg.SourceGrammar;
-import blue.origami.util.OConsole;
-import blue.origami.util.OOption;
 
 public class Oparse extends Main {
 
@@ -45,14 +45,14 @@ public class Oparse extends Main {
 			OTreeWriter treeWriter = options.newInstance(OTreeWriter.class);
 			treeWriter.init(options);
 			if (options.stringValue(MainOption.InlineGrammar, null) != null) {
-				Source input = ParserSource.newStringSource(options.stringValue(MainOption.InlineGrammar, null));
+				OSource input = ParserSource.newStringSource(options.stringValue(MainOption.InlineGrammar, null));
 				Tree<?> node = parser.parse(input);
 				if (node != null) {
 					treeWriter.write(node);
 				}
 			}
 			for (String file : files) {
-				Source input = ParserSource.newFileSource(file, null);
+				OSource input = ParserSource.newFileSource(file, null);
 				Tree<?> node = parser.parse(input);
 				if (node != null) {
 					treeWriter.write(node);
@@ -82,7 +82,7 @@ public class Oparse extends Main {
 				g.dump();
 				continue;
 			}
-			Source sc = ParserSource.newStringSource("<stdio>", this.linenum, input);
+			OSource sc = ParserSource.newStringSource("<stdio>", this.linenum, input);
 			try {
 				Tree<?> node = nezParser.parse(sc);
 				if (node != null && node.is(GrammarParser._Source)) {

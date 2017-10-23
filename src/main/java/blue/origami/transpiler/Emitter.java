@@ -1,5 +1,5 @@
 package blue.origami.transpiler;
 
 public interface Emitter {
-	public void emit(TEnv env, SourceSection sec);
+	public void emit(Env env, SourceSection sec);
 }

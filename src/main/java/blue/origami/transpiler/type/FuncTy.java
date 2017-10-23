@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.NameCode;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class FuncTy extends Ty {
 	protected final String name;
@@ -34,7 +34,7 @@ public class FuncTy extends Ty {
 
 	@Override
 	public boolean isNonMemo() {
-		return TArrays.testSomeTrue(t -> t.isNonMemo(), this.getParamTypes()) || this.getReturnType().isNonMemo();
+		return OArrays.testSomeTrue(t -> t.isNonMemo(), this.getParamTypes()) || this.getReturnType().isNonMemo();
 	}
 
 	public Ty getReturnType() {
@@ -82,7 +82,7 @@ public class FuncTy extends Ty {
 
 	@Override
 	public boolean hasVar() {
-		return this.returnType.hasVar() || TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
+		return this.returnType.hasVar() || OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
 	}
 
 	@Override
@@ -128,7 +128,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public int costMapTo(TEnv env, Ty ty) {
+	public int costMapTo(Env env, Ty ty) {
 		if (ty.isFunc()) {
 			FuncTy toTy = (FuncTy) ty.real();
 			if (this.getParamSize() == toTy.getParamSize()) {
@@ -152,7 +152,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public CodeMap findMapTo(TEnv env, Ty ty) {
+	public CodeMap findMapTo(Env env, Ty ty) {
 		if (ty.isFunc()) {
 			FuncTy toTy = (FuncTy) ty.real();
 			int cost = this.costMapTo(env, ty);
@@ -183,7 +183,7 @@ public class FuncTy extends Ty {
 		return sb.toString();
 	}
 
-	public CodeMap genFuncConv(TEnv env, FuncTy fromTy, FuncTy toTy) {
+	public CodeMap genFuncConv(Env env, FuncTy fromTy, FuncTy toTy) {
 		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
 		Transpiler tr = env.getTranspiler();
 		AST[] names = AST.getNames("f");
@@ -191,7 +191,7 @@ public class FuncTy extends Ty {
 
 		Ty[] fromTypes = fromTy.getParamTypes();
 		Ty[] toTypes = toTy.getParamTypes();
-		AST[] fnames = AST.getNames(TArrays.names(toTypes.length));
+		AST[] fnames = AST.getNames(OArrays.names(toTypes.length));
 		List<Code> l = new ArrayList<>();
 		l.add(new NameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {

@@ -2,13 +2,14 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.util.ODebug;
 
 public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	static int seq = 0;
@@ -89,7 +90,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	boolean isTyping = false;
 
 	@Override
-	public void used(TEnv env) {
+	public void used(Env env) {
 		if (this.isUnused()) {
 			super.used(env);
 			this.isTyping = true;
@@ -99,7 +100,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 				this.setExpired();
 				return;
 			}
-			if (TArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
+			if (OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
 				// this.isGeneric = true;
 				ODebug.showBlue(TFmt.Template, () -> {
 					ODebug.println("%s : %s", this.name, this.getFuncType());
@@ -119,13 +120,13 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 		}
 	}
 
-	public CodeMap generate(TEnv env) {
+	public CodeMap generate(Env env) {
 		this.used(env);
 		return this;
 	}
 
 	@Override
-	public CodeMap generate(TEnv env, Ty[] params) {
+	public CodeMap generate(Env env, Ty[] params) {
 		this.used(env);
 		if (this.generated != null) {
 			return this.generated;
@@ -182,12 +183,12 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	}
 
 	@Override
-	public boolean isNameInfo(TEnv env) {
+	public boolean isNameInfo(Env env) {
 		return !this.isExpired();
 	}
 
 	@Override
-	public Code newNameCode(TEnv env, AST s) {
+	public Code newNameCode(Env env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

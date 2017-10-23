@@ -5,7 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import blue.origami.nez.ast.SourcePosition;
+import blue.origami.Version;
+import blue.origami.common.Handled;
+import blue.origami.common.ODebug;
+import blue.origami.common.OFormat;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.TLog;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -14,25 +19,22 @@ import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.Handled;
-import blue.origami.util.ODebug;
-import blue.origami.util.OFormat;
 
-public class TEnv implements TEnvTraits, TEnvApi {
-	private TEnv parent;
-	private HashMap<String, TEnvEntry> definedMap = null;
+public class Env implements TEnvTraits, EnvApi {
+	private Env parent;
+	private HashMap<String, EnvEntry> definedMap = null;
 
-	public TEnv(TEnv parent) {
+	public Env(Env parent) {
 		this.parent = parent;
 	}
 
 	@Override
-	public TEnv getParent() {
+	public Env getParent() {
 		return this.parent;
 	}
 
 	@Override
-	public TEnvEntry getEntry(String name) {
+	public EnvEntry getEntry(String name) {
 		if (this.definedMap != null) {
 			return this.definedMap.get(name);
 		}
@@ -40,11 +42,11 @@ public class TEnv implements TEnvTraits, TEnvApi {
 	}
 
 	@Override
-	public void addEntry(String name, TEnvEntry defined) {
+	public void addEntry(String name, EnvEntry defined) {
 		if (this.definedMap == null) {
 			this.definedMap = new HashMap<>();
 		}
-		TEnvEntry prev = this.definedMap.get(name);
+		EnvEntry prev = this.definedMap.get(name);
 		defined.push(prev);
 		this.definedMap.put(name, defined);
 		// System.out.printf("adding symbol %s %s on %s at env %s\n", name,
@@ -54,26 +56,26 @@ public class TEnv implements TEnvTraits, TEnvApi {
 	}
 
 	@Override
-	public TEnv env() {
+	public Env env() {
 		return this;
 	}
 
 }
 
-class TEnvEntry implements Handled<Object> {
+class EnvEntry implements Handled<Object> {
 	private Object value;
-	private TEnvEntry onstack = null;
+	private EnvEntry onstack = null;
 
-	TEnvEntry(SourcePosition s, Object value) {
+	EnvEntry(SourcePosition s, Object value) {
 		this.value = value;
 	}
 
-	public TEnvEntry push(TEnvEntry onstack) {
+	public EnvEntry push(EnvEntry onstack) {
 		this.onstack = onstack;
 		return this;
 	}
 
-	public TEnvEntry pop() {
+	public EnvEntry pop() {
 		return this.onstack;
 	}
 
@@ -91,9 +93,9 @@ class TEnvEntry implements Handled<Object> {
 
 interface TEnvTraits {
 
-	void addEntry(String name, TEnvEntry d);
+	void addEntry(String name, EnvEntry d);
 
-	TEnvEntry getEntry(String name);
+	EnvEntry getEntry(String name);
 
 	TEnvTraits getParent();
 
@@ -104,12 +106,12 @@ interface TEnvTraits {
 		return this.getParent().getTranspiler();
 	}
 
-	public default TEnv newEnv() {
-		return new TEnv((TEnv) this);
+	public default Env newEnv() {
+		return new Env((Env) this);
 	}
 
 	public default void add(SourcePosition s, String name, Object value) {
-		addEntry(name, new TEnvEntry(s, value));
+		addEntry(name, new EnvEntry(s, value));
 	}
 
 	public default void add(String name, Object value) {
@@ -125,7 +127,7 @@ interface TEnvTraits {
 	}
 
 	public default <X> void set(String name, Class<X> c, X value) {
-		for (TEnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
+		for (EnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				d.setHandled(value);
@@ -135,8 +137,8 @@ interface TEnvTraits {
 		add(name, value);
 	}
 
-	public default <X, Y> Y getLocal(String name, Class<X> c, TEnvMatcher<X, Y> f) {
-		for (TEnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
+	public default <X, Y> Y getLocal(String name, Class<X> c, EnvMatcher<X, Y> f) {
+		for (EnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				return f.match(x, c);
@@ -149,7 +151,7 @@ interface TEnvTraits {
 		return this.getLocal(name, c, (d, c2) -> d);
 	}
 
-	public default <X, Y> Y get(String name, Class<X> c, TEnvMatcher<X, Y> f) {
+	public default <X, Y> Y get(String name, Class<X> c, EnvMatcher<X, Y> f) {
 		for (TEnvTraits env = this; env != null; env = env.getParent()) {
 			Y y = env.getLocal(name, c, f);
 			if (y != null) {
@@ -167,48 +169,50 @@ interface TEnvTraits {
 		return this.get(c.getName(), c);
 	}
 
-	public interface TEnvChoicer<X> {
-		public X choice(X x, X y);
-	}
+	// public interface EnvChoicer<X> {
+	// public X choice(X x, X y);
+	// }
+	//
+	// public default <X, Y> Y find(String name, Class<X> c, EnvMatcher<X, Y> f,
+	// EnvChoicer<Y> g, Y start) {
+	// Y y = start;
+	// for (TEnvTraits env = this; env != null; env = env.getParent()) {
+	// for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
+	// X x = d.getHandled(c);
+	// if (x != null) {
+	// Y updated = f.match(x, c);
+	// y = g.choice(y, updated);
+	// }
+	// }
+	// }
+	// return y;
+	// }
 
-	public default <X, Y> Y find(String name, Class<X> c, TEnvMatcher<X, Y> f, TEnvChoicer<Y> g, Y start) {
-		Y y = start;
-		for (TEnvTraits env = this; env != null; env = env.getParent()) {
-			for (TEnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
-				X x = d.getHandled(c);
-				if (x != null) {
-					Y updated = f.match(x, c);
-					y = g.choice(y, updated);
-				}
-			}
-		}
-		return y;
-	}
-
-	public interface TEnvBreaker<X> {
-		public boolean isEnd(X x);
-	}
-
-	public default <X, Y> Y find(String name, Class<X> c, TEnvMatcher<X, Y> f, TEnvChoicer<Y> g, Y start,
-			TEnvBreaker<Y> h) {
-		Y y = start;
-		for (TEnvTraits env = this; env != null; env = env.getParent()) {
-			for (TEnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
-				X x = d.getHandled(c);
-				if (x != null) {
-					y = g.choice(y, f.match(x, c));
-					if (h.isEnd(y)) {
-						return y;
-					}
-				}
-			}
-		}
-		return y;
-	}
+	// public interface EnvBreaker<X> {
+	// public boolean isEnd(X x);
+	// }
+	//
+	// public default <X, Y> Y find(String name, Class<X> c, EnvMatcher<X, Y> f,
+	// TEnvChoicer<Y> g, Y start,
+	// EnvBreaker<Y> h) {
+	// Y y = start;
+	// for (TEnvTraits env = this; env != null; env = env.getParent()) {
+	// for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
+	// X x = d.getHandled(c);
+	// if (x != null) {
+	// y = g.choice(y, f.match(x, c));
+	// if (h.isEnd(y)) {
+	// return y;
+	// }
+	// }
+	// }
+	// }
+	// return y;
+	// }
 
 	public default <X> void findList(String name, Class<X> c, List<X> l, ListMatcher<X> f) {
 		for (TEnvTraits env = this; env != null; env = env.getParent()) {
-			for (TEnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
+			for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null && f.isMatched(x)) {
 					l.add(x);
@@ -246,8 +250,8 @@ interface TEnvTraits {
 	}
 }
 
-interface TEnvApi {
-	TEnv env();
+interface EnvApi {
+	Env env();
 
 	public default String getSymbolOrElse(String key, String def) {
 		CodeMap tp = env().get(key, CodeMap.class);
@@ -293,11 +297,11 @@ interface TEnvApi {
 		return env().get(tsig, Ty.class);
 	}
 
-	public default NameHint addNameDecl(TEnv env, String names, Ty t) {
+	public default NameHint addNameDecl(Env env, String names, Ty t) {
 		return this.addNameDecl(env, names.split(","), t);
 	}
 
-	public default NameHint addNameDecl(TEnv env, String[] names, Ty t) {
+	public default NameHint addNameDecl(Env env, String[] names, Ty t) {
 		NameHint hint = null;
 		for (String n : names) {
 			hint = NameHint.newNameDecl(n, t);
@@ -306,17 +310,17 @@ interface TEnvApi {
 		return hint;
 	}
 
-	public default void addGlobalName(TEnv env, String name, Ty t) {
+	public default void addGlobalName(Env env, String name, Ty t) {
 		Transpiler tr = env.getTranspiler();
 		NameHint hint = NameHint.newNameDecl(name, t).useGlobal();
 		tr.add(name, hint);
 	}
 
-	public default NameHint findNameHint(TEnv env, String name) {
+	public default NameHint findNameHint(Env env, String name) {
 		return NameHint.lookupNameHint(env, false, name);
 	}
 
-	public default NameHint findGlobalNameHint(TEnv env, String name) {
+	public default NameHint findGlobalNameHint(Env env, String name) {
 		NameHint hint = NameHint.lookupNameHint(env.getTranspiler(), true, name);
 		if (hint == null) {
 			hint = NameHint.lookupNameHint(env, false, name);
@@ -331,7 +335,7 @@ interface TEnvApi {
 		return hint;
 	}
 
-	public default Code parseCode(TEnv env, AST t) {
+	public default Code parseCode(Env env, AST t) {
 		String name = t.getTag().getSymbol();
 		Code node = null;
 		try {
@@ -343,7 +347,7 @@ interface TEnvApi {
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
 			try {
-				Class<?> c = Class.forName("blue.origami.transpiler.rule." + name);
+				Class<?> c = Class.forName(Version.ClassPath + ".transpiler.rule." + name);
 				ParseRule rule = (ParseRule) c.newInstance();
 				env.getTranspiler().add(name, rule);
 				return parseCode(env, t);
@@ -364,7 +368,7 @@ interface TEnvApi {
 		return node;
 	}
 
-	public default Code[] parseSubCode(TEnv env, AST p) {
+	public default Code[] parseSubCode(Env env, AST p) {
 		Code[] params = new Code[p.size()];
 		for (int i = 0; i < p.size(); i++) {
 			params[i] = parseCode(env, p.get(i));
@@ -381,7 +385,7 @@ interface TEnvApi {
 	// return params;
 	// }
 
-	public default Ty parseType(TEnv env, AST t, Supplier<Ty> def) {
+	public default Ty parseType(Env env, AST t, Supplier<Ty> def) {
 		if (t != null) {
 			try {
 				Code node = parseCode(env, t);
@@ -396,7 +400,7 @@ interface TEnvApi {
 		return def.get();
 	}
 
-	public default CodeMap findTypeMap(TEnv env, Ty fromTy0, Ty toTy0) {
+	public default CodeMap findTypeMap(Env env, Ty fromTy0, Ty toTy0) {
 		Ty fromTy = fromTy0.finalTy();
 		Ty toTy = toTy0.finalTy();
 		String key = FuncTy.mapKey(fromTy, toTy);
@@ -420,7 +424,7 @@ interface TEnvApi {
 		return CodeMap.StupidArrow;
 	}
 
-	public default int mapCost(TEnv env, Ty fromTy0, Ty toTy0, VarLogger logs) {
+	public default int mapCost(Env env, Ty fromTy0, Ty toTy0, VarLogger logs) {
 		if (toTy0.acceptTy(true, fromTy0, logs)) {
 			return CastCode.SAME;
 		}

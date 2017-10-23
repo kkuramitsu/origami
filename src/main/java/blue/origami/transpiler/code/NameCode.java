@@ -1,13 +1,13 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class NameCode extends CommonCode {
 
@@ -40,12 +40,12 @@ public class NameCode extends CommonCode {
 	}
 
 	@Override
-	public Code bindAs(TEnv env, Ty ret) {
+	public Code bindAs(Env env, Ty ret) {
 		return this.asType(env, ret);
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref != null) {
@@ -57,7 +57,7 @@ public class NameCode extends CommonCode {
 		return super.asType(env, ret);
 	}
 
-	Code parseNames(TEnv env, String name, Ty ret) {
+	Code parseNames(Env env, String name, Ty ret) {
 		Code mul = null;
 		for (int i = 0; i < name.length(); i++) {
 			String var = this.parseName(name, i);
@@ -96,7 +96,7 @@ public class NameCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		try {
 			sec.pushName(env, this);
 		} catch (Exception e) {

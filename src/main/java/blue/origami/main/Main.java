@@ -23,16 +23,16 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import blue.origami.Version;
-import blue.origami.nez.ast.Tree;
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OFormat;
+import blue.origami.common.OOption;
+import blue.origami.common.OOption.OOptionKey;
+import blue.origami.common.OStrings;
+import blue.origami.common.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OFormat;
-import blue.origami.util.OOption;
-import blue.origami.util.OOption.OOptionKey;
-import blue.origami.util.OStrings;
 
 public abstract class Main extends OConsole {
 
@@ -57,7 +57,7 @@ public abstract class Main extends OConsole {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
 			if (className.indexOf('.') == -1) {
-				className = "blue.origami.main.O" + className;
+				className = Version.ClassPath + ".main.O" + className;
 			}
 			Main cmd = (Main) Class.forName(className).newInstance();
 			cmd.initOption(options);
@@ -72,7 +72,7 @@ public abstract class Main extends OConsole {
 	public abstract void exec(OOption options) throws Throwable;
 
 	protected void initOption(OOption options) {
-		options.set(MainOption.GrammarPath, new String[] { "/blue/origami/grammar", "/blue/local" });
+		options.set(MainOption.GrammarPath, new String[] { Version.ResourcePath + "/grammar", "/blue/local" });
 	}
 
 	static HashMap<String, OOptionKey> optMap = new HashMap<>();

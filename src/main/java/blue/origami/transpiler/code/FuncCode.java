@@ -1,16 +1,16 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FuncUnit;
 import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 
@@ -83,7 +83,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 		return this.funcContext.getFieldTypes();
 	}
 
-	private FunctionContext sync(TEnv env) {
+	private FunctionContext sync(Env env) {
 		FunctionContext fcx = new FunctionContext(env.get(FunctionContext.class));
 		if (this.funcContext != null) {
 			fcx.syncIndex(this.funcContext);
@@ -93,7 +93,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			FunctionContext fcx = this.sync(env);
 			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
@@ -125,13 +125,13 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	public static boolean isGenericFunc(Ty ty) {
 		if (ty.isFunc()) {
 			FuncTy funcTy = (FuncTy) ty.real();
-			return TArrays.testSomeTrue((t -> t.hasVar()), funcTy.getParamTypes()) || funcTy.getReturnType().isUnion();
+			return OArrays.testSomeTrue((t -> t.hasVar()), funcTy.getParamTypes()) || funcTy.getReturnType().isUnion();
 		}
 		return false;
 	}
 
 	@Override
-	public boolean showError(TEnv env) {
+	public boolean showError(Env env) {
 		if (!this.getInner().showError(env)) {
 			FuncTy funcTy = (FuncTy) this.getType();
 			// funcTy.isGeneric()
@@ -145,7 +145,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushFuncExpr(env, this);
 	}
 

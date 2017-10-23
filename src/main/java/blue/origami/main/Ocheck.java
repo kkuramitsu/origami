@@ -17,11 +17,11 @@
 package blue.origami.main;
 
 import blue.origami.asm.APIs;
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
 
 public class Ocheck extends Okonoha {
 	@Override

@@ -1,10 +1,10 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TEnv;
+import blue.origami.common.OStrings;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.DictTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.OStrings;
 
 public class DataDictCode extends DataCode {
 
@@ -17,7 +17,7 @@ public class DataDictCode extends DataCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty firstType = this.guessInnerType(ret);
 			for (int i = 0; i < this.args.length; i++) {

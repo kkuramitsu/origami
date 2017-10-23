@@ -20,10 +20,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
 
 public class ParserCombinator {
 

@@ -1,8 +1,8 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TEnv;
+import blue.origami.common.OStrings;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OStrings;
 
 public class DataRangeCode extends DataListCode {
 
@@ -11,7 +11,7 @@ public class DataRangeCode extends DataListCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			this.args[0] = this.args[0].asType(env, Ty.tInt);
 			this.args[1] = this.args[1].asType(env, Ty.tInt);

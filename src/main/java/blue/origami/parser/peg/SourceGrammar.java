@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
+import blue.origami.common.OSource;
+import blue.origami.common.SourcePosition;
 import blue.origami.parser.ParserSource;
 
 public class SourceGrammar extends Grammar {
@@ -88,7 +88,7 @@ public class SourceGrammar extends Grammar {
 		return g;
 	}
 
-	public final static Grammar loadSource(Source s) throws IOException {
+	public final static Grammar loadSource(OSource s) throws IOException {
 		SourceGrammar g = new SourceGrammar(SourcePosition.extractFileName(s.getResourceName()));
 		GrammarParser parser = new GrammarParser();
 		parser.importSource(g, s);

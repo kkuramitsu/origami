@@ -18,15 +18,15 @@ package blue.origami.parser;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.CommonTree;
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
+import blue.origami.common.CommonTree;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.Symbol;
+import blue.origami.common.Tree;
 import blue.origami.parser.pasm.PAsmCompiler;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.parser.peg.Production;
-import blue.origami.util.OOption;
 
 public final class Parser {
 
@@ -65,22 +65,22 @@ public final class Parser {
 
 	/* --------------------------------------------------------------------- */
 
-	public final Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
+	public final Object parse(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
 		ParserCode parser = this.getExecutable();
 		return parser.parse(s, pos, newTree, linkTree);
 	}
 
-	public final long match(Source s, int pos) {
+	public final long match(OSource s, int pos) {
 		ParserCode parser = this.getExecutable();
 
 		return parser.match(s, pos, //
-				(Symbol tag, Source s0, int spos, int epos, int nsubs, Object value) -> null, //
+				(Symbol tag, OSource s0, int spos, int epos, int nsubs, Object value) -> null, //
 				(Object parent, int index, Symbol label, Object child) -> null);
 	}
 
 	/* wrapper */
 
-	public final int match(Source s) {
+	public final int match(OSource s) {
 		return (int) this.match(s, 0);
 	}
 
@@ -90,7 +90,7 @@ public final class Parser {
 
 	private static CommonTree defaultTree = new CommonTree();
 
-	public final Tree<?> parse(Source sc) throws IOException {
+	public final Tree<?> parse(OSource sc) throws IOException {
 		return (CommonTree) this.parse(sc, 0, defaultTree, defaultTree);
 	}
 

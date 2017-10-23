@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.common.OArrays;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.ListTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
@@ -13,11 +13,11 @@ public class DataListCode extends DataCode {
 	}
 
 	public DataListCode(boolean isMutable, Code... values) {
-		super(isMutable, TArrays.emptyNames, values);
+		super(isMutable, OArrays.emptyNames, values);
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty firstType = this.guessInnerType(ret);
 			for (int i = 0; i < this.args.length; i++) {

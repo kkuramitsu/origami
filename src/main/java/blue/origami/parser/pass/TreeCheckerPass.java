@@ -16,7 +16,8 @@
 
 package blue.origami.parser.pass;
 
-import blue.origami.nez.ast.SourcePosition;
+import blue.origami.common.OOption;
+import blue.origami.common.SourcePosition;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.PAnd;
@@ -34,7 +35,6 @@ import blue.origami.parser.peg.PUnary;
 import blue.origami.parser.peg.PValue;
 import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Typestate;
-import blue.origami.util.OOption;
 
 public class TreeCheckerPass extends CommonPass {
 

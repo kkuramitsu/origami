@@ -1,4 +1,4 @@
-package blue.origami.nezcc;
+package blue.origami.parser.nezcc;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,13 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
+import blue.origami.Version;
+import blue.origami.common.OCommonWriter;
+import blue.origami.common.OConsole;
+import blue.origami.common.OOption;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.Symbol;
 import blue.origami.main.MainOption;
-import blue.origami.nez.ast.Symbol;
 import blue.origami.parser.peg.ByteSet;
-import blue.origami.util.OCommonWriter;
-import blue.origami.util.OConsole;
-import blue.origami.util.OOption;
-import blue.origami.util.OStringUtils;
 
 public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 
@@ -34,7 +35,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 				continue;
 			}
 			if (!new File(file).isFile()) {
-				file = "/blue/origami/nezcc/" + file;
+				file = Version.ResourcePath + "/nezcc/" + file;
 			}
 			this.importNezccFile(file);
 		}
@@ -125,7 +126,7 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		if (this.isDefined("include")) {
 			this.importNezccFile(this.s("include"));
 		}
-		this.importNezccFile("/blue/origami/nezcc/default.nezcc");
+		this.importNezccFile(Version.ResourcePath + "/nezcc/default.nezcc");
 
 		this.defineSymbol("tab", "  ");
 		if (this.isDefined("eq")) {

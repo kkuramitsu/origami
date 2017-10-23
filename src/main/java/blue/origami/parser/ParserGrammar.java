@@ -19,11 +19,11 @@ package blue.origami.parser;
 import java.util.HashMap;
 import java.util.Map;
 
-import blue.origami.util.OOption;
+import blue.origami.common.OFactory;
+import blue.origami.common.OOption;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Typestate;
-import blue.origami.util.OFactory;
 
 public class ParserGrammar extends Grammar {
 	private boolean isBinary = false;

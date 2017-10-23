@@ -3,7 +3,7 @@ package blue.origami.transpiler.type;
 import java.util.ArrayList;
 import java.util.List;
 
-import blue.origami.util.ODebug;
+import blue.origami.common.ODebug;
 
 public class VarLogger {
 	public final static VarLogger Update = new VarLogger();

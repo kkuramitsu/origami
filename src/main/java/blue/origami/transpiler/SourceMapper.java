@@ -46,13 +46,13 @@ public class SourceMapper extends CodeMapper {
 	}
 
 	@Override
-	public void emitTopLevel(TEnv env, Code code) {
+	public void emitTopLevel(Env env, Code code) {
 		code = this.emitHeader(env, code);
 		code.emitCode(env, this.eval);
 	}
 
 	@Override
-	public CodeMap newConstMap(TEnv env, String lname, Ty ret) {
+	public CodeMap newConstMap(Env env, String lname, Ty ret) {
 		String template = String.format(env.fmt("constname", "name", "%s"), lname);
 		return new ConstMap(lname, ret, template);
 	}
@@ -78,7 +78,7 @@ public class SourceMapper extends CodeMapper {
 	}
 
 	@Override
-	public CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeMap newCodeMap(Env env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
 			String delim = env.getSymbolOrElse(",", ",");
@@ -95,7 +95,7 @@ public class SourceMapper extends CodeMapper {
 	}
 
 	@Override
-	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+	public void defineFunction(Env env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code) {
 		SourceSection sec = new SourceSection(this.ts);
 		this.secList.add(sec);

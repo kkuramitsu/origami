@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.transpiler.TLog;
+import blue.origami.common.OConsole;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.TLog;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OConsole;
-import blue.origami.util.OStringUtils;
 
 public class SyntaxHighlight extends OConsole {
 	StringBuilder sb = new StringBuilder();

@@ -1,6 +1,6 @@
 package blue.origami.parser.peg;
 
-import blue.origami.util.OFormat;
+import blue.origami.common.OFormat;
 
 public enum NezFmt implements OFormat {
 	error, warning, notice, //

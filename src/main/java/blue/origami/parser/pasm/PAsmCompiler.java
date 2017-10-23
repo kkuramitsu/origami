@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import blue.origami.common.OOption;
 import blue.origami.main.MainOption;
 import blue.origami.parser.ParserCompiler;
 import blue.origami.parser.ParserGrammar;
@@ -57,7 +58,6 @@ import blue.origami.parser.peg.PTree;
 import blue.origami.parser.peg.PValue;
 import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Typestate;
-import blue.origami.util.OOption;
 
 public class PAsmCompiler implements ParserCompiler {
 

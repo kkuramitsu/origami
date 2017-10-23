@@ -1,8 +1,8 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
-import blue.origami.util.OStrings;
+import blue.origami.transpiler.Env;
 
 public class ReturnCode extends Code1 {
 
@@ -21,7 +21,7 @@ public class ReturnCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushReturn(env, this);
 	}
 

@@ -16,13 +16,14 @@
 
 package origami;
 
+import blue.origami.Version;
+import blue.origami.common.OConsole;
 import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OConsole;
 
 public class TypeTest extends CommandTest {
 
@@ -129,7 +130,7 @@ public class TypeTest extends CommandTest {
 
 	static Grammar g() throws Throwable {
 		if (g == null) {
-			g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
+			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/konoha5.opeg");
 		}
 		return g;
 	}

@@ -2,8 +2,8 @@ package blue.origami.konoha5;
 
 import java.lang.reflect.Field;
 
-import blue.origami.util.OConsole;
-import blue.origami.util.OStrings;
+import blue.origami.common.OConsole;
+import blue.origami.common.OStrings;
 
 public class Data$ implements OStrings, Cloneable {
 

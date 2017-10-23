@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import java.util.List;
 
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.type.FuncTy;
@@ -28,7 +28,7 @@ public final class FuncRefCode extends CommonCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (ret.isFunc()) {
 			FuncTy funcTy = (FuncTy) ret.real();
 			List<CodeMap> l = env.findCodeMaps(this.name, funcTy.getParamSize());
@@ -52,7 +52,7 @@ public final class FuncRefCode extends CommonCode {
 	}
 
 	@Override
-	public boolean showError(TEnv env) {
+	public boolean showError(Env env) {
 		if (this.template.isAbstract() || this.template.isGeneric()) {
 			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this.name, this.template.getFuncType());
 			return true;
@@ -60,23 +60,23 @@ public final class FuncRefCode extends CommonCode {
 		return false;
 	}
 
-	private Code asMatched(TEnv env, CodeMap selected, Ty ret) {
+	private Code asMatched(Env env, CodeMap selected, Ty ret) {
 		this.template = selected;
 		this.setType(selected.getFuncType());
 		return this.castType(env, ret);
 	}
 
-	private Code asUnfound(TEnv env, List<CodeMap> l, FuncTy funcTy) {
+	private Code asUnfound(Env env, List<CodeMap> l, FuncTy funcTy) {
 		env.findList(this.name, CodeMap.class, l, (tt) -> !tt.isExpired());
 		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 
-	private Code asMismatched(TEnv env, List<CodeMap> l, FuncTy funcTy) {
+	private Code asMismatched(Env env, List<CodeMap> l, FuncTy funcTy) {
 		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, "", ExprCode.msgHint(env, l));
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushFuncRef(env, this);
 	}
 

@@ -3,8 +3,8 @@ package blue.origami.transpiler.type;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import blue.origami.transpiler.TArrays;
-import blue.origami.util.OStrings;
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 
 public class TagTy extends Ty {
 	protected String[] names;
@@ -108,7 +108,7 @@ public class TagTy extends Ty {
 			if (Arrays.stream(names).anyMatch(n -> n.equals(ns[0]))) {
 				return names;
 			}
-			return TArrays.join(String[]::new, ns[0], names);
+			return OArrays.join(String[]::new, ns[0], names);
 		}
 		if (names.length == 1) {
 			return joins(names, ns);

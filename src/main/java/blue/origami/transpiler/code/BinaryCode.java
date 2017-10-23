@@ -1,6 +1,6 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.util.OStrings;
+import blue.origami.common.OStrings;
 
 public class BinaryCode extends ExprCode implements CodeBuilder {
 

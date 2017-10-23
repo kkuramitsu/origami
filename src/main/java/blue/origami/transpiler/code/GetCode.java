@@ -2,7 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FlowDataTy;
@@ -28,7 +28,7 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
 			if (recvTy.isVar()) {
@@ -47,7 +47,7 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushGet(env, this);
 	}
 

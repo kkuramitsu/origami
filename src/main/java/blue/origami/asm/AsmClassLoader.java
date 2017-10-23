@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.HashMap;
 
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.TFmt;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
 
 public class AsmClassLoader extends ClassLoader {
 

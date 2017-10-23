@@ -3,8 +3,8 @@ package blue.origami.konoha5;
 import java.util.Map;
 import java.util.TreeMap;
 
+import blue.origami.common.OStrings;
 import blue.origami.konoha5.Func.FuncStrObjVoid;
-import blue.origami.util.OStrings;
 
 public class Dict$ extends TreeMap<String, Object> implements OStrings {
 	private static final long serialVersionUID = -827646422601520488L;

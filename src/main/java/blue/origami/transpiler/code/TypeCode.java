@@ -1,10 +1,10 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class TypeCode extends CommonCode {
 	private Ty value;
@@ -19,7 +19,7 @@ public class TypeCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		ODebug.TODO(this);
 	}
 

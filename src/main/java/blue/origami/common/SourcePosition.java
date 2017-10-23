@@ -14,17 +14,12 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nez.ast;
+package blue.origami.common;
 
 import java.util.ArrayList;
 
-import blue.origami.util.OConsole;
-import blue.origami.util.OFormat;
-import blue.origami.util.OStringUtils;
-import blue.origami.util.OStrings;
-
 public interface SourcePosition {
-	public Source getSource();
+	public OSource getSource();
 
 	public long getSourcePosition();
 
@@ -39,7 +34,7 @@ public interface SourcePosition {
 	static class UnknownSourcePosition implements SourcePosition {
 
 		@Override
-		public Source getSource() {
+		public OSource getSource() {
 			return new UnknownSource();
 		}
 
@@ -49,7 +44,7 @@ public interface SourcePosition {
 		}
 	}
 
-	static class UnknownSource implements Source {
+	static class UnknownSource implements OSource {
 
 		@Override
 		public String getResourceName() {
@@ -87,7 +82,7 @@ public interface SourcePosition {
 		}
 
 		@Override
-		public Source subSource(long startIndex, long endIndex) {
+		public OSource subSource(long startIndex, long endIndex) {
 			return this;
 		}
 
@@ -103,7 +98,7 @@ public interface SourcePosition {
 
 	}
 
-	public static String getLineString(Source s, long pos) {
+	public static String getLineString(OSource s, long pos) {
 		long start = pos - 1;
 		for (; start >= 0; start--) {
 			if (s.byteAt(start) == '\n') {
@@ -129,7 +124,7 @@ public interface SourcePosition {
 		}
 	}
 
-	static void appendFileLine(StringBuilder sb, Source s, long pos, String mtype) {
+	static void appendFileLine(StringBuilder sb, OSource s, long pos, String mtype) {
 		String file = extractFileName(s.getResourceName());
 		sb.append("(");
 		sb.append(file);
@@ -160,14 +155,14 @@ public interface SourcePosition {
 		return formatMessage(s, fmt.notice(), fmt, args);
 	}
 
-	static int getch(Source s, int pos) {
+	static int getch(OSource s, int pos) {
 		if (pos >= 0 && pos < s.length()) {
 			return s.byteAt(pos);
 		}
 		return '\n';
 	}
 
-	public static void extractTextAround(StringBuilder sb, Source s, int pos) {
+	public static void extractTextAround(StringBuilder sb, OSource s, int pos) {
 		String quote = "";
 		int startIndex = pos - 1;
 		while (true) {
@@ -206,7 +201,7 @@ public interface SourcePosition {
 		}
 	}
 
-	public static String getTextAround2(Source s, long pos, String delim) {
+	public static String getTextAround2(OSource s, long pos, String delim) {
 		int ch = 0;
 		if (pos < 0) {
 			pos = 0;
@@ -330,18 +325,18 @@ public interface SourcePosition {
 		return path + "." + ext;
 	}
 
-	public static SourcePosition newInstance(Source s, long pos) {
+	public static SourcePosition newInstance(OSource s, long pos) {
 		class SimpleSourcePosition implements SourcePosition {
-			private final Source s;
+			private final OSource s;
 			private final long pos;
 
-			SimpleSourcePosition(Source s, long pos) {
+			SimpleSourcePosition(OSource s, long pos) {
 				this.s = s;
 				this.pos = pos;
 			}
 
 			@Override
-			public Source getSource() {
+			public OSource getSource() {
 				return this.s;
 			}
 

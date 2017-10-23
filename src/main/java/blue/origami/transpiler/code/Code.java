@@ -3,17 +3,17 @@ package blue.origami.transpiler.code;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override
@@ -34,7 +34,7 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 
 	public Ty getType();
 
-	public void emitCode(TEnv env, CodeSection sec);
+	public void emitCode(Env env, CodeSection sec);
 
 	// public void dumpCode(SyntaxHighlight sh);
 
@@ -114,11 +114,11 @@ interface CodeAPI {
 		return self().getType() instanceof DataTy;
 	}
 
-	public default Code asType(TEnv env, Ty ret) {
+	public default Code asType(Env env, Ty ret) {
 		return castType(env, ret);
 	}
 
-	public default Code castType(TEnv env, Ty ret) {
+	public default Code castType(Env env, Ty ret) {
 		Code self = self();
 		// ODebug.trace("casting %s => %s", self.getType(), ret0);
 		if (ret.accept(self)) {
@@ -136,7 +136,7 @@ interface CodeAPI {
 		return new CastCode(ret, tp, self);
 	}
 
-	public default Code bindAs(TEnv env, Ty ret) {
+	public default Code bindAs(Env env, Ty ret) {
 		return ExprCode.option("=", self()).asType(env, ret);
 	}
 
@@ -156,19 +156,19 @@ interface CodeAPI {
 		return new ReturnCode(self());
 	}
 
-	public default Code applyCode(TEnv env, Code... params) {
-		return new ApplyCode(TArrays.join(self(), params));
+	public default Code applyCode(Env env, Code... params) {
+		return new ApplyCode(OArrays.join(self(), params));
 	}
 
-	public default Code applyMethodCode(TEnv env, String name, Code... params) {
-		return new ExprCode(name, TArrays.join(self(), params));
+	public default Code applyMethodCode(Env env, String name, Code... params) {
+		return new ExprCode(name, OArrays.join(self(), params));
 	}
 
 	public default boolean isGenerative() {
 		return true;
 	}
 
-	public default boolean showError(TEnv env) {
+	public default boolean showError(Env env) {
 		boolean b = false;
 		for (Code a : self().args()) {
 			if (a.showError(env)) {
@@ -221,15 +221,15 @@ abstract class CommonCode implements Code {
 
 	@Override
 	public Code[] args() {
-		return TArrays.emptyCodes;
+		return OArrays.emptyCodes;
 	}
 
-	public Ty getTypeAt(TEnv env, int index) {
+	public Ty getTypeAt(Env env, int index) {
 		assert (index < 0);
 		return null;
 	}
 
-	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+	public Ty asTypeAt(Env env, int index, Ty ret) {
 		assert (index < 0);
 		return null;
 	}
@@ -277,13 +277,13 @@ abstract class Code1 extends CommonCode {
 	}
 
 	@Override
-	public Ty getTypeAt(TEnv env, int index) {
+	public Ty getTypeAt(Env env, int index) {
 		assert (index == 0);
 		return this.inner.getType();
 	}
 
 	@Override
-	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+	public Ty asTypeAt(Env env, int index, Ty ret) {
 		assert (index == 0);
 		this.inner = this.inner.asType(env, ret);
 		return this.inner.getType();
@@ -324,12 +324,12 @@ abstract class CodeN extends CommonCode {
 	}
 
 	@Override
-	public Ty getTypeAt(TEnv env, int index) {
+	public Ty getTypeAt(Env env, int index) {
 		return this.args[index].getType();
 	}
 
 	@Override
-	public Ty asTypeAt(TEnv env, int index, Ty ret) {
+	public Ty asTypeAt(Env env, int index, Ty ret) {
 		this.args[index] = this.args[index].asType(env, ret);
 		return this.args[index].getType();
 	}

@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
@@ -20,12 +20,12 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
-	public Code bindAs(TEnv env, Ty ret) {
+	public Code bindAs(Env env, Ty ret) {
 		return this.asType(env, ret);
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			this.inner = this.inner.asType(env, Ty.tUntyped());
 			Ty ty = this.inner.getType();
@@ -42,7 +42,7 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushTupleIndex(env, this);
 	}
 

@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -10,7 +10,7 @@ import blue.origami.transpiler.type.Ty;
 
 public class GenericType implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
 		String name = ty.toString();
 		AST params = t.get(_param);

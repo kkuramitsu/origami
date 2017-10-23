@@ -19,12 +19,14 @@ package blue.origami.parser.peg;
 import java.io.IOException;
 import java.util.List;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourceLogger;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
-import blue.origami.nez.ast.TreeVisitorMap;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.SourceLogger;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
+import blue.origami.common.Tree;
+import blue.origami.common.TreeVisitorMap;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.SymbolContainsFunc;
@@ -37,8 +39,6 @@ import blue.origami.parser.pasm.PAsmAPI.SymbolMatchFunc;
 import blue.origami.parser.pasm.PAsmAPI.SymbolScanBitFunc;
 import blue.origami.parser.pasm.PAsmAPI.SymbolScanFunc;
 import blue.origami.parser.pasm.PAsmAPI.SymbolZeroFunc;
-import blue.origami.util.OOption;
-import blue.origami.util.OStringUtils;
 
 public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransducer> {
 
@@ -107,14 +107,14 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			return new Gamma(g, this.logger);
 		}
 
-		public void importSource(Source s) throws IOException {
+		public void importSource(OSource s) throws IOException {
 			Tree<?> t = OPegParser.parse(s);
 			GrammarParser.this.find(key(t)).accept(this, t);
 		}
 
 	}
 
-	public void importSource(Grammar base, Source s) throws IOException {
+	public void importSource(Grammar base, OSource s) throws IOException {
 		Gamma gamma = new Gamma(base, null);
 		gamma.importSource(s);
 	}

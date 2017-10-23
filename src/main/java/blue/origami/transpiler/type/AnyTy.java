@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.CastCode;
 
 class AnyTy extends SimpleTy {
@@ -16,23 +16,23 @@ class AnyTy extends SimpleTy {
 	}
 
 	@Override
-	public int costMapTo(TEnv env, Ty toTy) {
+	public int costMapTo(Env env, Ty toTy) {
 		return CastCode.BESTCAST;
 	}
 
 	@Override
-	public CodeMap findMapTo(TEnv env, Ty toTy) {
+	public CodeMap findMapTo(Env env, Ty toTy) {
 		String format = env.getSymbol("cast", "(%s)%s");
 		return new CodeMap(CastCode.BESTCAST, "anycast", format, this, toTy);
 	}
 
 	@Override
-	public int costMapFrom(TEnv env, Ty fromTy) {
+	public int costMapFrom(Env env, Ty fromTy) {
 		return CastCode.BESTCAST;
 	}
 
 	@Override
-	public CodeMap findMapFrom(TEnv env, Ty fromTy) {
+	public CodeMap findMapFrom(Env env, Ty fromTy) {
 		String format = env.getSymbol("upcast", "%s");
 		return new CodeMap(CastCode.BESTCAST, "upcast", format, fromTy, this);
 	}

@@ -1,8 +1,8 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
@@ -11,7 +11,7 @@ public class FuncType implements ParseRule, Symbols {
 	public final static Symbol _TupleType = Symbol.unique("TupleType");
 
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		Ty ret = env.parseType(env, t.get(_type), null);
 		if (t.has(_base)) {
 			AST from = t.get(_base);

@@ -16,10 +16,10 @@
 
 package blue.origami.parser.pass;
 
+import blue.origami.common.OOption;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.Production;
-import blue.origami.util.OOption;
 
 class CommonPass extends ParserPass {
 	protected OOption options;

@@ -2,7 +2,7 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -21,7 +21,7 @@ public class DataType implements ParseRule {
 	}
 
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		String[] names = new String[t.size()];
 		int c = 0;
 		for (AST sub : t) {

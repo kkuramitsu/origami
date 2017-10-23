@@ -1,15 +1,15 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class LetCode extends Code1 {
 	private boolean isImplicit = false;
@@ -42,7 +42,7 @@ public class LetCode extends Code1 {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			FunctionContext fcx = env.get(FunctionContext.class);
 			if (fcx == null) {
@@ -63,7 +63,7 @@ public class LetCode extends Code1 {
 		return this;
 	}
 
-	public Code defineAsGlobal(TEnv env, boolean isPublic) {
+	public Code defineAsGlobal(Env env, boolean isPublic) {
 		Code right = this.getInner();
 		try {
 			right = right.bindAs(env, this.declType);
@@ -79,7 +79,7 @@ public class LetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushLet(env, this);
 	}
 

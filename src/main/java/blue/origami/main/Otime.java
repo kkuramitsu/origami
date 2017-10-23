@@ -16,11 +16,11 @@
 
 package blue.origami.main;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Tree;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
-import blue.origami.util.OOption;
 
 public class Otime extends Main {
 
@@ -45,7 +45,7 @@ public class Otime extends Main {
 			System.out.printf("%s", file);
 			double dsum = 0.0;
 			for (int c = 0; c < 10; c++) {
-				Source input = ParserSource.newFileSource(file, null);
+				OSource input = ParserSource.newFileSource(file, null);
 				long t1 = System.nanoTime();
 				Tree<?> node = parser.parse(input);
 				if (node == null) {
@@ -58,7 +58,7 @@ public class Otime extends Main {
 				}
 			}
 			for (int c = 0; c < 10; c++) {
-				Source input = ParserSource.newFileSource(file, null);
+				OSource input = ParserSource.newFileSource(file, null);
 				long t1 = System.nanoTime();
 				Tree<?> node = parser.parse(input);
 				if (node == null) {

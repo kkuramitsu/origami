@@ -2,8 +2,8 @@ package blue.origami.konoha5;
 
 import java.util.stream.IntStream;
 
+import blue.origami.common.OStrings;
 import blue.origami.konoha5.Func.FuncIntVoid;
-import blue.origami.util.OStrings;
 
 public class Range$Int extends List$Int implements OStrings {
 	final int start;

@@ -1,9 +1,9 @@
 package blue.origami.transpiler.rule;
 
+import blue.origami.common.OArrays;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.type.Ty;
@@ -23,9 +23,9 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 	// return p;
 	// }
 
-	public AST[] parseParamNames(TEnv env, AST params) {
+	public AST[] parseParamNames(Env env, AST params) {
 		if (params == null) {
-			return TArrays.emptyTrees;
+			return OArrays.emptyTrees;
 		} else if (params.has(_name)) {
 			return new AST[] { params.get(_name) };
 		} else {
@@ -39,11 +39,11 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		}
 	}
 
-	Ty parseReturnType(TEnv env, AST type) {
+	Ty parseReturnType(Env env, AST type) {
 		return this.parseReturnType(env, null, type);
 	}
 
-	Ty parseReturnType(TEnv env, String name, AST type) {
+	Ty parseReturnType(Env env, String name, AST type) {
 		if (type != null) {
 			return env.parseType(env, type, null);
 		}
@@ -55,13 +55,13 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		return Ty.tNULL;
 	}
 
-	Ty[] parseParamTypes(TEnv env, AST params) {
+	Ty[] parseParamTypes(Env env, AST params) {
 		return this.parseParamTypes(env, params, null);
 	}
 
-	Ty[] parseParamTypes(TEnv env, AST params, Ty defaultType) {
+	Ty[] parseParamTypes(Env env, AST params, Ty defaultType) {
 		if (params == null) {
-			return TArrays.emptyTypes;
+			return OArrays.emptyTypes;
 		}
 		if (params.has(_name)) {
 			return new Ty[] { this.parseParamType(env, params.get(_name), params.get(_type), defaultType) };
@@ -75,7 +75,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		return p;
 	}
 
-	Ty parseParamType(TEnv env, AST param, AST type, Ty defaultType) {
+	Ty parseParamType(Env env, AST param, AST type, Ty defaultType) {
 		Ty ty = null;
 		if (type != null) {
 			ty = env.parseType(env, type, null);
@@ -125,9 +125,9 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 	// return ty;
 	// }
 
-	public Ty[] parseTypes(TEnv env, AST types) {
+	public Ty[] parseTypes(Env env, AST types) {
 		if (types == null) {
-			return TArrays.emptyTypes;
+			return OArrays.emptyTypes;
 		}
 		Ty[] p = new Ty[types.size()];
 		int i = 0;

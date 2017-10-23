@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import blue.origami.nez.ast.Source;
+import blue.origami.common.OSource;
 
-public abstract class ParserSource implements Source {
+public abstract class ParserSource implements OSource {
 
 	private String resourceName;
 	protected long startLineNum = 1;
@@ -40,7 +40,7 @@ public abstract class ParserSource implements Source {
 	}
 
 	@Override
-	public Source subSource(long startIndex, long endIndex) {
+	public OSource subSource(long startIndex, long endIndex) {
 		return new StringSource(this.getResourceName(), this.linenum(startIndex), this.subBytes(startIndex, endIndex),
 				false);
 	}
@@ -62,19 +62,19 @@ public abstract class ParserSource implements Source {
 
 	/* utils */
 
-	public final static Source newStringSource(String str) {
+	public final static OSource newStringSource(String str) {
 		return new StringSource(str);
 	}
 
-	public final static Source newStringSource(String resource, long linenum, String str) {
+	public final static OSource newStringSource(String resource, long linenum, String str) {
 		return new StringSource(resource, linenum, str);
 	}
 
-	public final static Source newFileSource(String fileName, String[] paths) throws IOException {
+	public final static OSource newFileSource(String fileName, String[] paths) throws IOException {
 		return newFileSource(ParserSource.class, fileName, paths);
 	}
 
-	public final static Source newFileSource(Class<?> c, String fileName, String[] paths) throws IOException {
+	public final static OSource newFileSource(Class<?> c, String fileName, String[] paths) throws IOException {
 		File f = new File(fileName);
 		if (!f.isFile()) {
 			if (paths != null) {
@@ -95,7 +95,7 @@ public abstract class ParserSource implements Source {
 		return new FileSource(fileName);
 	}
 
-	public static Source newStringSource(String fileName, InputStream stream) throws IOException {
+	public static OSource newStringSource(String fileName, InputStream stream) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		StringBuilder sb = new StringBuilder();
 		String line = reader.readLine();

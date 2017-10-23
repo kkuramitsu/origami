@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
 public class IntCode extends CommonCode implements ValueCode {
@@ -18,7 +18,7 @@ public class IntCode extends CommonCode implements ValueCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushInt(env, this);
 	}
 

@@ -14,13 +14,12 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.common;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
 
-import blue.origami.nez.ast.SourceLogger;
-import blue.origami.nez.ast.SourcePosition;
+import blue.origami.Version;
 
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();
@@ -151,8 +150,8 @@ public class OOption {
 	}
 
 	public void setClass(String path) throws Throwable {
-		Class<?> c = loadClass(OFactory.class, path, "blue.origami.main.tool", "blue.origami.nezcc",
-				"blue.origami.codemap");
+		Class<?> c = loadClass(OFactory.class, path, Version.ClassPath + ".parser.nezcc",
+				Version.ClassPath + "transpiler.codemap");
 		OFactory<?> f = (OFactory<?>) c.newInstance();
 		this.classMap.put(f.keyClass(), f);
 	}

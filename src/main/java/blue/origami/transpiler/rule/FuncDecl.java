@@ -2,7 +2,7 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FuncMap;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
@@ -12,7 +12,7 @@ import blue.origami.transpiler.type.Ty;
 public class FuncDecl extends SyntaxRule implements ParseRule {
 
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		boolean isPublic = t.has(_public);
 		String name = t.getStringAt(_name, null);
 		AST[] paramNames = this.parseParamNames(env, t.get(_param));

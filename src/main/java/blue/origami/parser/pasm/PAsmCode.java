@@ -21,9 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.SourcePosition;
 import blue.origami.main.MainOption;
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.parser.ParserCode;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.TrapAction;
@@ -32,7 +33,6 @@ import blue.origami.parser.pasm.PAsmAPI.PAsmContext;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
 import blue.origami.parser.peg.NezFmt;
-import blue.origami.util.OOption;
 
 public class PAsmCode implements ParserCode {
 
@@ -54,7 +54,7 @@ public class PAsmCode implements ParserCode {
 	}
 
 	@Override
-	public int match(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) {
+	public int match(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree) {
 		PAsmContext px = new PAsmContext(s, pos, newTree, linkTree);
 		px.setTrap((TrapAction[]) this.options.get(MainOption.TrapActions));
 		int w = this.options.intValue(MainOption.WindowSize, 64);
@@ -70,7 +70,7 @@ public class PAsmCode implements ParserCode {
 	}
 
 	@Override
-	public Object parse(Source s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
+	public Object parse(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
 		PAsmContext px = new PAsmContext(s, pos, newTree, linkTree);
 		px.setTrap((TrapAction[]) this.options.get(MainOption.TrapActions));
 		int w = this.options.intValue(MainOption.WindowSize, 64);

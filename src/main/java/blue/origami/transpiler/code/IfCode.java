@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OStrings;
 
 public class IfCode extends CodeN {
 
@@ -44,7 +44,7 @@ public class IfCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		this.args[0] = this.args[0].asType(env, Ty.tBool);
 		this.args[1] = this.args[1].asType(env, ret);
 		this.args[2] = this.args[2].asType(env, ret);
@@ -56,7 +56,7 @@ public class IfCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushIf(env, this);
 	}
 

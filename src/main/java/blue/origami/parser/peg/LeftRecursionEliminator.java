@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import blue.origami.util.OOption;
-import blue.origami.util.OFactory;
+import blue.origami.common.OFactory;
+import blue.origami.common.OOption;
 
 public class LeftRecursionEliminator extends ExpressionVisitor<Boolean, LeftRecursionEliminator.LREContext>
 		implements OFactory<LeftRecursionEliminator> {

@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class MatchCode extends CodeN implements CodeBuilder {
 
@@ -53,7 +53,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.targetCode == null) {
 			FunctionContext fcx = env.get(FunctionContext.class);
 			if (fcx == null || fcx.size() == 0) {
@@ -77,7 +77,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		return desugar.asType(env, ret);
 	}
 
-	private Code desugarRule(TEnv env, Code targetCode0, Ty targetTy) {
+	private Code desugarRule(Env env, Code targetCode0, Ty targetTy) {
 		Code targetCode = targetCode0.asType(env, targetTy);
 		targetTy = targetCode.getType();
 		LetCode decl = new LetCode("it", targetCode);
@@ -116,7 +116,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 
 	}
 
@@ -169,7 +169,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public Code asType(TEnv env, Ty t) {
+		public Code asType(Env env, Ty t) {
 			this.args[0] = this.args[0].asType(env, Ty.tBool);
 			this.args[1] = this.args[1].asType(env, t);
 			return this;
@@ -184,7 +184,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(TEnv env, CodeSection sec) {
+		public void emitCode(Env env, CodeSection sec) {
 		}
 
 		@Override
@@ -207,7 +207,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		Ty targetTy = null;
 
 		Case() {
-			super(TArrays.emptyCodes);
+			super(OArrays.emptyCodes);
 		}
 
 		Case(Code... values) {
@@ -258,7 +258,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(TEnv env, CodeSection sec) {
+		public void emitCode(Env env, CodeSection sec) {
 		}
 
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.common;
 
 import java.util.Iterator;
 import java.util.List;

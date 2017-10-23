@@ -16,10 +16,10 @@
 
 package blue.origami.main;
 
-import blue.origami.nezcc.SourceGenerator;
+import blue.origami.common.OOption;
+import blue.origami.parser.nezcc.ParserGenerator;
+import blue.origami.parser.nezcc.SourceGenerator;
 import blue.origami.parser.peg.Grammar;
-import blue.origami.nezcc.ParserGenerator;
-import blue.origami.util.OOption;
 
 public class Onezcc extends Main {
 

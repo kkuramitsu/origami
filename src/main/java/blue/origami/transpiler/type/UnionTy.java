@@ -3,10 +3,10 @@ package blue.origami.transpiler.type;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import blue.origami.transpiler.TArrays;
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.code.Code;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class UnionTy extends Ty {
 
@@ -35,7 +35,7 @@ public class UnionTy extends Ty {
 
 	@Override
 	public boolean hasVar() {
-		return TArrays.testSomeTrue(t -> t.hasVar(), this.choice);
+		return OArrays.testSomeTrue(t -> t.hasVar(), this.choice);
 	}
 
 	@Override

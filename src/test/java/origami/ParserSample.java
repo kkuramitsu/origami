@@ -2,7 +2,7 @@ package origami;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.Tree;
+import blue.origami.common.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 

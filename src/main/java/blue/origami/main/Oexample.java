@@ -19,18 +19,18 @@ package blue.origami.main;
 import java.io.IOException;
 import java.util.HashMap;
 
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
+import blue.origami.common.Tree;
 import blue.origami.main.Otest.Coverage;
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.GrammarParser;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
 
 public class Oexample extends Main {
 	HashMap<String, Parser> parserMap = new HashMap<>();
@@ -86,12 +86,12 @@ public class Oexample extends Main {
 		if (path == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}
-		Source s = ParserSource.newFileSource(path, options.stringList(MainOption.GrammarPath));
+		OSource s = ParserSource.newFileSource(path, options.stringList(MainOption.GrammarPath));
 		this.importFile(g, s, options);
 		this.desc = parseGrammarDescription(s);
 	}
 
-	void importFile(Grammar g, Source s, OOption options) throws IOException {
+	void importFile(Grammar g, OSource s, OOption options) throws IOException {
 		Tree<?> t = GrammarParser.OPegParser.parse(s);
 		if (t.is(GrammarParser._Source)) {
 			for (Tree<?> sub : t) {
@@ -169,7 +169,7 @@ public class Oexample extends Main {
 
 	protected void performExample(Parser p, String uname, Tree<?> ex) {
 		Tree<?> textNode = ex.get(_text);
-		Source s = this.newSource(textNode);
+		OSource s = this.newSource(textNode);
 		String name = uname + " (" + textNode.getSource().getResourceName() + ":"
 				+ textNode.getSource().linenum(textNode.getSourcePosition()) + ")";
 		try {
@@ -208,7 +208,7 @@ public class Oexample extends Main {
 		this.timeMap.put(uname, l);
 	}
 
-	private Source newSource(Tree<?> textNode) {
+	private OSource newSource(Tree<?> textNode) {
 		// byte[] b = parseBinary(textNode.toText());
 		// if (b != null) {
 		// return new StringSource(textNode.getSource().getResourceName(),
@@ -251,7 +251,7 @@ public class Oexample extends Main {
 	// }
 	// }
 
-	public final static String parseGrammarDescription(Source sc) {
+	public final static String parseGrammarDescription(OSource sc) {
 		StringBuilder sb = new StringBuilder();
 		long pos = 0;
 		boolean found = false;

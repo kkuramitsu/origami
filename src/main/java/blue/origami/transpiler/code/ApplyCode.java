@@ -2,14 +2,14 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
-import blue.origami.transpiler.TArrays;
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.OStrings;
 
 public class ApplyCode extends CodeN {
 	public ApplyCode(Code... values) {
@@ -21,7 +21,7 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (!this.isUntyped()) {
 			return this.castType(env, ret);
 		}
@@ -29,7 +29,7 @@ public class ApplyCode extends CodeN {
 		if (this.args[0] instanceof FuncRefCode) {
 			// ODebug.trace("switching to expr %s", this.args[0]);
 			String name = ((FuncRefCode) this.args[0]).getName();
-			return new ExprCode(name, TArrays.ltrim(this.args)).asType(env, ret);
+			return new ExprCode(name, OArrays.ltrim(this.args)).asType(env, ret);
 		}
 
 		Ty firstType = this.args[0].getType();
@@ -60,7 +60,7 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushApply(env, this);
 	}
 
@@ -68,7 +68,7 @@ public class ApplyCode extends CodeN {
 	public void strOut(StringBuilder sb) {
 		OStrings.append(sb, this.args[0]);
 		sb.append("(");
-		OStrings.joins(sb, TArrays.ltrim2(this.args), ",");
+		OStrings.joins(sb, OArrays.ltrim2(this.args), ",");
 		sb.append(")");
 	}
 

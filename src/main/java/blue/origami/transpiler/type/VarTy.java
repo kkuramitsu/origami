@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.NameHint;
-import blue.origami.util.OStrings;
 
 public class VarTy extends Ty {
 	private static int seq = 27;

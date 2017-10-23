@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.common;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.HashMap;
+
+import blue.origami.Version;
 
 public class OCommonWriter {
 	protected String fileName = null;
@@ -215,7 +217,7 @@ public class OCommonWriter {
 	public final void importResourceContent(String path, String... stringReplacements) {
 		try {
 			if (!path.startsWith("/")) {
-				path = "/blue/origami/include/" + path;
+				path = Version.ResourcePath + "/include/" + path;
 			}
 			InputStream s = OCommonWriter.class.getResourceAsStream(path);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));

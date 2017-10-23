@@ -3,15 +3,15 @@ package blue.origami.transpiler.type;
 import java.util.Set;
 import java.util.TreeSet;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.util.OStrings;
 
 public class DataTy extends Ty {
 	boolean isMutable = false;
@@ -51,7 +51,7 @@ public class DataTy extends Ty {
 
 	public String[] names() {
 		if (this.fields == null) {
-			return TArrays.emptyNames;
+			return OArrays.emptyNames;
 		}
 		return this.fields.toArray(new String[this.fields.size()]);
 	}
@@ -76,7 +76,7 @@ public class DataTy extends Ty {
 		return this.fields.contains(field);
 	}
 
-	public Ty fieldTy(TEnv env, AST s, String name) {
+	public Ty fieldTy(Env env, AST s, String name) {
 		if (this.hasField(name)) {
 			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint != null) {

@@ -16,7 +16,7 @@
 
 package blue.origami.parser.pasm;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 
 public final class Temit extends PAsmInst {
 	public final Symbol label;

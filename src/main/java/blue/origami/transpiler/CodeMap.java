@@ -2,6 +2,8 @@ package blue.origami.transpiler;
 
 import java.util.List;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
@@ -10,7 +12,6 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.util.ODebug;
 
 public class CodeMap implements NameInfo {
 	public final static CodeMap Null = null;
@@ -50,7 +51,7 @@ public class CodeMap implements NameInfo {
 	}
 
 	public CodeMap(String template) {
-		this(0, template, template, Ty.tVoid, TArrays.emptyTypes);
+		this(0, template, template, Ty.tVoid, OArrays.emptyTypes);
 	}
 
 	public boolean is(int flag) {
@@ -110,7 +111,7 @@ public class CodeMap implements NameInfo {
 
 	void checkParamTypes() {
 		if (!this.is(ParamChecked)) {
-			this.set(Generic, TArrays.testSomeTrue(t -> t.hasVar(), this.paramTypes));
+			this.set(Generic, OArrays.testSomeTrue(t -> t.hasVar(), this.paramTypes));
 			this.set(Mutation, this.paramTypes.length > 0 && this.paramTypes[0].isMutable());
 			this.set(ParamChecked);
 		}
@@ -118,7 +119,7 @@ public class CodeMap implements NameInfo {
 	}
 
 	@Override
-	public void used(TEnv env) {
+	public void used(Env env) {
 		this.set(Used);
 	}
 
@@ -152,18 +153,18 @@ public class CodeMap implements NameInfo {
 		return false;
 	}
 
-	public CodeMap generate(TEnv env, Ty[] params) {
+	public CodeMap generate(Env env, Ty[] params) {
 		this.used(env);
 		return this;
 	}
 
 	@Override
-	public boolean isNameInfo(TEnv env) {
+	public boolean isNameInfo(Env env) {
 		return true;
 	}
 
 	@Override
-	public Code newNameCode(TEnv env, AST s) {
+	public Code newNameCode(Env env, AST s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 
@@ -183,9 +184,9 @@ public class CodeMap implements NameInfo {
 		return sb.toString();
 	}
 
-	public static CodeMap select(TEnv env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
+	public static CodeMap select(Env env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
 		CodeMap selected = null;
-		boolean allowAbstractMatch = TArrays.testSomeTrue(t -> t.hasVar(), p);
+		boolean allowAbstractMatch = OArrays.testSomeTrue(t -> t.hasVar(), p);
 		// ODebug.trace("unselected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
 		// p));
 		int mapCost = maxCost - 1;
@@ -217,7 +218,7 @@ public class CodeMap implements NameInfo {
 		return (mapCost >= maxCost) ? null : selected;
 	}
 
-	static int match(TEnv env, CodeMap tp, Ty ret, Ty[] params, int maxCost) {
+	static int match(Env env, CodeMap tp, Ty ret, Ty[] params, int maxCost) {
 		int mapCost = 0;
 		VarDomain dom = null;
 		VarLogger logs = new VarLogger();

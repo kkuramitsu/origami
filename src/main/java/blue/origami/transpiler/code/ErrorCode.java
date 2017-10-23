@@ -1,14 +1,14 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.nez.ast.SourcePosition;
+import blue.origami.common.OArrays;
+import blue.origami.common.OFormat;
+import blue.origami.common.OStrings;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TArrays;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
-import blue.origami.transpiler.TLog;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OFormat;
-import blue.origami.util.OStrings;
 
 @SuppressWarnings("serial")
 public class ErrorCode extends RuntimeException implements Code {
@@ -44,7 +44,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public boolean showError(TEnv env) {
+	public boolean showError(Env env) {
 		env.reportLog(this.log);
 		return true;
 	}
@@ -55,7 +55,7 @@ public class ErrorCode extends RuntimeException implements Code {
 
 	@Override
 	public Code[] args() {
-		return TArrays.emptyCodes;
+		return OArrays.emptyCodes;
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		this.dummy.setType(ret);
 		return this;
 	}
@@ -82,7 +82,7 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushError(env, this);
 	}
 

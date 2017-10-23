@@ -18,10 +18,10 @@ package blue.origami.main;
 
 import java.util.ArrayList;
 
-import blue.origami.nez.ast.Source;
+import blue.origami.common.OOption;
+import blue.origami.common.OSource;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
-import blue.origami.util.OOption;
 
 public class Omatch extends Main {
 	protected void initOption(OOption options) {
@@ -35,7 +35,7 @@ public class Omatch extends Main {
 		Parser parser = getParser(options);
 		if (options.stringValue(MainOption.InlineGrammar, null) != null) {
 			String t = options.stringValue(MainOption.InlineGrammar, null);
-			Source input = ParserSource.newStringSource(t);
+			OSource input = ParserSource.newStringSource(t);
 			int l = parser.match(input);
 			if (l == -1) {
 				p("failed: %s", t);
@@ -47,7 +47,7 @@ public class Omatch extends Main {
 		ArrayList<String> failedFileList = new ArrayList<>();
 		this.checkInputSource(files);
 		for (String file : files) {
-			Source input = ParserSource.newFileSource(file, null);
+			OSource input = ParserSource.newFileSource(file, null);
 			int l = parser.match(input);
 			if (l == -1) {
 				failedFileList.add(file);

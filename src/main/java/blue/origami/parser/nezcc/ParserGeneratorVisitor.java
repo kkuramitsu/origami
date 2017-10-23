@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nezcc;
+package blue.origami.parser.nezcc;
 
 import java.util.ArrayList;
 import java.util.List;

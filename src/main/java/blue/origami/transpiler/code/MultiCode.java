@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
-import blue.origami.transpiler.TArrays;
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OStrings;
 
 public class MultiCode extends CodeN {
 
@@ -15,7 +15,7 @@ public class MultiCode extends CodeN {
 	}
 
 	public MultiCode() {
-		this(TArrays.emptyCodes);
+		this(OArrays.emptyCodes);
 	}
 
 	public MultiCode(List<Code> codes) {
@@ -48,9 +48,9 @@ public class MultiCode extends CodeN {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.args.length > 0) {
-			TEnv lenv = this.noScope ? env : env.newEnv();
+			Env lenv = this.noScope ? env : env.newEnv();
 			final int last = this.args.length - 1;
 			for (int i = 0; i < last; i++) {
 				final int n = i;
@@ -74,7 +74,7 @@ public class MultiCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushMulti(env, this);
 	}
 

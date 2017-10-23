@@ -1,10 +1,10 @@
 package blue.origami.transpiler.rule;
 
+import blue.origami.common.OFormat;
+import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TLog;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.LogCode;
-import blue.origami.util.OFormat;
 
 public class LoggerRule {
 	private TLog addMessage(TLog head, AST s, int level, OFormat format, Object[] args) {

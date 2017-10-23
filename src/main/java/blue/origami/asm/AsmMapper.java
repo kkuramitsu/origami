@@ -9,21 +9,21 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeMapper;
 import blue.origami.transpiler.ConstMap;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class AsmMapper extends CodeMapper implements Opcodes {
 
 	private AsmType ts;
 
-	public AsmMapper(TEnv env) {
+	public AsmMapper(Env env) {
 		this.ts = new AsmType(env);
 	}
 
@@ -75,7 +75,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	private static final String evalName = "eval";
 
 	@Override
-	public void emitTopLevel(TEnv env, Code code) {
+	public void emitTopLevel(Env env, Code code) {
 		code = this.emitHeader(env, code);
 		// ODebug.trace("gen %s %s", code.isGenerative(), code);
 		if (!code.showError(env) && code.isGenerative()) {
@@ -119,7 +119,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	}
 
 	@Override
-	public CodeMap newConstMap(TEnv env, String lname, Ty ret) {
+	public CodeMap newConstMap(Env env, String lname, Ty ret) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("F|");
 		sb.append(this.cname());
@@ -143,7 +143,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	}
 
 	@Override
-	public CodeMap newCodeMap(TEnv env, String sname, String lname, Ty returnType, Ty... paramTypes) {
+	public CodeMap newCodeMap(Env env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("S|");
 		sb.append(this.cname());
@@ -154,7 +154,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	}
 
 	@Override
-	public void defineFunction(TEnv env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
+	public void defineFunction(Env env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code) {
 		Method m = new Method(name, this.ts.ti(returnType), this.ts.ts(paramTypes));
 		GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw());

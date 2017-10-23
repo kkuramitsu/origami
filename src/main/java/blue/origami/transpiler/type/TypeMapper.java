@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 
 public abstract class TypeMapper<C> {
-	protected TEnv env;
+	protected Env env;
 	protected final HashMap<String, C> typeMap = new HashMap<>();
 
-	public TypeMapper(TEnv env) {
+	public TypeMapper(Env env) {
 		this.env = env;
 	}
 

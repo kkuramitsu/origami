@@ -1,12 +1,10 @@
-package blue.origami.nez.ast;
+package blue.origami.common;
 
 import java.util.AbstractList;
 
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
-import blue.origami.util.OStringUtils;
-import blue.origami.util.OStrings;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		implements SourcePosition, OStrings, TreeFunc, TreeSetFunc {
@@ -30,7 +28,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		this.subTreeLabels = EmptyLabels;
 	}
 
-	protected Tree(Symbol tag, Source source, long pos, int len, E[] subTree, Object value) {
+	protected Tree(Symbol tag, OSource source, long pos, int len, E[] subTree, Object value) {
 		this.tag = tag;
 		// this.source = source;
 		this.pos = (int) pos;
@@ -58,9 +56,9 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	/* Source */
 
 	@Override
-	public final Source getSource() {
-		if (this.value instanceof Source) {
-			return (Source) this.value;
+	public final OSource getSource() {
+		if (this.value instanceof OSource) {
+			return (OSource) this.value;
 		}
 		return null;
 	}
@@ -185,7 +183,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	}
 
 	public final String getString() {
-		Source s = this.getSource();
+		OSource s = this.getSource();
 		if (s != null) {
 			long pos = this.getSourcePosition();
 			long epos = pos + this.length;
@@ -236,7 +234,7 @@ public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 	 * @return SourceContext
 	 */
 
-	public final Source toSource() {
+	public final OSource toSource() {
 		return ParserSource.newStringSource(this.getSource().getResourceName(),
 				this.getSource().linenum(this.getSourcePosition()), this.getString());
 	}

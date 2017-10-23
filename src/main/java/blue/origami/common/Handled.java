@@ -1,4 +1,4 @@
-package blue.origami.util;
+package blue.origami.common;
 
 public interface Handled<T> {
 	public T getHandled();

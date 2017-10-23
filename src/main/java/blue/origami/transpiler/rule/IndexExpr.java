@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -11,7 +11,7 @@ import blue.origami.transpiler.type.Ty;
 
 public class IndexExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		Code recv = env.parseCode(env, t.get(_recv));
 		Code[] params = env.parseSubCode(env, t.get(_param));
 		if (params.length != 1) {
@@ -35,7 +35,7 @@ public class IndexExpr implements ParseRule, Symbols {
 		}
 
 		@Override
-		public Code asType(TEnv env, Ty ret) {
+		public Code asType(Env env, Ty ret) {
 			if (this.isUntyped()) {
 				return new ExprCode("[]", this.recv, this.index).asType(env, ret);
 			}

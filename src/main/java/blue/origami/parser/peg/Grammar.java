@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import blue.origami.common.OConsole;
+import blue.origami.common.ODebug;
+import blue.origami.common.OOption;
+import blue.origami.common.OStrings;
+import blue.origami.common.SourcePosition;
 import blue.origami.main.MainOption;
-import blue.origami.nez.ast.SourcePosition;
 import blue.origami.parser.Parser;
-import blue.origami.util.OConsole;
-import blue.origami.util.ODebug;
-import blue.origami.util.OOption;
-import blue.origami.util.OStrings;
 
 public abstract class Grammar extends AbstractList<Production> implements OStrings {
 

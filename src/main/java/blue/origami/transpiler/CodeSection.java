@@ -28,59 +28,59 @@ import blue.origami.transpiler.code.TupleIndexCode;
 
 public interface CodeSection {
 
-	public void pushNone(TEnv env, NoneCode code);
+	public void pushNone(Env env, NoneCode code);
 
-	public void pushBool(TEnv env, BoolCode code);
+	public void pushBool(Env env, BoolCode code);
 
-	public void pushInt(TEnv env, IntCode code);
+	public void pushInt(Env env, IntCode code);
 
-	public void pushDouble(TEnv env, DoubleCode code);
+	public void pushDouble(Env env, DoubleCode code);
 
-	public void pushString(TEnv env, StringCode code);
+	public void pushString(Env env, StringCode code);
 
-	public void pushCast(TEnv env, CastCode code);
+	public void pushCast(Env env, CastCode code);
 
-	public void pushCall(TEnv env, CallCode code);
+	public void pushCall(Env env, CallCode code);
 
-	public void pushLet(TEnv env, LetCode code);
+	public void pushLet(Env env, LetCode code);
 
-	public void pushName(TEnv env, NameCode code);
+	public void pushName(Env env, NameCode code);
 
-	public void pushIf(TEnv env, IfCode code);
+	public void pushIf(Env env, IfCode code);
 
-	public void pushReturn(TEnv env, ReturnCode code);
+	public void pushReturn(Env env, ReturnCode code);
 
-	public void pushMulti(TEnv env, MultiCode code);
+	public void pushMulti(Env env, MultiCode code);
 
-	public void pushTemplate(TEnv env, TemplateCode code);
+	public void pushTemplate(Env env, TemplateCode code);
 
 	// public void pushArray(TEnv env, TArrayCode code);
 
-	public void pushTuple(TEnv env, TupleCode code);
+	public void pushTuple(Env env, TupleCode code);
 
-	public void pushTupleIndex(TEnv env, TupleIndexCode code);
+	public void pushTupleIndex(Env env, TupleIndexCode code);
 
-	public void pushData(TEnv env, DataCode code);
+	public void pushData(Env env, DataCode code);
 
-	public void pushFuncExpr(TEnv env, FuncCode code);
+	public void pushFuncExpr(Env env, FuncCode code);
 
-	public void pushApply(TEnv env, ApplyCode code);
+	public void pushApply(Env env, ApplyCode code);
 
-	public void pushError(TEnv env, ErrorCode code);
+	public void pushError(Env env, ErrorCode code);
 
-	public default void pushLog(TEnv env, LogCode code) {
+	public default void pushLog(Env env, LogCode code) {
 		env.reportLog(code.getLog());
 		code.getInner().emitCode(env, this);
 	}
 
-	public void pushFuncRef(TEnv env, FuncRefCode code);
+	public void pushFuncRef(Env env, FuncRefCode code);
 
-	public void pushGet(TEnv env, GetCode code);
+	public void pushGet(Env env, GetCode code);
 
-	public void pushSet(TEnv env, SetCode code);
+	public void pushSet(Env env, SetCode code);
 
-	public void pushExistField(TEnv env, ExistFieldCode code);
+	public void pushExistField(Env env, ExistFieldCode code);
 
-	public void pushGroup(TEnv env, GroupCode code);
+	public void pushGroup(Env env, GroupCode code);
 
 }

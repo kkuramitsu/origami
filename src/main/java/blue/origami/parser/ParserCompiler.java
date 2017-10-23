@@ -1,6 +1,6 @@
 package blue.origami.parser;
 
-import blue.origami.util.OFactory;
+import blue.origami.common.OFactory;
 
 public interface ParserCompiler extends OFactory<ParserCompiler> {
 	public ParserCode compile(ParserGrammar grammar);

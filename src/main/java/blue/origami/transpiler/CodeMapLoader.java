@@ -9,11 +9,13 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import blue.origami.Version;
+import blue.origami.common.OArrays;
+import blue.origami.common.OConsole;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.UnionTy;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.util.OConsole;
 
 public class CodeMapLoader {
 	final Transpiler env;
@@ -24,7 +26,7 @@ public class CodeMapLoader {
 
 	CodeMapLoader(Transpiler env, String target) {
 		this.env = env;
-		this.base = "/blue/origami/codemap/" + target + "/";
+		this.base = Version.ResourcePath + "/codemap/" + target + "/";
 		this.common = this.base.replace(target, "common");
 		this.defaul = this.base.replace(target, "default");
 	}
@@ -55,7 +57,7 @@ public class CodeMapLoader {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 		String line = null;
 		String key = null;
-		String[] requires = TArrays.emptyNames;
+		String[] requires = OArrays.emptyNames;
 		int linenum = 0;
 		StringBuilder multiStrings = null;
 		String delim = null;
@@ -64,12 +66,12 @@ public class CodeMapLoader {
 			if (multiStrings == null) {
 				if (line.startsWith("#")) {
 					if (line.startsWith("#include")) {
-						for (String file : TArrays.ltrim2(line.split("\\S"))) {
+						for (String file : OArrays.ltrim2(line.split("\\S"))) {
 							this.loadCodeMap(file);
 						}
 					}
 					if (line.startsWith("#require")) {
-						requires = TArrays.ltrim2(line.split("\\S"));
+						requires = OArrays.ltrim2(line.split("\\S"));
 					}
 					continue;
 				}
@@ -130,7 +132,7 @@ public class CodeMapLoader {
 	// }
 	// }
 
-	void defineSymbol(TEnv env, String[] requires, String key, String value) {
+	void defineSymbol(Env env, String[] requires, String key, String value) {
 		if (key == null) {
 			return;
 		}
@@ -160,12 +162,12 @@ public class CodeMapLoader {
 				}
 				return;
 			}
-			env.add(name, new CodeMap(acc, name, value, Ty.tVoid, TArrays.emptyTypes));
+			env.add(name, new CodeMap(acc, name, value, Ty.tVoid, OArrays.emptyTypes));
 		} else {
 			String name = key.substring(0, loc);
 			String[] tdescs = key.substring(loc + 1).split(":");
 			Ty ret = this.parseType(tdescs[tdescs.length - 1]);
-			Ty[] p = TArrays.emptyTypes;
+			Ty[] p = OArrays.emptyTypes;
 			if (tdescs.length > 1) {
 				p = new Ty[tdescs.length - 1];
 				for (int i = 0; i < p.length; i++) {
@@ -178,7 +180,7 @@ public class CodeMapLoader {
 		}
 	}
 
-	void addArrow(TEnv env, String key, String value, int loc, int len, int acc) {
+	void addArrow(Env env, String key, String value, int loc, int len, int acc) {
 		Ty f = this.parseType(key.substring(0, loc));
 		Ty t = this.parseType(key.substring(loc + len));
 		String name = f + "->" + t;

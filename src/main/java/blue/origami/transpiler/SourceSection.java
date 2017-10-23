@@ -2,6 +2,8 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
@@ -28,7 +30,6 @@ import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class SourceSection extends SourceSectionLib implements CodeSection {
 
@@ -37,12 +38,12 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushNone(TEnv env, NoneCode code) {
+	public void pushNone(Env env, NoneCode code) {
 		this.push(env.getSymbol("null", "null"));
 	}
 
 	@Override
-	public void pushBool(TEnv env, BoolCode code) {
+	public void pushBool(Env env, BoolCode code) {
 		if (code.isTrue()) {
 			this.push(env.getSymbol("true:Bool", "true"));
 		} else {
@@ -51,33 +52,33 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushInt(TEnv env, IntCode code) {
+	public void pushInt(Env env, IntCode code) {
 		this.pushf(env.fmt("0:Int", "%d"), code.getValue());
 	}
 
 	@Override
-	public void pushDouble(TEnv env, DoubleCode code) {
+	public void pushDouble(Env env, DoubleCode code) {
 		this.pushf(env.fmt("0:Float", "%f"), code.getValue());
 	}
 
 	@Override
-	public void pushString(TEnv env, StringCode code) {
+	public void pushString(Env env, StringCode code) {
 		// FIXME
 		this.pushf(env.fmt("0:String", "\"%s\""), code.getValue());
 	}
 
 	@Override
-	public void pushName(TEnv env, NameCode code) {
+	public void pushName(Env env, NameCode code) {
 		this.pushf(env.fmt("varname", "name", "%s"), code.getName());
 	}
 
 	@Override
-	public void pushLet(TEnv env, LetCode code) {
+	public void pushLet(Env env, LetCode code) {
 		this.pushf(env, env.fmt("let", "%1$s %2$s=%3$s"), code.getDeclType(), code.getName(), code.getInner());
 	}
 
 	@Override
-	public void pushCast(TEnv env, CastCode code) {
+	public void pushCast(Env env, CastCode code) {
 		if (code.hasTemplate()) {
 			this.pushCall(env, code);
 		} else {
@@ -86,14 +87,14 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushCall(TEnv env, CallCode code) {
+	public void pushCall(Env env, CallCode code) {
 		String fmt = code.getTemplate().getDefined();
 		Object[] args = Arrays.stream(code.args()).map(c -> (Object) c).toArray(Object[]::new);
 		this.pushf(env, fmt, args);
 	}
 
 	@Override
-	public void pushIf(TEnv env, IfCode code) {
+	public void pushIf(Env env, IfCode code) {
 		if (code.isStatementStyle()) {
 			this.pushf(env, env.fmt("if", "if(%s) {"), code.condCode());
 			this.pushLine("");
@@ -109,7 +110,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 		}
 	}
 
-	void pushBlock(TEnv env, Code code) {
+	void pushBlock(Env env, Code code) {
 		if (code instanceof MultiCode) {
 			this.pushMulti(env, (MultiCode) code);
 		} else {
@@ -122,7 +123,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushMulti(TEnv env, MultiCode code) {
+	public void pushMulti(Env env, MultiCode code) {
 		// if (code.isBlockExpr()) {
 		// this.pushLine(env.getSymbol("block", "begin", "{"));
 		// for (Code c : code) {
@@ -142,17 +143,17 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushReturn(TEnv env, ReturnCode code) {
+	public void pushReturn(Env env, ReturnCode code) {
 		this.pushf(env, env.fmt("return", "return %1$s;"), code.getInner());
 	}
 
 	@Override
-	public void pushTemplate(TEnv env, TemplateCode code) {
+	public void pushTemplate(Env env, TemplateCode code) {
 		ODebug.TODO();
 	}
 
 	@Override
-	public void pushData(TEnv env, DataCode code) {
+	public void pushData(Env env, DataCode code) {
 		if (code.isList()) {
 			Ty innTy = code.getType().getInnerTy();
 			this.pushf(env, env.fmt("array", "{"), this.ts.box(innTy));
@@ -172,60 +173,60 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	}
 
 	@Override
-	public void pushError(TEnv env, ErrorCode code) {
+	public void pushError(Env env, ErrorCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncExpr(TEnv env, FuncCode code) {
+	public void pushFuncExpr(Env env, FuncCode code) {
 		Param p = new Param(code.getStartIndex(), code.getParamNames(), code.getParamTypes());
 		this.pushf(env, env.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
 	}
 
 	@Override
-	public void pushApply(TEnv env, ApplyCode code) {
+	public void pushApply(Env env, ApplyCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncRef(TEnv env, FuncRefCode code) {
+	public void pushFuncRef(Env env, FuncRefCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushGet(TEnv env, GetCode code) {
+	public void pushGet(Env env, GetCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushSet(TEnv env, SetCode code) {
+	public void pushSet(Env env, SetCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushExistField(TEnv env, ExistFieldCode code) {
+	public void pushExistField(Env env, ExistFieldCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushGroup(TEnv env, GroupCode code) {
+	public void pushGroup(Env env, GroupCode code) {
 		this.pushf(env, env.fmt("group", "%s"), code.getInner());
 	}
 
 	@Override
-	public void pushTuple(TEnv env, TupleCode code) {
+	public void pushTuple(Env env, TupleCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushTupleIndex(TEnv env, TupleIndexCode code) {
+	public void pushTupleIndex(Env env, TupleIndexCode code) {
 		// TODO Auto-generated method stub
 
 	}
@@ -280,7 +281,7 @@ abstract class SourceSectionLib implements CodeSection {
 		return this.sb.toString();
 	}
 
-	void push(TEnv env, Object value) {
+	void push(Env env, Object value) {
 		if (value instanceof Code) {
 			((Code) value).emitCode(env, this);
 		} else if (value instanceof Ty) {
@@ -298,7 +299,7 @@ abstract class SourceSectionLib implements CodeSection {
 		}
 	}
 
-	void pushf(TEnv env, String format, Object... args) {
+	void pushf(Env env, String format, Object... args) {
 		int start = 0;
 		int index = 0;
 		for (int i = 0; i < format.length(); i++) {
@@ -370,7 +371,7 @@ class Param implements FuncParam, Emitter {
 	}
 
 	Param(Ty[] paramTypes) {
-		this(0, TArrays.emptyNames, paramTypes);
+		this(0, OArrays.emptyNames, paramTypes);
 	}
 
 	@Override
@@ -389,7 +390,7 @@ class Param implements FuncParam, Emitter {
 	}
 
 	@Override
-	public void emit(TEnv env, SourceSection sec) {
+	public void emit(Env env, SourceSection sec) {
 		String delim = env.getSymbol("paramdelim", ",", ",");
 		for (int i = 0; i < this.size(); i++) {
 			if (i > 0) {

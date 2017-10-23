@@ -2,7 +2,7 @@ package blue.origami.konoha5;
 
 import java.util.Arrays;
 
-import blue.origami.util.OStrings;
+import blue.origami.common.OStrings;
 
 public class DataHashMap implements DataMap {
 	private final static int Unused = 0;

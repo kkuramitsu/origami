@@ -2,19 +2,19 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.SimpleTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
-import blue.origami.util.ODebug;
 
 public class SourceType extends TypeMapper<String> {
 
 	SourceSection head;
 
-	public SourceType(TEnv env) {
+	public SourceType(Env env) {
 		super(env);
 	}
 
@@ -130,7 +130,7 @@ public class SourceType extends TypeMapper<String> {
 	// return typeName;
 	// }
 
-	String genFieldClass(TEnv env, String cname, String name) {
+	String genFieldClass(Env env, String cname, String name) {
 		String key = "F$" + name;
 		if (!this.typeMap.containsKey(key)) {
 			NameHint hint = env.findGlobalNameHint(env, name);

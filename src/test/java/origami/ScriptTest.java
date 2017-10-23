@@ -1,5 +1,6 @@
 package origami;
 
+import blue.origami.Version;
 import blue.origami.asm.APIs;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
@@ -46,7 +47,7 @@ public class ScriptTest {
 
 	static Grammar g() throws Throwable {
 		if (g == null) {
-			g = SourceGrammar.loadFile("/blue/origami/grammar/konoha5.opeg");
+			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/konoha5.opeg");
 		}
 		return g;
 	}

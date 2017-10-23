@@ -1,13 +1,14 @@
-package blue.origami.transpiler;
+package blue.origami.common;
 
 import java.lang.reflect.Array;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
-public class TArrays {
+public class OArrays {
 	// avoid duplicated empty array;
 	public static final Ty[] emptyTypes = new Ty[0];
 	public static final Code[] emptyCodes = new Code[0];

@@ -25,5 +25,7 @@ public class Version {
 	public final static String Version = "" + MainVersion + "." + MinorVersion + "." + PatchLevel.REV;
 	public final static String Copyright = "Copyright 2017, Kimio Kuramitsu and ORIGAMI project";
 	public final static String License = "the Apache License, Version 2.0";
+
 	public final static String ClassPath = "blue.origami";
+	public final static String ResourcePath = "/blue/origami";
 }

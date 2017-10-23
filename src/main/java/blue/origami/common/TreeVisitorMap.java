@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nez.ast;
+package blue.origami.common;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

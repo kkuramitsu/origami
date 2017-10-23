@@ -1,6 +1,6 @@
 package blue.origami.main;
 
-import blue.origami.util.OOption.OOptionKey;
+import blue.origami.common.OOption.OOptionKey;
 
 public enum MainOption implements OOptionKey {
 	Verbose, WindowSize, Pass, Optimized, PassPath, StrictChecker, TrapActions, //

@@ -1,7 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 
 public class SourceCode extends MultiCode {
 
@@ -10,7 +10,7 @@ public class SourceCode extends MultiCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		for (Code a : this.args) {
 			if (!a.showError(env)) {
 				a.emitCode(env, sec);

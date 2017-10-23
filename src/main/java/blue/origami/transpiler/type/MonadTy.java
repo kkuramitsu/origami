@@ -1,6 +1,6 @@
 package blue.origami.transpiler.type;
 
-import blue.origami.util.OStrings;
+import blue.origami.common.OStrings;
 
 public class MonadTy extends Ty {
 	protected String name;

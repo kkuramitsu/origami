@@ -14,43 +14,28 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nezcc;
+package blue.origami.common;
 
-public class SourceSection {
-	StringBuilder sb = new StringBuilder();
-	int indent = 0;
+public interface OSource {
 
-	public void incIndent() {
-		this.indent++;
-	}
+	public String getResourceName();
 
-	public void decIndent() {
-		assert (this.indent > 0);
-		this.indent--;
-	}
+	public long length();
 
-	public String Indent(String tab, String stmt) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < this.indent; i++) {
-			sb.append(tab);
-		}
-		sb.append(stmt);
-		return sb.toString();
-	}
+	public int byteAt(long pos);
 
-	public void L(String code) {
-		this.sb.append(code);
-		this.sb.append("\n");
-	}
+	public boolean eof(long pos);
 
-	@Override
-	public String toString() {
-		return this.sb.toString();
-	}
+	public boolean match(long pos, byte[] text);
 
-	public SourceSection dup() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public String subString(long startIndex, long endIndex);
+
+	public byte[] subBytes(long startIndex, long endIndex);
+
+	public OSource subSource(long startIndex, long endIndex);
+
+	public long linenum(long pos);
+
+	public int column(long pos);
 
 }

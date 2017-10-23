@@ -1,8 +1,8 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataListCode;
-import blue.origami.util.OStrings;
 
 public class ListTy extends MonadTy {
 

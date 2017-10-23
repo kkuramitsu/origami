@@ -19,6 +19,7 @@ package blue.origami.parser.pass;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import blue.origami.common.OOption;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.ExpressionVisitor;
@@ -47,7 +48,6 @@ import blue.origami.parser.peg.PTrap;
 import blue.origami.parser.peg.PTree;
 import blue.origami.parser.peg.PValue;
 import blue.origami.parser.peg.Production;
-import blue.origami.util.OOption;
 
 public class InlinePass extends CommonPass {
 

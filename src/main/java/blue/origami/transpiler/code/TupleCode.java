@@ -1,11 +1,11 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OStrings;
 
 public class TupleCode extends CodeN {
 
@@ -14,12 +14,12 @@ public class TupleCode extends CodeN {
 	}
 
 	@Override
-	public Code bindAs(TEnv env, Ty ret) {
+	public Code bindAs(Env env, Ty ret) {
 		return this.asType(env, ret);
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (ret.isTuple()) {
 			TupleTy ty = (TupleTy) ret.real();
 			if (ty != this.getType()) {
@@ -47,7 +47,7 @@ public class TupleCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushTuple(env, this);
 	}
 

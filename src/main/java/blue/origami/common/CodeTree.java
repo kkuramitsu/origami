@@ -14,11 +14,8 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.util;
+package blue.origami.common;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.nez.ast.Tree;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 
@@ -28,7 +25,7 @@ public class CodeTree extends Tree<CodeTree> {
 		super();
 	}
 
-	private CodeTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
+	private CodeTree(Symbol tag, OSource source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new CodeTree[size] : null, value);
 	}
 
@@ -46,7 +43,7 @@ public class CodeTree extends Tree<CodeTree> {
 	}
 
 	@Override
-	public Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
+	public Object apply(Symbol tag, OSource s, int spos, int epos, int nsubs, Object value) {
 		return new CodeTree(tag, s, spos, epos - spos, nsubs, value);
 	}
 

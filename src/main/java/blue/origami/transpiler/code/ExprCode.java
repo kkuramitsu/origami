@@ -3,9 +3,11 @@ package blue.origami.transpiler.code;
 import java.util.Arrays;
 import java.util.List;
 
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.FuncCastCode;
@@ -14,8 +16,6 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarTy;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class ExprCode extends CodeN implements CallCode {
 
@@ -50,12 +50,12 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushCall(env, this);
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
 			List<CodeMap> founds = env.findCodeMaps(this.name, this.args.length);
 			this.typeArgs(env, founds);
@@ -81,19 +81,19 @@ public class ExprCode extends CodeN implements CallCode {
 		return CastCode.BADCONV;
 	}
 
-	protected Code asUnfound(TEnv env, List<CodeMap> l) {
+	protected Code asUnfound(Env env, List<CodeMap> l) {
 		env.findList(this.name, CodeMap.class, l, (tt) -> !tt.isExpired());
 		throw new ErrorCode(this, TFmt.undefined_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
-	protected Code asMismatched(TEnv env, List<CodeMap> l) {
+	protected Code asMismatched(Env env, List<CodeMap> l) {
 		if (l.get(0).isMutation() && !this.args[0].getType().isMutable()) {
 			throw new ErrorCode(this, TFmt.not_mutable_SSS, this.name, this.msgArgs(), msgHint(env, l));
 		}
 		throw new ErrorCode(this, TFmt.mismatched_SSS, this.name, this.msgArgs(), msgHint(env, l));
 	}
 
-	protected void typeArgs(TEnv env, List<CodeMap> l) {
+	protected void typeArgs(Env env, List<CodeMap> l) {
 		for (int i = 0; i < this.args.length; i++) {
 			Ty pt = this.getCommonParamType(l, i);
 			// ODebug.trace("common[%d] %s", i, pt);
@@ -122,7 +122,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return sb.toString();
 	}
 
-	static String msgHint(TEnv env, List<CodeMap> l) {
+	static String msgHint(Env env, List<CodeMap> l) {
 		StringBuilder sb = new StringBuilder();
 		OStrings.joins(sb, l, ", ", tp -> tp.isAbstract() ? "" : tp.getName() + ": " + tp.getFuncType());
 		if (sb.length() == 0) {
@@ -131,7 +131,7 @@ public class ExprCode extends CodeN implements CallCode {
 		return " \t" + TFmt.hint + " " + sb;
 	}
 
-	private Code asMatched(TEnv env, CodeMap defined, Ty t) {
+	private Code asMatched(Env env, CodeMap defined, Ty t) {
 		Ty[] dpats = defined.getParamTypes();
 		Ty dret = defined.getReturnType();
 		if (defined.isGeneric()) {
@@ -231,12 +231,12 @@ class OptionalExprCode extends ExprCode implements CallCode {
 	}
 
 	@Override
-	protected Code asUnfound(TEnv env, List<CodeMap> l) {
+	protected Code asUnfound(Env env, List<CodeMap> l) {
 		return this.args[0];
 	}
 
 	@Override
-	protected Code asMismatched(TEnv env, List<CodeMap> l) {
+	protected Code asMismatched(Env env, List<CodeMap> l) {
 		return this.args[0];
 	}
 

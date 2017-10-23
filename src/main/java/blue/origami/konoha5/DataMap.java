@@ -1,6 +1,6 @@
 package blue.origami.konoha5;
 
-import blue.origami.util.OStrings;
+import blue.origami.common.OStrings;
 
 public interface DataMap extends Cloneable, OStrings {
 	public Object getf(int key, Object def);

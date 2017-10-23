@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -10,7 +10,7 @@ import blue.origami.transpiler.type.Ty;
 
 public class ExprType implements ParseRule, Symbols {
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		Ty req = Ty.tUntyped();
 		Code c = env.parseCode(env, t.get(_expr)).asType(env, req);
 		if (c.getType() == req) {

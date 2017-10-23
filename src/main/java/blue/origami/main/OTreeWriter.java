@@ -16,10 +16,10 @@
 
 package blue.origami.main;
 
-import blue.origami.nez.ast.Tree;
-import blue.origami.util.OCommonWriter;
-import blue.origami.util.OFactory;
-import blue.origami.util.OOption;
+import blue.origami.common.OCommonWriter;
+import blue.origami.common.OFactory;
+import blue.origami.common.OOption;
+import blue.origami.common.Tree;
 
 public class OTreeWriter extends OCommonWriter implements OFactory<OTreeWriter> {
 

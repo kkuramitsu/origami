@@ -19,14 +19,14 @@ package blue.origami.main;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import blue.origami.common.OConsole;
+import blue.origami.common.OOption;
 import blue.origami.parser.ParserContext;
 import blue.origami.parser.TrapAction;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.PTrap;
 import blue.origami.parser.peg.Production;
-import blue.origami.util.OConsole;
-import blue.origami.util.OOption;
 
 public class Otest extends Oexample {
 

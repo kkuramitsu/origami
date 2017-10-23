@@ -1,10 +1,10 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.OStrings;
 
 public class CastCode extends Code1 implements CallCode {
 	public CastCode(Ty ret, CodeMap tp, Code inner) {
@@ -29,7 +29,7 @@ public class CastCode extends Code1 implements CallCode {
 	}
 
 	@Override
-	public Code asType(TEnv env, Ty ret) {
+	public Code asType(Env env, Ty ret) {
 		if (this.tp == null) {
 			Code in = this.getInner().asType(env, this.getType());
 			// ODebug.trace("casting %s %s %s => %s => %s",
@@ -41,7 +41,7 @@ public class CastCode extends Code1 implements CallCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		sec.pushCast(env, this);
 	}
 

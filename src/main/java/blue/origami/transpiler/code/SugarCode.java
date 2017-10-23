@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
+import blue.origami.common.ODebug;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.util.ODebug;
 
 public class SugarCode extends CommonCode {
 
@@ -16,7 +16,7 @@ public class SugarCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(TEnv env, CodeSection sec) {
+	public void emitCode(Env env, CodeSection sec) {
 		this.asType(env, Ty.tUntyped()).emitCode(env, sec);
 	}
 

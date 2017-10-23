@@ -4,10 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CastCode;
@@ -17,7 +18,6 @@ import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
-import blue.origami.util.OStrings;
 
 public abstract class Ty implements TypeApi, OStrings {
 
@@ -155,7 +155,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	/* FuncType */
 
 	public static final FuncTy tFunc(Ty returnType, Ty... paramTypes) {
-		if (TArrays.testSomeTrue(t -> t.isNonMemo(), paramTypes) || returnType.isNonMemo()) {
+		if (OArrays.testSomeTrue(t -> t.isNonMemo(), paramTypes) || returnType.isNonMemo()) {
 			return new FuncTy(null, returnType, paramTypes);
 		}
 		String key = FuncTy.stringfy(returnType, paramTypes);
@@ -163,7 +163,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	public static final TupleTy tTuple(Ty... ts) {
-		if (TArrays.testSomeTrue(t -> t.isNonMemo(), ts)) {
+		if (OArrays.testSomeTrue(t -> t.isNonMemo(), ts)) {
 			return new TupleTy(null, ts);
 		}
 		String key = TupleTy.stringfy(ts);
@@ -334,19 +334,19 @@ interface TypeApi {
 		return null;
 	}
 
-	public default int costMapTo(TEnv env, Ty toTy) {
+	public default int costMapTo(Env env, Ty toTy) {
 		return CastCode.STUPID;
 	}
 
-	public default CodeMap findMapTo(TEnv env, Ty toTy) {
+	public default CodeMap findMapTo(Env env, Ty toTy) {
 		return null;
 	}
 
-	public default int costMapFrom(TEnv env, Ty fromTy) {
+	public default int costMapFrom(Env env, Ty fromTy) {
 		return CastCode.STUPID;
 	}
 
-	public default CodeMap findMapFrom(TEnv env, Ty fromTy) {
+	public default CodeMap findMapFrom(Env env, Ty fromTy) {
 		return null;
 	}
 
@@ -363,12 +363,12 @@ class VoidTy extends SimpleTy {
 	}
 
 	@Override
-	public int costMapFrom(TEnv env, Ty fromTy) {
+	public int costMapFrom(Env env, Ty fromTy) {
 		return CastCode.SAME;
 	}
 
 	@Override
-	public CodeMap findMapFrom(TEnv env, Ty fromTy) {
+	public CodeMap findMapFrom(Env env, Ty fromTy) {
 		String format = env.getSymbol("(Void)", "(void)%s");
 		return new CodeMap(CastCode.SAME, "(Void)", format, fromTy, Ty.tVoid);
 	}

@@ -25,9 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-import blue.origami.nez.ast.Source;
-import blue.origami.util.OConsole;
-import blue.origami.util.OStringUtils;
+import blue.origami.common.OConsole;
+import blue.origami.common.OSource;
+import blue.origami.common.OStringUtils;
 
 public class StringSource extends ParserSource {
 	public final byte[] inputs;
@@ -110,7 +110,7 @@ public class StringSource extends ParserSource {
 	}
 
 	@Override
-	public Source subSource(long startIndex, long endIndex) {
+	public OSource subSource(long startIndex, long endIndex) {
 		byte[] b = new byte[(int) (endIndex - startIndex) + 1];
 		System.arraycopy(this.inputs, (int) (startIndex), b, 0, b.length);
 		return new StringSource(this.getResourceName(), this.linenum(startIndex), b, true);

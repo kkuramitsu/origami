@@ -1,7 +1,4 @@
-package blue.origami.nez.ast;
-
-import blue.origami.util.OConsole;
-import blue.origami.util.OFormat;
+package blue.origami.common;
 
 public interface SourceLogger {
 

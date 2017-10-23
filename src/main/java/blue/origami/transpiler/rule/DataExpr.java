@@ -1,7 +1,7 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 
@@ -18,7 +18,7 @@ public class DataExpr extends LoggerRule implements Symbols, ParseRule {
 	}
 
 	@Override
-	public Code apply(TEnv env, AST t) {
+	public Code apply(Env env, AST t) {
 		String[] names = new String[t.size()];
 		Code[] values = new Code[names.length];
 		int c = 0;

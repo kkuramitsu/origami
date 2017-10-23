@@ -1,6 +1,6 @@
 package blue.origami.parser.peg;
 
-import blue.origami.nez.ast.Symbol;
+import blue.origami.common.Symbol;
 import blue.origami.parser.pasm.PAsmAPI.SymbolFunc;
 
 public class PSymbolAction extends PUnary {

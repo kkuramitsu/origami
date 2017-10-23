@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import blue.origami.nez.ast.SourcePosition;
-import blue.origami.nez.ast.Symbol;
-import blue.origami.util.OStringUtils;
-import blue.origami.util.OStrings;
+import blue.origami.common.OStringUtils;
+import blue.origami.common.OStrings;
+import blue.origami.common.SourcePosition;
+import blue.origami.common.Symbol;
 
 public abstract class Expression extends AbstractList<Expression> implements OStrings {
 

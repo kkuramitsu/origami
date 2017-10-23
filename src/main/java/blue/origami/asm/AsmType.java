@@ -15,14 +15,16 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
+import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
+import blue.origami.common.OStrings;
 import blue.origami.konoha5.Data$;
 import blue.origami.konoha5.Func;
 import blue.origami.konoha5.Tuple$;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.NameHint;
-import blue.origami.transpiler.TArrays;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.NameCode;
@@ -32,13 +34,11 @@ import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
 import blue.origami.transpiler.type.VarTy;
-import blue.origami.util.ODebug;
-import blue.origami.util.OStrings;
 
 public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();
 
-	public AsmType(TEnv env) {
+	public AsmType(Env env) {
 		super(env);
 		this.loadType();
 	}
@@ -236,7 +236,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 				infs);
 		for (String name : names) {
 			Type type = this.ti(this.fieldTy(name));
-			Method getm = new Method(name, type, this.ts(TArrays.emptyTypes));
+			Method getm = new Method(name, type, this.ts(OArrays.emptyTypes));
 			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, getm, null, null, cw1);
 			mw.endMethod();
 			Method setm = new Method(name, Type.VOID_TYPE, new Type[] { type });
@@ -259,7 +259,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 					null);
 			Ty type = this.fieldTy(name);
 			{
-				Method m = new Method(name, this.ti(type), this.ts(TArrays.emptyTypes));
+				Method m = new Method(name, this.ti(type), this.ts(OArrays.emptyTypes));
 				GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_ABSTRACT, m, null, null, cw1);
 				mw.endMethod();
 			}
@@ -311,7 +311,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 		return "apply";
 	}
 
-	Class<?> loadFuncExprClass(TEnv env, String[] fieldNames, Ty[] fieldTypes, int start, String[] paramNames,
+	Class<?> loadFuncExprClass(Env env, String[] fieldNames, Ty[] fieldTypes, int start, String[] paramNames,
 			Ty[] paramTypes, Ty returnType, Code body) {
 		String cname1 = "C$" + this.seq();
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -342,7 +342,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 	private HashMap<String, Class<?>> refMap = null;
 
-	Class<?> loadFuncRefClass(TEnv env, CodeMap tp) {
+	Class<?> loadFuncRefClass(Env env, CodeMap tp) {
 		if (this.refMap == null) {
 			this.refMap = new HashMap<>();
 		}
@@ -358,7 +358,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 				paramNames[i] = "a";
 			}
 			Code body = new ExprCode(tp, p);
-			c = this.loadFuncExprClass(env, TArrays.emptyNames, TArrays.emptyTypes, 0, paramNames, paramTypes,
+			c = this.loadFuncExprClass(env, OArrays.emptyNames, OArrays.emptyTypes, 0, paramNames, paramTypes,
 					returnType, body);
 			this.refMap.put(key, c);
 		}
@@ -379,7 +379,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 				Type type = this.ti(ty);
 				FieldNode fn = new FieldNode(ACC_PUBLIC, name, this.desc(ty), null, null);
 				fn.accept(cw1);
-				Method getm = new Method(name, type, this.ts(TArrays.emptyTypes));
+				Method getm = new Method(name, type, this.ts(OArrays.emptyTypes));
 				GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_FINAL, getm, null, null, cw1);
 				mw.loadThis();
 				mw.getField(Type.getType("L" + cname1 + ";"), name, type);

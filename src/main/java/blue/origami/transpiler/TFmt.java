@@ -1,7 +1,7 @@
 package blue.origami.transpiler;
 
-import blue.origami.util.OConsole;
-import blue.origami.util.OFormat;
+import blue.origami.common.OConsole;
+import blue.origami.common.OFormat;
 
 public enum TFmt implements OFormat {
 	error, warning, notice, info, version, //

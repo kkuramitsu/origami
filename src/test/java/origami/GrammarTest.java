@@ -18,7 +18,7 @@ package origami;
 
 import java.io.IOException;
 
-import blue.origami.nez.ast.Source;
+import blue.origami.common.OSource;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
@@ -30,7 +30,7 @@ public class GrammarTest {
 
 	}
 
-	private Source loadInputText(String file, int num) {
+	private OSource loadInputText(String file, int num) {
 		try {
 			return ParserSource.newFileSource("/opeg-test/" + file + "/" + num + ".in", null);
 		} catch (IOException e) {
@@ -42,12 +42,12 @@ public class GrammarTest {
 		Grammar g = SourceGrammar.loadFile("/opeg-test/" + file + ".opeg");
 		Parser p = g.newParser();
 		for (int i = 0; i < 10; i++) {
-			Source sin = this.loadInputText(file, i);
+			OSource sin = this.loadInputText(file, i);
 			if (sin == null) {
 				break;
 			}
 			String parsed = "" + p.parse(sin);
-			Source s = ParserSource.newFileSource("/opeg-test/" + file + "/1.out", null);
+			OSource s = ParserSource.newFileSource("/opeg-test/" + file + "/1.out", null);
 			String result = s.subString(0, s.length());
 			if (!result.startsWith(parsed)) {
 				System.out.println("FAIL " + file + ", " + i);

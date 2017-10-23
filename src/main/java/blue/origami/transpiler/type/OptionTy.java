@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.TEnv;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.CastCode;
 
 public class OptionTy extends MonadTy {
@@ -62,7 +62,7 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public int costMapTo(TEnv env, Ty ty) {
+	public int costMapTo(Env env, Ty ty) {
 		if (ty.isOption()) {
 			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
 				return CastCode.BESTCAST;
@@ -72,7 +72,7 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public CodeMap findMapTo(TEnv env, Ty ty) {
+	public CodeMap findMapTo(Env env, Ty ty) {
 		if (ty.isOption()) {
 			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
 				return new CodeMap(CastCode.BESTCAST, "anycast", "%s", this, ty);

@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.nez.ast;
+package blue.origami.common;
 
 public class CommonTree extends Tree<CommonTree> {
 
@@ -22,7 +22,7 @@ public class CommonTree extends Tree<CommonTree> {
 		super(Symbol.unique("prototype"), null, 0, 0, null, null);
 	}
 
-	public CommonTree(Symbol tag, Source source, long pos, int len, int size, Object value) {
+	public CommonTree(Symbol tag, OSource source, long pos, int len, int size, Object value) {
 		super(tag, source, pos, len, size > 0 ? new CommonTree[size] : null, value);
 	}
 
@@ -37,7 +37,7 @@ public class CommonTree extends Tree<CommonTree> {
 	}
 
 	@Override
-	public Object apply(Symbol tag, Source s, int spos, int epos, int nsubs, Object value) {
+	public Object apply(Symbol tag, OSource s, int spos, int epos, int nsubs, Object value) {
 		Object t = new CommonTree(tag, s, spos, epos - spos, nsubs, value);
 		// if (nsubs == 0) {
 		// System.out.println(t);
