@@ -19,6 +19,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.nez.ast.Symbol;
 
 public interface Symbols {
+	public final static Symbol _public = Symbol.unique("public");
 	public final static Symbol _name = Symbol.unique("name");
 
 	public final static Symbol _value = Symbol.unique("value");
@@ -52,5 +53,7 @@ public interface Symbols {
 	public final static Symbol _prefix = Symbol.unique("prefix");
 	public final static Symbol _start = Symbol.unique("start");
 	public final static Symbol _end = Symbol.unique("end");
+	public final static Symbol _from = Symbol.unique("from");
+	public final static Symbol _to = Symbol.unique("to");
 
 }

@@ -128,6 +128,13 @@ Identifiers = {
 	$(Identifier) ( "," $(Identifier) )*
 }
 
+ContextDecl = {
+  [Cc] 'ontext' EOT _ 
+  $name(Identifier)?
+  '|>' _
+  #ContextDecl
+}
+
 /* FuncDecl */
 
 example FuncDecl&Statement '''
@@ -183,11 +190,13 @@ int x = 1
 	/ ( [Dd] 'ef' EOT)
 
 FuncDecl = LetFuncDecl / {
-	("public" "function" #PublicFuncDecl  / "function" #FuncDecl )
+	("public"  $public({}))?
+	"function"
 	$name(Identifier)
 	"(" $param(Params) ")"
 	$type(( ":as" / "->" ) Type)?
 	( $body(Block) / "=" __  $body(FuncMatchExpr/Expression))
+	#FuncDecl
 } / CFuncDecl
 
 Params = {
@@ -207,12 +216,30 @@ CParam = {
 	("=" $expr(Expression) )?
 }
 
-LetFuncDecl = {
-	("public" ( [Ll] 'et' EOT)? #PublicFuncDecl  /  ( [Ll] 'et' EOT)? #FuncDecl )
+LetFuncDecl = ArrowDecl / {
+	("public"  $public({}))?
+    ( [Ll] 'et' EOT)?
 	$name(Identifier)
 	("(" $param(Params) ")" / $param(LetParams))
 	$type(":as" Type)?
 	( $body(Block) / "=" __  $body(FuncMatchExpr/Expression))
+	#FuncDecl
+}
+
+example ArrowDecl&TopLevel '''
+let (Int --> String #nine ) = 1
+'''
+
+ArrowDecl = {
+    ( [Ll] 'et' EOT )?
+	"("
+	$from(Type)
+	('->' _ $good({}) / '-->' _  / '--->' _ $bad({}))
+	$to(Type)
+	")"
+	$name(Identifier / { `it` } )
+	( $body(Block) / "=" __  $body(FuncMatchExpr/Expression) )
+	#ArrowDecl
 }
 
 LetParams = {

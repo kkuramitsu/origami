@@ -14,7 +14,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	static int seq = 0;
 	private int funcId;
 	protected boolean isPublic = false;
-	private AST at;
+	protected AST at;
 	protected AST[] paramNames;
 	protected AST body;
 	private CodeMap generated = null;
@@ -30,6 +30,11 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 
 	public FuncMap(AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		this(false, name, returnType, paramNames, paramTypes, body);
+	}
+
+	public FuncMap(Ty fromTy, Ty toTy, AST var, AST body) {
+		this(AST.getName("conv"), toTy, new AST[] { var }, new Ty[] { fromTy }, body);
+		this.at = body;
 	}
 
 	public boolean isPublic() {
