@@ -3,7 +3,7 @@ package blue.origami.transpiler;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-import blue.origami.asm.AsmGenerator;
+import blue.origami.asm.AsmMapper;
 import blue.origami.nez.ast.Source;
 import blue.origami.nez.parser.Parser;
 import blue.origami.nez.parser.ParserCode.ParserErrorException;
@@ -37,7 +37,7 @@ public class Transpiler extends TEnv {
 		super(null);
 		this.loader = new CodeMapLoader(this, target);
 		this.options = options;
-		this.generator = target.equals("jvm") ? new AsmGenerator(this) : new SourceMapper(this);
+		this.generator = target.equals("jvm") ? new AsmMapper(this) : new SourceMapper(this);
 		this.initEnv(grammar, p);
 		this.loader.loadCodeMap("konoha5.codemap");
 		this.generator.init();

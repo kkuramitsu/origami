@@ -19,11 +19,11 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.util.ODebug;
 
-public class AsmGenerator extends CodeMapper implements Opcodes {
+public class AsmMapper extends CodeMapper implements Opcodes {
 
 	private AsmType ts;
 
-	public AsmGenerator(TEnv env) {
+	public AsmMapper(TEnv env) {
 		this.ts = new AsmType(env);
 	}
 
@@ -131,9 +131,9 @@ public class AsmGenerator extends CodeMapper implements Opcodes {
 
 	@Override
 	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
-		AsmGenerator asm = env.get(AsmGenerator.class);
+		AsmMapper asm = env.get(AsmMapper.class);
 		if (asm == null) {
-			env.add(AsmGenerator.class, this);
+			env.add(AsmMapper.class, this);
 		}
 		FieldNode fn = new FieldNode(ACC_PUBLIC + ACC_STATIC, name, this.ts.desc(type), null, null);
 		fn.accept(this.cw());
