@@ -20,7 +20,6 @@ import blue.origami.asm.APIs;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OOption;
-import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 
 public class Ocheck extends Okonoha {
@@ -31,9 +30,7 @@ public class Ocheck extends Okonoha {
 		String[] files = options.stringList(MainOption.InputFiles);
 		for (String file : files) {
 			try {
-				String target = options.stringValue(MainOption.Target, "jvm");
-				Grammar g = this.getGrammar(options, "konoha5.opeg");
-				Transpiler env = new Transpiler(g, target, options);
+				Transpiler env = options.newInstance(Transpiler.class);
 				env.loadScriptFile(file);
 			} catch (Throwable e) {
 				ODebug.traceException(e);

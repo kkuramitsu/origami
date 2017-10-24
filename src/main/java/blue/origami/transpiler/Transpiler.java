@@ -6,110 +6,84 @@ import java.lang.reflect.InvocationTargetException;
 import blue.origami.asm.AsmMapper;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
+import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
 import blue.origami.common.OSource;
 import blue.origami.common.OStrings;
+import blue.origami.main.MainOption;
 import blue.origami.parser.Parser;
-import blue.origami.parser.ParserSource;
 import blue.origami.parser.ParserCode.ParserErrorException;
+import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
+import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.transpiler.rule.BinaryExpr;
-import blue.origami.transpiler.rule.DataExpr;
-import blue.origami.transpiler.rule.DataType;
-import blue.origami.transpiler.rule.DictExpr;
-import blue.origami.transpiler.rule.ListExpr;
-import blue.origami.transpiler.rule.RangeExpr;
-import blue.origami.transpiler.rule.SourceUnit;
-import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
-public class Transpiler extends Env {
-	final OOption options;
-	private final CodeMapLoader loader;
-	private final CodeMapper generator;
+public class Transpiler extends Env implements OFactory<Transpiler> {
+	private CodeMapLoader loader;
+	private CodeMapper generator;
 
 	boolean isFriendly = true;
 
-	public Transpiler(Grammar grammar, Parser p, String target, OOption options) {
+	public Transpiler(Grammar g, Parser p) {
 		super(null);
-		this.loader = new CodeMapLoader(this, target);
-		this.options = options;
-		this.generator = target.equals("jvm") ? new AsmMapper(this) : new SourceMapper(this);
-		this.initEnv(grammar, p);
+		this.initEnv(g, p, new SourceLanguage());
+	}
+
+	private void initEnv(Grammar g, Parser p, SourceLanguage lang) {
+		this.loader = new CodeMapLoader(this, this.getTargetName());
+		this.generator = this.getDefaultCodeMapper();
+		this.add(Grammar.class, g);
+		this.add(Parser.class, p);
+		lang.init(this);
 		this.loader.loadCodeMap("konoha5.codemap");
 		this.generator.init();
+
+	}
+	//
+	// public Transpiler(Grammar grammar, String target, OOption options) {
+	// this(grammar, grammar.newParser(), target, options);
+	// }
+	//
+	// public Transpiler(Grammar g, String target) {
+	// this(g, target, null);
+	// }
+
+	public Transpiler() {
+		super(null);
 	}
 
-	public Transpiler(Grammar grammar, String target, OOption options) {
-		this(grammar, grammar.newParser(), target, options);
+	@Override
+	public Class<?> keyClass() {
+		return Transpiler.class;
 	}
 
-	public Transpiler(Grammar g, String target) {
-		this(g, target, null);
+	@Override
+	public Transpiler clone() {
+		return this.newClone();
 	}
 
-	private void initEnv(Grammar grammar, Parser p) {
-		this.add(Parser.class, p);
-		this.add(Grammar.class, grammar);
-		// rule
-		this.add("Source", new SourceUnit());
-		this.add("AddExpr", new BinaryExpr("+"));
-		this.add("SubExpr", new BinaryExpr("-"));
-		this.add("CatExpr", new BinaryExpr("++"));
-		this.add("PowExpr", new BinaryExpr("^"));
-		this.add("MulExpr", new BinaryExpr("*"));
-		this.add("DivExpr", new BinaryExpr("/"));
-		this.add("ModExpr", new BinaryExpr("%"));
-		this.add("EqExpr", new BinaryExpr("=="));
-		this.add("NeExpr", new BinaryExpr("!="));
-		this.add("LtExpr", new BinaryExpr("<"));
-		this.add("LteExpr", new BinaryExpr("<="));
-		this.add("GtExpr", new BinaryExpr(">"));
-		this.add("GteExpr", new BinaryExpr(">="));
-		this.add("LAndExpr", new BinaryExpr("&&"));
-		this.add("LOrExpr", new BinaryExpr("||"));
-		this.add("AndExpr", new BinaryExpr("&&"));
-		this.add("OrExpr", new BinaryExpr("||"));
-		this.add("XorExpr", new BinaryExpr("^^"));
-		this.add("LShiftExpr", new BinaryExpr("<<"));
-		this.add("RShiftExpr", new BinaryExpr(">>"));
+	@Override
+	public void init(OOption options) {
+		try {
+			String file = options.stringValue(MainOption.GrammarFile, "konoha5.opeg");
+			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
+			Parser p = g.newParser(options);
+			this.initEnv(g, p, options.newInstance(SourceLanguage.class));
+		} catch (IOException e) {
+			OConsole.exit(1, e);
+		}
 
-		this.add("BindExpr", new BinaryExpr("flatMap"));
-		this.add("ConsExpr", new BinaryExpr("cons"));
-		this.add("OrElseExpr", new BinaryExpr("!?"));
+	}
 
-		this.add("NotExpr", new UnaryExpr("!"));
-		this.add("MinusExpr", new UnaryExpr("-"));
-		this.add("PlusExpr", new UnaryExpr("+"));
-		this.add("CmplExpr", new UnaryExpr("~"));
+	public String getTargetName() {
+		return "jvm";
+	}
 
-		this.add("DataListExpr", new ListExpr(true));
-		this.add("RangeUntilExpr", new RangeExpr(false));
-		this.add("DataDictExpr", new DictExpr(true));
-		this.add("RecordExpr", new DataExpr(false));
-
-		this.add("RecordType", new DataType(false));
-		this.add("DataType", new DataType(true));
-
-		// type
-		// this.add("?", Ty.tUntyped0);
-		this.add("Bool", Ty.tBool);
-		this.add("Int", Ty.tInt);
-		this.add("Float", Ty.tFloat);
-		this.add("String", Ty.tString);
-		this.add("a", VarDomain.var(0));
-		this.add("b", VarDomain.var(1));
-		this.add("c", VarDomain.var(2));
-		this.add("d", VarDomain.var(3));
-		this.add("e", VarDomain.var(4));
-		this.add("f", VarDomain.var(5));
-		// this.add("Data", Ty.tData());
-		this.addNameDecl(this, "i,j,k,m,n", Ty.tInt);
-		this.addNameDecl(this, "x,y,z,w", Ty.tFloat);
-		this.addNameDecl(this, "s,t,u,name", Ty.tString);
+	private CodeMapper getDefaultCodeMapper() {
+		return new AsmMapper(this);
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
@@ -301,11 +275,6 @@ public class Transpiler extends Env {
 		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
 				this.parseCode(this, body));
 	}
-
-	// public CodeMap newCodeMap(String name, Ty ret, Ty[] pats) {
-	// final String lname = this.getLocalName(name);
-	// return this.generator.newCodeMap(this, name, lname, ret, pats);
-	// }
 
 	private String getLocalName(String name) {
 		String prefix = "f" + (this.functionId++); // this.getSymbol(name);

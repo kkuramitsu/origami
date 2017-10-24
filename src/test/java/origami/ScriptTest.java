@@ -60,7 +60,7 @@ public class ScriptTest {
 	}
 
 	public static void runScript(String file, int pass) throws Throwable {
-		Transpiler env = new Transpiler(g(), p(), "jvm", null);
+		Transpiler env = new Transpiler(g(), p());
 		APIs.resetCount();
 		env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 		if (pass > 0) {
@@ -71,7 +71,7 @@ public class ScriptTest {
 	}
 
 	public static void runScript2(String file, int pass) throws Throwable {
-		Transpiler env = new Transpiler(g(), p(), "jvm", null);
+		Transpiler env = new Transpiler(g(), p());
 		try {
 			env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 		} catch (Throwable e) {

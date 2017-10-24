@@ -23,11 +23,6 @@ import blue.origami.parser.peg.Grammar;
 
 public class Onezcc extends Main {
 
-	// protected void initOption(OOption options) {
-	// super.initOption(options);
-	// options.set(ParserOption.ThrowingParserError, false);
-	// }
-
 	@Override
 	public void exec(OOption options) throws Throwable {
 		Grammar g = this.getGrammar(options);

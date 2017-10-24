@@ -1,6 +1,6 @@
 package blue.origami.main;
 
-public class Okonoha extends Otranscode {
+public class Okonoha extends Otranspile {
 
 	@Override
 	public boolean isREPL() {

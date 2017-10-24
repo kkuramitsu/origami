@@ -6,17 +6,14 @@ import java.util.Arrays;
 import blue.origami.PatchLevel;
 import blue.origami.common.ODebug;
 import blue.origami.common.OOption;
-import blue.origami.parser.Parser;
-import blue.origami.parser.peg.Grammar;
 import blue.origami.transpiler.Transpiler;
 
-public class Otranscode extends Main {
+public class Otranspile extends Main {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
 		String[] files = options.stringList(MainOption.InputFiles);
-		String target = options.stringValue(MainOption.Target, "jvm");
-		Transpiler[] trcc = this.newTranspiler(target, options);
+		Transpiler[] trcc = this.newTranspiler(options);
 		for (String file : files) {
 			this.loadScriptFile(trcc, file);
 		}
@@ -54,14 +51,23 @@ public class Otranscode extends Main {
 		return "5.0." + PatchLevel.REV;
 	}
 
-	private Transpiler[] newTranspiler(String target, OOption options) throws Throwable {
-		Grammar g = this.getGrammar(options, "konoha5.opeg");
-		Parser p = g.newParser(options);
-		if (target.indexOf(":") > 0) {
-			String[] t = target.split(":", -1);
-			return Arrays.stream(t).map((ta) -> new Transpiler(g, p, ta, options)).toArray(Transpiler[]::new);
-		}
-		return new Transpiler[] { new Transpiler(g, p, target, options) };
+	private Transpiler[] newTranspiler(OOption options) throws Throwable {
+		// String target = options.stringValue(MainOption.Target,
+		// this.getDefaultTarget());
+		// Grammar g = this.getGrammar(options, "konoha5.opeg");
+		// Parser p = g.newParser(options);
+		// if (target.indexOf(":") > 0) {
+		// String[] t = target.split(":", -1);
+		// return Arrays.stream(t).map((ta) ->
+		// options.newInstance(Transpiler.class)).toArray(Transpiler[]::new);
+		// // return Arrays.stream(t).map((ta) -> new Transpiler(g, p, ta,
+		// // options)).toArray(Transpiler[]::new);
+		// }
+		return new Transpiler[] { options.newInstance(Transpiler.class) };
+	}
+
+	public String getDefaultTarget() {
+		return "Jvm8";
 	}
 
 	private void shell(Transpiler[] trcc, String source, int line, String script) {

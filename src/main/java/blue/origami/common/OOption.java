@@ -125,8 +125,12 @@ public class OOption {
 
 	HashMap<Class<?>, Object> classMap = new HashMap<>();
 
-	public <T> void set(Class<T> c, T value) {
-		this.classMap.put(c, value);
+	// -X class
+	public void setClass(String className) throws Throwable {
+		Class<?> c = loadClass(OFactory.class, className, Version.ClassPath + ".parser.nezcc",
+				Version.ClassPath + "transpiler.target");
+		OFactory<?> f = (OFactory<?>) c.newInstance();
+		this.classMap.put(f.keyClass(), f);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,13 +151,6 @@ public class OOption {
 		}
 		value.init(this);
 		return value;
-	}
-
-	public void setClass(String path) throws Throwable {
-		Class<?> c = loadClass(OFactory.class, path, Version.ClassPath + ".parser.nezcc",
-				Version.ClassPath + "transpiler.codemap");
-		OFactory<?> f = (OFactory<?>) c.newInstance();
-		this.classMap.put(f.keyClass(), f);
 	}
 
 	public static Class<?> loadClass(Class<?> base, String className, String... path) throws ClassNotFoundException {

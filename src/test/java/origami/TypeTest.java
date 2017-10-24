@@ -143,7 +143,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public static void runScript(String text, String checked) throws Throwable {
-		Transpiler env = new Transpiler(g(), p(), "jvm", null);
+		Transpiler env = new Transpiler(g(), p());
 		Ty ty = env.testType(text);
 		System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
 		if (checked != null) {
@@ -152,7 +152,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public static void runScript2(String text, String checked) throws Throwable {
-		Transpiler env = new Transpiler(g(), p(), "jvm", null);
+		Transpiler env = new Transpiler(g(), p());
 		Ty ty = env.testType(text);
 		if (checked.equals(ty.toString())) {
 			System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);

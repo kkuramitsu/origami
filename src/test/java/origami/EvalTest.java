@@ -116,7 +116,7 @@ public class EvalTest {
 
 	//
 	public static void runScript(String text, String checked) throws Throwable {
-		Transpiler env = new Transpiler(g(), p(), "jvm", null);
+		Transpiler env = new Transpiler(g(), p());
 		Object result = env.testEval(text);
 		System.out.printf("%s %s => %s\n", TFmt.Checked, text, result);
 		if (checked != null) {
