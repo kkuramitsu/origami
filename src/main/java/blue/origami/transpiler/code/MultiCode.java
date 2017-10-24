@@ -3,7 +3,6 @@ package blue.origami.transpiler.code;
 import java.util.List;
 
 import blue.origami.common.OArrays;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -77,13 +76,6 @@ public class MultiCode extends CodeN {
 	@Override
 	public void emitCode(CodeSection sec) {
 		sec.pushMulti(this);
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append("{");
-		OStrings.joins(sb, this.args, ";");
-		sb.append("}");
 	}
 
 	@Override

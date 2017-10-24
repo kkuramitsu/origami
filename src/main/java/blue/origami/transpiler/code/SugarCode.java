@@ -19,9 +19,4 @@ public class SugarCode extends CommonCode {
 		// this.asType(env, Ty.tUntyped()).emitCode(sec);
 	}
 
-	@Override
-	public void strOut(StringBuilder sb) {
-		ODebug.TODO();
-	}
-
 }

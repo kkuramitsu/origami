@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 
@@ -23,11 +22,6 @@ public class ReturnCode extends Code1 {
 	@Override
 	public void emitCode(CodeSection sec) {
 		sec.pushReturn(this);
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		OStrings.append(sb, this.getInner());
 	}
 
 	@Override

@@ -1,22 +1,18 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 
 public class LetCode extends Code1 {
-	private boolean isImplicit = false;
-	private Ty declType;
-	private String name;
-	private int index = -1;
+	public boolean isImplicit = false;
+	public Ty declType;
+	public String name;
+	public int index = -1;
 
 	public LetCode(AST name, Ty type, Code expr) {
 		super(expr);
@@ -44,24 +40,7 @@ public class LetCode extends Code1 {
 
 	@Override
 	public Code asType(Env env, Ty ret) {
-		if (this.isUntyped()) {
-			FunctionContext fcx = env.get(FunctionContext.class);
-			if (fcx == null) {
-				fcx = new FunctionContext(null); // TopLevel
-				env.add(FunctionContext.class, fcx);
-			}
-			if (this.isImplicit) {
-
-			}
-			Variable var = fcx.newVariable(this.getSource(), this.index, this.declType);
-			env.add(this.name, var);
-			this.index = var.getIndex();
-
-			this.inner = this.inner.bindAs(env, this.declType);
-			ODebug.trace("let %s %s %s", this.name, this.declType, this.inner.getType());
-			this.setType(Ty.tVoid);
-		}
-		return this;
+		return env.getLanguage().typeLet(env, this, ret);
 	}
 
 	public Code defineAsGlobal(Env env, boolean isPublic) {
@@ -86,10 +65,7 @@ public class LetCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append("let ");
-		sb.append(this.name);
-		sb.append(" = ");
-		OStrings.append(sb, this.getInner());
+		this.sexpr(sb, "let " + this.getName(), this.getInner());
 	}
 
 	@Override

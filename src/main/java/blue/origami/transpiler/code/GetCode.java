@@ -54,7 +54,7 @@ public class GetCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-
+		this.sexpr(sb, "get-" + this.name, this.inner);
 	}
 
 	@Override

@@ -131,7 +131,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	// I,+,
 	@Override
 	public void pushCall(CallCode code) {
-		final CodeMap tp = code.getTemplate();
+		final CodeMap tp = code.getMapped();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
 			this.pushCall(code, def[1]);
@@ -240,7 +240,7 @@ public class AsmSection implements CodeSection, Opcodes {
 			break;
 		}
 		default: {
-			ODebug.trace("undefined %s", code.getTemplate().getDefined());
+			ODebug.trace("undefined %s", code.getMapped().getDefined());
 		}
 		}
 	}

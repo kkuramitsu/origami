@@ -34,8 +34,7 @@ public class ExistFieldCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		// TODO Auto-generated method stub
-
+		this.sexpr(sb, "has-" + this.name, this.getInner());
 	}
 
 	@Override

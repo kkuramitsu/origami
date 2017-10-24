@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -12,11 +11,6 @@ public class TupleCode extends CodeN {
 
 	public TupleCode(Code[] values) {
 		super(values);
-	}
-
-	@Override
-	public Code bindAs(Env env, Ty ret) {
-		return this.asType(env, ret);
 	}
 
 	@Override
@@ -48,15 +42,13 @@ public class TupleCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(CodeSection sec) {
-		sec.pushTuple(this);
+	public Code bindAs(Env env, Ty ret) {
+		return this.asType(env, ret);
 	}
 
 	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append("(");
-		OStrings.joins(sb, this.args, ",");
-		sb.append(")");
+	public void emitCode(CodeSection sec) {
+		sec.pushTuple(this);
 	}
 
 	@Override
@@ -70,5 +62,4 @@ public class TupleCode extends CodeN {
 		}
 		sh.Token(")");
 	}
-
 }

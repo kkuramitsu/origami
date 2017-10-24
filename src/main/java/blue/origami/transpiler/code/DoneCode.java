@@ -21,10 +21,6 @@ public class DoneCode extends CommonCode {
 	}
 
 	@Override
-	public void strOut(StringBuilder sb) {
-	}
-
-	@Override
 	public void dumpCode(SyntaxBuilder sh) {
 	}
 

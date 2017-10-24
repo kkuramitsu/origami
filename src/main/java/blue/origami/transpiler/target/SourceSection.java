@@ -117,7 +117,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushCall(CallCode code) {
-		String fmt = code.getTemplate().getDefined();
+		String fmt = code.getMapped().getDefined();
 		Object[] args = Arrays.stream(code.args()).map(c -> (Object) c).toArray(Object[]::new);
 		this.pushf(fmt, args);
 	}

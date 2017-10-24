@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -20,13 +19,6 @@ public class GroupCode extends Code1 {
 	public Code asType(Env env, Ty ret) {
 		this.inner.asType(env, ret);
 		return this;
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append("(");
-		OStrings.append(sb, this.getInner());
-		sb.append(")");
 	}
 
 	@Override

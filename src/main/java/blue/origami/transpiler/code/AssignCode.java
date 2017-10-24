@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
@@ -37,9 +36,7 @@ public class AssignCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.name);
-		sb.append(" = ");
-		OStrings.append(sb, this.getInner());
+		this.sexpr(sb, "assign " + this.getName(), this.getInner());
 	}
 
 	@Override

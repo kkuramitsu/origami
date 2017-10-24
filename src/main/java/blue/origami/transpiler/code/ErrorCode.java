@@ -2,7 +2,6 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OFormat;
-import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.common.TLog;
@@ -89,7 +88,7 @@ public class ErrorCode extends RuntimeException implements Code {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		OStrings.appendQuoted(sb, this.log);
+		this.sexpr(sb, "error " + this.log);
 	}
 
 	@Override

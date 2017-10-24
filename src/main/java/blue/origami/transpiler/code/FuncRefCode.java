@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
+import blue.origami.common.SyntaxBuilder;
+import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
-import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
@@ -83,7 +83,7 @@ public final class FuncRefCode extends CommonCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.name);
+		this.sexpr(sb, "funcref " + this.name);
 	}
 
 	@Override

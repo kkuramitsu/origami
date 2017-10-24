@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
@@ -25,7 +24,7 @@ public class CastCode extends Code1 implements CallCode {
 	}
 
 	@Override
-	public CodeMap getTemplate() {
+	public CodeMap getMapped() {
 		return this.tp;
 	}
 
@@ -48,10 +47,7 @@ public class CastCode extends Code1 implements CallCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append("(");
-		OStrings.append(sb, this.getType());
-		sb.append(")");
-		OStrings.append(sb, this.getInner());
+		this.sexpr(sb, "cast-to-" + this.getType(), this.getInner());
 	}
 
 	@Override

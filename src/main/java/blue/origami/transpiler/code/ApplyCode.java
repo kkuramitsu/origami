@@ -2,8 +2,6 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
-import blue.origami.common.OArrays;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -26,14 +24,6 @@ public class ApplyCode extends CodeN {
 	@Override
 	public void emitCode(CodeSection sec) {
 		sec.pushApply(this);
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		OStrings.append(sb, this.args[0]);
-		sb.append("(");
-		OStrings.joins(sb, OArrays.ltrim2(this.args), ",");
-		sb.append(")");
 	}
 
 	@Override

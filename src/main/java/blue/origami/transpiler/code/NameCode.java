@@ -60,7 +60,7 @@ public class NameCode extends CommonCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.getName());
+		this.sexpr(sb, this.getName());
 	}
 
 	@Override

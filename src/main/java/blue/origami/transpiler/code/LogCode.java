@@ -1,6 +1,5 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
@@ -22,11 +21,6 @@ public class LogCode extends Code1 {
 		this.inner.setSource(t);
 		this.log.setSource(t);
 		return this;
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		OStrings.append(sb, this.getInner());
 	}
 
 	@Override

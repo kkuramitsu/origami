@@ -49,8 +49,7 @@ public class TupleIndexCode extends Code1 {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.inner.strOut(sb);
-		sb.append("#" + this.index);
+		this.sexpr(sb, "get-" + this.index, this.inner);
 	}
 
 	@Override

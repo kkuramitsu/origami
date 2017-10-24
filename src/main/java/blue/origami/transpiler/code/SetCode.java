@@ -56,7 +56,7 @@ public class SetCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-
+		this.sexpr(sb, "set-" + this.name, this.args);
 	}
 
 	@Override

@@ -179,6 +179,21 @@ interface CodeAPI {
 		return b;
 	}
 
+	public default void sexpr(StringBuilder sb, String op, Code... args) {
+		sb.append("(");
+		sb.append(op);
+		for (Code a : args) {
+			sb.append(" ");
+			a.strOut(sb);
+		}
+		Ty t = self().getType();
+		if (t != null) {
+			sb.append(" :");
+			t.strOut(sb);
+		}
+		sb.append(")");
+	}
+
 }
 
 abstract class CommonCode implements Code {
@@ -257,6 +272,12 @@ abstract class CommonCode implements Code {
 	@Override
 	public String toString() {
 		return OStrings.stringfy(this);
+	}
+
+	@Override
+	public void strOut(StringBuilder sb) {
+		String op = this.getClass().getSimpleName().replace("Code", "").toLowerCase();
+		this.sexpr(sb, op, this.args());
 	}
 
 }

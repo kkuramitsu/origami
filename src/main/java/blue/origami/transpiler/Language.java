@@ -1,16 +1,24 @@
 package blue.origami.transpiler;
 
+import java.util.Arrays;
+import java.util.List;
+
 import blue.origami.common.OArrays;
+import blue.origami.common.ODebug;
 import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
 import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BinaryCode;
+import blue.origami.transpiler.code.CastCode.BoxCastCode;
+import blue.origami.transpiler.code.CastCode.FuncCastCode;
+import blue.origami.transpiler.code.CastCode.UnboxCastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncRefCode;
+import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.NameCode;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.DataExpr;
@@ -25,6 +33,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.VarTy;
 
 public class Language implements OFactory<Language> {
 
@@ -182,6 +191,27 @@ public class Language implements OFactory<Language> {
 		return code;
 	}
 
+	public Code typeLet(Env env, LetCode code, Ty ret) {
+		if (code.isUntyped()) {
+			FunctionContext fcx = env.get(FunctionContext.class);
+			if (fcx == null) {
+				fcx = new FunctionContext(null); // TopLevel
+				env.add(FunctionContext.class, fcx);
+			}
+			if (code.isImplicit) {
+
+			}
+			Variable var = fcx.newVariable(code.getSource(), code.index, code.declType);
+			env.add(code.name, var);
+			code.index = var.getIndex();
+
+			code.inner = code.inner.bindAs(env, code.declType);
+			ODebug.trace("let %s %s %s", code.name, code.declType, code.inner.getType());
+			code.setType(Ty.tVoid);
+		}
+		return code;
+	}
+
 	public Code typeApply(Env env, ApplyCode code, Ty ret) {
 		if (!code.isUntyped()) {
 			return code.castType(env, ret);
@@ -218,6 +248,105 @@ public class Language implements OFactory<Language> {
 			return code;
 		}
 		throw new ErrorCode(code.args[0], TFmt.not_function__YY1, code.args[0].getType());
+	}
+
+	public Code typeExpr(Env env, ExprCode code, Ty ret) {
+		if (code.isUntyped()) {
+			List<CodeMap> founds = env.findCodeMaps(code.name, code.args.length);
+			this.typeArgs(env, code, founds);
+			Ty[] p = Arrays.stream(code.args).map(c -> c.getType()).toArray(Ty[]::new);
+			// ODebug.trace("founds=%s", founds);
+			if (founds.size() == 0) {
+				return code.asUnfound(env, founds).castType(env, ret);
+			}
+			if (founds.size() == 1) {
+				return this.typeMatchedExpr(env, code, founds.get(0).generate(env, p), ret);
+			}
+			// code.typeArgs(env, founds);
+			CodeMap selected = CodeMap.select(env, founds, ret, p, code.maxCost());
+			if (selected == null) {
+				return code.asMismatched(env, founds).castType(env, ret);
+			}
+			return this.typeMatchedExpr(env, code, selected.generate(env, p), ret);
+		}
+		return code.castType(env, ret);
+	}
+
+	private void typeArgs(Env env, ExprCode code, List<CodeMap> l) {
+		for (int i = 0; i < code.args.length; i++) {
+			Ty pt = this.getCommonParamType(l, i);
+			// ODebug.trace("common[%d] %s", i, pt);
+			code.args[i] = code.args[i].asType(env, pt);
+			// ODebug.trace("typed[%d] %s %s", i, this.args[i],
+			// this.args[i].getType());
+		}
+	}
+
+	private Ty getCommonParamType(List<CodeMap> l, int n) {
+		// Ty ty = l.get(0).getParamTypes()[n];
+		// ODebug.trace("DD %s", l);
+		// for (int i = 1; i < l.size(); i++) {
+		// if (!ty.eq(l.get(i).getParamTypes()[n])) {
+		return Ty.tUntyped();
+		// }
+		// }
+		// return ty;
+	}
+
+	private Code typeMatchedExpr(Env env, ExprCode code, CodeMap found, Ty t) {
+		Ty[] dpats = found.getParamTypes();
+		Ty dret = found.getReturnType();
+		if (found.isGeneric()) {
+			VarDomain dom = new VarDomain(dpats);
+			Ty[] gParamTypes = dom.dupParamTypes(dpats, null);
+			Ty dRetType = dom.dupRetType(dret);
+			for (int i = 0; i < code.args.length; i++) {
+				code.args[i] = code.args[i].asType(env, gParamTypes[i]);
+				if (!found.isAbstract()) {
+					if (dpats[i] instanceof VarTy) {
+						ODebug.trace("MUST upcast %s => %s", gParamTypes[i], gParamTypes[i]);
+						code.args[i] = new BoxCastCode(gParamTypes[i], code.args[i]);
+					}
+					if (dpats[i] instanceof FuncTy && dpats[i].hasVar()) {
+						Ty anyTy = dpats[i].dupVar(null); // AnyRef
+						CodeMap conv = env.findTypeMap(env, gParamTypes[i].finalTy(), anyTy.finalTy());
+						ODebug.trace("MUST funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
+						code.args[i] = new FuncCastCode(anyTy, conv, code.args[i]);
+					}
+				}
+			}
+			if (found.isMutation() && !found.isAbstract()) {
+				ODebug.trace("MUTATION %s", code.args[0].getType());
+				code.args[0].getType().hasMutation(true);
+			}
+			code.setMapped(found);
+			code.setType(dRetType);
+			Code result = code;
+			if (!found.isAbstract()) {
+				if (found.getReturnType() instanceof VarTy) {
+					ODebug.trace("must downcast %s => %s", found.getReturnType(), dRetType);
+					result = new UnboxCastCode(dRetType, result);
+				}
+				if (found.getReturnType() instanceof FuncTy && found.getReturnType().hasVar()) {
+					Ty anyTy = found.getReturnType().dupVar(null); // AnyRef
+					CodeMap conv = env.findTypeMap(env, dRetType, anyTy);
+					ODebug.trace("MUST funccast %s => %s :: %s", anyTy, dRetType, conv);
+					result = new FuncCastCode(dRetType, conv, result);
+				}
+			}
+			return result.castType(env, t);
+		} else {
+			for (int i = 0; i < code.args.length; i++) {
+				code.args[i] = code.args[i].asType(env, dpats[i]);
+			}
+			if (found.isMutation() && !found.isAbstract()) {
+				ODebug.trace("MUTATION %s", code.args[0].getType());
+				code.args[0].getType().hasMutation(true);
+			}
+			code.setMapped(found);
+			code.setType(dret);
+			return code.castType(env, t);
+		}
 	}
 
 }
