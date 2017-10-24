@@ -28,7 +28,7 @@ public class SourceMapper extends CodeMapper {
 
 	private SourceSyntaxMapper newSyntaxMapper(Transpiler tr) {
 		SourceSyntaxMapper syntax = new SourceSyntaxMapper();
-		syntax.importSyntaxFile(tr.getTargetName());
+		syntax.importSyntaxFile(tr.getPath("syntax.codemap"));
 		return syntax;
 	}
 

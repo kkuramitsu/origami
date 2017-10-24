@@ -46,7 +46,7 @@ public class SourceSyntaxMapper {
 		}
 	}
 
-	protected void defineSyntax(String key, String symbol) {
+	void defineSyntax(String key, String symbol) {
 		if (!this.isDefinedSyntax(key)) {
 			if (symbol != null) {
 				int s = symbol.indexOf("$|");
@@ -68,7 +68,7 @@ public class SourceSyntaxMapper {
 		}
 	}
 
-	public void importSyntaxFile(String path) {
+	void importSyntaxFile(String path) {
 		try {
 			File f = new File(path);
 			InputStream s = f.isFile() ? new FileInputStream(path) : SourceGenerator.class.getResourceAsStream(path);

@@ -17,21 +17,26 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.UnionTy;
 import blue.origami.transpiler.type.VarDomain;
 
-public class CodeMapLoader {
+public class CodemapLoader {
 	final Transpiler env;
 	final String common;
 	final String base;
 	final String defaul;
 	final HashMap<String, String> keyMap = new HashMap<>();
 
-	CodeMapLoader(Transpiler env, String target) {
+	CodemapLoader(Transpiler env) {
 		this.env = env;
+		String target = env.getTargetName();
 		this.base = Version.ResourcePath + "/codemap/" + target + "/";
 		this.common = this.base.replace(target, "common");
 		this.defaul = this.base.replace(target, "default");
 	}
 
-	public void loadCodeMap(String file) {
+	public String getPath(String file) {
+		return this.base + "/" + file;
+	}
+
+	public void load(String file) {
 		try {
 			this.load(this.common + file, false);
 		} catch (Throwable e) {
@@ -50,7 +55,7 @@ public class CodeMapLoader {
 	private void load(String path, boolean isDefault) throws Throwable {
 		// String path = this.base + file;
 		File f = new File(path);
-		InputStream s = f.isFile() ? new FileInputStream(path) : CodeMapLoader.class.getResourceAsStream(path);
+		InputStream s = f.isFile() ? new FileInputStream(path) : CodemapLoader.class.getResourceAsStream(path);
 		if (s == null) {
 			throw new FileNotFoundException(path);
 		}
@@ -67,7 +72,7 @@ public class CodeMapLoader {
 				if (line.startsWith("#")) {
 					if (line.startsWith("#include")) {
 						for (String file : OArrays.ltrim2(line.split("\\S"))) {
-							this.loadCodeMap(file);
+							this.load(file);
 						}
 					}
 					if (line.startsWith("#require")) {
@@ -109,28 +114,6 @@ public class CodeMapLoader {
 		}
 		reader.close();
 	}
-
-	// protected void defineSymbol(String key, String symbol) {
-	// if (!this.isDefined(key)) {
-	// if (symbol != null) {
-	// int s = symbol.indexOf("$|");
-	// while (s >= 0) {
-	// int e = symbol.indexOf('|', s + 2);
-	// String skey = symbol.substring(s + 2, e);
-	// // if (this.symbolMap.get(skey) != null) {
-	// symbol = symbol.replace("$|" + skey + "|", this.s(skey));
-	// // }
-	// e = s;
-	// s = symbol.indexOf("$|");
-	// if (e == s) {
-	// break; // avoid infinite looping
-	// }
-	// // System.out.printf("'%s': %s\n", key, symbol);
-	// }
-	// }
-	// this.symbolMap.put(key, symbol);
-	// }
-	// }
 
 	void defineSymbol(Env env, String[] requires, String key, String value) {
 		if (key == null) {

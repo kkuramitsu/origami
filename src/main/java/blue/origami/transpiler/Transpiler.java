@@ -23,25 +23,24 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
 public class Transpiler extends Env implements OFactory<Transpiler> {
-	private CodeMapLoader loader;
+	private CodemapLoader loader;
 	private CodeMapper generator;
 
 	boolean isFriendly = true;
 
 	public Transpiler(Grammar g, Parser p) {
 		super(null);
-		this.initEnv(g, p, new Language());
+		this.initMe(g, p, new Language());
 	}
 
-	private void initEnv(Grammar g, Parser p, Language lang) {
-		this.loader = new CodeMapLoader(this, this.getTargetName());
-		this.generator = this.getCodeMapper();
+	private void initMe(Grammar g, Parser p, Language lang) {
 		this.add(Grammar.class, g);
 		this.add(Parser.class, p);
-		lang.init(this);
-		this.loader.loadCodeMap("konoha5.codemap");
+		lang.initMe(this);
+		this.loader = new CodemapLoader(this);
+		this.generator = this.getCodeMapper();
+		this.loader.load(lang.getLangName() + ".codemap");
 		this.generator.init();
-
 	}
 
 	public Transpiler() {
@@ -64,7 +63,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 			String file = options.stringValue(MainOption.GrammarFile, "konoha5.opeg");
 			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 			Parser p = g.newParser(options);
-			this.initEnv(g, p, options.newInstance(Language.class));
+			this.initMe(g, p, options.newInstance(Language.class));
 		} catch (IOException e) {
 			OConsole.exit(1, e);
 		}
@@ -79,6 +78,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	public CodeMapper getCodeMapper() {
 		Class<?> c = this.getClass();
 		return (c == Transpiler.class) ? new AsmMapper(this) : new SourceMapper(this);
+	}
+
+	public String getPath(String file) {
+		return this.loader.getPath(file);
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {

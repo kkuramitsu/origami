@@ -30,7 +30,11 @@ public class Language implements OFactory<Language> {
 
 	}
 
-	public void init(Env env) {
+	public String getLangName() {
+		return "konoha5";
+	}
+
+	public void initMe(Env env) {
 		env.add("Source", new SourceUnit());
 		env.add("AddExpr", new BinaryExpr("+"));
 		env.add("SubExpr", new BinaryExpr("-"));
