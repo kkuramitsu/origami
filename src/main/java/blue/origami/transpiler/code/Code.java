@@ -262,7 +262,7 @@ abstract class CommonCode implements Code {
 }
 
 abstract class Code1 extends CommonCode {
-	protected Code inner;
+	public Code inner;
 
 	Code1(Ty t, Code inner) {
 		super(t);
@@ -303,7 +303,7 @@ abstract class Code1 extends CommonCode {
 }
 
 abstract class CodeN extends CommonCode {
-	protected Code[] args;
+	public Code[] args;
 
 	public CodeN(Ty t, Code... args) {
 		super(t);

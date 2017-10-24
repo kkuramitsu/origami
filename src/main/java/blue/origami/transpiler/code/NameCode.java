@@ -4,15 +4,13 @@ import blue.origami.common.ODebug;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.rule.NameExpr.NameInfo;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.type.Ty;
 
 public class NameCode extends CommonCode {
 
-	private final String name;
+	public final String name;
 	private final int seq;
 	private final int refLevel;
 
@@ -47,53 +45,7 @@ public class NameCode extends CommonCode {
 
 	@Override
 	public Code asType(Env env, Ty ret) {
-		if (this.isUntyped()) {
-			NameInfo ref = env.get(this.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
-			if (ref != null) {
-				ref.used(env);
-				return ref.newNameCode(env, this.getSource()).castType(env, ret);
-			}
-			return this.parseNames(env, this.name, ret);
-		}
-		return super.asType(env, ret);
-	}
-
-	Code parseNames(Env env, String name, Ty ret) {
-		Code mul = null;
-		for (int i = 0; i < name.length(); i++) {
-			String var = this.parseName(name, i);
-			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
-			if (ref == null) {
-				NameHint hint = env.findNameHint(env, name);
-				if (hint != null) {
-					return new ErrorCode(this, TFmt.undefined_name__YY1__YY2, this.name, hint.getType());
-				}
-				return new ErrorCode(this, TFmt.undefined_name__YY1, this.name);
-			}
-			ref.used(env);
-			mul = this.mul(mul, ref.newNameCode(env, this.getSource()));
-		}
-		return mul.asType(env, ret);
-	}
-
-	private String parseName(String name, int index) {
-		int end = index + 1;
-		while (end < name.length()) {
-			char c = name.charAt(end);
-			if (Character.isDigit(c) || c == '\'') {
-				end++;
-			} else {
-				break;
-			}
-		}
-		return name.substring(index, end);
-	}
-
-	private Code mul(Code left, Code right) {
-		if (left == null) {
-			return right;
-		}
-		return new BinaryCode("*", left, right);
+		return env.getLanguage().typeName(env, this, ret);
 	}
 
 	@Override
@@ -108,13 +60,13 @@ public class NameCode extends CommonCode {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.name);
+		sb.append(this.getName());
 	}
 
 	@Override
 	public void dumpCode(SyntaxBuilder sh) {
 		sh.TypeAnnotation_(this.getType(), () -> {
-			sh.Name(this.name);
+			sh.Name(this.getName());
 		});
 	}
 

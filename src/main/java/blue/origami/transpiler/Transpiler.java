@@ -34,9 +34,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	private void initMe(Grammar g, Parser p, Language lang) {
+		this.lang = lang;
 		this.add(Grammar.class, g);
 		this.add(Parser.class, p);
-		lang.initMe(this);
+		this.lang.initMe(this);
 		this.loader = new CodemapLoader(this);
 		this.generator = this.getCodeMapper();
 		this.loader.load(lang.getLangName() + ".codemap");

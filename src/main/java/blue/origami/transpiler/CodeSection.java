@@ -1,6 +1,7 @@
 package blue.origami.transpiler;
 
 import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
@@ -84,5 +85,9 @@ public interface CodeSection {
 	public void pushExistField(ExistFieldCode code);
 
 	public void pushGroup(GroupCode code);
+
+	// imperative programming
+
+	public void pushAssign(AssignCode code);
 
 }

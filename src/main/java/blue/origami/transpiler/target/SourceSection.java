@@ -7,6 +7,7 @@ import blue.origami.common.ODebug;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
@@ -245,6 +246,14 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushTupleIndex(TupleIndexCode code) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/* Imperative Programming */
+
+	@Override
+	public void pushAssign(AssignCode code) {
 		// TODO Auto-generated method stub
 
 	}

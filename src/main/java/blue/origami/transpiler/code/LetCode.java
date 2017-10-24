@@ -5,10 +5,10 @@ import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.FunctionContext;
-import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 
@@ -101,5 +101,4 @@ public class LetCode extends Code1 {
 		sh.Operator(" = ");
 		sh.Expr(this.getInner());
 	}
-
 }

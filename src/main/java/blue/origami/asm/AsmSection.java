@@ -15,6 +15,7 @@ import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
+import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
 import blue.origami.transpiler.code.CastCode;
@@ -787,6 +788,13 @@ public class AsmSection implements CodeSection, Opcodes {
 	@Override
 	public void pushGroup(GroupCode code) {
 		code.getInner().emitCode(this);
+
+	}
+
+	/* Imperative Programming */
+
+	@Override
+	public void pushAssign(AssignCode code) {
 
 	}
 

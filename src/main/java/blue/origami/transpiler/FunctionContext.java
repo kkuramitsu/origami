@@ -156,20 +156,28 @@ public class FunctionContext {
 			this.type = type;
 		}
 
-		public void incRef() {
-			this.closureLevel++;
-		}
-
-		public void decRef() {
-			this.closureLevel--;
-		}
-
 		public String getName() {
 			return this.name;
 		}
 
 		public int getIndex() {
 			return this.seq;
+		}
+
+		public Ty getType() {
+			return this.type;
+		}
+
+		public int getLevel() {
+			return this.closureLevel;
+		}
+
+		public void incRef() {
+			this.closureLevel++;
+		}
+
+		public void decRef() {
+			this.closureLevel--;
 		}
 
 		@Override

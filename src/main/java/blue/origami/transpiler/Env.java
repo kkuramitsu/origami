@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import blue.origami.Version;
-import blue.origami.common.Handled;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
 import blue.origami.common.SourcePosition;
@@ -22,10 +21,14 @@ import blue.origami.transpiler.type.VarLogger;
 
 public class Env implements TEnvTraits, EnvApi {
 	private Env parent;
-	private HashMap<String, EnvEntry> definedMap = null;
+	protected Language lang;
+	private HashMap<String, Binding> bindMap = null;
 
 	public Env(Env parent) {
 		this.parent = parent;
+		if (this.parent != null) {
+			this.lang = parent.getLanguage();
+		}
 	}
 
 	@Override
@@ -33,22 +36,26 @@ public class Env implements TEnvTraits, EnvApi {
 		return this.parent;
 	}
 
+	public Language getLanguage() {
+		return this.lang;
+	}
+
 	@Override
-	public EnvEntry getEntry(String name) {
-		if (this.definedMap != null) {
-			return this.definedMap.get(name);
+	public Binding getBinding(String name) {
+		if (this.bindMap != null) {
+			return this.bindMap.get(name);
 		}
 		return null;
 	}
 
 	@Override
-	public void addEntry(String name, EnvEntry defined) {
-		if (this.definedMap == null) {
-			this.definedMap = new HashMap<>();
+	public void addBinding(String name, Binding defined) {
+		if (this.bindMap == null) {
+			this.bindMap = new HashMap<>();
 		}
-		EnvEntry prev = this.definedMap.get(name);
+		Binding prev = this.bindMap.get(name);
 		defined.push(prev);
-		this.definedMap.put(name, defined);
+		this.bindMap.put(name, defined);
 		// System.out.printf("adding symbol %s %s on %s at env %s\n", name,
 		// defined.getHandled(), defined.pop(),
 		// this.getClass().getSimpleName());
@@ -62,40 +69,11 @@ public class Env implements TEnvTraits, EnvApi {
 
 }
 
-class EnvEntry implements Handled<Object> {
-	private Object value;
-	private EnvEntry onstack = null;
-
-	EnvEntry(SourcePosition s, Object value) {
-		this.value = value;
-	}
-
-	public EnvEntry push(EnvEntry onstack) {
-		this.onstack = onstack;
-		return this;
-	}
-
-	public EnvEntry pop() {
-		return this.onstack;
-	}
-
-	@Override
-	public Object getHandled() {
-		return this.value;
-	}
-
-	public Object setHandled(Object value) {
-		Object v = this.value;
-		this.value = value;
-		return v;
-	}
-}
-
 interface TEnvTraits {
 
-	void addEntry(String name, EnvEntry d);
+	void addBinding(String name, Binding d);
 
-	EnvEntry getEntry(String name);
+	Binding getBinding(String name);
 
 	TEnvTraits getParent();
 
@@ -111,7 +89,7 @@ interface TEnvTraits {
 	}
 
 	public default void add(SourcePosition s, String name, Object value) {
-		addEntry(name, new EnvEntry(s, value));
+		addBinding(name, new Binding(s, value));
 	}
 
 	public default void add(String name, Object value) {
@@ -127,7 +105,7 @@ interface TEnvTraits {
 	}
 
 	public default <X> void set(String name, Class<X> c, X value) {
-		for (EnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
+		for (Binding d = this.getBinding(name); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				d.setHandled(value);
@@ -138,7 +116,7 @@ interface TEnvTraits {
 	}
 
 	public default <X, Y> Y getLocal(String name, Class<X> c, EnvMatcher<X, Y> f) {
-		for (EnvEntry d = this.getEntry(name); d != null; d = d.pop()) {
+		for (Binding d = this.getBinding(name); d != null; d = d.pop()) {
 			X x = d.getHandled(c);
 			if (x != null) {
 				return f.match(x, c);
@@ -169,50 +147,9 @@ interface TEnvTraits {
 		return this.get(c.getName(), c);
 	}
 
-	// public interface EnvChoicer<X> {
-	// public X choice(X x, X y);
-	// }
-	//
-	// public default <X, Y> Y find(String name, Class<X> c, EnvMatcher<X, Y> f,
-	// EnvChoicer<Y> g, Y start) {
-	// Y y = start;
-	// for (TEnvTraits env = this; env != null; env = env.getParent()) {
-	// for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
-	// X x = d.getHandled(c);
-	// if (x != null) {
-	// Y updated = f.match(x, c);
-	// y = g.choice(y, updated);
-	// }
-	// }
-	// }
-	// return y;
-	// }
-
-	// public interface EnvBreaker<X> {
-	// public boolean isEnd(X x);
-	// }
-	//
-	// public default <X, Y> Y find(String name, Class<X> c, EnvMatcher<X, Y> f,
-	// TEnvChoicer<Y> g, Y start,
-	// EnvBreaker<Y> h) {
-	// Y y = start;
-	// for (TEnvTraits env = this; env != null; env = env.getParent()) {
-	// for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
-	// X x = d.getHandled(c);
-	// if (x != null) {
-	// y = g.choice(y, f.match(x, c));
-	// if (h.isEnd(y)) {
-	// return y;
-	// }
-	// }
-	// }
-	// }
-	// return y;
-	// }
-
 	public default <X> void findList(String name, Class<X> c, List<X> l, ListMatcher<X> f) {
 		for (TEnvTraits env = this; env != null; env = env.getParent()) {
-			for (EnvEntry d = env.getEntry(name); d != null; d = d.pop()) {
+			for (Binding d = env.getBinding(name); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null && f.isMatched(x)) {
 					l.add(x);
@@ -238,60 +175,20 @@ interface TEnvTraits {
 	}
 
 	public default void reportError(SourcePosition s, OFormat format, Object... args) {
-		new TLog(s, TLog.Error, format, args).dump();
+		this.reportLog(new TLog(s, TLog.Error, format, args));
 	}
 
 	public default void reportWarning(SourcePosition s, OFormat format, Object... args) {
-		new TLog(s, TLog.Warning, format, args).dump();
+		this.reportLog(new TLog(s, TLog.Warning, format, args));
 	}
 
 	public default void reportNotice(SourcePosition s, OFormat format, Object... args) {
-		new TLog(s, TLog.Notice, format, args).dump();
+		this.reportLog(new TLog(s, TLog.Notice, format, args));
 	}
 }
 
 interface EnvApi {
 	Env env();
-
-	// public default String getSymbolOrElse(String key, String def) {
-	// CodeMap tp = env().get(key, CodeMap.class);
-	// return tp == null ? def : tp.getDefined();
-	// }
-	//
-	// public default String getSymbol(String... keys) {
-	// for (int i = 0; i < keys.length - 1; i++) {
-	// String s = this.getSymbolOrElse(keys[i], null);
-	// if (s != null) {
-	// return s;
-	// }
-	// }
-	// return keys[keys.length - 1];
-	// }
-	//
-	// public default CodeMap getTemplate(String... keys) {
-	// for (int i = 0; i < keys.length - 1; i++) {
-	// CodeMap tp = env().get(keys[i], CodeMap.class);
-	// if (tp != null) {
-	// return tp;
-	// }
-	// }
-	// String last = keys[keys.length - 1];
-	// return last == null ? null : new CodeMap(last);
-	// }
-	//
-	// public default String fmt(String... keys) {
-	// for (int i = 0; i < keys.length - 1; i++) {
-	// CodeMap tp = env().get(keys[i], CodeMap.class);
-	// if (tp != null) {
-	// return tp.getDefined();
-	// }
-	// }
-	// return keys[keys.length - 1];
-	// }
-	//
-	// public default String format(String key, String def, Object... args) {
-	// return String.format(this.getSymbolOrElse(key, def), args);
-	// }
 
 	public default Ty getType(String tsig) {
 		return env().get(tsig, Ty.class);
