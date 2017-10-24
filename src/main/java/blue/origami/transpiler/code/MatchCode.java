@@ -116,7 +116,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
+	public void emitCode(CodeSection sec) {
 
 	}
 
@@ -184,7 +184,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(Env env, CodeSection sec) {
+		public void emitCode(CodeSection sec) {
 		}
 
 		@Override
@@ -258,7 +258,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		@Override
-		public void emitCode(Env env, CodeSection sec) {
+		public void emitCode(CodeSection sec) {
 		}
 
 	}

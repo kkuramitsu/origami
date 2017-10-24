@@ -75,8 +75,8 @@ public class MultiCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushMulti(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushMulti(this);
 	}
 
 	@Override

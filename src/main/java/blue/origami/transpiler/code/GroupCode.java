@@ -12,8 +12,8 @@ public class GroupCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushGroup(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushGroup(this);
 	}
 
 	@Override

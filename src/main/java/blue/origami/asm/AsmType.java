@@ -332,7 +332,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 			for (int i = 0; i < paramNames.length; i++) {
 				sec.addVariable(NameHint.safeName(paramNames[i]) + (start + i), paramTypes[i]);
 			}
-			body.emitCode(env, sec);
+			body.emitCode(sec);
 			mw.returnValue();
 			mw.endMethod();
 		}

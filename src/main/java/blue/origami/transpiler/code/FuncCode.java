@@ -146,8 +146,8 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushFuncExpr(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushFuncExpr(this);
 	}
 
 	@Override

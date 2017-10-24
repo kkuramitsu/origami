@@ -82,7 +82,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 			Method m = new Method(evalName, Type.getType(this.ts.toClass(code.getType())), emptyTypes);
 			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw());
 			AsmSection sec = new AsmSection(this.ts, this.cname(), mw);
-			code.emitCode(env, sec);
+			code.emitCode(sec);
 			mw.returnValue();
 			mw.endMethod();
 		}
@@ -138,7 +138,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 		FieldNode fn = new FieldNode(ACC_PUBLIC + ACC_STATIC, name, this.ts.desc(type), null, null);
 		fn.accept(this.cw());
 		AsmSection sec = this.fieldSec();
-		expr.emitCode(env, sec);
+		expr.emitCode(sec);
 		sec.mBuilder.visitFieldInsn(PUTSTATIC, this.cname()/* internal */, name, this.ts.desc(type));
 	}
 
@@ -163,7 +163,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 			sec.addVariable(NameHint.safeName(paramNames[i]) + i, paramTypes[i]);
 		}
 		try {
-			code.emitCode(env, sec);
+			code.emitCode(sec);
 		} catch (Exception e) {
 			ODebug.traceException(e);
 		}

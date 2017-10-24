@@ -61,8 +61,8 @@ public class ApplyCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushApply(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushApply(this);
 	}
 
 	@Override

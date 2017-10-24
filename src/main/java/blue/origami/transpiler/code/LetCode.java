@@ -80,8 +80,8 @@ public class LetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushLet(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushLet(this);
 	}
 
 	@Override

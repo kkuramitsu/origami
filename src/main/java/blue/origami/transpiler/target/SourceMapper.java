@@ -64,7 +64,7 @@ public class SourceMapper extends CodeMapper {
 	@Override
 	public void emitTopLevel(Env env, Code code) {
 		code = this.emitHeader(env, code);
-		code.emitCode(env, this.eval);
+		code.emitCode(this.eval);
 	}
 
 	// Code Map
@@ -78,7 +78,7 @@ public class SourceMapper extends CodeMapper {
 	@Override
 	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
 		this.data.pushIndent("");
-		this.data.pushf(env, this.syntax.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
+		this.data.pushf(this.syntax.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
 		this.data.pushLine("");
 	}
 
@@ -119,7 +119,7 @@ public class SourceMapper extends CodeMapper {
 		this.secList.add(sec);
 		this.secMap.put(name, sec);
 		this.currentFuncName = name;
-		sec.pushFuncDecl(env, name, returnType, paramNames, paramTypes, code);
+		sec.pushFuncDecl(name, returnType, paramNames, paramTypes, code);
 	}
 
 	HashSet<String> crossRefNames = new HashSet<>();

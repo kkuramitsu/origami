@@ -43,8 +43,8 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushTupleIndex(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushTupleIndex(this);
 	}
 
 	@Override

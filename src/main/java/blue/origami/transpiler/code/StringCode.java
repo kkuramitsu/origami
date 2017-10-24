@@ -2,7 +2,6 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
 public class StringCode extends CommonCode implements ValueCode {
@@ -19,8 +18,8 @@ public class StringCode extends CommonCode implements ValueCode {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushString(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushString(this);
 	}
 
 	@Override

@@ -50,8 +50,8 @@ public class SetCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushSet(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushSet(this);
 	}
 
 	@Override

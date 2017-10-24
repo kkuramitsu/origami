@@ -62,48 +62,53 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushNone(Env env, NoneCode code) {
+	public Env env() {
+		return this.ts.env();
+	}
+
+	@Override
+	public void pushNone(NoneCode code) {
 		this.mBuilder.visitInsn(ACONST_NULL);
 	}
 
 	@Override
-	public void pushBool(Env env, BoolCode code) {
+	public void pushBool(BoolCode code) {
 		this.mBuilder.push((boolean) code.getValue());
 	}
 
 	@Override
-	public void pushInt(Env env, IntCode code) {
+	public void pushInt(IntCode code) {
 		this.mBuilder.push((int) code.getValue());
 	}
 
 	@Override
-	public void pushDouble(Env env, DoubleCode code) {
+	public void pushDouble(DoubleCode code) {
 		this.mBuilder.push((double) code.getValue());
 	}
 
 	@Override
-	public void pushString(Env env, StringCode code) {
+	public void pushString(StringCode code) {
 		this.mBuilder.push((String) code.getValue());
 	}
 
 	@Override
-	public void pushCast(Env env, CastCode code) {
+	public void pushCast(CastCode code) {
 		Ty f = code.getInner().getType();
 		Ty t = code.getType();
 		Class<?> fc = this.ts.toClass(f);
 		Class<?> tc = this.ts.toClass(t);
 		if (code instanceof BoxCastCode) {
-			code.getInner().emitCode(env, this);
+			code.getInner().emitCode(this);
 			this.box(tc);
 			return;
 		}
 		if (code instanceof UnboxCastCode) {
-			code.getInner().emitCode(env, this);
+			code.getInner().emitCode(this);
 			this.unbox(tc);
 			return;
 		}
 		if (tc == void.class) {
-			code.getInner().emitCode(env, this);
+			code.getInner().emitCode(this);
 			if (fc == double.class || fc == long.class) {
 				this.mBuilder.pop2();
 			} else {
@@ -114,21 +119,21 @@ public class AsmSection implements CodeSection, Opcodes {
 		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
 		// code.getTemplate());
 		if (t.acceptTy(true, f, VarLogger.Nop)) {
-			code.getInner().emitCode(env, this);
+			code.getInner().emitCode(this);
 			return;
 		}
 		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
 		// code.getTemplate());
-		this.pushCall(env, code);
+		this.pushCall(code);
 	}
 
 	// I,+,
 	@Override
-	public void pushCall(Env env, CallCode code) {
+	public void pushCall(CallCode code) {
 		final CodeMap tp = code.getTemplate();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
-			this.pushCall(env, code, def[1]);
+			this.pushCall(code, def[1]);
 			return;
 		}
 		if (def[0].equals("N")) {
@@ -136,7 +141,7 @@ public class AsmSection implements CodeSection, Opcodes {
 			this.mBuilder.visitInsn(DUP);
 		}
 		for (Code sub : code) {
-			sub.emitCode(env, this);
+			sub.emitCode(this);
 		}
 		String desc = null;
 		switch (def[0]) {
@@ -189,7 +194,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		}
 	}
 
-	private void pushCall(Env env, CallCode code, String ext) {
+	private void pushCall(CallCode code, String ext) {
 		Iterator<Code> iter = code.iterator();
 		Code first = iter.next();
 		Code second = iter.next();
@@ -197,8 +202,8 @@ public class AsmSection implements CodeSection, Opcodes {
 		case "band": {
 			Label elseLabel = this.mBuilder.newLabel();
 			Label mergeLabel = this.mBuilder.newLabel();
-			this.pushIfFalse(env, first, elseLabel);
-			this.pushIfFalse(env, second, elseLabel);
+			this.pushIfFalse(first, elseLabel);
+			this.pushIfFalse(second, elseLabel);
 			this.mBuilder.push(true);
 			this.mBuilder.goTo(mergeLabel);
 			this.mBuilder.mark(elseLabel);
@@ -209,8 +214,8 @@ public class AsmSection implements CodeSection, Opcodes {
 		case "bor": {
 			Label thenLabel = this.mBuilder.newLabel();
 			Label mergeLabel = this.mBuilder.newLabel();
-			this.pushIfTrue(env, first, thenLabel);
-			this.pushIfTrue(env, second, thenLabel);
+			this.pushIfTrue(first, thenLabel);
+			this.pushIfTrue(second, thenLabel);
 			this.mBuilder.push(false);
 			this.mBuilder.goTo(mergeLabel);
 			this.mBuilder.mark(thenLabel);
@@ -221,15 +226,15 @@ public class AsmSection implements CodeSection, Opcodes {
 		case "orElse": {
 			Label elseLabel = this.mBuilder.newLabel();
 			Label mergeLabel = this.mBuilder.newLabel();
-			first.emitCode(env, this);
+			first.emitCode(this);
 			this.mBuilder.dup();
-			this.emitAsType(env, new ExprCode("some?", new EmptyAsmCode(first.getType())), Ty.tBool);
+			this.emitAsType(new ExprCode("some?", new EmptyAsmCode(first.getType())), Ty.tBool);
 			this.mBuilder.visitJumpInsn(IFNE, elseLabel);
-			this.emitAsType(env, new CastCode(second.getType(), new EmptyAsmCode(first.getType())), second.getType());
+			this.emitAsType(new CastCode(second.getType(), new EmptyAsmCode(first.getType())), second.getType());
 			this.mBuilder.goTo(mergeLabel);
 			this.mBuilder.mark(elseLabel);
 			this.mBuilder.pop();
-			second.emitCode(env, this);
+			second.emitCode(this);
 			this.mBuilder.mark(mergeLabel);
 			break;
 		}
@@ -239,8 +244,8 @@ public class AsmSection implements CodeSection, Opcodes {
 		}
 	}
 
-	private void emitAsType(Env env, Code tempCode, Ty ret) {
-		tempCode.asType(env, ret).emitCode(env, this);
+	private void emitAsType(Code tempCode, Ty ret) {
+		tempCode.asType(this.env(), ret).emitCode(this);
 	}
 
 	static HashMap<String, Integer> opMap = new HashMap<>();
@@ -496,17 +501,17 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushLet(Env env, LetCode code) {
+	public void pushLet(LetCode code) {
 		VarEntry var = this.addVariable(code.getName(), code.getDeclType());
 		Type typeDesc = this.ts.ti(this.varStack.varType);
 		// ODebug.trace("store %s %s %s", code.getName(), code.getDeclType(),
 		// var);
-		code.getInner().emitCode(env, this);
+		code.getInner().emitCode(this);
 		this.mBuilder.visitVarInsn(typeDesc.getOpcode(Opcodes.ISTORE), var.varIndex);
 	}
 
 	@Override
-	public void pushName(Env env, NameCode code) {
+	public void pushName(NameCode code) {
 		// ODebug.trace("name=%s", code.getName());
 		if (code.getRefLevel() > 0) {
 			this.mBuilder.loadThis();
@@ -520,19 +525,19 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushIf(Env env, IfCode code) {
+	public void pushIf(IfCode code) {
 		Label elseLabel = this.mBuilder.newLabel();
 		Label mergeLabel = this.mBuilder.newLabel();
 
-		this.pushIfFalse(env, code.condCode(), elseLabel);
+		this.pushIfFalse(code.condCode(), elseLabel);
 
 		// then
-		code.thenCode().emitCode(env, this);
+		code.thenCode().emitCode(this);
 		this.mBuilder.goTo(mergeLabel);
 
 		// else
 		this.mBuilder.mark(elseLabel);
-		code.elseCode().emitCode(env, this);
+		code.elseCode().emitCode(this);
 
 		// merge
 		this.mBuilder.mark(mergeLabel);
@@ -541,36 +546,36 @@ public class AsmSection implements CodeSection, Opcodes {
 		// 1, new Object[] { "java/io/PrintStream" });
 	}
 
-	private void pushIfTrue(Env env, Code cond, Label jump) {
-		cond.emitCode(env, this);
+	private void pushIfTrue(Code cond, Label jump) {
+		cond.emitCode(this);
 		this.mBuilder.visitJumpInsn(IFNE, jump);
 	}
 
-	private void pushIfFalse(Env env, Code cond, Label jump) {
-		cond.emitCode(env, this);
+	private void pushIfFalse(Code cond, Label jump) {
+		cond.emitCode(this);
 		this.mBuilder.visitJumpInsn(IFEQ, jump);
 	}
 
 	@Override
-	public void pushReturn(Env env, ReturnCode code) {
+	public void pushReturn(ReturnCode code) {
 
 	}
 
 	@Override
-	public void pushMulti(Env env, MultiCode code) {
+	public void pushMulti(MultiCode code) {
 		for (Code sub : code) {
-			sub.emitCode(env, this);
+			sub.emitCode(this);
 		}
 	}
 
-	void pushArray(Env env, Type ty, boolean boxing, Code... subs) {
+	void pushArray(Type ty, boolean boxing, Code... subs) {
 		this.mBuilder.push(subs.length);
 		this.mBuilder.newArray(ty);
 		int c = 0;
 		for (Code sub : subs) {
 			this.mBuilder.dup();
 			this.mBuilder.push(c++);
-			sub.emitCode(env, this);
+			sub.emitCode(this);
 			if (boxing) {
 				this.box(this.ts.toClass(sub.getType()));
 			}
@@ -579,9 +584,9 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTemplate(Env env, TemplateCode code) {
+	public void pushTemplate(TemplateCode code) {
 		Type ty = Type.getType(String.class);
-		this.pushArray(env, ty, false, code.args());
+		this.pushArray(ty, false, code.args());
 		this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "join", "([Ljava/lang/String;)Ljava/lang/String;", false);
 
 	}
@@ -604,7 +609,7 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTuple(Env env, TupleCode code) {
+	public void pushTuple(TupleCode code) {
 		Class<?> c = code.getType().mapType(this.ts);
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -613,7 +618,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		int cnt = 0;
 		for (Code sub : code) {
 			this.mBuilder.dup();
-			sub.emitCode(env, this);
+			sub.emitCode(this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, this.ts.tupleAt(cnt),
 					this.ts.desc(sub.getType()));
 			cnt++;
@@ -621,20 +626,20 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushTupleIndex(Env env, TupleIndexCode code) {
+	public void pushTupleIndex(TupleIndexCode code) {
 		Class<?> c = code.getInner().getType().mapType(this.ts);
 		String cname = Type.getInternalName(c);
-		code.getInner().emitCode(env, this);
+		code.getInner().emitCode(this);
 		this.mBuilder.visitFieldInsn(GETFIELD, cname/* internal */, this.ts.tupleAt(code.getIndex()),
 				this.ts.desc(code.getType()));
 	}
 
 	@Override
-	public void pushData(Env env, DataCode code) {
+	public void pushData(DataCode code) {
 		if (code.isRange()) {
 			ListTy dt = (ListTy) code.getType();
 			for (Code sub : code) {
-				sub.emitCode(env, this);
+				sub.emitCode(this);
 			}
 			String desc = String.format("(II)%s", Type.getDescriptor(this.ts.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
@@ -646,12 +651,12 @@ public class AsmSection implements CodeSection, Opcodes {
 			this.mBuilder.push(code.isMutable());
 			if (c == blue.origami.konoha5.List$.class) {
 				Type ty = Type.getType(Object.class);
-				this.pushArray(env, ty, true, code.args());
+				this.pushArray(ty, true, code.args());
 				String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 			} else {
 				Ty t = dt.getInnerTy();
-				this.pushArray(env, this.ts.ti(t), false, code.args());
+				this.pushArray(this.ts.ti(t), false, code.args());
 				String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
 						Type.getDescriptor(this.ts.toClass(dt)));
 				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
@@ -672,7 +677,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		Code[] args = code.args();
 		for (int i = 0; i < names.length; i++) {
 			this.mBuilder.dup();
-			args[i].emitCode(env, this);
+			args[i].emitCode(this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, names[i], this.ts.desc(args[i].getType()));
 		}
 	}
@@ -688,15 +693,15 @@ public class AsmSection implements CodeSection, Opcodes {
 	// }
 
 	@Override
-	public void pushError(Env env, ErrorCode code) {
-		env.reportLog(code.getLog());
+	public void pushError(ErrorCode code) {
+		this.env().reportLog(code.getLog());
 	}
 
 	@Override
-	public void pushFuncRef(Env env, FuncRefCode code) {
+	public void pushFuncRef(FuncRefCode code) {
 		CodeMap tp = code.getRef();
 		// ODebug.trace("funcref %s %s", code.getType(), tp);
-		Class<?> c = this.ts.loadFuncRefClass(env, tp);
+		Class<?> c = this.ts.loadFuncRefClass(this.env(), tp);
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();
@@ -704,11 +709,11 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushFuncExpr(Env env, FuncCode code) {
+	public void pushFuncExpr(FuncCode code) {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
-		Class<?> c = this.ts.loadFuncExprClass(env, fieldNames, fieldTypes, code.getStartIndex(), code.getParamNames(),
-				code.getParamTypes(), code.getReturnType(), code.getInner());
+		Class<?> c = this.ts.loadFuncExprClass(this.env(), fieldNames, fieldTypes, code.getStartIndex(),
+				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
 		Code[] inits = code.getFieldCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -716,7 +721,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		this.mBuilder.visitMethodInsn(INVOKESPECIAL, cname, "<init>", "()V", false);
 		for (int i = 0; i < fieldNames.length; i++) {
 			this.mBuilder.dup();
-			inits[i].emitCode(env, this);
+			inits[i].emitCode(this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i] + i, this.ts.desc(fieldTypes[i]));
 		}
 		// ODebug.trace("FuncCode.asType %s", code.getType());
@@ -724,9 +729,9 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushApply(Env env, ApplyCode code) {
+	public void pushApply(ApplyCode code) {
 		for (Code sub : code) {
-			sub.emitCode(env, this);
+			sub.emitCode(this);
 		}
 		FuncTy funcType = (FuncTy) code.args()[0].getType();
 		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
@@ -741,10 +746,10 @@ public class AsmSection implements CodeSection, Opcodes {
 	// }
 
 	@Override
-	public void pushGet(Env env, GetCode code) {
+	public void pushGet(GetCode code) {
 		Code recv = code.args()[0];
 		String desc = this.ts.desc(code.getType(), OArrays.emptyTypes);
-		recv.emitCode(env, this);
+		recv.emitCode(this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		Class<?> base = this.ts.toClass(recv.getType());
 		if (base == Data$.class) {
@@ -756,32 +761,32 @@ public class AsmSection implements CodeSection, Opcodes {
 	}
 
 	@Override
-	public void pushSet(Env env, SetCode code) {
+	public void pushSet(SetCode code) {
 		Code recv = code.args()[0];
 		Code right = code.args()[1];
 		String desc = this.ts.desc(Ty.tVoid, right.getType());
-		recv.emitCode(env, this);
+		recv.emitCode(this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		Class<?> base = this.ts.toClass(recv.getType());
 		if (base == Data$.class) {
 			this.mBuilder.checkCast(Type.getType(ifield));
 		}
-		right.emitCode(env, this);
+		right.emitCode(this);
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ifield), code.getName(), desc, true);
 		// this.mBuilder.visitMethodInsn(INVOKEVIRTUAL,
 		// Type.getInternalName(base), code.getName(), desc, false);
 	}
 
 	@Override
-	public void pushExistField(Env env, ExistFieldCode code) {
-		code.getInner().emitCode(env, this);
+	public void pushExistField(ExistFieldCode code) {
+		code.getInner().emitCode(this);
 		Class<?> ifield = this.ts.gen(code.getName());
 		this.mBuilder.instanceOf(Type.getType(ifield));
 	}
 
 	@Override
-	public void pushGroup(Env env, GroupCode code) {
-		code.getInner().emitCode(env, this);
+	public void pushGroup(GroupCode code) {
+		code.getInner().emitCode(this);
 
 	}
 

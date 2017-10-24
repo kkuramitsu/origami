@@ -14,7 +14,7 @@ public class SourceUnit implements ParseRule {
 		for (int i = 0; i < last; i++) {
 			nodes[i] = env.parseCode(env, t.get(i));
 		}
-		return new SourceCode(nodes);
+		return new SourceCode(env.getTranspiler(), nodes);
 	}
 
 }

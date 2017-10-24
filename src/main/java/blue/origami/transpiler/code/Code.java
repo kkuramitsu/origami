@@ -35,7 +35,7 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 
 	public Ty getType();
 
-	public void emitCode(Env env, CodeSection sec);
+	public void emitCode(CodeSection sec);
 
 	// public void dumpCode(SyntaxHighlight sh);
 

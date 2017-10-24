@@ -3,7 +3,6 @@ package blue.origami.transpiler.code;
 import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
 public class TemplateCode extends CodeN {
@@ -13,8 +12,8 @@ public class TemplateCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushTemplate(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushTemplate(this);
 	}
 
 	@Override

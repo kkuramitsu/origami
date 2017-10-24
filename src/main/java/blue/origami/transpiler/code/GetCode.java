@@ -48,8 +48,8 @@ public class GetCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushGet(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushGet(this);
 	}
 
 	@Override

@@ -39,22 +39,39 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 		super(syntax, ts);
 	}
 
-	public void pushFuncDecl(Env env, String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Code code) {
+	@Override
+	public Env env() {
+		return this.ts.env();
+	}
+
+	public void pushFuncDecl(String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Code code) {
 		SourceParams p = new SourceParams(this.syntax, 0, paramNames, paramTypes);
 		this.pushIndent("");
-		this.pushf(env, this.syntax.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, p);
+		this.pushf(this.syntax.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, p);
 		this.pushLine("");
-		this.pushBlock(env, code.addReturn());
+		this.pushBlock(code.addReturn());
 		this.pushIndentLine(this.syntax.symbol("end function", "end", "}"));
 	}
 
+	void pushBlock(Code code) {
+		if (code instanceof MultiCode) {
+			this.pushMulti((MultiCode) code);
+		} else {
+			this.incIndent();
+			this.pushIndent("");
+			code.emitCode(this);
+			this.pushLine("");
+			this.decIndent();
+		}
+	}
+
 	@Override
-	public void pushNone(Env env, NoneCode code) {
+	public void pushNone(NoneCode code) {
 		this.push(this.syntax.symbol("null", "null"));
 	}
 
 	@Override
-	public void pushBool(Env env, BoolCode code) {
+	public void pushBool(BoolCode code) {
 		if (code.isTrue()) {
 			this.push(this.syntax.symbol("true", "true"));
 		} else {
@@ -63,79 +80,67 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	}
 
 	@Override
-	public void pushInt(Env env, IntCode code) {
-		this.pushf(this.syntax.fmt("0:Int", "%d"), code.getValue());
+	public void pushInt(IntCode code) {
+		this.pushf_old(this.syntax.fmt("0:Int", "%d"), code.getValue());
 	}
 
 	@Override
-	public void pushDouble(Env env, DoubleCode code) {
-		this.pushf(this.syntax.fmt("0:Float", "%f"), code.getValue());
+	public void pushDouble(DoubleCode code) {
+		this.pushf_old(this.syntax.fmt("0:Float", "%f"), code.getValue());
 	}
 
 	@Override
-	public void pushString(Env env, StringCode code) {
+	public void pushString(StringCode code) {
 		// FIXME
-		this.pushf(this.syntax.fmt("0:String", "\"%s\""), code.getValue());
+		this.pushf_old(this.syntax.fmt("0:String", "\"%s\""), code.getValue());
 	}
 
 	@Override
-	public void pushName(Env env, NameCode code) {
-		this.pushf(this.syntax.fmt("varname", "name", "%s"), code.getName());
+	public void pushName(NameCode code) {
+		this.pushf_old(this.syntax.fmt("varname", "name", "%s"), code.getName());
 	}
 
 	@Override
-	public void pushLet(Env env, LetCode code) {
-		this.pushf(env, this.syntax.fmt("let", "%1$s %2$s=%3$s"), code.getDeclType(), code.getName(), code.getInner());
+	public void pushLet(LetCode code) {
+		this.pushf(this.syntax.fmt("let", "%1$s %2$s=%3$s"), code.getDeclType(), code.getName(), code.getInner());
 	}
 
 	@Override
-	public void pushCast(Env env, CastCode code) {
+	public void pushCast(CastCode code) {
 		if (code.hasTemplate()) {
-			this.pushCall(env, code);
+			this.pushCall(code);
 		} else {
-			this.pushf(env, this.syntax.fmt("cast", "(%1$s)%2$s"), code.getType(), code.getInner());
+			this.pushf(this.syntax.fmt("cast", "(%1$s)%2$s"), code.getType(), code.getInner());
 		}
 	}
 
 	@Override
-	public void pushCall(Env env, CallCode code) {
+	public void pushCall(CallCode code) {
 		String fmt = code.getTemplate().getDefined();
 		Object[] args = Arrays.stream(code.args()).map(c -> (Object) c).toArray(Object[]::new);
-		this.pushf(env, fmt, args);
+		this.pushf(fmt, args);
 	}
 
 	@Override
-	public void pushIf(Env env, IfCode code) {
+	public void pushIf(IfCode code) {
 		if (code.isStatementStyle()) {
-			this.pushf(env, this.syntax.fmt("if", "if(%s) {"), code.condCode());
+			this.pushf(this.syntax.fmt("if", "if(%s) {"), code.condCode());
 			this.pushLine("");
-			this.pushBlock(env, code.thenCode());
+			this.pushBlock(code.thenCode());
 			this.pushIndent(this.syntax.symbol("end if", "end", "}"));
 			if (!code.elseCode().isDataType()) {
 				this.pushLine(this.syntax.symbol("else", "else {"));
-				this.pushBlock(env, code.elseCode());
+				this.pushBlock(code.elseCode());
 				this.pushIndent(this.syntax.symbol("end else", "end if", "end", "}"));
 			}
 		} else {
-			this.pushf(env, this.syntax.fmt("ifexpr", "%1$s ? %2$s : %3$"), code.condCode(), code.thenCode(),
+			this.pushf(this.syntax.fmt("ifexpr", "%1$s ? %2$s : %3$"), code.condCode(), code.thenCode(),
 					code.elseCode());
 		}
 	}
 
-	void pushBlock(Env env, Code code) {
-		if (code instanceof MultiCode) {
-			this.pushMulti(env, (MultiCode) code);
-		} else {
-			this.incIndent();
-			this.pushIndent("");
-			code.emitCode(env, this);
-			this.pushLine("");
-			this.decIndent();
-		}
-	}
-
 	@Override
-	public void pushMulti(Env env, MultiCode code) {
+	public void pushMulti(MultiCode code) {
 		// if (code.isBlockExpr()) {
 		// this.pushLine(syntax.symbol("block", "begin", "{"));
 		// for (Code c : code) {
@@ -147,7 +152,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 		this.incIndent();
 		for (Code c : code) {
 			this.pushIndent("");
-			c.emitCode(env, this);
+			c.emitCode(this);
 			this.pushLine("");
 		}
 		this.decIndent();
@@ -155,27 +160,27 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	}
 
 	@Override
-	public void pushReturn(Env env, ReturnCode code) {
-		this.pushf(env, this.syntax.fmt("return", "return %1$s;"), code.getInner());
+	public void pushReturn(ReturnCode code) {
+		this.pushf(this.syntax.fmt("return", "return %1$s;"), code.getInner());
 	}
 
 	@Override
-	public void pushTemplate(Env env, TemplateCode code) {
+	public void pushTemplate(TemplateCode code) {
 		ODebug.TODO();
 	}
 
 	@Override
-	public void pushData(Env env, DataCode code) {
+	public void pushData(DataCode code) {
 		if (code.isList()) {
 			Ty innTy = code.getType().getInnerTy();
-			this.pushf(env, this.syntax.fmt("array", "{"), this.ts.box(innTy));
+			this.pushf(this.syntax.fmt("array", "{"), this.ts.box(innTy));
 			int c = 0;
 			String delim = this.syntax.symbol("delim", ",", ",");
 			for (Code e : code) {
 				if (c > 0) {
 					this.push(delim);
 				}
-				e.emitCode(env, this);
+				e.emitCode(this);
 				c++;
 			}
 			this.push(this.syntax.symbol("end array", "}"));
@@ -185,61 +190,61 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	}
 
 	@Override
-	public void pushError(Env env, ErrorCode code) {
+	public void pushError(ErrorCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncExpr(Env env, FuncCode code) {
+	public void pushFuncExpr(FuncCode code) {
 		SourceParams p = new SourceParams(this.syntax, code.getStartIndex(), code.getParamNames(),
 				code.getParamTypes());
-		this.pushf(env, this.syntax.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
+		this.pushf(this.syntax.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
 	}
 
 	@Override
-	public void pushApply(Env env, ApplyCode code) {
+	public void pushApply(ApplyCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushFuncRef(Env env, FuncRefCode code) {
+	public void pushFuncRef(FuncRefCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushGet(Env env, GetCode code) {
+	public void pushGet(GetCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushSet(Env env, SetCode code) {
+	public void pushSet(SetCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushExistField(Env env, ExistFieldCode code) {
+	public void pushExistField(ExistFieldCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushGroup(Env env, GroupCode code) {
-		this.pushf(env, this.syntax.fmt("group", "%s"), code.getInner());
+	public void pushGroup(GroupCode code) {
+		this.pushf(this.syntax.fmt("group", "%s"), code.getInner());
 	}
 
 	@Override
-	public void pushTuple(Env env, TupleCode code) {
+	public void pushTuple(TupleCode code) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void pushTupleIndex(Env env, TupleIndexCode code) {
+	public void pushTupleIndex(TupleIndexCode code) {
 		// TODO Auto-generated method stub
 
 	}
@@ -296,25 +301,25 @@ abstract class SourceBuilder implements CodeSection {
 		return this.sb.toString();
 	}
 
-	void push(Env env, Object value) {
+	void pushE(Object value) {
 		if (value instanceof Code) {
-			((Code) value).emitCode(env, this);
+			((Code) value).emitCode(this);
 		} else if (value instanceof Ty) {
 			this.push(((Ty) value).mapType(this.ts));
 		} else if (value instanceof SourceEmitter) {
-			((SourceEmitter) value).emit(env, (SourceSection) this);
+			((SourceEmitter) value).emit((SourceSection) this);
 		} else {
 			this.push(value.toString());
 		}
 	}
 
-	void pushf(String format, int start, int end) {
-		if (start < end) {
-			this.push(format.substring(start, end));
-		}
-	}
+	// void pushf(String format, int start, int end) {
+	// if (start < end) {
+	// this.push(format.substring(start, end));
+	// }
+	// }
 
-	void pushf(Env env, String format, Object... args) {
+	void pushf(String format, Object... args) {
 		int start = 0;
 		int index = 0;
 		for (int i = 0; i < format.length(); i++) {
@@ -327,7 +332,7 @@ abstract class SourceBuilder implements CodeSection {
 				this.pushf(format, start, i);
 				c = i + 1 < format.length() ? format.charAt(i + 1) : 0;
 				if (c == 's') {
-					this.push(env, args[index]);
+					this.pushE(args[index]);
 					index++;
 					i++;
 				} else if (c == '%') {
@@ -338,7 +343,7 @@ abstract class SourceBuilder implements CodeSection {
 					if (!(n < args.length)) {
 						System.out.printf("n=%s  %d,%s\n", format, n, args.length);
 					}
-					this.push(env, args[n]);
+					this.pushE(args[n]);
 					i += 3;
 				}
 				start = i + 1;
@@ -347,7 +352,7 @@ abstract class SourceBuilder implements CodeSection {
 		this.pushf(format, start, format.length());
 	}
 
-	void pushf(String format, Object... args) {
+	void pushf_old(String format, Object... args) {
 		this.push(String.format(format, args));
 	}
 }
@@ -407,13 +412,13 @@ class SourceParams implements FuncParam, SourceEmitter {
 	}
 
 	@Override
-	public void emit(Env env, SourceSection sec) {
+	public void emit(SourceSection sec) {
 		String delim = this.syntax.symbol("paramdelim", ",", ",");
 		for (int i = 0; i < this.size(); i++) {
 			if (i > 0) {
 				sec.push(delim);
 			}
-			sec.pushf(env, this.syntax.fmt("param", "%1$s %2$s"), this.getParamTypes()[i], this.getNameAt(i));
+			sec.pushf(this.syntax.fmt("param", "%1$s %2$s"), this.getParamTypes()[i], this.getNameAt(i));
 		}
 	}
 

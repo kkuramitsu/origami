@@ -5,15 +5,18 @@ import blue.origami.transpiler.Env;
 
 public class SourceCode extends MultiCode {
 
-	public SourceCode(Code... args) {
+	private final Env env;
+
+	public SourceCode(Env env, Code... args) {
 		super(args);
+		this.env = env;
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
+	public void emitCode(CodeSection sec) {
 		for (Code a : this.args) {
-			if (!a.showError(env)) {
-				a.emitCode(env, sec);
+			if (!a.showError(this.env)) {
+				a.emitCode(sec);
 			}
 		}
 	}

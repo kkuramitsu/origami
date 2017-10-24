@@ -4,7 +4,6 @@ import blue.origami.common.OStrings;
 import blue.origami.common.TLog;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.Env;
 
 public class LogCode extends Code1 {
 	protected TLog log;
@@ -31,8 +30,8 @@ public class LogCode extends Code1 {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushLog(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushLog(this);
 	}
 
 }

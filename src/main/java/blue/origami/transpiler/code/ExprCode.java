@@ -51,8 +51,8 @@ public class ExprCode extends CodeN implements CallCode {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushCall(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushCall(this);
 	}
 
 	@Override

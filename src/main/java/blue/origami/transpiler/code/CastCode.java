@@ -42,8 +42,8 @@ public class CastCode extends Code1 implements CallCode {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushCast(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushCast(this);
 	}
 
 	@Override

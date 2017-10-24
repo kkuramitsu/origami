@@ -30,10 +30,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	public Transpiler(Grammar g, Parser p) {
 		super(null);
-		this.initEnv(g, p, new SourceLanguage());
+		this.initEnv(g, p, new Language());
 	}
 
-	private void initEnv(Grammar g, Parser p, SourceLanguage lang) {
+	private void initEnv(Grammar g, Parser p, Language lang) {
 		this.loader = new CodeMapLoader(this, this.getTargetName());
 		this.generator = this.getCodeMapper();
 		this.add(Grammar.class, g);
@@ -64,7 +64,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 			String file = options.stringValue(MainOption.GrammarFile, "konoha5.opeg");
 			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 			Parser p = g.newParser(options);
-			this.initEnv(g, p, options.newInstance(SourceLanguage.class));
+			this.initEnv(g, p, options.newInstance(Language.class));
 		} catch (IOException e) {
 			OConsole.exit(1, e);
 		}

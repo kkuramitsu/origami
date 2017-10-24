@@ -79,8 +79,8 @@ public class DataCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushData(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushData(this);
 	}
 
 	@Override

@@ -83,8 +83,8 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushError(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushError(this);
 	}
 
 	@Override

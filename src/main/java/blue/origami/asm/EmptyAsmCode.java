@@ -3,7 +3,6 @@ package blue.origami.asm;
 import blue.origami.common.OArrays;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
-import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
@@ -21,7 +20,7 @@ public class EmptyAsmCode implements Code {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
+	public void emitCode(CodeSection sec) {
 
 	}
 

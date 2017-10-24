@@ -57,8 +57,8 @@ public class IfCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushIf(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushIf(this);
 	}
 
 	@Override

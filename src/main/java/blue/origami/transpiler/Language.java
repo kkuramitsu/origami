@@ -13,15 +13,15 @@ import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
-public class SourceLanguage implements OFactory<SourceLanguage> {
+public class Language implements OFactory<Language> {
 
 	@Override
 	public Class<?> keyClass() {
-		return SourceLanguage.class;
+		return Language.class;
 	}
 
 	@Override
-	public SourceLanguage clone() {
+	public Language clone() {
 		return this.newClone();
 	}
 

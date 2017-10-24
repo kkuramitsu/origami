@@ -14,6 +14,10 @@ public abstract class TypeMapper<C> {
 		this.env = env;
 	}
 
+	public Env env() {
+		return this.env;
+	}
+
 	public void initProperties() {
 	}
 

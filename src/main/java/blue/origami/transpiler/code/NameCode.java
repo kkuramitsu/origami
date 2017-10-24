@@ -97,9 +97,9 @@ public class NameCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
+	public void emitCode(CodeSection sec) {
 		try {
-			sec.pushName(env, this);
+			sec.pushName(this);
 		} catch (Exception e) {
 			ODebug.trace("unfound name %s %d", this.name, this.refLevel);
 			ODebug.traceException(e);

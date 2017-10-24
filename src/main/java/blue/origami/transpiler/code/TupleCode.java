@@ -48,8 +48,8 @@ public class TupleCode extends CodeN {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushTuple(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushTuple(this);
 	}
 
 	@Override

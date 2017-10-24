@@ -77,8 +77,8 @@ public final class FuncRefCode extends CommonCode {
 	}
 
 	@Override
-	public void emitCode(Env env, CodeSection sec) {
-		sec.pushFuncRef(env, this);
+	public void emitCode(CodeSection sec) {
+		sec.pushFuncRef(this);
 	}
 
 	@Override

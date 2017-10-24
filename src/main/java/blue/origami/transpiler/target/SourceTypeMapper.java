@@ -67,7 +67,7 @@ public class SourceTypeMapper extends TypeMapper<String> {
 		if (funcdef != null) {
 			String typeName = "F" + this.seq() + this.comment(funcTy.toString());
 			SourceParams p = new SourceParams(this.syntax, funcTy.getParamTypes());
-			this.head.pushf(this.env, funcdef, funcTy.getReturnType(), typeName, p);
+			this.head.pushf(funcdef, funcTy.getReturnType(), typeName, p);
 			return typeName;
 		}
 		return funcTy.toString();
@@ -138,7 +138,7 @@ public class SourceTypeMapper extends TypeMapper<String> {
 		String key = "F$" + name;
 		if (!this.typeMap.containsKey(key)) {
 			NameHint hint = env.findGlobalNameHint(env, name);
-			this.head.pushf(env, "fieldtype", "", cname, hint.getType(), name);
+			this.head.pushf("fieldtype", "", cname, hint.getType(), name);
 			this.typeMap.put(key, key);
 		}
 		return key;
