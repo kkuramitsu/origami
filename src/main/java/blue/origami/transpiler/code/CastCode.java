@@ -6,7 +6,7 @@ import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
-public class CastCode extends Code1 implements CallCode {
+public class CastCode extends Code1 implements MappedCode {
 	public CastCode(Ty ret, CodeMap tp, Code inner) {
 		super(ret, inner);
 		this.setTemplate(tp);

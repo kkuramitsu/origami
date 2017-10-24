@@ -17,7 +17,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
-import blue.origami.transpiler.code.CallCode;
+import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
@@ -130,7 +130,7 @@ public class AsmSection implements CodeSection, Opcodes {
 
 	// I,+,
 	@Override
-	public void pushCall(CallCode code) {
+	public void pushCall(MappedCode code) {
 		final CodeMap tp = code.getMapped();
 		final String[] def = tp.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
@@ -195,7 +195,7 @@ public class AsmSection implements CodeSection, Opcodes {
 		}
 	}
 
-	private void pushCall(CallCode code, String ext) {
+	private void pushCall(MappedCode code, String ext) {
 		Iterator<Code> iter = code.iterator();
 		Code first = iter.next();
 		Code second = iter.next();

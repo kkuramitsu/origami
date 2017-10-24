@@ -9,7 +9,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
-import blue.origami.transpiler.code.CallCode;
+import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
@@ -116,7 +116,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	}
 
 	@Override
-	public void pushCall(CallCode code) {
+	public void pushCall(MappedCode code) {
 		String fmt = code.getMapped().getDefined();
 		Object[] args = Arrays.stream(code.args()).map(c -> (Object) c).toArray(Object[]::new);
 		this.pushf(fmt, args);

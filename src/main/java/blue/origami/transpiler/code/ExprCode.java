@@ -10,7 +10,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 
-public class ExprCode extends CodeN implements CallCode {
+public class ExprCode extends CodeN implements MappedCode {
 
 	public String name;
 	private CodeMap mapped;
@@ -111,7 +111,7 @@ public class ExprCode extends CodeN implements CallCode {
 
 }
 
-class OptionalExprCode extends ExprCode implements CallCode {
+class OptionalExprCode extends ExprCode implements MappedCode {
 
 	OptionalExprCode(String name, Code... code) {
 		super(name, code);

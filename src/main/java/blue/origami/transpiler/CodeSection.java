@@ -3,7 +3,7 @@ package blue.origami.transpiler;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
-import blue.origami.transpiler.code.CallCode;
+import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
@@ -43,7 +43,7 @@ public interface CodeSection {
 
 	public void pushCast(CastCode code);
 
-	public void pushCall(CallCode code);
+	public void pushCall(MappedCode code);
 
 	public void pushLet(LetCode code);
 
