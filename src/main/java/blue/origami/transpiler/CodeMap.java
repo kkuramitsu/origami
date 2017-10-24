@@ -27,6 +27,7 @@ public class CodeMap implements NameInfo {
 	private final static int ParamChecked = Impure << 5;
 	private final static int Generic = Impure << 6;
 	private final static int Mutation = Impure << 7;
+	public final static int LazyFormat = Impure << 8;
 
 	// parameter
 	protected final String name;

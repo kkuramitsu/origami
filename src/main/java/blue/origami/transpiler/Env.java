@@ -253,45 +253,45 @@ interface TEnvTraits {
 interface EnvApi {
 	Env env();
 
-	public default String getSymbolOrElse(String key, String def) {
-		CodeMap tp = env().get(key, CodeMap.class);
-		return tp == null ? def : tp.getDefined();
-	}
-
-	public default String getSymbol(String... keys) {
-		for (int i = 0; i < keys.length - 1; i++) {
-			String s = this.getSymbolOrElse(keys[i], null);
-			if (s != null) {
-				return s;
-			}
-		}
-		return keys[keys.length - 1];
-	}
-
-	public default CodeMap getTemplate(String... keys) {
-		for (int i = 0; i < keys.length - 1; i++) {
-			CodeMap tp = env().get(keys[i], CodeMap.class);
-			if (tp != null) {
-				return tp;
-			}
-		}
-		String last = keys[keys.length - 1];
-		return last == null ? null : new CodeMap(last);
-	}
-
-	public default String fmt(String... keys) {
-		for (int i = 0; i < keys.length - 1; i++) {
-			CodeMap tp = env().get(keys[i], CodeMap.class);
-			if (tp != null) {
-				return tp.getDefined();
-			}
-		}
-		return keys[keys.length - 1];
-	}
-
-	public default String format(String key, String def, Object... args) {
-		return String.format(this.getSymbolOrElse(key, def), args);
-	}
+	// public default String getSymbolOrElse(String key, String def) {
+	// CodeMap tp = env().get(key, CodeMap.class);
+	// return tp == null ? def : tp.getDefined();
+	// }
+	//
+	// public default String getSymbol(String... keys) {
+	// for (int i = 0; i < keys.length - 1; i++) {
+	// String s = this.getSymbolOrElse(keys[i], null);
+	// if (s != null) {
+	// return s;
+	// }
+	// }
+	// return keys[keys.length - 1];
+	// }
+	//
+	// public default CodeMap getTemplate(String... keys) {
+	// for (int i = 0; i < keys.length - 1; i++) {
+	// CodeMap tp = env().get(keys[i], CodeMap.class);
+	// if (tp != null) {
+	// return tp;
+	// }
+	// }
+	// String last = keys[keys.length - 1];
+	// return last == null ? null : new CodeMap(last);
+	// }
+	//
+	// public default String fmt(String... keys) {
+	// for (int i = 0; i < keys.length - 1; i++) {
+	// CodeMap tp = env().get(keys[i], CodeMap.class);
+	// if (tp != null) {
+	// return tp.getDefined();
+	// }
+	// }
+	// return keys[keys.length - 1];
+	// }
+	//
+	// public default String format(String key, String def, Object... args) {
+	// return String.format(this.getSymbolOrElse(key, def), args);
+	// }
 
 	public default Ty getType(String tsig) {
 		return env().get(tsig, Ty.class);

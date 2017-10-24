@@ -3,8 +3,8 @@ package blue.origami.transpiler.type;
 import java.util.HashMap;
 import java.util.function.Supplier;
 
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 
 public abstract class TypeMapper<C> {
 	protected Env env;
@@ -14,16 +14,11 @@ public abstract class TypeMapper<C> {
 		this.env = env;
 	}
 
-	public int seq() {
-		return this.typeMap.size();
+	public void initProperties() {
 	}
 
-	/* Properties */
-
-	protected boolean isDyLang;
-
-	public void initProperties() {
-		this.isDyLang = this.env.getSymbolOrElse("Int", null) == null;
+	public int seq() {
+		return this.typeMap.size();
 	}
 
 	public abstract C type(Ty ty);

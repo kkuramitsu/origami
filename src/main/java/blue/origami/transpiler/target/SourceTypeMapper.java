@@ -1,8 +1,10 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.target;
 
 import java.util.Arrays;
 
 import blue.origami.common.ODebug;
+import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.SimpleTy;
@@ -10,12 +12,14 @@ import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
 
-public class SourceType extends TypeMapper<String> {
+public class SourceTypeMapper extends TypeMapper<String> {
 
+	SourceSyntaxMapper syntax;
 	SourceSection head;
 
-	public SourceType(Env env) {
+	public SourceTypeMapper(Env env, SourceSyntaxMapper syntax) {
 		super(env);
+		this.syntax = syntax;
 	}
 
 	public void setTypeDeclSection(SourceSection head) {
@@ -24,7 +28,7 @@ public class SourceType extends TypeMapper<String> {
 
 	@Override
 	public String type(Ty ty) {
-		if (!this.isDyLang) {
+		if (!this.syntax.isDyLang) {
 			return ty.mapType(this);
 		}
 		return "";
@@ -42,14 +46,14 @@ public class SourceType extends TypeMapper<String> {
 
 	@Override
 	protected String mapDefaultType(String name) {
-		return this.env.getSymbolOrElse(name, name);
+		return this.syntax.symbol(name, name);
 	}
 
 	@Override
 	protected String mapDefaultType(String prefix, Ty ty, String inner) {
 		String p = prefix.replace("'", "");
 		String[] keys = { prefix + inner, prefix + "[a]", p + inner, p + "[a]", prefix };
-		return String.format(this.env.getSymbol(keys), inner);
+		return String.format(this.syntax.fmt(keys), inner);
 	}
 
 	@Override
@@ -59,10 +63,10 @@ public class SourceType extends TypeMapper<String> {
 
 	@Override
 	protected String genFuncType(FuncTy funcTy) {
-		String funcdef = this.env.getSymbolOrElse("functypedef", null);
+		String funcdef = this.syntax.symbol("functypedef", (String) null);
 		if (funcdef != null) {
 			String typeName = "F" + this.seq() + this.comment(funcTy.toString());
-			Param p = new Param(funcTy.getParamTypes());
+			SourceParams p = new SourceParams(this.syntax, funcTy.getParamTypes());
 			this.head.pushf(this.env, funcdef, funcTy.getReturnType(), typeName, p);
 			return typeName;
 		}
@@ -94,14 +98,14 @@ public class SourceType extends TypeMapper<String> {
 
 	String comment(String s) {
 		if (this.commentFmt == null) {
-			this.commentFmt = this.env.getSymbolOrElse("comment", "");
+			this.commentFmt = this.syntax.symbol("comment", "");
 		}
 		return String.format(this.commentFmt, s);
 	}
 
 	Ty box(Ty ty) {
 		String key = ty.toString() + "^";
-		String t = this.env.getSymbolOrElse(key, null);
+		String t = this.syntax.symbol(key, (String) null);
 		if (t != null) {
 			return new SimpleTy(key);
 		}

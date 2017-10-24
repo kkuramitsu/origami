@@ -1,9 +1,11 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.target;
 
 import java.util.Arrays;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
+import blue.origami.transpiler.CodeSection;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CallCode;
@@ -31,50 +33,59 @@ import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
 import blue.origami.transpiler.type.Ty;
 
-public class SourceSection extends SourceSectionLib implements CodeSection {
+public class SourceSection extends SourceBuilder implements CodeSection {
 
-	public SourceSection(SourceType ts) {
-		super(ts);
+	public SourceSection(SourceSyntaxMapper syntax, SourceTypeMapper ts) {
+		super(syntax, ts);
+	}
+
+	public void pushFuncDecl(Env env, String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Code code) {
+		SourceParams p = new SourceParams(this.syntax, 0, paramNames, paramTypes);
+		this.pushIndent("");
+		this.pushf(env, this.syntax.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, p);
+		this.pushLine("");
+		this.pushBlock(env, code.addReturn());
+		this.pushIndentLine(this.syntax.symbol("end function", "end", "}"));
 	}
 
 	@Override
 	public void pushNone(Env env, NoneCode code) {
-		this.push(env.getSymbol("null", "null"));
+		this.push(this.syntax.symbol("null", "null"));
 	}
 
 	@Override
 	public void pushBool(Env env, BoolCode code) {
 		if (code.isTrue()) {
-			this.push(env.getSymbol("true:Bool", "true"));
+			this.push(this.syntax.symbol("true", "true"));
 		} else {
-			this.push(env.getSymbol("false:Bool", "false"));
+			this.push(this.syntax.symbol("false", "false"));
 		}
 	}
 
 	@Override
 	public void pushInt(Env env, IntCode code) {
-		this.pushf(env.fmt("0:Int", "%d"), code.getValue());
+		this.pushf(this.syntax.fmt("0:Int", "%d"), code.getValue());
 	}
 
 	@Override
 	public void pushDouble(Env env, DoubleCode code) {
-		this.pushf(env.fmt("0:Float", "%f"), code.getValue());
+		this.pushf(this.syntax.fmt("0:Float", "%f"), code.getValue());
 	}
 
 	@Override
 	public void pushString(Env env, StringCode code) {
 		// FIXME
-		this.pushf(env.fmt("0:String", "\"%s\""), code.getValue());
+		this.pushf(this.syntax.fmt("0:String", "\"%s\""), code.getValue());
 	}
 
 	@Override
 	public void pushName(Env env, NameCode code) {
-		this.pushf(env.fmt("varname", "name", "%s"), code.getName());
+		this.pushf(this.syntax.fmt("varname", "name", "%s"), code.getName());
 	}
 
 	@Override
 	public void pushLet(Env env, LetCode code) {
-		this.pushf(env, env.fmt("let", "%1$s %2$s=%3$s"), code.getDeclType(), code.getName(), code.getInner());
+		this.pushf(env, this.syntax.fmt("let", "%1$s %2$s=%3$s"), code.getDeclType(), code.getName(), code.getInner());
 	}
 
 	@Override
@@ -82,7 +93,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 		if (code.hasTemplate()) {
 			this.pushCall(env, code);
 		} else {
-			this.pushf(env, env.fmt("cast", "(%1$s)%2$s"), code.getType(), code.getInner());
+			this.pushf(env, this.syntax.fmt("cast", "(%1$s)%2$s"), code.getType(), code.getInner());
 		}
 	}
 
@@ -96,17 +107,18 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	@Override
 	public void pushIf(Env env, IfCode code) {
 		if (code.isStatementStyle()) {
-			this.pushf(env, env.fmt("if", "if(%s) {"), code.condCode());
+			this.pushf(env, this.syntax.fmt("if", "if(%s) {"), code.condCode());
 			this.pushLine("");
 			this.pushBlock(env, code.thenCode());
-			this.pushIndent(env.getSymbol("end if", "end", "}"));
+			this.pushIndent(this.syntax.symbol("end if", "end", "}"));
 			if (!code.elseCode().isDataType()) {
-				this.pushLine(env.getSymbol("else", "else {"));
+				this.pushLine(this.syntax.symbol("else", "else {"));
 				this.pushBlock(env, code.elseCode());
-				this.pushIndent(env.getSymbol("end else", "end if", "end", "}"));
+				this.pushIndent(this.syntax.symbol("end else", "end if", "end", "}"));
 			}
 		} else {
-			this.pushf(env, env.fmt("ifexpr", "%1$s ? %2$s : %3$"), code.condCode(), code.thenCode(), code.elseCode());
+			this.pushf(env, this.syntax.fmt("ifexpr", "%1$s ? %2$s : %3$"), code.condCode(), code.thenCode(),
+					code.elseCode());
 		}
 	}
 
@@ -125,12 +137,12 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	@Override
 	public void pushMulti(Env env, MultiCode code) {
 		// if (code.isBlockExpr()) {
-		// this.pushLine(env.getSymbol("block", "begin", "{"));
+		// this.pushLine(syntax.symbol("block", "begin", "{"));
 		// for (Code c : code) {
 		// c.emitCode(env, this);
-		// this.push(env.getSymbolOrElse(";", ";"));
+		// this.push(syntax.symbolOrElse(";", ";"));
 		// }
-		// this.push(env.getSymbol("end block", "end", "}"));
+		// this.push(syntax.symbol("end block", "end", "}"));
 		// } else {
 		this.incIndent();
 		for (Code c : code) {
@@ -144,7 +156,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 
 	@Override
 	public void pushReturn(Env env, ReturnCode code) {
-		this.pushf(env, env.fmt("return", "return %1$s;"), code.getInner());
+		this.pushf(env, this.syntax.fmt("return", "return %1$s;"), code.getInner());
 	}
 
 	@Override
@@ -156,9 +168,9 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 	public void pushData(Env env, DataCode code) {
 		if (code.isList()) {
 			Ty innTy = code.getType().getInnerTy();
-			this.pushf(env, env.fmt("array", "{"), this.ts.box(innTy));
+			this.pushf(env, this.syntax.fmt("array", "{"), this.ts.box(innTy));
 			int c = 0;
-			String delim = env.getSymbol("delim", ",", ",");
+			String delim = this.syntax.symbol("delim", ",", ",");
 			for (Code e : code) {
 				if (c > 0) {
 					this.push(delim);
@@ -166,7 +178,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 				e.emitCode(env, this);
 				c++;
 			}
-			this.push(env.getSymbol("end array", "}"));
+			this.push(this.syntax.symbol("end array", "}"));
 			return;
 		}
 
@@ -180,8 +192,9 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 
 	@Override
 	public void pushFuncExpr(Env env, FuncCode code) {
-		Param p = new Param(code.getStartIndex(), code.getParamNames(), code.getParamTypes());
-		this.pushf(env, env.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
+		SourceParams p = new SourceParams(this.syntax, code.getStartIndex(), code.getParamNames(),
+				code.getParamTypes());
+		this.pushf(env, this.syntax.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
 	}
 
 	@Override
@@ -216,7 +229,7 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 
 	@Override
 	public void pushGroup(Env env, GroupCode code) {
-		this.pushf(env, env.fmt("group", "%s"), code.getInner());
+		this.pushf(env, this.syntax.fmt("group", "%s"), code.getInner());
 	}
 
 	@Override
@@ -233,12 +246,14 @@ public class SourceSection extends SourceSectionLib implements CodeSection {
 
 }
 
-abstract class SourceSectionLib implements CodeSection {
-	protected SourceType ts;
+abstract class SourceBuilder implements CodeSection {
+	protected final SourceSyntaxMapper syntax;
+	protected final SourceTypeMapper ts;;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
 
-	SourceSectionLib(SourceType ts) {
+	SourceBuilder(SourceSyntaxMapper syntax, SourceTypeMapper ts) {
+		this.syntax = syntax;
 		this.ts = ts;
 	}
 
@@ -286,8 +301,8 @@ abstract class SourceSectionLib implements CodeSection {
 			((Code) value).emitCode(env, this);
 		} else if (value instanceof Ty) {
 			this.push(((Ty) value).mapType(this.ts));
-		} else if (value instanceof Emitter) {
-			((Emitter) value).emit(env, (SourceSection) this);
+		} else if (value instanceof SourceEmitter) {
+			((SourceEmitter) value).emit(env, (SourceSection) this);
 		} else {
 			this.push(value.toString());
 		}
@@ -359,19 +374,21 @@ interface FuncParam {
 	}
 }
 
-class Param implements FuncParam, Emitter {
+class SourceParams implements FuncParam, SourceEmitter {
+	final SourceSyntaxMapper syntax;
 	final int startIndex;
 	final String[] paramNames;
 	final Ty[] paramTypes;
 
-	Param(int startIndex, String[] paramNames, Ty[] paramTypes) {
+	SourceParams(SourceSyntaxMapper syntax, int startIndex, String[] paramNames, Ty[] paramTypes) {
+		this.syntax = syntax;
 		this.startIndex = startIndex;
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 	}
 
-	Param(Ty[] paramTypes) {
-		this(0, OArrays.emptyNames, paramTypes);
+	SourceParams(SourceSyntaxMapper syntax, Ty[] paramTypes) {
+		this(syntax, 0, OArrays.emptyNames, paramTypes);
 	}
 
 	@Override
@@ -391,12 +408,12 @@ class Param implements FuncParam, Emitter {
 
 	@Override
 	public void emit(Env env, SourceSection sec) {
-		String delim = env.getSymbol("paramdelim", ",", ",");
+		String delim = this.syntax.symbol("paramdelim", ",", ",");
 		for (int i = 0; i < this.size(); i++) {
 			if (i > 0) {
 				sec.push(delim);
 			}
-			sec.pushf(env, env.fmt("param", "%1$s %2$s"), this.getParamTypes()[i], this.getNameAt(i));
+			sec.pushf(env, this.syntax.fmt("param", "%1$s %2$s"), this.getParamTypes()[i], this.getNameAt(i));
 		}
 	}
 

@@ -1,4 +1,4 @@
-package blue.origami.transpiler;
+package blue.origami.transpiler.target;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,18 +6,34 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import blue.origami.transpiler.CodeMap;
+import blue.origami.transpiler.CodeMapper;
+import blue.origami.transpiler.ConstMap;
+import blue.origami.transpiler.Env;
+import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
 public class SourceMapper extends CodeMapper {
-	protected SourceType ts;
+	protected final SourceSyntaxMapper syntax;
+	protected final SourceTypeMapper ts;
 	protected SourceSection head;
 	protected SourceSection data;
 	protected SourceSection eval;
-	// private SourceSection body = this.head;
 
 	public SourceMapper(Transpiler tr) {
-		this.ts = new SourceType(tr);
+		this.syntax = this.newSyntaxMapper(tr);
+		this.ts = new SourceTypeMapper(tr, this.syntax);
+	}
+
+	private SourceSyntaxMapper newSyntaxMapper(Transpiler tr) {
+		SourceSyntaxMapper syntax = new SourceSyntaxMapper();
+		syntax.importSyntaxFile(tr.getTargetName());
+		return syntax;
+	}
+
+	public SourceSection newSourceSection() {
+		return new SourceSection(this.syntax, this.ts);
 	}
 
 	@Override
@@ -27,9 +43,9 @@ public class SourceMapper extends CodeMapper {
 
 	@Override
 	protected void setup() {
-		this.head = new SourceSection(this.ts);
-		this.data = new SourceSection(this.ts);
-		this.eval = new SourceSection(this.ts);
+		this.head = this.newSourceSection();
+		this.data = this.newSourceSection();
+		this.eval = this.newSourceSection();
 		this.ts.setTypeDeclSection(this.data);
 		this.secList = new ArrayList<>();
 		this.secMap = new HashMap<>();
@@ -51,16 +67,18 @@ public class SourceMapper extends CodeMapper {
 		code.emitCode(env, this.eval);
 	}
 
+	// Code Map
+
 	@Override
 	public CodeMap newConstMap(Env env, String lname, Ty ret) {
-		String template = String.format(env.fmt("constname", "name", "%s"), lname);
+		String template = String.format(this.syntax.fmt("constname", "name", "%s"), lname);
 		return new ConstMap(lname, ret, template);
 	}
 
 	@Override
 	public void defineConst(Transpiler env, boolean isPublic, String name, Ty type, Code expr) {
 		this.data.pushIndent("");
-		this.data.pushf(env, env.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
+		this.data.pushf(env, this.syntax.fmt("const", "%1$s %2$s = %3$s"), type, name, expr);
 		this.data.pushLine("");
 	}
 
@@ -81,7 +99,7 @@ public class SourceMapper extends CodeMapper {
 	public CodeMap newCodeMap(Env env, String sname, String lname, Ty returnType, Ty... paramTypes) {
 		String param = "";
 		if (paramTypes.length > 0) {
-			String delim = env.getSymbolOrElse(",", ",");
+			String delim = this.syntax.symbol(",", ",");
 			StringBuilder sb = new StringBuilder();
 			sb.append("%s");
 			for (int i = 1; i < paramTypes.length; i++) {
@@ -90,23 +108,18 @@ public class SourceMapper extends CodeMapper {
 			}
 			param = sb.toString();
 		}
-		String template = env.format("funccall", "%s(%s)", lname, param);
+		String template = this.syntax.format(this.syntax.fmt("funccall", "%s(%s)"), lname, param);
 		return new CodeMap(0, template, sname, returnType, paramTypes);
 	}
 
 	@Override
 	public void defineFunction(Env env, boolean isPublic, String name, String[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code code) {
-		SourceSection sec = new SourceSection(this.ts);
+		SourceSection sec = this.newSourceSection();
 		this.secList.add(sec);
 		this.secMap.put(name, sec);
 		this.currentFuncName = name;
-		Param p = new Param(0, paramNames, paramTypes);
-		sec.pushIndent("");
-		sec.pushf(env, env.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, p);
-		sec.pushLine("");
-		sec.pushBlock(env, code.addReturn());
-		sec.pushIndentLine(env.getSymbol("end function", "end", "}"));
+		sec.pushFuncDecl(env, name, returnType, paramNames, paramTypes, code);
 	}
 
 	HashSet<String> crossRefNames = new HashSet<>();
@@ -171,7 +184,6 @@ public class SourceMapper extends CodeMapper {
 		if (!funcList.contains(start)) {
 			funcList.add(start);
 		}
-		// this.depsMap.clear();
 		return funcList;
 	}
 

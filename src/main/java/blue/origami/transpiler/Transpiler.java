@@ -18,6 +18,7 @@ import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.target.SourceMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
@@ -34,7 +35,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	private void initEnv(Grammar g, Parser p, SourceLanguage lang) {
 		this.loader = new CodeMapLoader(this, this.getTargetName());
-		this.generator = this.getDefaultCodeMapper();
+		this.generator = this.getCodeMapper();
 		this.add(Grammar.class, g);
 		this.add(Parser.class, p);
 		lang.init(this);
@@ -42,26 +43,18 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		this.generator.init();
 
 	}
-	//
-	// public Transpiler(Grammar grammar, String target, OOption options) {
-	// this(grammar, grammar.newParser(), target, options);
-	// }
-	//
-	// public Transpiler(Grammar g, String target) {
-	// this(g, target, null);
-	// }
 
 	public Transpiler() {
 		super(null);
 	}
 
 	@Override
-	public Class<?> keyClass() {
+	public final Class<?> keyClass() {
 		return Transpiler.class;
 	}
 
 	@Override
-	public Transpiler clone() {
+	public final Transpiler clone() {
 		return this.newClone();
 	}
 
@@ -79,11 +72,13 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public String getTargetName() {
-		return "jvm";
+		Class<?> c = this.getClass();
+		return (c == Transpiler.class) ? "jvm" : c.getSimpleName();
 	}
 
-	private CodeMapper getDefaultCodeMapper() {
-		return new AsmMapper(this);
+	public CodeMapper getCodeMapper() {
+		Class<?> c = this.getClass();
+		return (c == Transpiler.class) ? new AsmMapper(this) : new SourceMapper(this);
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {

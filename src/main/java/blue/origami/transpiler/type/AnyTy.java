@@ -22,8 +22,7 @@ class AnyTy extends SimpleTy {
 
 	@Override
 	public CodeMap findMapTo(Env env, Ty toTy) {
-		String format = env.getSymbol("cast", "(%s)%s");
-		return new CodeMap(CastCode.BESTCAST, "anycast", format, this, toTy);
+		return new CodeMap(CastCode.BESTCAST | CodeMap.LazyFormat, "anycast", "anycast", this, toTy);
 	}
 
 	@Override
@@ -33,8 +32,7 @@ class AnyTy extends SimpleTy {
 
 	@Override
 	public CodeMap findMapFrom(Env env, Ty fromTy) {
-		String format = env.getSymbol("upcast", "%s");
-		return new CodeMap(CastCode.BESTCAST, "upcast", format, fromTy, this);
+		return new CodeMap(CastCode.BESTCAST | CodeMap.LazyFormat, "upcast", "upcast", fromTy, this);
 	}
 
 }

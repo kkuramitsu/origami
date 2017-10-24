@@ -13,8 +13,8 @@ import blue.origami.common.ODebug;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeMapper;
 import blue.origami.transpiler.ConstMap;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
@@ -29,7 +29,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 
 	@Override
 	public void init() {
-		this.ts.initProperties();
+		// this.ts.initProperties();
 	}
 
 	@Override

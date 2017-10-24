@@ -369,8 +369,7 @@ class VoidTy extends SimpleTy {
 
 	@Override
 	public CodeMap findMapFrom(Env env, Ty fromTy) {
-		String format = env.getSymbol("(Void)", "(void)%s");
-		return new CodeMap(CastCode.SAME, "(Void)", format, fromTy, Ty.tVoid);
+		return new CodeMap(CastCode.SAME | CodeMap.LazyFormat, "(void)", "voidcast", fromTy, Ty.tVoid);
 	}
 
 }
