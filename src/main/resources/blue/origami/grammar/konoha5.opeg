@@ -366,7 +366,7 @@ LetDecl = {
 }
 
 IfStmt = {
-	[Ii] 'f' EOT ($cond(Expression) / "(" $cond(Expression) ")")
+	[Ii] 'f' EOT ( "(" $cond(Expression) ")" / $cond(Expression) )
 	(__ [Tt] 'hen' EOT)? $then(Block)
   (__ [Ee] 'lse' EOT ($else(IfStmt) / $else(Block)) )?
 	#IfExpr
@@ -447,7 +447,7 @@ JSFuncExpr = {
 }
 
 IfExpr = {
-	[Ii] 'f' EOT ($cond(Expression) / "(" $cond(Expression) ")")
+	[Ii] 'f' EOT ( "(" $cond(Expression) ")" / $cond(Expression) )
 	(__ [Tt] 'hen' EOT)? $then(Expression)
 	__ [Ee] 'lse' EOT $else(Expression)
 	#IfExpr
