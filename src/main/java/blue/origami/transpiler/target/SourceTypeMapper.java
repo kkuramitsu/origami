@@ -14,10 +14,10 @@ import blue.origami.transpiler.type.TypeMapper;
 
 public class SourceTypeMapper extends TypeMapper<String> {
 
-	SourceSyntaxMapper syntax;
+	SyntaxMapper syntax;
 	SourceSection head;
 
-	public SourceTypeMapper(Env env, SourceSyntaxMapper syntax) {
+	public SourceTypeMapper(Env env, SyntaxMapper syntax) {
 		super(env);
 		this.syntax = syntax;
 	}

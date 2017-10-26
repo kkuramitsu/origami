@@ -5,11 +5,11 @@ import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
-public class ExistFieldCode extends Code1 {
+public class HasCode extends Code1 {
 
 	private String name;
 
-	public ExistFieldCode(Code inner, String name) {
+	public HasCode(Code inner, String name) {
 		super(inner);
 		this.name = name;
 	}
@@ -29,7 +29,7 @@ public class ExistFieldCode extends Code1 {
 
 	@Override
 	public void emitCode(CodeSection sec) {
-		sec.pushExistField(this);
+		sec.pushHas(this);
 	}
 
 	@Override

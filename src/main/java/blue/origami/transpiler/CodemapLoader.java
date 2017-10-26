@@ -33,7 +33,7 @@ public class CodemapLoader {
 	}
 
 	public String getPath(String file) {
-		return this.base + "/" + file;
+		return this.base + file;
 	}
 
 	public void load(String file) {
@@ -118,6 +118,9 @@ public class CodemapLoader {
 	void defineSymbol(Env env, String[] requires, String key, String value) {
 		if (key == null) {
 			return;
+		}
+		if (key.startsWith("`")) {
+			env.getTranspiler().defineSyntax(key.substring(1), value);
 		}
 		int acc = 0;
 		if (key.endsWith("!!")) {

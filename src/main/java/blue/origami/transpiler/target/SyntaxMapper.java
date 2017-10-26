@@ -3,6 +3,7 @@ package blue.origami.transpiler.target;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -10,18 +11,18 @@ import java.util.HashMap;
 import blue.origami.common.OConsole;
 import blue.origami.parser.nezcc.SourceGenerator;
 
-public class SourceSyntaxMapper {
+public class SyntaxMapper {
 	HashMap<String, String> syntaxMap = new HashMap<>();
 
-	protected String s(String key) {
+	String s(String key) {
 		return this.syntaxMap.getOrDefault(key, key);
 	}
 
-	public String symbol(String... keys) {
+	String symbol(String... keys) {
 		return this.fmt(keys);
 	}
 
-	public String fmt(String... keys) {
+	String fmt(String... keys) {
 		for (int i = 0; i < keys.length - 1; i++) {
 			String fmt = this.syntaxMap.get(keys[i]);
 			if (fmt != null) {
@@ -31,11 +32,11 @@ public class SourceSyntaxMapper {
 		return keys[keys.length - 1];
 	}
 
-	protected boolean isDefinedSyntax(String key) {
+	boolean isDefinedSyntax(String key) {
 		return this.syntaxMap.containsKey(key);
 	}
 
-	protected String format(String fmt, Object... args) {
+	String format(String fmt, Object... args) {
 		if (args.length == 0) {
 			return fmt;
 		}
@@ -46,7 +47,7 @@ public class SourceSyntaxMapper {
 		}
 	}
 
-	void defineSyntax(String key, String symbol) {
+	public void defineSyntax(String key, String symbol) {
 		if (!this.isDefinedSyntax(key)) {
 			if (symbol != null) {
 				int s = symbol.indexOf("$|");
@@ -68,10 +69,20 @@ public class SourceSyntaxMapper {
 		}
 	}
 
+	private String target = "(Unknown)";
+
+	String target() {
+		return this.syntaxMap.getOrDefault("lang", this.target);
+	}
+
 	void importSyntaxFile(String path) {
+		this.target = path;
 		try {
 			File f = new File(path);
 			InputStream s = f.isFile() ? new FileInputStream(path) : SourceGenerator.class.getResourceAsStream(path);
+			if (s == null) {
+				throw new FileNotFoundException(path);
+			}
 			BufferedReader reader = new BufferedReader(new InputStreamReader(s));
 			String line = null;
 			String name = null;
@@ -87,6 +98,9 @@ public class SourceSyntaxMapper {
 						continue;
 					}
 					name = line.substring(0, loc - 1).trim();
+					if (name.startsWith("`")) {
+						name = name.substring(1);
+					}
 					String value = line.substring(loc + 1).trim();
 					// System.out.printf("%2$s : %1$s\n", value, name);
 					if (value == null) {

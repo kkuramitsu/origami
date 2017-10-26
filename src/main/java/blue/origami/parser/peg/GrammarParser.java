@@ -100,7 +100,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 		public Gamma newLocalGramma(SourcePosition s, String name) {
 			Grammar g = this.grammar.getGrammar(name);
 			if (g != null) {
-				this.logger.reportWarning(s, NezFmt.YY0_is_duplicated_name, name);
+				this.logger.reportWarning(s, NezFmt.YY1_is_duplicated_name, name);
 			} else {
 				g = this.grammar.newLocalGrammar(name);
 			}
@@ -615,7 +615,7 @@ public class GrammarParser extends TreeVisitorMap<GrammarParser.ExpressionTransd
 			}
 			Expression rule = gamma.grammar.getLocalExpression(name);
 			if (rule != null) {
-				gamma.logger.reportWarning(node.get(_name), NezFmt.YY0_is_duplicated_name, name);
+				gamma.logger.reportWarning(node.get(_name), NezFmt.YY1_is_duplicated_name, name);
 				return rule;
 			}
 			rule = gamma.parse(node.get(_expr));

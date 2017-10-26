@@ -6,7 +6,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
 public class GroupCode extends Code1 {
-	GroupCode(Code inner) {
+	public GroupCode(Code inner) {
 		super(AutoType, inner);
 	}
 

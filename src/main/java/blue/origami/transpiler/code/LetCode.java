@@ -25,6 +25,10 @@ public class LetCode extends Code1 {
 		this(AST.getName(name), null, expr);
 	}
 
+	public boolean isMutable() {
+		return false;
+	}
+
 	public LetCode asImplicit() {
 		this.isImplicit = true;
 		return this;
@@ -77,4 +81,5 @@ public class LetCode extends Code1 {
 		sh.Operator(" = ");
 		sh.Expr(this.getInner());
 	}
+
 }

@@ -15,7 +15,7 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MultiCode;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.SugarCode;
 import blue.origami.transpiler.code.TupleCode;
@@ -65,8 +65,8 @@ class TupleAssignCode extends SugarCode {
 		TupleTy tupleTy = new TupleTy(null, ts);
 		this.right = this.right.asType(env, tupleTy);
 		String[] names = Arrays.stream(this.left.args()).map(n -> {
-			if (n instanceof NameCode) {
-				return ((NameCode) n).getName();
+			if (n instanceof VarNameCode) {
+				return ((VarNameCode) n).getName();
 			} else {
 				throw new ErrorCode(n, TFmt.not_name);
 			}

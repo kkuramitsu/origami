@@ -1,0 +1,139 @@
+# Konoha5 origami.file
+
+# Bool
+==:Bool:Bool:Bool      = %s == %s
+!=:Bool:Bool:Bool      = %s!=%s
+&&:Bool:Bool:Bool      = %s and %s
+||:Bool:Bool:Bool      = %s or %s
+!:Bool:Bool            = not %s
+assert:Bool:()!!       = assert(%s)
+
+#Int 
++:Int:Int        = %s
+-:Int:Int        = -%s
++:Int:Int:Int    = %s+%s
+-:Int:Int:Int    = %s-%s
+*:Int:Int:Int    = %s*%s
+/:Int:Int:Int    = %s/%s
+%:Int:Int:Int    = %s%%%s
+
+==:Int:Int:Bool  = %s==%s
+!=:Int:Int:Bool  = %s!=%s
+<:Int:Int:Bool   = %s<%s
+>:Int:Int:Bool   = %s>%s
+<=:Int:Int:Bool  = %s<=%s
+>=:Int:Int:Bool  = %s>=%s
+
+<<:Int:Int:Int   = %s<<%s
+>>:Int:Int:Int   = %s>>%s
+&&:Int:Int:Int   = %s&%s
+||:Int:Int:Int   = %s|%s
+^^:Int:Int:Int   = %s^%s
+~:Int:Int        = ~%s
+^:Int:Int:Int    = %s**%s
+||:Int:Int       = abs(%s)
+
+# Float
+Int=>Float             = float(%s)
+Float->Int             = int(%s)
++:Float:Float          = %s
+-:Float:Float          = -%s
++:Float:Float:Float    = %s+%s
+-:Float:Float:Float    = %s-%s
+*:Float:Float:Float    = %s*%s
+/:Float:Float:Float    = %s/%s
+%:Float:Float:Float    = %s%%%s
+
+==:Float:Float:Bool  = %s==%s
+!=:Float:Float:Bool  = %s!=%s
+<:Float:Float:Bool   = %s<%s
+>:Float:Float:Bool   = %s>%s
+<=:Float:Float:Bool  = %s<=%s
+>=:Float:Float:Bool  = %s>=%s
+^:Float:Float:Float  = %s**%s
+||:Float:Int         = abs(%s)
+# rand:Float@        = S|java/lang/Math|random
+
+#String
+char->String           = O|blue/origami/asm/APIs|toch
+String--->Int!!        = int(%s)
+String--->Float!!      = float(%s)
+Bool-->String          = str(%s)
+Int-->String           = str(%s)
+Float-->String         = str(%s)
+
+||:String:Int             = len(%s)
+++:String:String:String   = %s+%s
+==:String:String:Bool     = %s==%s
+!=:String:String:Bool     = %s!=%s
+<:String:String:Bool      = %s<%s
+>:String:String:Bool      = %s>%s
+<=:String:String:Bool     = %s<=%s
+>=:String:String:Bool     = %s>=%s
+println:String:()         = print(%s)
+
+## AnyRef
+any==>Bool              = %s
+Bool==>any              = %s
+any==>Int               = %s
+Int==>any               = %s
+any==>Float             = %s
+Float==>any             = %s
+upcast                  = %s
+#cast                   = %s
+
+any==>byte              = S|blue/origami/asm/APIs|unboxB
+byte==>any              = S|blue/origami/asm/APIs|box
+any==>char              = S|blue/origami/asm/APIs|unboxC
+char==>any              = S|blue/origami/asm/APIs|box
+any==>int64             = S|blue/origami/asm/APIs|unboxL
+int64==>any             = S|blue/origami/asm/APIs|box
+
+## a[], a{}, Stream[a]
+
+||:a[]:Int                = len(a)
+[]:a[]:Int:a              = %s[%s]
+#=:a[]:a[]                = 
+
+forEach:a[]:a->():()      = forEach(%s,%s)
+filter:a[]:a->Bool:a[]    = filter(%s,%s)
+map:a[]:a->b:b[]          = map(%s,%s) 
+reduce:a[]:a:a:a->a:a     = reduce(%s,%s,%s)
+
+a{}->a[]                           = %s
+||:a{}:Int                         = len(a)
+[]:a{}:Int:a                       = %s[%s]
+
+[]=:a{}:Int:a:()                   = %s[%s]=%s
+
+push:a{}:a:()                      = %s.append(%s)
+pop:a{}:a                          = %s.pop()
+
+# Dict[a]
+||:Dict[a]:Int                       = %s
+[]:Dict[a]:String:a?                 = %s[%s]
+Dict[a]->String[]                    = %s.keys()
+forEach:Dict[a]:String,a->():()      = forEach2(%s)
+
+# Dict{a}
+||:Dict{a}:Int                      = %s
+[]:Dict{a}:String:a?                = %s[%s]
+[]=:Dict{a}:String:a:()             = %s[%s]=%s
+Dict{a}->String[]                   = 
+forEach:Dict{a}:String,a->():()     = V|blue/origami/konoha5/Dict$|forEach
+
+#Option
+Some:a:a?                            = -
+Some?:a?:Bool                        = S|blue/origami/asm/APIs|isSome
+None?:a?:Bool                        = S|blue/origami/asm/APIs|isNone
+|?:a?:a:a                            = X|orElse
+forEach:a?:a->():()                  = S|blue/origami/asm/APIs|forEach
+map:a?:a->b:b?                       = S|blue/origami/asm/APIs|map
+flatMap:a?:a->b?:b?                  = S|blue/origami/asm/APIs|flatMap
+
+Some:Bool:Bool?                      = S|blue/origami/asm/APIs|box
+Bool?--->Bool                        = S|blue/origami/asm/APIs|unwrapZ
+Some:Int:Int?                        = S|blue/origami/asm/APIs|box
+Int?--->Int                          = S|blue/origami/asm/APIs|unwrapI
+Some:Float:Float?                    = S|blue/origami/asm/APIs|box
+Float?--->Float                      = S|blue/origami/asm/APIs|unwrapD

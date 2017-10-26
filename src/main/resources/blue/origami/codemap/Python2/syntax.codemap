@@ -1,0 +1,76 @@
+# Syntax file
+# 
+
+# Language
+`lang             = Python
+`extension        = py
+`command          = python
+
+# code layout
+
+`comment          = # %s
+
+`begin            = :
+`end              = 
+`;                =
+`delim            = , 
+
+`const            = %2$s = %3$s
+
+`function         = def %2$s(%3$s):
+`param            = %2$s
+`params           = ,
+
+`return           = return %s
+
+`null             = None
+`true             = True
+`false            = False
+
+`get              = %s.%s
+`set              = %s.%s = %s
+`has              = hasattr(%s, '%s')
+
+`group            = (%s)
+
+`ifexpr           = %2$s if (%1$s) else (%3$s)
+
+`apply            = (
+`end apply        = )
+
+`let              = %2$s = %3$s
+`let mut          = %2$s = %3$s
+`assign           = %s = %s
+`varname          = %s
+
+`if               = if %s:
+`else             = else :
+`while            = while %s:
+`break            = break
+
+`lambda           = (lambda %s : %s)
+`funcref          = %s
+
+`tuple            = (
+`end tuple        = )
+`get0             = %s[0]
+`get1             = %s[1]
+`get2             = %s[2]
+`get3             = %s[3]
+`get4             = %s[4]
+
+`list             = [
+`end list         = ]
+
+`array            = [
+`end array        = ]
+
+`map              = {
+`end map          = }
+
+`dict             = {
+`end dict         = }
+
+
+
+

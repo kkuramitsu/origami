@@ -19,7 +19,7 @@ import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.LetCode;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.DataExpr;
 import blue.origami.transpiler.rule.DataType;
@@ -118,7 +118,7 @@ public class Language implements OFactory<Language> {
 
 	/* name */
 
-	public Code typeName(Env env, NameCode code, Ty ret) {
+	public Code typeName(Env env, VarNameCode code, Ty ret) {
 		if (code.isUntyped()) {
 			NameInfo ref = env.get(code.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref != null) {
@@ -130,7 +130,7 @@ public class Language implements OFactory<Language> {
 		return code.castType(env, ret);
 	}
 
-	private Code parseNames(Env env, NameCode code, String name, Ty ret) {
+	private Code parseNames(Env env, VarNameCode code, String name, Ty ret) {
 		Code mul = null;
 		for (int i = 0; i < name.length(); i++) {
 			String var = this.parseName(name, i);

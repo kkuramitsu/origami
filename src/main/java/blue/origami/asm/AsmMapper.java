@@ -17,13 +17,15 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.target.SyntaxMapper;
 import blue.origami.transpiler.type.Ty;
 
 public class AsmMapper extends CodeMapper implements Opcodes {
 
 	private AsmType ts;
 
-	public AsmMapper(Env env) {
+	public AsmMapper(Transpiler env) {
+		super(env, new SyntaxMapper());
 		this.ts = new AsmType(env);
 	}
 

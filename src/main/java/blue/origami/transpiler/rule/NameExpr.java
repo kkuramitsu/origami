@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 
 public class NameExpr implements ParseRule {
 
@@ -11,7 +11,7 @@ public class NameExpr implements ParseRule {
 	public Code apply(Env env, AST t) {
 		// String name = t.getString();
 		// env.addParsedName(name);
-		return new NameCode(t);
+		return new VarNameCode(t);
 	}
 
 	public interface NameInfo {

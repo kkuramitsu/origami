@@ -31,6 +31,7 @@ import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.GrammarParser;
+import blue.origami.parser.peg.NezFmt;
 
 public class Oexample extends Main {
 	HashMap<String, Parser> parserMap = new HashMap<>();
@@ -159,7 +160,7 @@ public class Oexample extends Main {
 			options.set(MainOption.Start, name);
 			p = g.newParser(options);
 			if (p == null) {
-				options.reportError(nameNode, "undefined nonterminal: %s", name);
+				options.reportError(nameNode, NezFmt.YY1_is_undefined_nonterminal, name);
 				return null;
 			}
 			this.parserMap.put(uname, p);

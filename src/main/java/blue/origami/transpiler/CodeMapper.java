@@ -4,21 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.CodeBuilder;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.target.SyntaxMapper;
 import blue.origami.transpiler.type.Ty;
 
 public abstract class CodeMapper implements CodeBuilder {
-	// protected boolean isVerbose = false;
-	//
-	// public void setVerbose(boolean debug) {
-	// this.isVerbose = debug;
-	// }
-	//
-	// public boolean isVerbose() {
-	// return this.isVerbose;
-	// }
+
+	protected final Transpiler transpiler;
+	protected final SyntaxMapper syntax;
+
+	protected CodeMapper(Transpiler transpiler, SyntaxMapper syntax) {
+		this.transpiler = transpiler;
+		this.syntax = syntax;
+	}
+
+	public void defineSyntax(String key, String value) {
+		this.syntax.defineSyntax(key, value);
+	}
 
 	protected ArrayList<AST> exampleList = null;
 	protected ArrayList<FuncMap> funcList = null;
@@ -30,9 +33,9 @@ public abstract class CodeMapper implements CodeBuilder {
 		this.exampleList = null;
 	}
 
-	protected abstract Object wrapUp();
-
 	public abstract void emitTopLevel(Env env, Code code);
+
+	protected abstract Object wrapUp();
 
 	public String getUniqueConstName(String name) {
 		return name;
@@ -102,39 +105,5 @@ public abstract class CodeMapper implements CodeBuilder {
 		}
 		return code;
 	}
-
-	// public CodeMap genTestBinFunc(TEnv env, String op, Code right) {
-	// Transpiler tr = env.getTranspiler();
-	// Ty ty = right.getType();
-	// String[] names = { "a", "b" };
-	// Ty[] params = { ty, ty };
-	// Code name = new NameCode("a", 0, ty, 0);
-	// MultiCode body = new MultiCode(new ExprCode("assert", new BinaryCode(op,
-	// name, new NameCode("b", 1, ty, 0))),
-	// name);
-	// return tr.defineFunction("test" + op + ty, names, params, ty, body);
-	// }
-	//
-	// public abstract String arrowName(Ty fromTy, Ty toTy);
-
-	// public Template genFuncConvFunc(TEnv env, FuncTy fromTy, FuncTy toTy) {
-	// Transpiler tr = env.getTranspiler();
-	// String[] names = { "_f" };
-	// Ty[] params = { fromTy };
-	//
-	// Ty[] fromTypes = fromTy.getParamTypes();
-	// Ty[] toTypes = toTy.getParamTypes();
-	// String[] fnames = TArrays.names(toTypes.length);
-	// List<Code> l = new ArrayList<>();
-	// l.add(new NameCode("_f"));
-	// for (int c = 0; c < toTy.getParamSize(); c++) {
-	// l.add(new CastCode(fromTypes[c], new NameCode(String.valueOf((char)
-	// c))));
-	// }
-	// Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
-	// body = new FuncCode(fnames, fromTypes, toTy.getReturnType(), body);
-	// return tr.defineFunction(FuncTy.mapKey(fromTy, toTy), names, params,
-	// toTy, body);
-	// }
 
 }

@@ -2,6 +2,7 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
+import blue.origami.transpiler.CodeBuilder;
 
 public class BinaryCode extends ExprCode implements CodeBuilder {
 

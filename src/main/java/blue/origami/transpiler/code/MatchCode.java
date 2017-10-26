@@ -11,9 +11,10 @@ import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.CodeBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 
@@ -66,7 +67,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		if (this.optionalCase != null) {
 			this.targetCode = this.targetCode.asType(env, Ty.tOption(targetTy));
 			LetCode decl = new LetCode("it", this.targetCode);
-			this.targetCode = new NameCode("it");
+			this.targetCode = new VarNameCode("it");
 			Code ifCode = new IfCode(this.isNone(this.targetCode), this.optionalCase.thenCode(),
 					this.desugarRule(env, this.getSome(this.targetCode), targetTy));
 			desugar = decl.add(ifCode);
@@ -81,7 +82,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		Code targetCode = targetCode0.asType(env, targetTy);
 		targetTy = targetCode.getType();
 		LetCode decl = new LetCode("it", targetCode);
-		targetCode = new NameCode("it");
+		targetCode = new VarNameCode("it");
 		for (Code c : this.args) {
 			RuleCode r = (RuleCode) c;
 			r.desugar0(targetCode, targetTy);
@@ -154,8 +155,8 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		}
 
 		void findNames(Code c, Set<String> names) {
-			if (c instanceof NameCode) {
-				names.add(((NameCode) c).getName());
+			if (c instanceof VarNameCode) {
+				names.add(((VarNameCode) c).getName());
 				return;
 			}
 			for (Code sub : c.args()) {
@@ -469,7 +470,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 				Case inner = (Case) c;
 				String name = inner.getName();
 				Ty nameTy = inner.targetTy;
-				ands.add(new ExistFieldCode(this.target, name));
+				ands.add(new HasCode(this.target, name));
 				Code field = new GetCode(this.target, name, nameTy);
 				if (nameTy.isOption()) {
 					ands.add(this.isSome(field));

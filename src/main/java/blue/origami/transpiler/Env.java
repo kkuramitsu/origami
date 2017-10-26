@@ -174,6 +174,10 @@ interface TEnvTraits {
 		log.dump();
 	}
 
+	public default void reportError(Code code, OFormat format, Object... args) {
+		this.reportLog(new TLog(code.getSource(), TLog.Error, format, args));
+	}
+
 	public default void reportError(SourcePosition s, OFormat format, Object... args) {
 		this.reportLog(new TLog(s, TLog.Error, format, args));
 	}

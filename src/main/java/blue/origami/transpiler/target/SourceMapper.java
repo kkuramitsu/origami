@@ -1,11 +1,14 @@
 package blue.origami.transpiler.target;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
+import blue.origami.common.OConsole;
+import blue.origami.common.OWriter;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeMapper;
 import blue.origami.transpiler.ConstMap;
@@ -15,21 +18,16 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
 public class SourceMapper extends CodeMapper {
-	protected final SourceSyntaxMapper syntax;
 	protected final SourceTypeMapper ts;
 	protected SourceSection head;
 	protected SourceSection data;
 	protected SourceSection eval;
+	protected OWriter writer;
 
 	public SourceMapper(Transpiler tr) {
-		this.syntax = this.newSyntaxMapper(tr);
+		super(tr, new SyntaxMapper());
+		this.syntax.importSyntaxFile(tr.getPath("syntax.codemap"));
 		this.ts = new SourceTypeMapper(tr, this.syntax);
-	}
-
-	private SourceSyntaxMapper newSyntaxMapper(Transpiler tr) {
-		SourceSyntaxMapper syntax = new SourceSyntaxMapper();
-		syntax.importSyntaxFile(tr.getPath("syntax.codemap"));
-		return syntax;
 	}
 
 	public SourceSection newSourceSection() {
@@ -49,22 +47,36 @@ public class SourceMapper extends CodeMapper {
 		this.ts.setTypeDeclSection(this.data);
 		this.secList = new ArrayList<>();
 		this.secMap = new HashMap<>();
-	}
-
-	@Override
-	protected Object wrapUp() {
-		System.out.println(this.head.toString());
-		System.out.println(this.data.toString());
-		for (SourceSection sec : this.secList) {
-			System.out.println(sec);
+		this.writer = new OWriter();
+		try {
+			this.writer.open("| python -");
+		} catch (IOException e) {
+			OConsole.exit(1, e);
 		}
-		return this.eval.toString();
 	}
 
 	@Override
 	public void emitTopLevel(Env env, Code code) {
 		code = this.emitHeader(env, code);
 		code.emitCode(this.eval);
+	}
+
+	@Override
+	protected Object wrapUp() {
+		this.writer.println(this.head.toString());
+		this.writer.println(this.data.toString());
+		for (SourceSection sec : this.secList) {
+			this.writer.println(sec.toString());
+		}
+		String evaled = this.eval.toString();
+		this.writer.println(evaled);
+		this.writer.close();
+		return evaled;
+	}
+
+	private void out(SourceSection sec) {
+		String code = sec.toString();
+
 	}
 
 	// Code Map

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
@@ -191,9 +191,9 @@ public class FunctionContext {
 			if (this.closureLevel > 0) {
 				HashMap<String, Code> closureMap = env.get(FunctionContext.class).closureMap;
 				closureMap.put(this.getName(),
-						new NameCode(this.at, this.seq, this.type, this.closureLevel - 1).setSource(s));
+						new VarNameCode(this.at, this.seq, this.type, this.closureLevel - 1).setSource(s));
 			}
-			return new NameCode(this.at, this.seq, this.type, this.closureLevel).setSource(s);
+			return new VarNameCode(this.at, this.seq, this.type, this.closureLevel).setSource(s);
 		}
 
 		@Override

@@ -20,6 +20,7 @@ import blue.origami.common.OOption;
 import blue.origami.common.SourcePosition;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.Expression;
+import blue.origami.parser.peg.NezFmt;
 import blue.origami.parser.peg.PAnd;
 import blue.origami.parser.peg.PChoice;
 import blue.origami.parser.peg.PDetree;
@@ -87,7 +88,7 @@ public class TreeCheckerPass extends CommonPass {
 	private Expression detree(Expression e, int index, Typestate req, Typestate after) {
 		Expression ue = index == -1 ? e : e.get(index);
 		if (req != Typestate.Unit) {
-			this.options.reportWarning(this.src(ue), "removed mutation in %s", ue);
+			// this.options.reportWarning(this.src(ue), "removed mutation in %s", ue);
 			if (!(ue instanceof PNonTerminal)) {
 				this.req = Typestate.Unit;
 				ue = ue.visit(this, null);
@@ -106,10 +107,10 @@ public class TreeCheckerPass extends CommonPass {
 
 	private Expression insertLink(Expression e, int index) {
 		if (index == -1) {
-			this.options.reportNotice(this.src(e), "inserted unlabeled link");
+			// this.options.reportNotice(this.src(e), "inserted unlabeled link");
 			return new PLinkTree(null, e);
 		} else {
-			this.options.reportNotice(this.src(e.get(index)), "inserted unlabeled link");
+			// this.options.reportNotice(this.src(e.get(index)), "inserted unlabeled link");
 			e.set(index, new PLinkTree(null, e.get(index)));
 			return e;
 		}
@@ -151,7 +152,7 @@ public class TreeCheckerPass extends CommonPass {
 		Typestate innerState = this.typeState(p.get(0));
 		if (p.folding) {
 			if (this.req != Typestate.Immutation) {
-				this.options.reportWarning(this.src(p), "removed tree folding %s", p);
+				// this.options.reportWarning(this.src(p), "removed tree folding %s", p);
 				this.detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
@@ -163,7 +164,8 @@ public class TreeCheckerPass extends CommonPass {
 				return p.get(0);
 			}
 			if (this.req != Typestate.Tree) {
-				this.options.reportWarning(this.src(p), "removed tree %s (req=%s)", p, this.req);
+				// this.options.reportWarning(this.src(p), "removed tree %s (req=%s)", p,
+				// this.req);
 				this.detree(p, 0, innerState, this.req);
 				return p.get(0);
 			}
@@ -174,7 +176,7 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitTag(PTag p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			this.options.reportWarning(this.src(p), "removed %s", p);
+			this.options.reportWarning(this.src(p), NezFmt.removed_YY1, p);
 			return Expression.defaultEmpty;
 		}
 		return super.visitTag(p, a);
@@ -183,7 +185,7 @@ public class TreeCheckerPass extends CommonPass {
 	@Override
 	public Expression visitValue(PValue p, Void a) {
 		if (this.req != Typestate.TreeMutation) {
-			this.options.reportWarning(this.src(p), "removed %s", p);
+			this.options.reportWarning(this.src(p), NezFmt.removed_YY1, p);
 			return Expression.defaultEmpty;
 		}
 		return p;

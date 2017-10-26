@@ -15,7 +15,7 @@ import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 
 public class FuncTy extends Ty {
 	protected final String name;
@@ -193,9 +193,9 @@ public class FuncTy extends Ty {
 		Ty[] toTypes = toTy.getParamTypes();
 		AST[] fnames = AST.getNames(OArrays.names(toTypes.length));
 		List<Code> l = new ArrayList<>();
-		l.add(new NameCode("f"));
+		l.add(new VarNameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {
-			Code p = new NameCode(String.valueOf((char) ('a' + c)));
+			Code p = new VarNameCode(String.valueOf((char) ('a' + c)));
 			l.add(new CastCode(fromTypes[c], p)); // Any->Int & (Int->Int? &
 													// Int?->Any?) ==> c->d
 			// ODebug.trace("[%d] %s->%s %s", c, toTypes[c], fromTypes[c],

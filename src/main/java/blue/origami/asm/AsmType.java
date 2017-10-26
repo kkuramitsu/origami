@@ -27,7 +27,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
-import blue.origami.transpiler.code.NameCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.TupleTy;
@@ -354,7 +354,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 			Code[] p = new Code[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {
-				p[i] = new NameCode(AST.getName("a"), i, paramTypes[i], 0);
+				p[i] = new VarNameCode(AST.getName("a"), i, paramTypes[i], 0);
 				paramNames[i] = "a";
 			}
 			Code body = new ExprCode(tp, p);

@@ -12,20 +12,20 @@ import blue.origami.transpiler.type.Ty;
 
 public final class FuncRefCode extends CommonCode {
 	private String name;
-	private CodeMap template;
+	private CodeMap mapped;
 
 	public FuncRefCode(String name, CodeMap tp) {
 		super(tp.getFuncType());
 		this.name = name;
-		this.template = tp;
+		this.mapped = tp;
 	}
 
 	public String getName() {
 		return this.name;
 	}
 
-	public CodeMap getRef() {
-		return this.template;
+	public CodeMap getMapped() {
+		return this.mapped;
 	}
 
 	@Override
@@ -46,23 +46,23 @@ public final class FuncRefCode extends CommonCode {
 			return this.asMatched(env, selected.generate(env, funcTy.getParamTypes()), ret);
 		}
 		if (this.isUntyped()) {
-			this.template.used(env);
-			this.setType(this.template.getFuncType());
+			this.mapped.used(env);
+			this.setType(this.mapped.getFuncType());
 		}
 		return super.castType(env, ret);
 	}
 
 	@Override
 	public boolean showError(Env env) {
-		if (this.template.isAbstract() || this.template.isGeneric()) {
-			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this.name, this.template.getFuncType());
+		if (this.mapped.isAbstract() || this.mapped.isGeneric()) {
+			env.reportError(this.getSource(), TFmt.abstract_function_YY1__YY2, this.name, this.mapped.getFuncType());
 			return true;
 		}
 		return false;
 	}
 
 	private Code asMatched(Env env, CodeMap selected, Ty ret) {
-		this.template = selected;
+		this.mapped = selected;
 		this.setType(selected.getFuncType());
 		return this.castType(env, ret);
 	}

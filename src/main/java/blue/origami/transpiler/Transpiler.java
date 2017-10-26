@@ -160,7 +160,6 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 		this.generator.emitTopLevel(env, code);
 		Object result = this.generator.wrapUp();
-
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
@@ -288,6 +287,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	public void setShellMode(boolean shellMode) {
 		this.shellMode = shellMode;
+	}
+
+	public void defineSyntax(String key, String value) {
+		this.generator.defineSyntax(key, value);
 	}
 
 }

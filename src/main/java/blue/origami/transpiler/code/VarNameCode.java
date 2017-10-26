@@ -8,21 +8,21 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.type.Ty;
 
-public class NameCode extends CommonCode {
+public class VarNameCode extends CommonCode {
 
 	public final String name;
 	private final int seq;
 	private final int refLevel;
 
-	public NameCode(AST name) {
+	public VarNameCode(AST name) {
 		this(name, -1, null, 0);
 	}
 
-	public NameCode(String name) {
+	public VarNameCode(String name) {
 		this(AST.getName(name));
 	}
 
-	public NameCode(AST name, int seq, Ty ty, int refLevel) {
+	public VarNameCode(AST name, int seq, Ty ty, int refLevel) {
 		super(ty);
 		this.name = name.getString();
 		this.seq = seq;
@@ -69,5 +69,4 @@ public class NameCode extends CommonCode {
 			sh.Name(this.getName());
 		});
 	}
-
 }

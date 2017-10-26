@@ -1,6 +1,14 @@
-package blue.origami.transpiler.code;
+package blue.origami.transpiler;
 
 import java.util.List;
+
+import blue.origami.transpiler.code.BinaryCode;
+import blue.origami.transpiler.code.BoolCode;
+import blue.origami.transpiler.code.Code;
+import blue.origami.transpiler.code.ExprCode;
+import blue.origami.transpiler.code.GroupCode;
+import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.TupleIndexCode;
 
 public interface CodeBuilder {
 

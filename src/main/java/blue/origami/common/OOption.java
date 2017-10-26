@@ -128,7 +128,7 @@ public class OOption {
 	// -X class
 	public void setClass(String className) throws Throwable {
 		Class<?> c = loadClass(OFactory.class, className, Version.ClassPath + ".parser.nezcc",
-				Version.ClassPath + "transpiler.target");
+				Version.ClassPath + ".transpiler.target");
 		OFactory<?> f = (OFactory<?>) c.newInstance();
 		this.classMap.put(f.keyClass(), f);
 	}
@@ -185,43 +185,25 @@ public class OOption {
 		}
 	}
 
-	public final void reportError(SourcePosition s, String fmt, Object... args) {
-		// if (error() >= 1) {
-		// report(Error, message(s, "error", fmt, args));
-		// }
-	}
-
-	public final void reportWarning(SourcePosition s, String fmt, Object... args) {
-		// if (error() >= 2) {
-		// report(Warning, message(s, "warning", fmt, args));
-		// }
-	}
-
-	public final void reportNotice(SourcePosition s, String fmt, Object... args) {
-		// if (error() >= 3) {
-		// report(Notice, message(s, "notice", fmt, args));
-		// }
-	}
-
-	private SourceLogger log() {
-		SourceLogger log = this.get(VerboseOption.SourceLogger);
-		if (log == null) {
-			log = new SourceLogger.SimpleSourceLogger();
-			this.set(VerboseOption.SourceLogger, log);
+	private SourceLogger logger() {
+		SourceLogger logger = this.get(VerboseOption.SourceLogger);
+		if (logger == null) {
+			logger = new SourceLogger.SimpleSourceLogger();
+			this.set(VerboseOption.SourceLogger, logger);
 		}
-		return log;
+		return logger;
 	}
 
 	public final void reportError(SourcePosition s, OFormat fmt, Object... args) {
-		this.log().reportError(s, fmt, args);
+		this.logger().reportError(s, fmt, args);
 	}
 
 	public final void reportWarning(SourcePosition s, OFormat fmt, Object... args) {
-		this.log().reportWarning(s, fmt, args);
+		this.logger().reportWarning(s, fmt, args);
 	}
 
 	public final void reportNotice(SourcePosition s, OFormat fmt, Object... args) {
-		this.log().reportNotice(s, fmt, args);
+		this.logger().reportNotice(s, fmt, args);
 	}
 
 	// Messaging

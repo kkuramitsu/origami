@@ -3,35 +3,39 @@ package blue.origami.transpiler;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
-import blue.origami.transpiler.code.MappedCode;
+import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.transpiler.code.ExistFieldCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.GroupCode;
+import blue.origami.transpiler.code.HasCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.LogCode;
+import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.MultiCode;
-import blue.origami.transpiler.code.NameCode;
-import blue.origami.transpiler.code.NoneCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
+import blue.origami.transpiler.code.SwitchCode;
 import blue.origami.transpiler.code.TemplateCode;
+import blue.origami.transpiler.code.ThrowCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
+import blue.origami.transpiler.code.VarNameCode;
+import blue.origami.transpiler.code.WhileCode;
 
 public interface CodeSection {
 
 	public Env env();
 
-	public void pushNone(NoneCode code);
+	public void pushNone(Code code);
 
 	public void pushBool(BoolCode code);
 
@@ -47,7 +51,7 @@ public interface CodeSection {
 
 	public void pushLet(LetCode code);
 
-	public void pushName(NameCode code);
+	public void pushName(VarNameCode code);
 
 	public void pushIf(IfCode code);
 
@@ -82,12 +86,20 @@ public interface CodeSection {
 
 	public void pushSet(SetCode code);
 
-	public void pushExistField(ExistFieldCode code);
+	public void pushHas(HasCode code);
 
 	public void pushGroup(GroupCode code);
 
 	// imperative programming
 
 	public void pushAssign(AssignCode code);
+
+	public void pushWhile(WhileCode code);
+
+	public void pushBreak(BreakCode code);
+
+	public void pushThrow(ThrowCode code);
+
+	public void pushSwitch(SwitchCode code);
 
 }

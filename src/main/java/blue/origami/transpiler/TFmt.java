@@ -21,7 +21,9 @@ public enum TFmt implements OFormat {
 	function_S_remains_undefined, ambiguous_type__S, abstract_function_YY1__YY2, //
 	not_tuple, bad_tuple__YY1, not_name, //
 	// imperative languages
-	immutable_name__YY1; //
+	immutable_name__YY1, //
+	YY1_cannot_be_used, YY1_cannot_be_used_in_YY2, //
+	let_mut, while_loop, break_statement, return_statement, assign, switch_statement; //
 
 	public static String quote(Object o) {
 		return OConsole.bold("'" + o + "'");
