@@ -3,7 +3,7 @@ package blue.origami.transpiler.rule;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataDictCode;
+import blue.origami.transpiler.code.DictCode;
 
 public class DictExpr extends LoggerRule implements Symbols, ParseRule {
 
@@ -27,6 +27,6 @@ public class DictExpr extends LoggerRule implements Symbols, ParseRule {
 			values[c] = env.parseCode(env, keyvalue.get(_value));
 			c++;
 		}
-		return new DataDictCode(this.isMutable, names, values);
+		return new DictCode(this.isMutable, names, values);
 	}
 }

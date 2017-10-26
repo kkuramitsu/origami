@@ -1,19 +1,25 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OArrays;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.ListTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 
-public class DataListCode extends DataCode {
+public class ListCode extends CodeN {
+	boolean isMutable = false;
 
-	public DataListCode(ListTy dt) {
+	public ListCode(ListTy dt) {
 		super(dt);
 	}
 
-	public DataListCode(boolean isMutable, Code... values) {
-		super(isMutable, OArrays.emptyNames, values);
+	public ListCode(boolean isMutable, Code... values) {
+		super(values);
+		this.isMutable = isMutable;
+	}
+
+	public boolean isMutable() {
+		return this.isMutable;
 	}
 
 	@Override
@@ -36,6 +42,11 @@ public class DataListCode extends DataCode {
 			this.setType(this.isMutable() ? Ty.tArray(ty) : Ty.tList(ty));
 		}
 		return this.castType(env, ret);
+	}
+
+	@Override
+	public void emitCode(CodeSection sec) {
+		sec.pushList(this);
 	}
 
 	private Ty guessInnerType(Ty t) {

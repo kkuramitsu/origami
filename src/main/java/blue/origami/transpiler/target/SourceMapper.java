@@ -24,10 +24,11 @@ public class SourceMapper extends CodeMapper {
 	protected SourceSection eval;
 	protected OWriter writer;
 
-	public SourceMapper(Transpiler tr) {
+	public SourceMapper(Transpiler tr, SourceTypeMapper ts) {
 		super(tr, new SyntaxMapper());
 		this.syntax.importSyntaxFile(tr.getPath("syntax.codemap"));
-		this.ts = new SourceTypeMapper(tr, this.syntax);
+		this.ts = ts;
+		ts.setSyntaxMapper(this.syntax);
 	}
 
 	public SourceSection newSourceSection() {
@@ -44,7 +45,7 @@ public class SourceMapper extends CodeMapper {
 		this.head = this.newSourceSection();
 		this.data = this.newSourceSection();
 		this.eval = this.newSourceSection();
-		this.ts.setTypeDeclSection(this.data);
+		this.ts.setTypeSection(this.data);
 		this.secList = new ArrayList<>();
 		this.secMap = new HashMap<>();
 		this.writer = new OWriter();
@@ -72,11 +73,6 @@ public class SourceMapper extends CodeMapper {
 		this.writer.println(evaled);
 		this.writer.close();
 		return evaled;
-	}
-
-	private void out(SourceSection sec) {
-		String code = sec.toString();
-
 	}
 
 	// Code Map

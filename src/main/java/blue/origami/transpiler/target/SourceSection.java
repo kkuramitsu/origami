@@ -16,6 +16,7 @@ import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DictCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
@@ -26,8 +27,10 @@ import blue.origami.transpiler.code.HasCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.ListCode;
 import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.RangeCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
@@ -52,7 +55,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	}
 
 	public void pushFuncDecl(String name, Ty returnType, String[] paramNames, Ty[] paramTypes, Code code) {
-		SourceParams p = new SourceParams(this.syntax, 0, paramNames, paramTypes);
+		SourceParamCode p = new SourceParamCode(this.syntax, 0, paramNames, paramTypes);
 		this.pushIndent("");
 		this.pushf(this.syntax.fmt("function", "%1$s %2$s(%3$s) {"), returnType, name, p);
 		this.pushLine("");
@@ -203,11 +206,24 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushData(DataCode code) {
-		if (code.isList()) {
-			Ty innTy = code.getType().getInnerTy();
-			this.pushEnc("array", innTy, code.size(), (n) -> code.args[n].emitCode(this));
-			return;
-		}
+
+	}
+
+	@Override
+	public void pushList(ListCode code) {
+		Ty innTy = code.getType().getInnerTy();
+		this.pushEnc("array", innTy, code.size(), (n) -> code.args[n].emitCode(this));
+		return;
+	}
+
+	@Override
+	public void pushRange(RangeCode code) {
+
+	}
+
+	@Override
+	public void pushDict(DictCode code) {
+
 	}
 
 	@Override
@@ -219,7 +235,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushFuncExpr(FuncCode code) {
-		SourceParams p = new SourceParams(this.syntax, code.getStartIndex(), code.getParamNames(),
+		SourceParamCode p = new SourceParamCode(this.syntax, code.getStartIndex(), code.getParamNames(),
 				code.getParamTypes());
 		this.pushf(this.syntax.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
 	}
@@ -312,48 +328,52 @@ interface FuncParam {
 		return 0;
 	}
 
-	public default String getNameAt(int index) {
-		if (getParamNames().length == 0) {
-			return String.valueOf((char) ('a' + index));
-		}
-		return getParamNames()[index] + (this.getStartIndex() + index);
-	}
-
 	public default int size() {
 		return this.getParamTypes().length;
 	}
 }
 
-class SourceParams implements FuncParam, SourceEmitter {
+class SourceParamCode implements /* FuncParam, */ SourceEmitter {
 	final SyntaxMapper syntax;
 	final int startIndex;
 	final String[] paramNames;
 	final Ty[] paramTypes;
 
-	SourceParams(SyntaxMapper syntax, int startIndex, String[] paramNames, Ty[] paramTypes) {
+	SourceParamCode(SyntaxMapper syntax, int startIndex, String[] paramNames, Ty[] paramTypes) {
 		this.syntax = syntax;
 		this.startIndex = startIndex;
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
 	}
 
-	SourceParams(SyntaxMapper syntax, Ty[] paramTypes) {
+	SourceParamCode(SyntaxMapper syntax, Ty[] paramTypes) {
 		this(syntax, 0, OArrays.emptyNames, paramTypes);
 	}
 
-	@Override
+	// @Override
 	public int getStartIndex() {
 		return this.startIndex;
 	}
 
-	@Override
+	// @Override
 	public String[] getParamNames() {
 		return this.paramNames;
 	}
 
-	@Override
+	// @Override
 	public Ty[] getParamTypes() {
 		return this.paramTypes;
+	}
+
+	public String getNameAt(int index) {
+		if (this.getParamNames().length == 0) {
+			return String.valueOf((char) ('a' + index));
+		}
+		return this.getParamNames()[index] + (this.getStartIndex() + index);
+	}
+
+	public int size() {
+		return this.getParamTypes().length;
 	}
 
 	@Override

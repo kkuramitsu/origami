@@ -5,6 +5,7 @@ import java.util.Arrays;
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
+import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.SimpleTy;
@@ -17,12 +18,15 @@ public class SourceTypeMapper extends TypeMapper<String> {
 	SyntaxMapper syntax;
 	SourceSection head;
 
-	public SourceTypeMapper(Env env, SyntaxMapper syntax) {
+	public SourceTypeMapper(Transpiler env) {
 		super(env);
+	}
+
+	public void setSyntaxMapper(SyntaxMapper syntax) {
 		this.syntax = syntax;
 	}
 
-	public void setTypeDeclSection(SourceSection head) {
+	public void setTypeSection(SourceSection head) {
 		this.head = head;
 	}
 
@@ -66,7 +70,7 @@ public class SourceTypeMapper extends TypeMapper<String> {
 		String funcdef = this.syntax.symbol("functypedef", (String) null);
 		if (funcdef != null) {
 			String typeName = "F" + this.seq() + this.comment(funcTy.toString());
-			SourceParams p = new SourceParams(this.syntax, funcTy.getParamTypes());
+			SourceParamCode p = new SourceParamCode(this.syntax, funcTy.getParamTypes());
 			this.head.pushf(funcdef, funcTy.getReturnType(), typeName, p);
 			return typeName;
 		}

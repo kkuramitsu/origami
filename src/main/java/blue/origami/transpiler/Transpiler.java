@@ -19,12 +19,13 @@ import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.target.SourceMapper;
+import blue.origami.transpiler.target.SourceTypeMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 
 public class Transpiler extends Env implements OFactory<Transpiler> {
-	private CodemapLoader loader;
-	private CodeMapper generator;
+	private CodeLoader cloader;
+	private CodeMapper cmapper;
 
 	boolean isFriendly = true;
 
@@ -38,10 +39,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		this.add(Grammar.class, g);
 		this.add(Parser.class, p);
 		this.lang.initMe(this);
-		this.loader = new CodemapLoader(this);
-		this.generator = this.getCodeMapper();
-		this.loader.load(lang.getLangName() + ".codemap");
-		this.generator.init();
+		this.cloader = new CodeLoader(this);
+		this.cmapper = this.getCodeMapper();
+		this.cloader.load(lang.getLangName() + ".codemap");
+		this.cmapper.init();
 	}
 
 	public Transpiler() {
@@ -78,11 +79,11 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	public CodeMapper getCodeMapper() {
 		Class<?> c = this.getClass();
-		return (c == Transpiler.class) ? new AsmMapper(this) : new SourceMapper(this);
+		return (c == Transpiler.class) ? new AsmMapper(this) : new SourceMapper(this, new SourceTypeMapper(this));
 	}
 
 	public String getPath(String file) {
-		return this.loader.getPath(file);
+		return this.cloader.getPath(file);
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
@@ -150,7 +151,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
 			OConsole.println(t);
 		});
-		this.generator.setup();
+		this.cmapper.setup();
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
 		if (code.getType().isAmbigous()) {
 			code = new ErrorCode(code, TFmt.ambiguous_type__S, code.getType());
@@ -158,8 +159,8 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		if (code.showError(env)) {
 			return;
 		}
-		this.generator.emitTopLevel(env, code);
-		Object result = this.generator.wrapUp();
+		this.cmapper.emitTopLevel(env, code);
+		Object result = this.cmapper.wrapUp();
 		if (code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
@@ -176,7 +177,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		OSource sc = ParserSource.newStringSource("<test>", 1, text);
 		Parser p = this.get(Parser.class);
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
-		this.generator.setup();
+		this.cmapper.setup();
 		return this.parseCode(this, t).asType(this, Ty.tUntyped());
 	}
 
@@ -186,8 +187,8 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	public Object testEval(String s) throws Throwable {
 		Code code = this.testCode(s);
-		this.generator.emitTopLevel(this, code);
-		return this.generator.wrapUp();
+		this.cmapper.emitTopLevel(this, code);
+		return this.cmapper.wrapUp();
 	}
 
 	// Buffering
@@ -195,17 +196,17 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	public void addFunction(Env env, String name, FuncMap f) {
 		this.add(name, f);
 		if (f.isPublic()) {
-			this.generator.addFunction(name, f);
+			this.cmapper.addFunction(name, f);
 		}
 	}
 
 	public void addExample(String name, AST tree) {
 		if (tree.is("MultiExpr")) {
 			for (AST t : tree) {
-				this.generator.addExample(name, t);
+				this.cmapper.addExample(name, t);
 			}
 		} else {
-			this.generator.addExample(name, tree);
+			this.cmapper.addExample(name, tree);
 		}
 	}
 
@@ -216,28 +217,28 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	public CodeMap defineConst(boolean isPublic, String name, Ty type, Code expr) {
 		Env env = this.newEnv();
 		String lname = isPublic ? name : this.getLocalName(name);
-		CodeMap tp = this.generator.newConstMap(env, lname, type);
+		CodeMap tp = this.cmapper.newConstMap(env, lname, type);
 		this.add(name, tp);
-		this.generator.defineConst(this, isPublic, lname, type, expr);
+		this.cmapper.defineConst(this, isPublic, lname, type, expr);
 		return tp;
 	}
 
 	// FuncDecl
 
 	public CodeMap newCodeMap(String name, Ty returnType, Ty... paramTypes) {
-		final String lname = this.generator.safeName(name);
-		return this.generator.newCodeMap(this, name, lname, returnType, paramTypes);
+		final String lname = this.cmapper.safeName(name);
+		return this.cmapper.newCodeMap(this, name, lname, returnType, paramTypes);
 	}
 
 	public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		final Env env = this.newEnv();
-		final String lname = this.generator.safeName(name);
-		final CodeMap tp = this.generator.newCodeMap(env, name, lname, returnType, paramTypes);
+		final String lname = this.cmapper.safeName(name);
+		final CodeMap tp = this.cmapper.newCodeMap(env, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
 		FuncUnit fu = FuncUnit.wrap(null, paramNames, tp);
 		Code code = fu.typeCheck(env, fcx, null, body);
-		this.generator.defineFunction(this, false, lname, AST.names(paramNames), tp.getParamTypes(), tp.getReturnType(),
+		this.cmapper.defineFunction(this, false, lname, AST.names(paramNames), tp.getParamTypes(), tp.getReturnType(),
 				code);
 		return tp;
 	}
@@ -246,7 +247,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 			Ty returnType, VarDomain dom, Code code0) {
 		final String name = aname.getString();
 		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeMap tp = this.generator.newCodeMap(this, name, lname, returnType, paramTypes);
+		final CodeMap tp = this.cmapper.newCodeMap(this, name, lname, returnType, paramTypes);
 		this.add(name, tp);
 		FunctionContext fcx = new FunctionContext(null);
 		FuncUnit fu = FuncUnit.wrap(aname, paramNames, tp);
@@ -263,7 +264,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		if (code.showError(this)) {
 			return tp;
 		}
-		this.generator.defineFunction(this, isPublic, lname, AST.names(paramNames), tp.getParamTypes(),
+		this.cmapper.defineFunction(this, isPublic, lname, AST.names(paramNames), tp.getParamTypes(),
 				tp.getReturnType(), code);
 		return tp;
 	}
@@ -290,7 +291,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public void defineSyntax(String key, String value) {
-		this.generator.defineSyntax(key, value);
+		this.cmapper.defineSyntax(key, value);
 	}
 
 }

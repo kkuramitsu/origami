@@ -4,7 +4,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.BinaryCode;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataRangeCode;
+import blue.origami.transpiler.code.RangeCode;
 import blue.origami.transpiler.code.IntCode;
 
 public class RangeExpr implements ParseRule, Symbols {
@@ -25,7 +25,7 @@ public class RangeExpr implements ParseRule, Symbols {
 		if (!this.inclusive) {
 			right = new BinaryCode("-", right, new IntCode(1));
 		}
-		return new DataRangeCode(left, right);
+		return new RangeCode(left, right);
 	}
 
 }

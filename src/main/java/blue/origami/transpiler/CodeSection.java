@@ -7,6 +7,7 @@ import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DictCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
@@ -17,9 +18,11 @@ import blue.origami.transpiler.code.HasCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.ListCode;
 import blue.origami.transpiler.code.LogCode;
 import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.MultiCode;
+import blue.origami.transpiler.code.RangeCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
@@ -68,6 +71,12 @@ public interface CodeSection {
 	public void pushTupleIndex(TupleIndexCode code);
 
 	public void pushData(DataCode code);
+
+	public void pushList(ListCode code);
+
+	public void pushRange(RangeCode code);
+
+	public void pushDict(DictCode dictCode);
 
 	public void pushFuncExpr(FuncCode code);
 

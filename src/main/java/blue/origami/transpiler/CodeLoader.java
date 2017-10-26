@@ -17,14 +17,14 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.UnionTy;
 import blue.origami.transpiler.type.VarDomain;
 
-public class CodemapLoader {
+public class CodeLoader {
 	final Transpiler env;
 	final String common;
 	final String base;
 	final String defaul;
 	final HashMap<String, String> keyMap = new HashMap<>();
 
-	CodemapLoader(Transpiler env) {
+	CodeLoader(Transpiler env) {
 		this.env = env;
 		String target = env.getTargetName();
 		this.base = Version.ResourcePath + "/codemap/" + target + "/";
@@ -55,7 +55,7 @@ public class CodemapLoader {
 	private void load(String path, boolean isDefault) throws Throwable {
 		// String path = this.base + file;
 		File f = new File(path);
-		InputStream s = f.isFile() ? new FileInputStream(path) : CodemapLoader.class.getResourceAsStream(path);
+		InputStream s = f.isFile() ? new FileInputStream(path) : CodeLoader.class.getResourceAsStream(path);
 		if (s == null) {
 			throw new FileNotFoundException(path);
 		}

@@ -21,19 +21,21 @@ import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
+import blue.origami.transpiler.code.DictCode;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.ErrorCode;
-import blue.origami.transpiler.code.HasCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.GroupCode;
+import blue.origami.transpiler.code.HasCode;
 import blue.origami.transpiler.code.IfCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.LetCode;
+import blue.origami.transpiler.code.ListCode;
 import blue.origami.transpiler.code.MappedCode;
 import blue.origami.transpiler.code.MultiCode;
-import blue.origami.transpiler.code.VarNameCode;
+import blue.origami.transpiler.code.RangeCode;
 import blue.origami.transpiler.code.ReturnCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.StringCode;
@@ -42,6 +44,7 @@ import blue.origami.transpiler.code.TemplateCode;
 import blue.origami.transpiler.code.ThrowCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.code.WhileCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
@@ -444,38 +447,6 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushData(DataCode code) {
-		if (code.isRange()) {
-			ListTy dt = (ListTy) code.getType();
-			for (Code sub : code) {
-				sub.emitCode(this);
-			}
-			String desc = String.format("(II)%s", Type.getDescriptor(this.ts.toClass(dt)));
-			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
-			return;
-		}
-		if (code.isList()) {
-			ListTy dt = (ListTy) code.getType();
-			Class<?> c = this.ts.toClass(dt);
-			this.mBuilder.push(code.isMutable());
-			if (c == blue.origami.konoha5.List$.class) {
-				Type ty = Type.getType(Object.class);
-				this.pushArray(ty, true, code.args());
-				String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
-			} else {
-				Ty t = dt.getInnerTy();
-				this.pushArray(this.ts.ti(t), false, code.args());
-				String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
-						Type.getDescriptor(this.ts.toClass(dt)));
-				this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
-			}
-			return;
-		}
-		if (code.isDict()) {
-			// } else if (code.isDict()) {
-			//
-			return;
-		}
 		Class<?> c = this.ts.loadDataClass((DataTy) code.getType());
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
@@ -488,6 +459,40 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			args[i].emitCode(this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, names[i], this.ts.desc(args[i].getType()));
 		}
+	}
+
+	@Override
+	public void pushList(ListCode code) {
+		ListTy dt = (ListTy) code.getType();
+		Class<?> c = this.ts.toClass(dt);
+		this.mBuilder.push(code.isMutable());
+		if (c == blue.origami.konoha5.List$.class) {
+			Type ty = Type.getType(Object.class);
+			this.pushArray(ty, true, code.args());
+			String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
+			this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
+		} else {
+			Ty t = dt.getInnerTy();
+			this.pushArray(this.ts.ti(t), false, code.args());
+			String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
+					Type.getDescriptor(this.ts.toClass(dt)));
+			this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
+		}
+	}
+
+	@Override
+	public void pushRange(RangeCode code) {
+		ListTy dt = (ListTy) code.getType();
+		for (Code sub : code) {
+			sub.emitCode(this);
+		}
+		String desc = String.format("(II)%s", Type.getDescriptor(this.ts.toClass(dt)));
+		this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "range", desc, false);
+	}
+
+	@Override
+	public void pushDict(DictCode code) {
+
 	}
 
 	// Code[] symbols(String... values) {

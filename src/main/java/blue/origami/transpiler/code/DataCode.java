@@ -35,18 +35,6 @@ public class DataCode extends CodeN {
 		return this.isMutable;
 	}
 
-	public boolean isList() {
-		return this instanceof DataListCode;
-	}
-
-	public boolean isRange() {
-		return this instanceof DataRangeCode;
-	}
-
-	public boolean isDict() {
-		return this instanceof DataDictCode;
-	}
-
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
@@ -85,18 +73,11 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		sb.append(this.isMutable() ? "{" : "[");
-		for (int i = 0; i < this.args.length; i++) {
-			if (i > 0) {
-				sb.append(" ");
-			}
-			if (this.names.length > 0) {
-				sb.append(this.names[i]);
-				sb.append(": ");
-			}
-			OStrings.append(sb, this.args[i]);
-		}
-		sb.append(this.isMutable() ? "}" : "]");
+		this.sexpr(sb, this.isMutable() ? "data" : "record", 0, this.names.length, (n) -> {
+			sb.append(this.names[n]);
+			sb.append(":");
+			OStrings.append(sb, this.args[n]);
+		});
 	}
 
 	@Override
@@ -106,14 +87,8 @@ public class DataCode extends CodeN {
 			if (i > 0) {
 				sh.Token(",");
 			}
-			if (this.names.length > 0) {
-				if (this instanceof DataDictCode) {
-					sh.StringLiteral(this.names[i]);
-				} else {
-					sh.Name(this.names[i]);
-				}
-				sh.Token(":");
-			}
+			sh.Name(this.names[i]);
+			sh.Token(":");
 			sh.Expr(this.args[i]);
 		}
 		sh.Token(this.isMutable() ? "}" : "]");

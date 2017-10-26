@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataDictCode;
+import blue.origami.transpiler.code.DictCode;
 
 public class DictTy extends MonadTy {
 
@@ -16,7 +16,7 @@ public class DictTy extends MonadTy {
 
 	@Override
 	public Code getDefaultValue() {
-		return new DataDictCode(this);
+		return new DictCode(this);
 	}
 
 }

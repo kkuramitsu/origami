@@ -2,13 +2,20 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
+import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
-public class DataRangeCode extends DataListCode {
+public class RangeCode extends CodeN {
+	boolean isMutable = false;
 
-	public DataRangeCode(Code start, Code end) {
-		super(false, start, end);
+	public RangeCode(Code start, Code end) {
+		super(start, end);
+		this.isMutable = false;
+	}
+
+	public boolean isMutable() {
+		return this.isMutable;
 	}
 
 	@Override
@@ -19,6 +26,11 @@ public class DataRangeCode extends DataListCode {
 			this.setType(Ty.tList(Ty.tInt));
 		}
 		return super.asType(env, ret);
+	}
+
+	@Override
+	public void emitCode(CodeSection sec) {
+		sec.pushRange(this);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import java.util.Iterator;
+import java.util.function.IntConsumer;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
@@ -179,12 +180,12 @@ interface CodeAPI {
 		return b;
 	}
 
-	public default void sexpr(StringBuilder sb, String op, Code... args) {
+	public default void sexpr(StringBuilder sb, String op, int s, int e, IntConsumer f) {
 		sb.append("(");
 		sb.append(op);
-		for (Code a : args) {
+		for (int i = s; i < e; i++) {
 			sb.append(" ");
-			a.strOut(sb);
+			f.accept(i);
 		}
 		Ty t = self().getType();
 		if (t != null) {
@@ -192,6 +193,10 @@ interface CodeAPI {
 			t.strOut(sb);
 		}
 		sb.append(")");
+	}
+
+	public default void sexpr(StringBuilder sb, String op, Code... args) {
+		sexpr(sb, op, 0, args.length, (n) -> args[n].strOut(sb));
 	}
 
 }

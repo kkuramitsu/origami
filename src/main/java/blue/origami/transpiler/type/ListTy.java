@@ -2,7 +2,7 @@ package blue.origami.transpiler.type;
 
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataListCode;
+import blue.origami.transpiler.code.ListCode;
 
 public class ListTy extends MonadTy {
 
@@ -18,7 +18,7 @@ public class ListTy extends MonadTy {
 
 	@Override
 	public Code getDefaultValue() {
-		return new DataListCode((ListTy) Ty.tMonad(this.name, this.isMutable(), this.innerTy));
+		return new ListCode((ListTy) Ty.tMonad(this.name, this.isMutable(), this.innerTy));
 	}
 
 	@Override

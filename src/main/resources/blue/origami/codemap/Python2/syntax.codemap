@@ -4,7 +4,7 @@
 # Language
 `lang             = Python
 `extension        = py
-`command          = python
+`command          = python -
 
 # code layout
 
@@ -20,8 +20,6 @@
 `function         = def %2$s(%3$s):
 `param            = %2$s
 `params           = ,
-
-`return           = return %s
 
 `null             = None
 `true             = True
@@ -47,6 +45,7 @@
 `else             = else :
 `while            = while %s:
 `break            = break
+`return           = return %s
 
 `lambda           = (lambda %s : %s)
 `funcref          = %s
