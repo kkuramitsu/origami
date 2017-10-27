@@ -91,6 +91,11 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	}
 
 	@Override
+	public boolean isExecutable() {
+		return true;
+	}
+
+	@Override
 	protected Object wrapUp() {
 		if (this.cw0 != null) {
 			if (this.fieldSec != null) {

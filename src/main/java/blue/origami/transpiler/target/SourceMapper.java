@@ -1,13 +1,11 @@
 package blue.origami.transpiler.target;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
-import blue.origami.common.OConsole;
 import blue.origami.common.OWriter;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeMapper;
@@ -49,11 +47,11 @@ public class SourceMapper extends CodeMapper {
 		this.secList = new ArrayList<>();
 		this.secMap = new HashMap<>();
 		this.writer = new OWriter();
-		try {
-			this.writer.open("| python -");
-		} catch (IOException e) {
-			OConsole.exit(1, e);
-		}
+		// try {
+		// this.writer.open("| python -");
+		// } catch (IOException e) {
+		// OConsole.exit(1, e);
+		// }
 	}
 
 	@Override

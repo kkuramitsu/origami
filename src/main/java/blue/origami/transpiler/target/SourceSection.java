@@ -2,7 +2,6 @@ package blue.origami.transpiler.target;
 
 import java.util.Arrays;
 
-import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStringUtils;
 import blue.origami.transpiler.CodeMap;
@@ -206,24 +205,35 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushData(DataCode code) {
-
+		Ty innTy = code.getType();
+		String cons = code.isMutable() ? "data" : this.syntax.symbol("record", "data");
+		String kv = "pair " + cons;
+		this.pushEnc(cons, innTy, code.size(), (n) -> {
+			this.pushf(this.syntax.fmt(kv, "\"%1$s\": %2$s"), code.getNames()[n], code.args[n]);
+		});
 	}
 
 	@Override
 	public void pushList(ListCode code) {
 		Ty innTy = code.getType().getInnerTy();
-		this.pushEnc("array", innTy, code.size(), (n) -> code.args[n].emitCode(this));
+		String cons = code.isMutable() ? "array" : this.syntax.symbol("list", "array");
+		this.pushEnc(cons, innTy, code.size(), (n) -> code.args[n].emitCode(this));
 		return;
 	}
 
 	@Override
 	public void pushRange(RangeCode code) {
-
+		this.pushf(this.syntax.fmt("range", "range(%1$s,%2$s)"), code.args[0], code.args[1]);
 	}
 
 	@Override
 	public void pushDict(DictCode code) {
-
+		Ty innTy = code.getType().getInnerTy();
+		String cons = code.isMutable() ? "dict" : this.syntax.symbol("strmap", "dict");
+		String kv = "pair " + cons;
+		this.pushEnc(cons, innTy, code.size(), (n) -> {
+			this.pushf(this.syntax.fmt(kv, "\"%1$s\": %2$s"), code.getNames()[n], code.args[n]);
+		});
 	}
 
 	@Override
@@ -314,77 +324,6 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 			this.env().reportError(code, TFmt.YY1_cannot_be_used_in_YY2, TFmt.switch_statement, this.syntax.target());
 		}
 
-	}
-
-}
-
-interface FuncParam {
-
-	public String[] getParamNames();
-
-	public Ty[] getParamTypes();
-
-	public default int getStartIndex() {
-		return 0;
-	}
-
-	public default int size() {
-		return this.getParamTypes().length;
-	}
-}
-
-class SourceParamCode implements /* FuncParam, */ SourceEmitter {
-	final SyntaxMapper syntax;
-	final int startIndex;
-	final String[] paramNames;
-	final Ty[] paramTypes;
-
-	SourceParamCode(SyntaxMapper syntax, int startIndex, String[] paramNames, Ty[] paramTypes) {
-		this.syntax = syntax;
-		this.startIndex = startIndex;
-		this.paramNames = paramNames;
-		this.paramTypes = paramTypes;
-	}
-
-	SourceParamCode(SyntaxMapper syntax, Ty[] paramTypes) {
-		this(syntax, 0, OArrays.emptyNames, paramTypes);
-	}
-
-	// @Override
-	public int getStartIndex() {
-		return this.startIndex;
-	}
-
-	// @Override
-	public String[] getParamNames() {
-		return this.paramNames;
-	}
-
-	// @Override
-	public Ty[] getParamTypes() {
-		return this.paramTypes;
-	}
-
-	public String getNameAt(int index) {
-		if (this.getParamNames().length == 0) {
-			return String.valueOf((char) ('a' + index));
-		}
-		return this.getParamNames()[index] + (this.getStartIndex() + index);
-	}
-
-	public int size() {
-		return this.getParamTypes().length;
-	}
-
-	@Override
-	public void emit(SourceSection sec) {
-		String delim = this.syntax.symbol("paramdelim", ",", ",");
-		for (int i = 0; i < this.size(); i++) {
-			if (i > 0) {
-				sec.push(delim);
-			}
-			sec.pushf(this.syntax.fmt("param", "%1$s %2$s"), this.getParamTypes()[i], this.getNameAt(i));
-		}
 	}
 
 }

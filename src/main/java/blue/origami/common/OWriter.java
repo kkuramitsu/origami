@@ -59,7 +59,9 @@ public class OWriter {
 		if (this.lastChar != '\n') {
 			this.out.println();
 		}
-		this.out.println(s);
+		if (s.length() > 0) {
+			this.out.println(s);
+		}
 		this.lastChar = '\n';
 	}
 

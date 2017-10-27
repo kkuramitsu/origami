@@ -35,6 +35,10 @@ public abstract class CodeMapper implements CodeBuilder {
 
 	public abstract void emitTopLevel(Env env, Code code);
 
+	public boolean isExecutable() {
+		return false;
+	}
+
 	protected abstract Object wrapUp();
 
 	public String getUniqueConstName(String name) {

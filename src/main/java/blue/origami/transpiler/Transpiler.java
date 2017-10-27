@@ -34,7 +34,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		this.initMe(g, p, new Language());
 	}
 
-	private void initMe(Grammar g, Parser p, Language lang) {
+	public void initMe(Grammar g, Parser p, Language lang) {
 		this.lang = lang;
 		this.add(Grammar.class, g);
 		this.add(Parser.class, p);
@@ -161,7 +161,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 		this.cmapper.emitTopLevel(env, code);
 		Object result = this.cmapper.wrapUp();
-		if (code.getType() != Ty.tVoid) {
+		if (this.cmapper.isExecutable() && code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
 			sb.append(OConsole.t(code.getType().finalTy().toString()));
