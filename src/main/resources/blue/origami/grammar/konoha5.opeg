@@ -394,8 +394,8 @@ example JSFuncExpr&Expression [](x,y) { x+y }
 
 example IfExpr&Expression if(a > b) a + b else a - b
 example IfExpr&Expression if(a < b) then a * b else a / b
-example ConditionalExpr&Expression a <= b ? a != b : a >= b
-example ConditionalExpr&Expression a >= b ? a << b : a >> b
+//example ConditionalExpr&Expression a <= b ? a != b : a >= b
+//example ConditionalExpr&Expression a >= b ? a << b : a >> b
 example Expression true && false || !true
 example Expression a == (b%2)^(c|1)
 example Expression f(1,2)
@@ -947,12 +947,29 @@ NullExpr  = { [Nn] ('ull' / 'one' / 'il' / 'ULL' / 'othing' )  (&W !W)? #NullExp
 /* Identifier */
 
 Identifier = { NAME [']* '?'? #NameExpr } _
+           / '(' { OPNAME #NameExpr } ')' _
 W          = [a-zA-Z0-9_$\x80-\xF7]
 NAME       = [a-zA-Z_\x80-\xF7] W*
 
 Quantity = {
 	'*' / '?'
 } _
+
+OPNAME =
+	/ '++'  / '+' 
+	/ '-->' / '->' / '--' / '-'  
+	/ '**'  / '*'
+	/ '^^'  / '^'
+	/ '/' 
+	/ '%' 
+	/ '&&&' / '&&' / '&' 
+	/ '|||' / '||' / '|' 
+	/ '===' / '==>' / '==' / '=>'
+	/ '!='  / '!'
+	/ '>='  / '>' 
+	/ '<='  / '<'
+	/ '::'  / ':'
+	/ '~'
 
 /* Type */
 
@@ -965,10 +982,11 @@ example Type (int, int)
 example Type Int * Int
 example Type {}
 example Type {name, age}
-example Type #JSON String
 example Type String #JSON
-example Type #JSON String #JSON
+example Type String #JSON #TODO
 example Type [km/h]
+example Type a !Int !Float
+example Type a & Float #Unit
 
 // (a,b)->a->b
 
@@ -981,21 +999,20 @@ TSUFFIX =
     / "{" '}' _  #ArrayType
     / "[" $param(Type) ']' _  #MonadType
     / "{" $param(Type) '}' _  #StateType
-    / '?' _   #OptionType
-    / "->" $type(Type) #FuncType
-	/ '*' _ $type(Type) #RightTupleType
-	/ '#' $name(Identifier) #RightTagType
-
-"typeof" = [Tt] 'ype' _ [Oo] 'f' EOT
+    / '?' _  #OptionType
+    / "->"   $type(Type) #FuncType
+	/ '*' _  $type(Type) #RightTupleType
+	/ '#'    $name(Identifier) #RightTagType
+	/ '&' _  $name(Type) #AndType
+	/ '!' _  $name(Type) #NotType
 
 PrimaryType =
-	{ "typeof" $expr(Expression) #ExprType }
-	/ { '#' $name(Identifier) $type(Type) #TagType }
+	{ "<" $expr(Expression) ">" #ExprType }
 	/ { '_' #ClassType } _
 	/ ClassType
 	/ TupleType
-	/ "(" Type ")"
 	/ {'()' #ClassType } _
+	/ "(" Type ")"
 	/ DataType
 	/ RecordType
 	/ UnitType

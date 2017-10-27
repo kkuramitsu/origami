@@ -22,22 +22,26 @@ import blue.origami.transpiler.code.StringCode;
 public abstract class Ty implements TypeApi, OStrings {
 
 	// Core types
-	public static final Ty tVoid = new VoidTy();
-	public static final Ty tBool = new BoolTy();
-	public static final Ty tInt = new IntTy();
-	public static final Ty tFloat = new FloatTy();
-	public static final Ty tString = new StringTy();
+	public static final Ty tVoid = m(new VoidTy());
+	public static final Ty tBool = m(new BoolTy());
+	public static final Ty tInt = m(new IntTy());
+	public static final Ty tFloat = m(new FloatTy());
+	public static final Ty tString = m(new StringTy());
 
 	// Hidden Type
-	public static final Ty tAny = new AnyTy();
-	public static final Ty tByte = new SimpleTy("Byte");
-	public static final Ty tInt64 = new SimpleTy("Int64");
-	public static final Ty tFloat32 = new SimpleTy("Float32");
-	public static final Ty tChar = new SimpleTy("Char");
+	public static final Ty tAny = m(new AnyTy());
+	public static final Ty tByte = m(new SimpleTy("Byte"));
+	public static final Ty tInt64 = m(new SimpleTy("Int64"));
+	public static final Ty tFloat32 = m(new SimpleTy("Float32"));
+	public static final Ty tChar = m(new SimpleTy("Char"));
 
-	public static final Ty tNULL = new SimpleTy("?");
-	public static final Ty tThis = new SimpleTy("_");
-	public static final Ty tAuto = new SimpleTy("auto");
+	public static final Ty tNULL = m(new SimpleTy("?"));
+	public static final Ty tThis = m(new SimpleTy("_"));
+	public static final Ty tAuto = m(new SimpleTy("auto"));
+
+	static Ty m(Ty ty) {
+		return TypeMemo.memo(ty);
+	}
 
 	private static HashMap<String, Ty> typeMemoMap = new HashMap<>();
 
@@ -263,6 +267,18 @@ public abstract class Ty implements TypeApi, OStrings {
 	// }
 
 	public abstract <C> C mapType(TypeMapper<C> codeType);
+
+	/* Common */
+
+	private int typeId = 0;
+
+	void typeId(int seq) {
+		this.typeId = seq;
+	}
+
+	public int typeId() {
+		return this.typeId;
+	}
 
 }
 
