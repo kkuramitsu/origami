@@ -2,15 +2,16 @@ package blue.origami.transpiler.code;
 
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.type.ListTy;
+import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 
 public class ListCode extends CodeN {
 	boolean isMutable = false;
 
-	public ListCode(ListTy dt) {
+	public ListCode(Ty dt) {
 		super(dt);
+		assert (this.isList(dt));
 	}
 
 	public ListCode(boolean isMutable, Code... values) {
@@ -20,6 +21,15 @@ public class ListCode extends CodeN {
 
 	public boolean isMutable() {
 		return this.isMutable;
+	}
+
+	private boolean isList(Ty ty) {
+		ty = ty.base();
+		if (ty instanceof GenericTy) {
+			Ty base = ((GenericTy) ty).getBaseType().base();
+			return (base == Ty.tList || base == Ty.tMList);
+		}
+		return false;
 	}
 
 	@Override
@@ -32,9 +42,9 @@ public class ListCode extends CodeN {
 			this.setType(this.isMutable() ? Ty.tArray(firstType) : Ty.tList(firstType));
 			// ODebug.trace("first %s %s", firstType, this.getType());
 		}
-		if (ret.isList()) {
-			Ty ty = ret.getInnerTy();
-			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, VarLogger.Update)) {
+		if (this.isList(ret)) {
+			Ty ty = ret.getParamType();
+			if (!this.getType().getParamType().acceptTy(bEQ, ty, VarLogger.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
@@ -50,8 +60,8 @@ public class ListCode extends CodeN {
 	}
 
 	private Ty guessInnerType(Ty t) {
-		if (t.isList()) {
-			return t.getInnerTy();
+		if (this.isList(t)) {
+			return t.getParamType();
 		}
 		return Ty.tUntyped();
 	}

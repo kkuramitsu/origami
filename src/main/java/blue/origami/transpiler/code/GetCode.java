@@ -38,7 +38,7 @@ public class GetCode extends Code1 {
 				recvTy = infer;
 			}
 			if (recvTy.isData()) {
-				DataTy dt = (DataTy) recvTy.real();
+				DataTy dt = (DataTy) recvTy.base();
 				this.setType(dt.fieldTy(env, this.getSource(), this.name));
 				return this.castType(env, ret);
 			}

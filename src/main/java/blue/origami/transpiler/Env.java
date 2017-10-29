@@ -236,6 +236,10 @@ interface EnvApi {
 		return hint;
 	}
 
+	public default void addCodeMap(String name, CodeMap cmap) {
+		env().add(name, cmap);
+	}
+
 	public default Code parseCode(Env env, AST t) {
 		String name = t.getTag().getSymbol();
 		Code node = null;
@@ -301,22 +305,22 @@ interface EnvApi {
 		return def.get();
 	}
 
-	public default CodeMap findTypeMap(Env env, Ty fromTy0, Ty toTy0) {
-		Ty fromTy = fromTy0.finalTy();
-		Ty toTy = toTy0.finalTy();
+	public default CodeMap findTypeMap(Env env, Ty fromTy, Ty toTy) {
+		fromTy = fromTy.memoed();
+		toTy = toTy.memoed();
 		String key = FuncTy.mapKey(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			// ODebug.trace("found %s => %s %s", fromTy, toTy, tp);
 			return tp;
 		}
-		tp = fromTy.findMapTo(env, toTy);
+		tp = fromTy.findMapThisTo(env, fromTy, toTy);
 		if (tp != null) {
 			// ODebug.trace("builtin %s => %s %s", fromTy, toTy, tp);
 			env.getTranspiler().add(key, tp);
 			return tp;
 		}
-		tp = toTy.findMapFrom(env, fromTy);
+		tp = toTy.findMapFromToThis(env, fromTy, toTy);
 		if (tp != null) {
 			// ODebug.trace("builtin %s => %s %s", fromTy, toTy, tp);
 			env.getTranspiler().add(key, tp);
@@ -325,22 +329,22 @@ interface EnvApi {
 		return CodeMap.StupidArrow;
 	}
 
-	public default int mapCost(Env env, Ty fromTy0, Ty toTy0, VarLogger logs) {
-		if (toTy0.acceptTy(true, fromTy0, logs)) {
+	public default int mapCost(Env env, Ty fromTy, Ty toTy, VarLogger logs) {
+		if (toTy.acceptTy(true, fromTy, logs)) {
 			return CastCode.SAME;
 		}
-		Ty fromTy = fromTy0.finalTy();
-		Ty toTy = toTy0.finalTy();
+		fromTy = fromTy.memoed();
+		toTy = toTy.memoed();
 		String key = FuncTy.mapKey(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			return tp.mapCost();
 		}
-		int cost = fromTy.costMapTo(env, toTy);
+		int cost = fromTy.costMapThisTo(env, fromTy, toTy);
 		if (cost < CastCode.STUPID) {
 			return cost;
 		}
-		return toTy.costMapFrom(env, fromTy);
+		return toTy.costMapFromToThis(env, fromTy, toTy);
 	}
 
 	public default List<CodeMap> findCodeMaps(String name, int paramSize) {

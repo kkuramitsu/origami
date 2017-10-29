@@ -23,8 +23,8 @@ import blue.origami.konoha5.Func;
 import blue.origami.konoha5.Tuple$;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.VarNameCode;
@@ -33,7 +33,6 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
-import blue.origami.transpiler.type.VarTy;
 
 public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();
@@ -50,8 +49,8 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 	void loadType() {
 		// this.reg(Ty.tUntyped0, Object.class);
-		this.reg(new VarTy("a", 0), Object.class);
-		this.reg(Ty.tAny, Object.class);
+		this.reg(Ty.tVarParam[0], Object.class);
+		// this.reg(Ty.tAny, Object.class);
 		this.reg(Ty.tVoid, void.class);
 		this.reg(Ty.tBool, boolean.class);
 		this.reg(Ty.tChar, char.class);
@@ -62,23 +61,23 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 		this.reg("Option", Object.class);
 
 		this.reg("{}", blue.origami.konoha5.Data$.class);
-		this.reg("Data$", blue.origami.konoha5.Data$.class);
+		this.reg("${}", blue.origami.konoha5.Data$.class);
 
 		this.reg("List", blue.origami.konoha5.List$.class);
-		this.reg("List'", blue.origami.konoha5.List$.class);
+		this.reg("$List", blue.origami.konoha5.List$.class);
 		this.reg("ListI", blue.origami.konoha5.List$Int.class);
-		this.reg("List'I", blue.origami.konoha5.List$Int.class);
+		this.reg("$ListI", blue.origami.konoha5.List$Int.class);
 
 		this.reg("Stream", Stream.class);
 		this.reg("StreamI", IntStream.class);
 		this.reg("StreamD", DoubleStream.class);
 
-		this.reg("Stream'", Stream.class);
-		this.reg("Stream'I", IntStream.class);
-		this.reg("Stream'D", DoubleStream.class);
+		this.reg("$Stream", Stream.class);
+		this.reg("$StreamI", IntStream.class);
+		this.reg("$StreamD", DoubleStream.class);
 
 		this.reg("Dict", blue.origami.konoha5.Dict$.class);
-		this.reg("Dict'", blue.origami.konoha5.Dict$.class);
+		this.reg("$Dict", blue.origami.konoha5.Dict$.class);
 
 		// Func
 		this.reg("V->Z", Func.FuncBool.class);
@@ -110,7 +109,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 	@Override
 	public Class<?> type(Ty ty) {
-		Class<?> c = ty.finalTy().mapType(this);
+		Class<?> c = ty.memoed().mapType(this);
 		assert (c != null) : "undefined type " + ty + " @" + ty.getClass().getName();
 		return c;
 	}
@@ -298,7 +297,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	}
 
 	static String nameApply(Ty t) {
-		switch (t.finalTy().toString()) {
+		switch (t.memoed().toString()) {
 		case "Bool":
 			return "applyZ";
 		case "Int":

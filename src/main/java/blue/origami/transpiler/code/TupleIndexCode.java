@@ -33,7 +33,7 @@ public class TupleIndexCode extends Code1 {
 			if (!ty.isTuple()) {
 				throw new ErrorCode(this.inner, TFmt.not_tuple);
 			}
-			TupleTy tupleTy = (TupleTy) ty.real();
+			TupleTy tupleTy = (TupleTy) ty.base();
 			if (!(this.index < tupleTy.getParamSize())) {
 				throw new ErrorCode(this.inner, TFmt.bad_tuple__YY1);
 			}

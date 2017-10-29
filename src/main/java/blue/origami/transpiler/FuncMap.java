@@ -100,7 +100,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 				this.setExpired();
 				return;
 			}
-			if (OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes())) {
+			if (OArrays.testSomeTrue(t -> t.hasSome(Ty.IsGeneric), this.getParamTypes())) {
 				// this.isGeneric = true;
 				ODebug.showBlue(TFmt.Template, () -> {
 					ODebug.println("%s : %s", this.name, this.getFuncType());
@@ -140,8 +140,8 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 			return new CodeMap(0, "rec", ""/* abstract */, this.getReturnType(), this.getParamTypes());
 		}
 		VarDomain dom = new VarDomain(this.getParamNames());
-		Ty[] p = dom.dupParamTypes(this.getParamTypes(), params);
-		Ty ret = dom.dupRetType(this.getReturnType());
+		Ty[] p = dom.matched(this.getParamTypes(), params);
+		Ty ret = dom.conv(this.getReturnType());
 		String key = polykey(this.name, this.funcId, p);
 		CodeMap tp = getGenerated(key);
 		ODebug.trace("polykey=%s %s", key, tp);

@@ -2,13 +2,13 @@ package blue.origami.transpiler;
 
 import java.util.Arrays;
 
-import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarTy;
 
 public interface FuncUnit {
 
@@ -37,8 +37,8 @@ public interface FuncUnit {
 	public default Code typeBody(Env env0, FunctionContext fcx, Code code0) {
 		String[] pnames = this.getParamNames();
 		VarDomain dom = new VarDomain(pnames);
-		this.setParamTypes(dom.paramTypes(pnames, this.getParamTypes()));
-		this.setReturnType(dom.retType(this.getReturnType()));
+		this.setParamTypes(dom.conv(this.getParamTypes()));
+		this.setReturnType(dom.conv(this.getReturnType()));
 		//
 		return this.typeCheck(env0, fcx, dom, code0);
 	}
@@ -48,7 +48,7 @@ public interface FuncUnit {
 		final String[] pnames = this.getParamNames();
 		final Ty[] pats = this.getParamTypes();
 		final Ty ret = this.getReturnType();
-		boolean dyn = ret.hasVar();
+		boolean unspecifiedReturnType = ret instanceof VarTy; // FIXME
 
 		final Env env = env0.newEnv();
 		env.add(FunctionContext.class, fcx);
@@ -61,23 +61,25 @@ public interface FuncUnit {
 		if (code.showError(env)) {
 			return null;
 		}
-		if (dyn) {
+		if (unspecifiedReturnType) {
 			ret.toImmutable();
 		}
 		if (dom != null && !(this instanceof FuncCode)) {
-			dom.useMemo();
-			this.setParamTypes(Arrays.stream(this.getParamTypes()).map(ty -> {
-				boolean hasMutation = ty.hasMutation();
-				ty = ty.dupVar(dom);
-				ty = ty.finalTy();
-				if (!hasMutation && ty.isMutable()) {
-					ODebug.trace("FIXME maybe immutable %s", ty);
-					ty = ty.toImmutable();
+			dom.useParamVar();
+			this.setParamTypes(Ty.map(this.getParamTypes(), ty -> {
+				Ty ty2 = dom.conv(ty).memoed();
+				if (ty instanceof VarTy) {
+					boolean hasMutation = ty.hasMutation();
+					// System.out.printf("::::: Mutation=%s, %s => %s\n", hasMutation, ty, ty2);
+					if (!hasMutation && ty2.isMutable()) {
+						ODebug.trace("To Immutable %s", ty2);
+						ty2 = ty2.toImmutable();
+					}
 				}
-				return ty;
-			}).toArray(Ty[]::new));
+				return ty2;
+			}));
 			int vars = dom.usedVars();
-			this.setReturnType(dom.dupRetType(this.getReturnType()).finalTy());
+			this.setReturnType(dom.conv(this.getReturnType()).memoed());
 			if (vars == 0 && dom.usedVars() > vars) {
 				return new ErrorCode(this.getSource(), TFmt.ambiguous_type__S, this.getReturnType());
 			}
@@ -85,34 +87,17 @@ public interface FuncUnit {
 		return code;
 	}
 
-	// public static Code typeCheck(final TEnv env, FunctionContext fcx,
-	// String[] pnames, Ty[] pats, final Ty ret,
-	// Code code0) {
-	// boolean dyn = ret.hasVar();
-	// env.add(FunctionContext.class, fcx);
-	// fcx.enter();
-	// for (int i = 0; i < pnames.length; i++) {
-	// env.add(pnames[i], fcx.newVariable(pnames[i], pats[i]));
-	// }
-	// Code code = env.catchCode(() -> code0.asType(env, ret));
-	// fcx.exit();
-	// if (dyn) {
-	// ret.toImmutable();
-	// }
-	// return code;
-	// }
-
 	public default boolean isAbstract(Code code) {
 		return code.hasSome(c -> c.isAbstract());
 	}
 
-	public default boolean hasVarParams(Code code) {
-		return OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
-	}
-
-	public default boolean isError(Code code) {
-		return code.hasSome(c -> c.isError());
-	}
+	// public default boolean hasVarParams(Code code) {
+	// return OArrays.testSomeTrue(t -> t.hasSome(FIXME), this.getParamTypes());
+	// }
+	//
+	// public default boolean isError(Code code) {
+	// return code.hasSome(c -> c.isError());
+	// }
 
 	public static FuncUnit wrap(AST s, AST[] paramNames, CodeMap tp) {
 		return new FunctionUnitWrapper(s, paramNames, tp);

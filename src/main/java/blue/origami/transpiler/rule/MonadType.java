@@ -9,8 +9,8 @@ import blue.origami.transpiler.type.Ty;
 public class MonadType implements ParseRule, Symbols {
 	@Override
 	public Code apply(Env env, AST t) {
-		String name = Ty.parseMonadName(t.get(_base));
+		Ty base = env.parseType(env, t.get(_base), null);
 		Ty ty = env.parseType(env, t.get(_param), null);
-		return new TypeCode(Ty.tMonad(name, ty));
+		return new TypeCode(Ty.tGeneric(base, ty));
 	}
 }

@@ -2,8 +2,8 @@ package blue.origami.transpiler.rule;
 
 import blue.origami.common.OArrays;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.type.Ty;
@@ -52,7 +52,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 				return Ty.tBool;
 			}
 		}
-		return Ty.tNULL;
+		return Ty.tUntyped(name);
 	}
 
 	Ty[] parseParamTypes(Env env, AST params) {
@@ -93,7 +93,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		}
 		if (ty == null) {
 			if (NameHint.isOneLetterName(name)) {
-				ty = Ty.tNULL;
+				ty = Ty.tUntyped(name);
 			}
 		}
 		// ty = this.parseTypeArity(env, ty, param);

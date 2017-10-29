@@ -42,7 +42,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			// ODebug.trace(":::::: %s %s", c, ty);
 			if (ty != null) {
 				infTy = ty;
-				if (!infTy.hasVar()) {
+				if (!infTy.hasSome(Ty.IsVar)) {
 					break;
 				}
 			}
@@ -472,9 +472,9 @@ public class MatchCode extends CodeN implements CodeBuilder {
 				Ty nameTy = inner.targetTy;
 				ands.add(new HasCode(this.target, name));
 				Code field = new GetCode(this.target, name, nameTy);
-				if (nameTy.isOption()) {
+				if (nameTy.isGeneric(Ty.tOption)) {
 					ands.add(this.isSome(field));
-					inner.makeCondCode(field, nameTy.getInnerTy(), ands);
+					inner.makeCondCode(field, nameTy.getParamType(), ands);
 				} else {
 					inner.makeCondCode(field, nameTy, ands);
 				}
@@ -520,7 +520,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			int len = this.args.length;
 			for (int i = 0; i < len; i++) {
 				Case c = this.caseAt(i);
-				c.makeCondCode(this.tupleAt(this.target, i), this.targetTy.getInnerTy(), ands);
+				c.makeCondCode(this.tupleAt(this.target, i), this.targetTy.getParamType(), ands);
 			}
 		}
 
@@ -574,7 +574,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 				ands.add(this.op(this.len(this.target), ">=", len - 1));
 				for (int i = 0; i < len - 1; i++) {
 					Case c = this.caseAt(i);
-					c.makeCondCode(this.geti(this.target, i), this.targetTy.getInnerTy(), ands);
+					c.makeCondCode(this.geti(this.target, i), this.targetTy.getParamType(), ands);
 				}
 				this.caseAt(len - 1).makeCondCode(this.tail(this.target, len - 1), this.targetTy, ands);
 				return;
@@ -582,7 +582,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			ands.add(this.op(this.len(this.target), "==", len));
 			for (int i = 0; i < len; i++) {
 				Case c = this.caseAt(i);
-				c.makeCondCode(this.geti(this.target, i), this.targetTy.getInnerTy(), ands);
+				c.makeCondCode(this.geti(this.target, i), this.targetTy.getParamType(), ands);
 			}
 		}
 

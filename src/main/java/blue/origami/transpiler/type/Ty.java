@@ -1,25 +1,24 @@
 package blue.origami.transpiler.type;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
-import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
 
 public abstract class Ty implements TypeApi, OStrings {
+	public final static String Mut = "$";
 
 	// Core types
 	public static final Ty tVoid = m(new VoidTy());
@@ -27,32 +26,43 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tInt = m(new IntTy());
 	public static final Ty tFloat = m(new FloatTy());
 	public static final Ty tString = m(new StringTy());
+	//
+	public static final Ty tOption = m(new OptionTy());
+	public static final Ty tList = m(new SimpleTy("List", 1));
+	public static final Ty tMList = m(new SimpleTy(Mut + "List", 1));
+	public static final Ty tDict = m(new SimpleTy("Dict", 1));
+	public static final Ty tMDict = m(new SimpleTy(Mut + "Dict", 1));
+	public static final Ty tStream = m(new SimpleTy("Stream", 1));
+	public static final Ty tMStream = m(new SimpleTy(Mut + "Stream", 1));
+	// VarParam
+	public static final Ty[] tVarParam = new Ty[10];
+	static {
+		for (int i = 0; i < tVarParam.length; i++) {
+			tVarParam[i] = m(new VarParamTy(String.valueOf((char) ('a' + i))));
+		}
+	}
+
+	public static final Ty tUntyped(String varname) {
+		return new VarParamTy(Memo.NonStr + NameHint.shortName(varname));
+	}
 
 	// Hidden Type
-	public static final Ty tAny = m(new AnyTy());
+	// public static final Ty tAny = m(new AnyTy());
 	public static final Ty tByte = m(new SimpleTy("Byte"));
 	public static final Ty tInt64 = m(new SimpleTy("Int64"));
 	public static final Ty tFloat32 = m(new SimpleTy("Float32"));
 	public static final Ty tChar = m(new SimpleTy("Char"));
 
-	public static final Ty tNULL = m(new SimpleTy("?"));
+	// public static final Ty tNULL = m(new SimpleTy("?"));
 	public static final Ty tThis = m(new SimpleTy("_"));
 	public static final Ty tAuto = m(new SimpleTy("auto"));
 
 	static Ty m(Ty ty) {
-		return TypeMemo.memo(ty);
+		return (ty.isMemoed()) ? ty : Memo.memo(ty);
 	}
 
-	private static HashMap<String, Ty> typeMemoMap = new HashMap<>();
-
-	static {
-		typeMemoMap.put("Option", new OptionTy("Option", tVoid));
-		typeMemoMap.put("List", new ListTy("List", false, tVoid));
-		typeMemoMap.put("List'", new ListTy("List", true, tVoid));
-		typeMemoMap.put("Dict", new DictTy("Dict", false, tVoid));
-		typeMemoMap.put("Dict'", new DictTy("Dict", true, tVoid));
-		typeMemoMap.put("Stream", new MonadTy("Stream", false, tVoid));
-		typeMemoMap.put("Stream'", new MonadTy("Stream", true, tVoid));
+	static Ty[] m(Ty[] ty) {
+		return Arrays.stream(ty).map(t -> m(t)).toArray(Ty[]::new);
 	}
 
 	/* DynamicType */
@@ -61,127 +71,74 @@ public abstract class Ty implements TypeApi, OStrings {
 		return new DataTy();
 	}
 
-	// public static final DataTy tData(String... names) {
-	// return new DataTy(names);
-	// }
-
 	public static final VarTy tUntyped() {
-		return new VarTy(null, -1);
+		return new VarTy("");
 	}
 
 	public static final VarTy tUntyped(AST s) {
-		return new VarTy(null, -1);
+		return new VarTy("");
 	}
-
-	// public static final VarTy tVar(String name) {
-	// return new VarTy(name, null);
-	// }
 
 	/* Data */
 
-	public abstract boolean isNonMemo();
-
-	static Ty reg(String key, Supplier<Ty> sup) {
-		Ty t = typeMemoMap.get(key);
-		if (t == null) {
-			t = sup.get();
-			typeMemoMap.put(key, t);
-		}
-		return t;
+	public static final Ty t(String name) {
+		return Memo.t(name);
 	}
 
-	public static final boolean isDefinedMonad(String name) {
-		return typeMemoMap.get(name) instanceof MonadTy;
+	public static final Ty tGeneric(String base, Ty param) {
+		return m(Memo.t(base).newGeneric(m(param)));
 	}
 
-	public static final String parseMonadName(AST t) {
-		String name = t.getString();
-		if (isDefinedMonad(name)) {
-			return name;
-		}
-		throw new ErrorCode(t, TFmt.undefined_type__YY1, name);
+	public static final Ty tGeneric(Ty base, Ty param) {
+		return m(m(base).newGeneric(m(param)));
 	}
 
-	public static final String parseStateName(AST t) {
-		String name = t.getString();
-		if (isDefinedMonad(name + "'")) {
-			return name;
-		}
-		throw new ErrorCode(t, TFmt.undefined_type__YY1, name);
+	public Ty newGeneric(Ty m) {
+		return this;
 	}
 
-	public static final Ty tMonad(String name, boolean isMutable, Ty ty) {
-		return isMutable ? tState(name, ty) : tMonad(name, ty);
+	public static Ty tOption(Ty ty) {
+		return tGeneric(tOption, ty);
 	}
 
-	public static final Ty tMonad(String name, Ty ty) {
-		MonadTy monad = (MonadTy) typeMemoMap.get(name);
-		assert (monad != null) : "undefined " + name;
-		if (!ty.isNonMemo()) {
-			return monad.newType(name, ty);
-		}
-		String key = name + "[" + ty + "]";
-		return reg(key, () -> monad.newType(name, ty));
+	public static final Ty tList(Ty ty) {
+		return tGeneric(tList, ty);
 	}
 
-	public static final Ty tState(String name, Ty ty) {
-		MonadTy monad = (MonadTy) typeMemoMap.get(name + "'");
-		assert (monad != null) : "undefined " + name;
-		if (!ty.isNonMemo()) {
-			return monad.newType(name, ty);
-		}
-		String key = name + "{" + ty + "}";
-		return reg(key, () -> monad.newType(name, ty));
-	}
-
-	public static final ListTy tList(Ty ty) {
-		return (ListTy) tMonad("List", ty);
-	}
-
-	public static final ListTy tArray(Ty ty) {
-		return (ListTy) tState("List", ty);
+	public static final Ty tArray(Ty ty) {
+		return tGeneric(tMList, ty);
 	}
 
 	public static final DataTy tRecord(String... names) {
 		Arrays.sort(names);
-		return (DataTy) reg("[" + OStrings.joins(names, ",") + "]", () -> new DataTy(false, names));
+		return (DataTy) m(new DataTy(false, names));
 	}
 
 	public static final DataTy tData(String... names) {
 		Arrays.sort(names);
-		return (DataTy) reg("{" + OStrings.joins(names, ",") + "}", () -> new DataTy(true, names));
-	}
-
-	public static OptionTy tOption(Ty ty) {
-		return (OptionTy) tMonad("Option", ty);
+		return (DataTy) m(new DataTy(true, names));
 	}
 
 	/* FuncType */
 
 	public static final FuncTy tFunc(Ty returnType, Ty... paramTypes) {
-		if (OArrays.testSomeTrue(t -> t.isNonMemo(), paramTypes) || returnType.isNonMemo()) {
-			return new FuncTy(null, returnType, paramTypes);
-		}
-		String key = FuncTy.stringfy(returnType, paramTypes);
-		return (FuncTy) reg(key, () -> new FuncTy(key, returnType, paramTypes));
+		return (FuncTy) m(new FuncTy(m(returnType), m(paramTypes)));
 	}
 
-	public static final TupleTy tTuple(Ty... ts) {
-		if (OArrays.testSomeTrue(t -> t.isNonMemo(), ts)) {
-			return new TupleTy(null, ts);
-		}
-		String key = TupleTy.stringfy(ts);
-		return (TupleTy) reg(key, () -> new TupleTy(key, ts));
+	public static final Ty tTuple(Ty... ts) {
+		Ty ty = m(new TupleTy(m(ts)));
+		// System.out.println("********* " + ty + " memoed=" + ty.isMemoed());
+		return ty;
 	}
 
 	public static Ty tTag(Ty inner, String... names) {
 		if (inner instanceof TagTy) {
 			TagTy tag = (TagTy) inner;
-			inner = tag.getInnerTy();
+			inner = tag.getParamType();
 			names = TagTy.joins(names, tag.names);
 		}
 		Arrays.sort(names);
-		return new TagTy(inner, names);
+		return m(new TagTy(inner, names));
 	}
 
 	//
@@ -190,12 +147,7 @@ public abstract class Ty implements TypeApi, OStrings {
 		return t == null;
 	}
 
-	@Override
-	public Ty real() {
-		return this;
-	}
-
-	public Ty getInnerTy() {
+	public Ty getParamType() {
 		return null;
 	}
 
@@ -228,14 +180,18 @@ public abstract class Ty implements TypeApi, OStrings {
 
 	// public abstract Ty staticTy();
 
-	public abstract boolean hasVar();
+	public static Predicate<Ty> IsVar = (t) -> t instanceof VarTy;
+	public static Predicate<Ty> IsGeneric = (t) -> t instanceof VarParamTy;
+	public static Predicate<Ty> IsVarParam = (t) -> (t instanceof VarParamTy || t instanceof VarTy);
+
+	public abstract boolean hasSome(Predicate<Ty> f);
 
 	public Ty dupVar(VarDomain dom) {
 		return this;
 	}
 
 	public boolean isAmbigous() {
-		return this.hasVar() || this.isUnion();
+		return this.hasSome(Ty.IsVar) /* || this.isUnion() */;
 	}
 
 	public boolean isMutable() {
@@ -246,14 +202,8 @@ public abstract class Ty implements TypeApi, OStrings {
 		return this;
 	}
 
-	public boolean hasMutation() {
-		return this.isMutable();
-	}
-
-	public void hasMutation(boolean b) {
-	}
-
-	public Ty finalTy() {
+	@Override
+	public Ty base() {
 		return this;
 	}
 
@@ -262,107 +212,124 @@ public abstract class Ty implements TypeApi, OStrings {
 		return OStrings.stringfy(this);
 	}
 
-	// public static Ty selfTy(Ty ty, DataTy dt) {
-	// return ty == Ty.tThis ? dt : ty;
-	// }
-
 	public abstract <C> C mapType(TypeMapper<C> codeType);
 
 	/* Common */
 
 	private int typeId = 0;
 
+	public int typeId() {
+		return this.typeId;
+	}
+
 	void typeId(int seq) {
 		this.typeId = seq;
 	}
 
-	public int typeId() {
-		return this.typeId;
+	protected boolean isMemoed() {
+		return this.typeId > 0;
+	}
+
+	public String keyMemo() {
+		return this.toString();
+	}
+
+	/* Mutable */
+
+	public static Ty[] map(Ty[] ts, Function<Ty, Ty> f) {
+		Ty[] p = new Ty[ts.length];
+		for (int i = 0; i < p.length; i++) {
+			p[i] = f.apply(ts[i]);
+		}
+		return p;
+	}
+
+	public Ty memoed() {
+		return this;
 	}
 
 }
 
 interface TypeApi {
 
-	public Ty real();
+	public Ty base();
 
 	public default boolean is(Ty ty) {
-		return real() == ty;
+		return base() == ty;
 	}
 
 	public default boolean isVoid() {
-		return real() == Ty.tVoid;
+		return base() == Ty.tVoid;
 	}
 
 	public default boolean isVar() {
-		return real() instanceof VarTy;
+		return base() instanceof VarTy;
 	}
 
 	public default boolean isAny() {
-		return real() instanceof AnyTy;
+		return base() instanceof VarParamTy;
 	}
-
-	public default boolean isNULL() {
-		return real() == Ty.tNULL;
-	}
-
-	public default boolean isOption() {
-		return real() instanceof OptionTy;
-	}
+	//
+	// public default boolean isOption() {
+	// return real() instanceof OptionTy;
+	// }
 
 	public default boolean isFunc() {
-		return real() instanceof FuncTy;
+		return base() instanceof FuncTy;
 	}
 
 	public default boolean isTuple() {
-		return real() instanceof TupleTy;
+		return base() instanceof TupleTy;
 	}
 
-	public default boolean isUnion() {
-		return real() instanceof UnionTy;
-	}
+	// public default boolean isUnion() {
+	// return real() instanceof UnionTy;
+	// }
 
 	public default boolean isData() {
-		return real() instanceof DataTy;
+		return base() instanceof DataTy;
 	}
 
-	public default boolean isList() {
-		return real() instanceof ListTy;
+	public default boolean isGeneric() {
+		return base() instanceof GenericTy;
 	}
 
-	public default boolean isDict() {
-		return real() instanceof DictTy;
-	}
-
-	public default boolean isMonad(String name, boolean isMutable) {
-		Ty ty = real();
-		if (ty instanceof MonadTy) {
-			return ((MonadTy) ty).equalsName(name) && ty.isMutable() == isMutable;
+	public default boolean isGeneric(Ty baseTy) {
+		Ty ty = base();
+		if (ty instanceof GenericTy) {
+			return ((GenericTy) ty).getBaseType().base() == baseTy;
 		}
 		return false;
 	}
 
 	public default boolean isSpecific() {
-		return !this.isVoid() && !this.isUnion();
+		return !this.isVoid(); /* && !this.isUnion(); */
 	}
 
 	public default Code getDefaultValue() {
 		return null;
 	}
 
-	public default int costMapTo(Env env, Ty toTy) {
+	public default boolean hasMutation() {
+		return false;
+	}
+
+	public default void foundMutation() {
+	}
+
+	public default int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
 		return CastCode.STUPID;
 	}
 
-	public default CodeMap findMapTo(Env env, Ty toTy) {
+	public default CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
 		return null;
 	}
 
-	public default int costMapFrom(Env env, Ty fromTy) {
+	public default int costMapThisTo(Env env, Ty fromTy, Ty toTy) {
 		return CastCode.STUPID;
 	}
 
-	public default CodeMap findMapFrom(Env env, Ty fromTy) {
+	public default CodeMap findMapThisTo(Env env, Ty fromTy, Ty toTy) {
 		return null;
 	}
 
@@ -379,12 +346,12 @@ class VoidTy extends SimpleTy {
 	}
 
 	@Override
-	public int costMapFrom(Env env, Ty fromTy) {
+	public int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
 		return CastCode.SAME;
 	}
 
 	@Override
-	public CodeMap findMapFrom(Env env, Ty fromTy) {
+	public CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
 		return new CodeMap(CastCode.SAME | CodeMap.LazyFormat, "(void)", "voidcast", fromTy, Ty.tVoid);
 	}
 

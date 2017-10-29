@@ -1,53 +1,59 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Predicate;
+
 import blue.origami.common.OStrings;
-import blue.origami.transpiler.NameHint;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
+
 	private String name;
+	final int varId;
 	Ty resolvedTy;
-	final int id;
+
 	boolean hasMutation = false;
 
-	public VarTy(String varName, int id) {
+	VarTy(String varName) {
 		this.name = varName;
 		this.resolvedTy = null;
-		this.id = id < 0 ? seq++ : id;
+		this.varId = seq++;
 		assert (seq > 0);
 	}
 
-	public boolean isParameter() {
-		return (this.name != null && NameHint.isOneLetterName(this.name));
-	}
+	// public boolean isParameter() {
+	// return (this.name != null && NameHint.isOneLetterName(this.name));
+	// }
 
 	public String getId() {
-		if (this.name == null) {
-			return "#" + this.id;
+		return this.name + Memo.NonChar + this.varId;
+	}
+
+	// public String getName() {
+	// if (this.name == null) {
+	// return "?";
+	// }
+	// return this.varId < 27 ? this.name : this.name + Memo.NonId + this.varId;
+	// }
+
+	@Override
+	public String keyMemo() {
+		if (this.resolvedTy != null) {
+			return this.resolvedTy.keyMemo();
 		}
-		return this.id < 27 ? this.name : this.name + "#" + this.id;
+		return this.getId();
 	}
 
-	public String getName() {
-		if (this.name == null) {
-			return "?";
+	@Override
+	public Ty newGeneric(Ty paramTy) {
+		if (this.resolvedTy != null) {
+			return this.resolvedTy.newGeneric(paramTy);
 		}
-		return this.id < 27 ? this.name : this.name + "#" + this.id;
+		return new GenericTy(this, paramTy);
 	}
 
 	@Override
-	public boolean isNonMemo() {
-		return this.id > 26;
-	}
-
-	@Override
-	public Ty real() {
-		return this.resolvedTy == null ? this : this.resolvedTy.real();
-	}
-
-	@Override
-	public Ty getInnerTy() {
-		return this.resolvedTy == null ? this : this.resolvedTy.getInnerTy();
+	public Ty getParamType() {
+		return this.resolvedTy == null ? this : this.resolvedTy.getParamType();
 	}
 
 	@Override
@@ -56,10 +62,10 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public void hasMutation(boolean b) {
-		this.hasMutation = b;
+	public void foundMutation() {
+		this.hasMutation = true;
 		if (this.resolvedTy != null) {
-			this.resolvedTy.hasMutation(b);
+			this.resolvedTy.foundMutation();
 		}
 	}
 
@@ -77,22 +83,27 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean hasVar() {
-		return this.isVar() || this.resolvedTy == null || this.resolvedTy.hasVar();
+	public boolean hasSome(Predicate<Ty> f) {
+		return this.isVar() || this.resolvedTy == null || this.resolvedTy.hasSome(f);
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.resolvedTy == null ? VarDomain.newVarTy(dom, this.getId()) : this.resolvedTy.dupVar(dom);
+		return this.resolvedTy == null ? dom.convToParam(this) : this.resolvedTy.dupVar(dom);
 	}
 
 	@Override
-	public Ty finalTy() {
-		return (this.resolvedTy == null) ? this : this.resolvedTy.finalTy();
+	public Ty base() {
+		return this.resolvedTy == null ? this : this.resolvedTy.base();
+	}
+
+	@Override
+	public Ty memoed() {
+		return (this.resolvedTy == null) ? this : this.resolvedTy.memoed();
 	}
 
 	private boolean lt(VarTy vt) {
-		return this.id > vt.id;
+		return this.varId > vt.varId;
 	}
 
 	@Override
@@ -102,11 +113,11 @@ public class VarTy extends Ty {
 			return this.resolvedTy.acceptTy(sub, codeTy, logs);
 		}
 		if (codeTy.isVar()) {
-			VarTy varTy = (VarTy) codeTy.real();
+			VarTy varTy = (VarTy) codeTy.base();
 			if (varTy.resolvedTy != null) {
 				return this.acceptTy(sub, varTy.resolvedTy, logs);
 			}
-			if (this.id != varTy.id) {
+			if (this.varId != varTy.varId) {
 				return this.lt(varTy) ? logs.updateVar(varTy, this) : logs.updateVar(this, varTy);
 			}
 			return true;
@@ -121,13 +132,11 @@ public class VarTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		if (this.resolvedTy == null) {
-			sb.append(this.getName());
+			sb.append(this.getId());
 		} else {
-			sb.append("|");
-			sb.append(this.getName());
+			sb.append(this.getId());
 			sb.append("=");
 			OStrings.append(sb, this.resolvedTy);
-			sb.append("|");
 		}
 	}
 

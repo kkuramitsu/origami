@@ -5,10 +5,10 @@ import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.FuncUnit;
-import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FuncUnit;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
@@ -102,13 +102,13 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
 		}
 		if (ret.isFunc() && isGenericFunc(this.getType())) {
-			FuncTy retFuncTy = (FuncTy) ret.real();
+			FuncTy retFuncTy = (FuncTy) ret.base();
 			if (retFuncTy.getParamSize() != this.paramTypes.length) {
 				throw new ErrorCode(this.getSource(), TFmt.mismatched_parameter_size_S_S, retFuncTy.getParamSize(),
 						this.paramTypes.length);
 			}
 			for (int i = 0; i < this.paramTypes.length; i++) {
-				if (this.paramTypes[i].hasVar()) {
+				if (this.paramTypes[i].hasSome(Ty.IsVar)) {
 					this.paramTypes[i] = retFuncTy.getParamTypes()[i];
 				}
 			}
@@ -125,8 +125,8 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 
 	public static boolean isGenericFunc(Ty ty) {
 		if (ty.isFunc()) {
-			FuncTy funcTy = (FuncTy) ty.real();
-			return OArrays.testSomeTrue((t -> t.hasVar()), funcTy.getParamTypes()) || funcTy.getReturnType().isUnion();
+			FuncTy funcTy = (FuncTy) ty.base();
+			return OArrays.testSomeTrue((t -> t.hasSome(Ty.IsGeneric)), funcTy.getParamTypes());
 		}
 		return false;
 	}

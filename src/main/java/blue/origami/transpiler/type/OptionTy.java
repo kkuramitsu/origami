@@ -4,67 +4,16 @@ import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.CastCode;
 
-public class OptionTy extends MonadTy {
+public class OptionTy extends SimpleTy {
 
-	public OptionTy(String name, Ty ty) {
-		super(name, ty);
-		this.innerTy = ty;
-		// assert !(ty instanceof OptionTy);
+	public OptionTy() {
+		super("Option", 1);
 	}
 
 	@Override
-	public Ty newType(String name, Ty ty) {
-		return new OptionTy(name, ty);
-	}
-
-	@Override
-	public boolean isOption() {
-		return true;
-	}
-
-	@Override
-	public boolean hasVar() {
-		return this.innerTy.hasVar();
-	}
-
-	@Override
-	public Ty dupVar(VarDomain dom) {
-		Ty inner = this.innerTy.dupVar(dom);
-		if (inner != this.innerTy) {
-			return Ty.tOption(inner);
-		}
-		return this;
-	}
-
-	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy.isOption()) {
-			return this.innerTy.acceptTy(sub, codeTy.getInnerTy(), logs);
-		}
-		return this.acceptVarTy(sub, codeTy, logs);
-	}
-
-	@Override
-	public Ty finalTy() {
-		if (this.innerTy.isOption()) {
-			return this.innerTy.real().finalTy();
-		}
-		Ty ty = this.innerTy.finalTy();
-		if (this.innerTy != ty) {
-			return Ty.tOption(ty);
-		}
-		return this;
-	}
-
-	@Override
-	public <C> C mapType(TypeMapper<C> codeType) {
-		return codeType.mapType("Option", this.innerTy);
-	}
-
-	@Override
-	public int costMapTo(Env env, Ty ty) {
-		if (ty.isOption()) {
-			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
+	public int costMapThisTo(Env env, Ty fromTy, Ty toTy) {
+		if (toTy.isGeneric(Ty.tOption)) {
+			if (fromTy.getParamType().isAny() || toTy.getParamType().isAny()) {
 				return CastCode.BESTCAST;
 			}
 		}
@@ -72,17 +21,13 @@ public class OptionTy extends MonadTy {
 	}
 
 	@Override
-	public CodeMap findMapTo(Env env, Ty ty) {
-		if (ty.isOption()) {
-			if (this.getInnerTy().isAny() || ty.getInnerTy().isAny()) {
-				return new CodeMap(CastCode.BESTCAST, "anycast", "%s", this, ty);
+	public CodeMap findMapThisTo(Env env, Ty fromTy, Ty toTy) {
+		if (toTy.isGeneric(Ty.tOption)) {
+			if (fromTy.getParamType().isAny() || toTy.getParamType().isAny()) {
+				return new CodeMap(CastCode.BESTCAST, "anycast", "%s", this, toTy);
 			}
 		}
 		return null;
 	}
-
-	// let f = conv(Option[a] x, f: a->b) : Option[b] {
-	// \x x.map(f)
-	// }
 
 }

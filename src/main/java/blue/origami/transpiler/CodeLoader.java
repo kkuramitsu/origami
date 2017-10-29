@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import blue.origami.Version;
@@ -14,8 +13,6 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OConsole;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.UnionTy;
-import blue.origami.transpiler.type.VarDomain;
 
 public class CodeLoader {
 	final Transpiler env;
@@ -179,10 +176,11 @@ public class CodeLoader {
 		if (ty != null) {
 			return ty;
 		}
-		if (tdesc.startsWith("|")) {
-			Ty[] choice = Arrays.stream(tdesc.substring(1).split("\\|")).map(s -> this.parseType(s)).toArray(Ty[]::new);
-			return new UnionTy(choice);
-		}
+		// if (tdesc.startsWith("|")) {
+		// Ty[] choice = Arrays.stream(tdesc.substring(1).split("\\|")).map(s ->
+		// this.parseType(s)).toArray(Ty[]::new);
+		// return new UnionTy(choice);
+		// }
 		int loc = 0;
 		if ((loc = tdesc.indexOf("->")) > 0) {
 			int loc2 = tdesc.indexOf(',');
@@ -216,12 +214,12 @@ public class CodeLoader {
 		if (tdesc.endsWith("]")) {
 			loc = tdesc.indexOf('[');
 			ty = this.parseType(tdesc.substring(loc + 1, tdesc.length() - 1));
-			return Ty.tMonad(tdesc.substring(0, loc), ty);
+			return Ty.tGeneric(tdesc.substring(0, loc), ty);
 		}
 		if (tdesc.endsWith("}")) {
 			loc = tdesc.indexOf('{');
 			ty = this.parseType(tdesc.substring(loc + 1, tdesc.length() - 1));
-			return Ty.tState(tdesc.substring(0, loc), ty);
+			return Ty.tGeneric(Ty.Mut + tdesc.substring(0, loc), ty);
 		}
 		ty = getHiddenType(tdesc);
 		assert (ty != null) : "undefined '" + tdesc + "'";
@@ -233,13 +231,13 @@ public class CodeLoader {
 	public static Ty getHiddenType(String tsig) {
 		if (hiddenMap.isEmpty()) {
 			hiddenMap.put("()", Ty.tVoid);
-			hiddenMap.put("any", Ty.tAny);
+			hiddenMap.put("any", Ty.tVarParam[0]);
 			hiddenMap.put("byte", Ty.tByte);
 			hiddenMap.put("char", Ty.tChar);
 			hiddenMap.put("int64", Ty.tInt64);
-			hiddenMap.put("a", VarDomain.var(0));
-			hiddenMap.put("b", VarDomain.var(1));
-			hiddenMap.put("c", VarDomain.var(2));
+			hiddenMap.put("a", Ty.tVarParam[0]);
+			hiddenMap.put("b", Ty.tVarParam[1]);
+			hiddenMap.put("c", Ty.tVarParam[2]);
 		}
 		return hiddenMap.get(tsig);
 	}

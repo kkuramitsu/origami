@@ -31,7 +31,7 @@ public final class FuncRefCode extends CommonCode {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (ret.isFunc()) {
-			FuncTy funcTy = (FuncTy) ret.real();
+			FuncTy funcTy = (FuncTy) ret.base();
 			List<CodeMap> l = env.findCodeMaps(this.name, funcTy.getParamSize());
 			if (l.size() == 0) {
 				return this.asUnfound(env, l, funcTy);

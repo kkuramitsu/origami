@@ -33,7 +33,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.transpiler.type.VarTy;
+import blue.origami.transpiler.type.VarParamTy;
 
 public class Language implements OFactory<Language> {
 
@@ -102,12 +102,7 @@ public class Language implements OFactory<Language> {
 		env.add("Int", Ty.tInt);
 		env.add("Float", Ty.tFloat);
 		env.add("String", Ty.tString);
-		env.add("a", VarDomain.var(0));
-		env.add("b", VarDomain.var(1));
-		env.add("c", VarDomain.var(2));
-		env.add("d", VarDomain.var(3));
-		env.add("e", VarDomain.var(4));
-		env.add("f", VarDomain.var(5));
+		// env.add("a", VarDomain.var(0));
 		// env.add("Data", Ty.tData());
 		env.addNameDecl(env, "i,j,k,m,n", Ty.tInt);
 		env.addNameDecl(env, "x,y,z,w", Ty.tFloat);
@@ -225,7 +220,7 @@ public class Language implements OFactory<Language> {
 
 		Ty firstType = code.args[0].getType();
 		if (firstType.isFunc()) {
-			FuncTy funcType = (FuncTy) firstType.real();
+			FuncTy funcType = (FuncTy) firstType.base();
 			Ty[] p = funcType.getParamTypes();
 			if (p.length + 1 != code.args.length) {
 				throw new ErrorCode(TFmt.mismatched_parameter_size_S_S, p.length, code.args.length);
@@ -294,54 +289,60 @@ public class Language implements OFactory<Language> {
 	}
 
 	private Code typeMatchedExpr(Env env, ExprCode code, CodeMap found, Ty t) {
-		Ty[] dpats = found.getParamTypes();
+		Ty[] dpars = found.getParamTypes();
 		Ty dret = found.getReturnType();
 		if (found.isGeneric()) {
-			VarDomain dom = new VarDomain(dpats);
-			Ty[] gParamTypes = dom.dupParamTypes(dpats, null);
-			Ty dRetType = dom.dupRetType(dret);
+			VarDomain dom = new VarDomain(dpars);
+			Ty[] gpars = dom.conv(dpars);
+			Ty gret = dom.conv(dret);
 			for (int i = 0; i < code.args.length; i++) {
-				code.args[i] = code.args[i].asType(env, gParamTypes[i]);
+				code.args[i] = code.args[i].asType(env, gpars[i]);
 				if (!found.isAbstract()) {
-					if (dpats[i] instanceof VarTy) {
-						ODebug.trace("MUST upcast %s => %s", gParamTypes[i], gParamTypes[i]);
-						code.args[i] = new BoxCastCode(gParamTypes[i], code.args[i]);
+					if (dpars[i] instanceof VarParamTy) {
+						ODebug.trace("MUST upcast %s => %s", gpars[i], gpars[i]);
+						code.args[i] = new BoxCastCode(gpars[i], code.args[i]);
 					}
-					if (dpats[i] instanceof FuncTy && dpats[i].hasVar()) {
-						Ty anyTy = dpats[i].dupVar(null); // AnyRef
-						CodeMap conv = env.findTypeMap(env, gParamTypes[i].finalTy(), anyTy.finalTy());
-						ODebug.trace("MUST funccast %s => %s :: %s", gParamTypes[i], anyTy, conv);
+					if (dpars[i] instanceof FuncTy && dpars[i].hasSome(Ty.IsGeneric)) {
+						VarDomain dom2 = new VarDomain(dpars);
+						dom2.useParamVar();
+						Ty anyTy = dpars[i].dupVar(dom2).memoed(); // AnyRef
+						CodeMap conv = env.findTypeMap(env, gpars[i], anyTy);
+						ODebug.trace("MUST funccast %s => %s :: %s", gpars[i], anyTy, conv);
 						code.args[i] = new FuncCastCode(anyTy, conv, code.args[i]);
 					}
 				}
 			}
-			if (found.isMutation() && !found.isAbstract()) {
-				ODebug.trace("MUTATION %s", code.args[0].getType());
-				code.args[0].getType().hasMutation(true);
+			if (found.isMutation()) {
+				Ty ty = code.args[0].getType();
+				ODebug.trace("MUTATION %s", ty);
+				ty.foundMutation();
 			}
 			code.setMapped(found);
-			code.setType(dRetType);
+			code.setType(gret);
 			Code result = code;
 			if (!found.isAbstract()) {
-				if (found.getReturnType() instanceof VarTy) {
-					ODebug.trace("must downcast %s => %s", found.getReturnType(), dRetType);
-					result = new UnboxCastCode(dRetType, result);
+				if (found.getReturnType() instanceof VarParamTy) {
+					ODebug.trace("must downcast %s => %s", found.getReturnType(), gret);
+					result = new UnboxCastCode(gret, result);
 				}
-				if (found.getReturnType() instanceof FuncTy && found.getReturnType().hasVar()) {
-					Ty anyTy = found.getReturnType().dupVar(null); // AnyRef
-					CodeMap conv = env.findTypeMap(env, dRetType, anyTy);
-					ODebug.trace("MUST funccast %s => %s :: %s", anyTy, dRetType, conv);
-					result = new FuncCastCode(dRetType, conv, result);
+				if (found.getReturnType() instanceof FuncTy && found.getReturnType().hasSome(Ty.IsGeneric)) {
+					VarDomain dom2 = new VarDomain(dpars);
+					dom2.useParamVar();
+					Ty anyTy = found.getReturnType().dupVar(dom2); // AnyRef
+					CodeMap conv = env.findTypeMap(env, gret, anyTy);
+					ODebug.trace("MUST funccast %s => %s :: %s", anyTy, gret, conv);
+					result = new FuncCastCode(gret, conv, result);
 				}
 			}
 			return result.castType(env, t);
 		} else {
 			for (int i = 0; i < code.args.length; i++) {
-				code.args[i] = code.args[i].asType(env, dpats[i]);
+				code.args[i] = code.args[i].asType(env, dpars[i]);
 			}
-			if (found.isMutation() && !found.isAbstract()) {
-				ODebug.trace("MUTATION %s", code.args[0].getType());
-				code.args[0].getType().hasMutation(true);
+			if (found.isMutation()) {
+				Ty ty = code.args[0].getType();
+				ODebug.trace("MUTATION %s", ty);
+				ty.foundMutation();
 			}
 			code.setMapped(found);
 			code.setType(dret);

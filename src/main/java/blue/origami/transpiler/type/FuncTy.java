@@ -1,8 +1,8 @@
 package blue.origami.transpiler.type;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
@@ -18,23 +18,12 @@ import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.VarNameCode;
 
 public class FuncTy extends Ty {
-	protected final String name;
 	protected final Ty[] paramTypes;
 	protected final Ty returnType;
 
-	FuncTy(String name, Ty returnType, Ty... paramTypes) {
-		this.name = name;
+	FuncTy(Ty returnType, Ty... paramTypes) {
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
-	}
-
-	FuncTy(Ty returnType, Ty... paramTypes) {
-		this(null, returnType, paramTypes);
-	}
-
-	@Override
-	public boolean isNonMemo() {
-		return OArrays.testSomeTrue(t -> t.isNonMemo(), this.getParamTypes()) || this.getReturnType().isNonMemo();
 	}
 
 	public Ty getReturnType() {
@@ -49,17 +38,20 @@ public class FuncTy extends Ty {
 		return this.paramTypes;
 	}
 
-	public static String stringfy(Ty returnType, Ty... paramTypes) {
-		StringBuilder sb = new StringBuilder();
-		stringfy(sb, returnType, paramTypes);
-		return sb.toString();
+	@Override
+	public void strOut(StringBuilder sb) {
+		if (this.paramTypes.length != 1) {
+			sb.append("(");
+			OStrings.joins(sb, this.paramTypes, ",");
+			sb.append(")");
+		} else {
+			OStrings.joins(sb, this.paramTypes, ",", (ty) -> group(ty));
+		}
+		sb.append("->");
+		sb.append(group(this.returnType));
 	}
 
-	private static String group(Ty ty) {
-		return (ty.isFunc() || ty.isUnion()) ? "(" + ty + ")" : ty.toString();
-	}
-
-	public static void stringfy(StringBuilder sb, Ty returnType, Ty... paramTypes) {
+	public final static void stringfy(StringBuilder sb, Ty[] paramTypes, Ty returnType) {
 		if (paramTypes.length != 1) {
 			sb.append("(");
 			OStrings.joins(sb, paramTypes, ",");
@@ -71,24 +63,19 @@ public class FuncTy extends Ty {
 		sb.append(group(returnType));
 	}
 
-	@Override
-	public void strOut(StringBuilder sb) {
-		if (this.name != null) {
-			sb.append(this.name);
-		} else {
-			stringfy(sb, this.getReturnType(), this.getParamTypes());
-		}
+	private static String group(Ty ty) {
+		return (ty.isFunc()) ? "(" + ty + ")" : ty.toString();
 	}
 
 	@Override
-	public boolean hasVar() {
-		return this.returnType.hasVar() || OArrays.testSomeTrue(t -> t.hasVar(), this.getParamTypes());
+	public boolean hasSome(Predicate<Ty> f) {
+		return this.returnType.hasSome(f) || OArrays.testSomeTrue(t -> t.hasSome(f), this.getParamTypes());
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		if (this.hasVar()) {
-			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new);
+		if (this.hasSome(Ty.IsVarParam)) {
+			Ty[] p = Ty.map(this.paramTypes, x -> x.dupVar(dom));
 			Ty ret = this.returnType.dupVar(dom);
 			return Ty.tFunc(ret, p);
 		}
@@ -98,7 +85,7 @@ public class FuncTy extends Ty {
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy.isFunc()) {
-			FuncTy funcTy = (FuncTy) codeTy.real();
+			FuncTy funcTy = (FuncTy) codeTy.base();
 			if (funcTy.getParamSize() != this.getParamSize()) {
 				return false;
 			}
@@ -113,11 +100,9 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public Ty finalTy() {
-		if (this.name == null) {
-			Ty[] p = Arrays.stream(this.paramTypes).map(x -> x.finalTy()).toArray(Ty[]::new);
-			Ty ret = this.returnType.finalTy();
-			return Ty.tFunc(ret, p);
+	public Ty memoed() {
+		if (!this.isMemoed()) {
+			return Ty.tFunc(this.returnType.memoed(), Ty.map(this.paramTypes, t -> t.memoed()));
 		}
 		return this;
 	}
@@ -128,9 +113,10 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public int costMapTo(Env env, Ty ty) {
+	public int costMapThisTo(Env env, Ty a, Ty ty) {
+		assert (this == a);
 		if (ty.isFunc()) {
-			FuncTy toTy = (FuncTy) ty.real();
+			FuncTy toTy = (FuncTy) ty.base();
 			if (this.getParamSize() == toTy.getParamSize()) {
 				VarLogger logger = new VarLogger();
 				Ty[] fromTys = this.getParamTypes();
@@ -152,10 +138,11 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public CodeMap findMapTo(Env env, Ty ty) {
+	public CodeMap findMapThisTo(Env env, Ty a, Ty ty) {
+		assert (this == a);
 		if (ty.isFunc()) {
-			FuncTy toTy = (FuncTy) ty.real();
-			int cost = this.costMapTo(env, ty);
+			FuncTy toTy = (FuncTy) ty.base();
+			int cost = this.costMapThisTo(env, a, ty);
 			if (cost < CastCode.STUPID) {
 				return this.genFuncConv(env, this, toTy).setMapCost(cost);
 			}
@@ -185,6 +172,7 @@ public class FuncTy extends Ty {
 
 	public CodeMap genFuncConv(Env env, FuncTy fromTy, FuncTy toTy) {
 		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
+		System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
 		Transpiler tr = env.getTranspiler();
 		AST[] names = AST.getNames("f");
 		Ty[] params = { fromTy };

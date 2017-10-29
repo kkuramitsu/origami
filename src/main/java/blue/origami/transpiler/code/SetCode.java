@@ -38,9 +38,9 @@ public class SetCode extends CodeN {
 				recvTy = infer;
 			}
 			if (recvTy.isData()) {
-				DataTy dt = (DataTy) recvTy.real();
+				DataTy dt = (DataTy) recvTy.base();
 				this.asTypeAt(env, 1, dt.fieldTy(env, this.getSource(), this.name));
-				dt.hasMutation(true);
+				ret.foundMutation();
 				this.setType(Ty.tVoid);
 				return this.castType(env, ret);
 			}

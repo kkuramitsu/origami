@@ -48,7 +48,7 @@ import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.code.WhileCode;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
-import blue.origami.transpiler.type.ListTy;
+import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 
@@ -185,7 +185,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			return;
 		default:
 			ODebug.trace("undefined call '%s' %s", tp.getDefined(), code.getClass().getName());
-			assert (tp.getDefined().length() > 0) : tp;
+			// assert (tp.getDefined().length() > 0) : tp;
 		}
 	}
 
@@ -463,7 +463,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushList(ListCode code) {
-		ListTy dt = (ListTy) code.getType();
+		GenericTy dt = (GenericTy) code.getType().base();
 		Class<?> c = this.ts.toClass(dt);
 		this.mBuilder.push(code.isMutable());
 		if (c == blue.origami.konoha5.List$.class) {
@@ -472,7 +472,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 		} else {
-			Ty t = dt.getInnerTy();
+			Ty t = dt.getParamType();
 			this.pushArray(this.ts.ti(t), false, code.args());
 			String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
 					Type.getDescriptor(this.ts.toClass(dt)));
@@ -482,7 +482,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushRange(RangeCode code) {
-		ListTy dt = (ListTy) code.getType();
+		GenericTy dt = (GenericTy) code.getType().base();
 		for (Code sub : code) {
 			sub.emitCode(this);
 		}

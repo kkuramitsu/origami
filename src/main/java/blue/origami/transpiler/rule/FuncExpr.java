@@ -12,7 +12,7 @@ public class FuncExpr extends SyntaxRule implements ParseRule {
 	public Code apply(Env env, AST t) {
 		AST[] paramNames = this.parseParamNames(env, t.get(_param));
 		Ty[] paramTypes = this.parseParamTypes(env, t.get(_param));
-		Ty returnType = this.parseReturnType(env, null, t.get(_type));
+		Ty returnType = this.parseReturnType(env, "ret", t.get(_type));
 		return new FuncCode(paramNames, paramTypes, returnType, t.get(_body));
 	}
 

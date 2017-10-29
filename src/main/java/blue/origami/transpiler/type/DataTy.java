@@ -2,12 +2,13 @@ package blue.origami.transpiler.type;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
@@ -42,11 +43,6 @@ public class DataTy extends Ty {
 		for (String n : names) {
 			this.fields.add(n);
 		}
-	}
-
-	@Override
-	public boolean isNonMemo() {
-		return false;
 	}
 
 	public String[] names() {
@@ -96,39 +92,14 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public boolean hasVar() {
+	public boolean hasSome(Predicate<Ty> f) {
 		return false;
 	}
 
 	@Override
-	public Ty finalTy() {
+	public Ty memoed() {
 		return this;
 	}
-
-	// public void checkSetField(AST at, String name) {
-	// if (!this.isMutable) {
-	// throw new ErrorCode(TFmt.immutable_data);
-	// } else {
-	// this.checkGetField(at, name);
-	// this.isMutable = true;
-	// }
-	// }
-	//
-	// private boolean isGrowing() {
-	// return this.growing || this.isParameter;
-	// }
-	//
-	// //
-	// public void checkGetField(AST at, String name) {
-	// DSymbol f = DSymbol.unique(name);
-	// if (!this.hasField(f)) {
-	// if (this.isGrowing()) {
-	// this.addField(f);
-	// } else {
-	// throw new ErrorCode(at, TFmt.undefined_name__YY0_in_YY1, name, this);
-	// }
-	// }
-	// }
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
@@ -148,16 +119,16 @@ public class DataTy extends Ty {
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy.isVar()) {
-			VarTy varTy = (VarTy) codeTy.real();
-			if (varTy.isParameter()) {
-				DataTy pt = new FlowDataTy();
-				pt.hasFields(this.fields, logs);
-				return (codeTy.acceptTy(false, pt, logs));
-			}
-			return (codeTy.acceptTy(false, this, logs));
+			// VarTy varTy = (VarTy) codeTy.real();
+			// if (varTy.isParameter()) {
+			DataTy pt = new FlowDataTy();
+			pt.hasFields(this.fields, logs);
+			return (codeTy.acceptTy(false, pt, logs));
+			// }
+			// return (codeTy.acceptTy(false, this, logs));
 		}
 		if (codeTy.isData()) {
-			DataTy dt = (DataTy) codeTy.real();
+			DataTy dt = (DataTy) codeTy.base();
 			if (dt.hasFields(this.fields, logs)) {
 				if (!sub) {
 					return this.hasFields(dt.fields, logs);

@@ -1024,7 +1024,7 @@ TKEYWORD
 	/ [Ll] 'et' !W
 
 TypeName = {
-	[A-Za-z_\x80-\xF7]
+	[A-Za-z_$\x80-\xF7]
 	[A-Za-z0-9_.\x80-\xF7]*
 	[']*
 	#ClassType

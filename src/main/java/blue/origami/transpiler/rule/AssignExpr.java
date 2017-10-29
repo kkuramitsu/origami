@@ -5,8 +5,8 @@ import java.util.Arrays;
 
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FunctionContext;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
@@ -15,11 +15,11 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.GetCode;
 import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.MultiCode;
-import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.code.SetCode;
 import blue.origami.transpiler.code.SugarCode;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.code.TupleIndexCode;
+import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
@@ -43,7 +43,6 @@ public class AssignExpr implements ParseRule, Symbols {
 		});
 		throw new ErrorCode(t.get(_right), TFmt.no_more_assignment);
 	}
-
 }
 
 class TupleAssignCode extends SugarCode {
@@ -62,7 +61,7 @@ class TupleAssignCode extends SugarCode {
 		for (int i = 0; i < ts.length; i++) {
 			ts[i] = Ty.tUntyped();
 		}
-		TupleTy tupleTy = new TupleTy(null, ts);
+		TupleTy tupleTy = (TupleTy) Ty.tTuple(ts);
 		this.right = this.right.asType(env, tupleTy);
 		String[] names = Arrays.stream(this.left.args()).map(n -> {
 			if (n instanceof VarNameCode) {

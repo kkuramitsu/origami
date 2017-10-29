@@ -112,7 +112,7 @@ public class CodeMap implements NameInfo {
 
 	void checkParamTypes() {
 		if (!this.is(ParamChecked)) {
-			this.set(Generic, OArrays.testSomeTrue(t -> t.hasVar(), this.paramTypes));
+			this.set(Generic, OArrays.testSomeTrue(t -> t.hasSome(Ty.IsGeneric), this.paramTypes));
 			this.set(Mutation, this.paramTypes.length > 0 && this.paramTypes[0].isMutable());
 			this.set(ParamChecked);
 		}
@@ -176,7 +176,7 @@ public class CodeMap implements NameInfo {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getName());
 		sb.append("::");
-		FuncTy.stringfy(sb, this.getReturnType(), this.getParamTypes());
+		FuncTy.stringfy(sb, this.getParamTypes(), this.getReturnType());
 		// if (!this.isPure()) {
 		// sb.append("@");
 		// }
@@ -187,9 +187,8 @@ public class CodeMap implements NameInfo {
 
 	public static CodeMap select(Env env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
 		CodeMap selected = null;
-		boolean allowAbstractMatch = OArrays.testSomeTrue(t -> t.hasVar(), p);
-		// ODebug.trace("unselected=%s", TArrays.testSomeTrue(t -> t.hasVar(),
-		// p));
+		boolean allowAbstractMatch = OArrays.testSomeTrue(t -> t.hasSome(Ty.IsVar), p);
+		// System.out.println(":::::: allowAbstractMatch=" + allowAbstractMatch);
 		int mapCost = maxCost - 1;
 		for (int i = 0; i < founds.size(); i++) {
 			CodeMap next = founds.get(i);
@@ -210,6 +209,7 @@ public class CodeMap implements NameInfo {
 			CodeMap abst = founds.get(founds.size() - 1);
 			if (abst != selected && abst.isAbstract()) {
 				int nextCost = match(env, abst, ret, p, maxCost);
+				// System.out.printf(":::: select=%s, abst=%d\n", mapCost, nextCost);
 				if (nextCost <= mapCost) {
 					ODebug.log(() -> ODebug.p("ABSTRACT cost=%s,%s", nextCost, abst));
 					return abst;
@@ -219,27 +219,32 @@ public class CodeMap implements NameInfo {
 		return (mapCost >= maxCost) ? null : selected;
 	}
 
-	static int match(Env env, CodeMap tp, Ty ret, Ty[] params, int maxCost) {
+	static int match(Env env, CodeMap cmap, Ty ret, Ty[] params, int maxCost) {
 		int mapCost = 0;
 		VarDomain dom = null;
 		VarLogger logs = new VarLogger();
-		Ty[] p = tp.getParamTypes();
-		Ty codeRet = tp.getReturnType();
-		if (tp.isGeneric()) {
-			dom = new VarDomain(p);
-			p = dom.dupParamTypes(p, null);
-			codeRet = dom.dupRetType(codeRet);
+		Ty[] cparams = cmap.getParamTypes();
+		// Ty codeRet = tp.getReturnType();
+		// System.out.printf(":::: isGeneric=%s %s\n", cmap.isGeneric(), cmap);
+		if (cmap.isGeneric()) {
+			dom = new VarDomain(cparams);
+			cparams = dom.matched(cparams, null);
+			// codeRet = dom.conv(codeRet);
 		}
 		for (int i = 0; i < params.length; i++) {
-			mapCost += env.mapCost(env, params[i], p[i], logs);
+			mapCost += env.mapCost(env, params[i], cparams[i], logs);
 			// ODebug.trace("mapCost[%d]=%d %s => %s", i, mapCost, params[i], p[i]);
 			if (mapCost >= maxCost) {
 				logs.abort();
 				return mapCost;
 			}
 		}
-		if (ret.isSpecific()) {
-			mapCost += env.mapCost(env, codeRet, ret, logs);
+		if (!ret.isVoid()) {
+			Ty cret = cmap.getReturnType();
+			if (dom != null) {
+				cret = dom.conv(cret);
+			}
+			mapCost += env.mapCost(env, cret, ret, logs);
 			// ODebug.trace("mapCost[ret]=%d %s => %s", mapCost, codeRet, ret);
 		}
 		// if (dom != null) {

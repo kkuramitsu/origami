@@ -1,5 +1,7 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Predicate;
+
 //enum Season = Spring|Summer|Fall|Winter
 //enum Mutable
 
@@ -7,11 +9,6 @@ public class EnumTy extends Ty {
 
 	String name;
 	String[] names;
-
-	@Override
-	public boolean isNonMemo() {
-		return false;
-	}
 
 	public boolean isBool() {
 		return this.names.length <= 2;
@@ -35,19 +32,19 @@ public class EnumTy extends Ty {
 
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy.real() == this) {
+		if (codeTy.base() == this) {
 			return true;
 		}
 		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	@Override
-	public Ty finalTy() {
+	public Ty memoed() {
 		return this;
 	}
 
 	@Override
-	public boolean hasVar() {
+	public boolean hasSome(Predicate<Ty> f) {
 		return false;
 	}
 

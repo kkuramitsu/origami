@@ -1,8 +1,8 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.FuncMap;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FuncMap;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;

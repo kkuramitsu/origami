@@ -1,14 +1,11 @@
 package blue.origami.transpiler.type;
 
+import blue.origami.common.ODebug;
+
 public class FlowDataTy extends DataTy {
 
 	public FlowDataTy() {
 		super();
-	}
-
-	@Override
-	public boolean isNonMemo() {
-		return true;
 	}
 
 	private boolean hasMutation = false;
@@ -19,12 +16,13 @@ public class FlowDataTy extends DataTy {
 	}
 
 	@Override
-	public void hasMutation(boolean b) {
-		this.hasMutation = b;
+	public void foundMutation() {
+		this.hasMutation = true;
 	}
 
 	@Override
-	public Ty finalTy() {
+	public Ty memoed() {
+		ODebug.TODO();
 		if (!this.hasMutation) {
 			return Ty.tRecord(this.names());
 		}

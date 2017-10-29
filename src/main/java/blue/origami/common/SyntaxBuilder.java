@@ -55,7 +55,7 @@ public class SyntaxBuilder extends OConsole {
 	}
 
 	public void Type(Ty t) {
-		this.sb.append(color(Red, t.finalTy().toString()));
+		this.sb.append(color(Red, t.memoed().toString()));
 	}
 
 	private boolean untyped = false;
@@ -73,7 +73,7 @@ public class SyntaxBuilder extends OConsole {
 		} else {
 			this.sb.append(color(Red, "("));
 			r.run();
-			this.sb.append(color(Red, " :" + ty.finalTy()));
+			this.sb.append(color(Red, " :" + ty.memoed()));
 			this.sb.append(color(Red, ")"));
 		}
 	}
@@ -81,7 +81,7 @@ public class SyntaxBuilder extends OConsole {
 	public void TypeAnnotation_(Ty ty, Runnable r) {
 		r.run();
 		if (!this.untyped) {
-			this.sb.append(color(Red, " :" + ty.finalTy()));
+			this.sb.append(color(Red, " :" + ty.memoed()));
 		}
 	}
 

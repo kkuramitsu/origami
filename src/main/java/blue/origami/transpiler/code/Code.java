@@ -133,7 +133,7 @@ interface CodeAPI {
 			ODebug.log(() -> {
 				ODebug.stackTrace("TYPE ERROR %s => %s", f, ret);
 			});
-			throw new ErrorCode(self, TFmt.type_error_YY1_YY2, f.finalTy(), ret.finalTy());
+			throw new ErrorCode(self, TFmt.type_error_YY1_YY2, f.memoed(), ret.memoed());
 		}
 		return new CastCode(ret, tp, self);
 	}

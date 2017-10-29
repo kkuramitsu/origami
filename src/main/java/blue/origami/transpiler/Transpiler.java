@@ -164,7 +164,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		if (this.cmapper.isExecutable() && code.getType() != Ty.tVoid) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("(");
-			sb.append(OConsole.t(code.getType().finalTy().toString()));
+			sb.append(OConsole.t(code.getType().memoed().toString()));
 			sb.append(") ");
 			OConsole.beginBold(sb);
 			OStrings.appendQuoted(sb, result);
@@ -182,7 +182,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public Ty testType(String s) throws Throwable {
-		return this.testCode(s).getType().finalTy();
+		return this.testCode(s).getType().memoed();
 	}
 
 	public Object testEval(String s) throws Throwable {
@@ -253,14 +253,6 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		FuncUnit fu = FuncUnit.wrap(aname, paramNames, tp);
 
 		Code code = fu.typeCheck(this, fcx, dom, code0);
-		if (fu.getReturnType().isUnion()) {
-			Ty ret = code.getType();
-			// ODebug.trace("UNION %s => %s", fu.getReturnType(), ret);
-			fu.setReturnType(ret);
-			if (ret.isUnion()) {
-				code = new ErrorCode(code.getSource(), TFmt.ambiguous_type__S, fu.getReturnType());
-			}
-		}
 		if (code.showError(this)) {
 			return tp;
 		}

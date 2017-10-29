@@ -45,7 +45,9 @@ public class ClassType implements ParseRule {
 			case "_":
 				return Ty.tThis;
 			}
+			ty = Ty.t(name);
 		}
+
 		return ty;
 	}
 }

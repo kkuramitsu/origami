@@ -16,7 +16,7 @@ public class TupleCode extends CodeN {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (ret.isTuple()) {
-			TupleTy ty = (TupleTy) ret.real();
+			TupleTy ty = (TupleTy) ret.base();
 			if (ty != this.getType()) {
 				Ty[] ts = ty.getParamTypes();
 				if (ts.length != this.args.length) {

@@ -28,20 +28,20 @@ public class VarLogger {
 		}
 	}
 
-	static class UnionLog extends BackLog {
-		Ty[] prevChoice;
-		UnionTy unionTy;
-
-		UnionLog(UnionTy u) {
-			this.prevChoice = u.choice;
-			this.unionTy = u;
-		}
-
-		@Override
-		void abort() {
-			this.unionTy.choice = this.prevChoice;
-		}
-	}
+	// static class UnionLog extends BackLog {
+	// Ty[] prevChoice;
+	// UnionTy unionTy;
+	//
+	// UnionLog(UnionTy u) {
+	// this.prevChoice = u.choice;
+	// this.unionTy = u;
+	// }
+	//
+	// @Override
+	// void abort() {
+	// this.unionTy.choice = this.prevChoice;
+	// }
+	// }
 
 	List<BackLog> logs = null;
 
@@ -73,24 +73,24 @@ public class VarLogger {
 		if (this != Update) {
 			this.add(new VarLog(v));
 		}
-		if (v.id < 26) {
+		if (v.varId < 26) {
 			ODebug.trace("FIXME: var %s do not mutate", this);
-			assert (v.id > 26);
+			assert (v.varId > 26);
 			return true;
 		}
 		v.resolvedTy = ty;
 		return true;
 	}
-
-	public boolean updateUnion(UnionTy u, Ty... choice) {
-		if (this == Nop) {
-			return true;
-		}
-		if (this != Update) {
-			this.add(new UnionLog(u));
-		}
-		u.choice = choice;
-		return true;
-	}
+	//
+	// public boolean updateUnion(UnionTy u, Ty... choice) {
+	// if (this == Nop) {
+	// return true;
+	// }
+	// if (this != Update) {
+	// this.add(new UnionLog(u));
+	// }
+	// u.choice = choice;
+	// return true;
+	// }
 
 }

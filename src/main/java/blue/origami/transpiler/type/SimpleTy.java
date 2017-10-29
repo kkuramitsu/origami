@@ -1,17 +1,51 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Predicate;
+
 import blue.origami.transpiler.code.Code;
 
 public class SimpleTy extends Ty {
-	private String name;
+	protected String name;
+	private boolean isBase;
 
 	public SimpleTy(String name) {
 		this.name = name;
+		this.isBase = false;
+	}
+
+	public SimpleTy(String name, int paramSize) {
+		this.name = name;
+		this.isBase = paramSize > 0;
 	}
 
 	@Override
-	public boolean isNonMemo() {
-		return false;
+	public String keyMemo() {
+		return this.name;
+	}
+
+	@Override
+	public boolean isMutable() {
+		return this.name.startsWith(Ty.Mut);
+	}
+
+	@Override
+	public Ty toImmutable() {
+		if (this.isMutable()) {
+			return Ty.t(this.name.substring(Ty.Mut.length()));
+		}
+		return this;
+	}
+
+	public boolean isBase() {
+		return this.isBase;
+	}
+
+	@Override
+	public Ty newGeneric(Ty paramTy) {
+		if (this.isBase()) {
+			return new GenericTy(this, paramTy);
+		}
+		return this;
 	}
 
 	@Override
@@ -24,12 +58,12 @@ public class SimpleTy extends Ty {
 		if (codeTy.isVar()) {
 			return (codeTy.acceptTy(false, this, logs));
 		}
-		return this == codeTy.real();
+		return this == codeTy.base();
 	}
 
 	@Override
-	public boolean hasVar() {
-		return false;
+	public boolean hasSome(Predicate<Ty> f) {
+		return f.test(this);
 	}
 
 	@Override

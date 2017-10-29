@@ -71,7 +71,7 @@ public class ExprCode extends CodeN implements MappedCode {
 	private String msgArgs() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		OStrings.joins(sb, this.args, ", ", p -> p.getType().finalTy());
+		OStrings.joins(sb, this.args, ", ", p -> p.getType().memoed());
 		sb.append(")");
 		return sb.toString();
 	}

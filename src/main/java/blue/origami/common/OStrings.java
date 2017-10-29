@@ -19,6 +19,7 @@ package blue.origami.common;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.stream.BaseStream;
 
 public interface OStrings {
@@ -108,6 +109,17 @@ public interface OStrings {
 	// }
 	// }
 	// }
+
+	public static void forEach(StringBuilder sb, int s, int e, String open, String delim, String close, IntConsumer f) {
+		sb.append(open);
+		for (int i = s; i < e; i++) {
+			if (i > s) {
+				sb.append(delim);
+			}
+			f.accept(i);
+		}
+		sb.append(close);
+	}
 
 	public static <T> String joins(T[] objs, String delim) {
 		StringBuilder sb = new StringBuilder();

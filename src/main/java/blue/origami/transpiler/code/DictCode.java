@@ -5,7 +5,7 @@ import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.type.DictTy;
+import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 
@@ -13,10 +13,11 @@ public class DictCode extends CodeN {
 	protected String[] names;
 	boolean isMutable = false;
 
-	public DictCode(DictTy dt) {
+	public DictCode(Ty dt) {
 		super(dt, OArrays.emptyCodes);
 		this.names = OArrays.emptyNames;
 		this.isMutable = dt.isMutable();
+		assert (this.isDict(dt));
 	}
 
 	public DictCode(boolean isMutable, String[] names, Code[] values) {
@@ -39,6 +40,15 @@ public class DictCode extends CodeN {
 		sec.pushDict(this);
 	}
 
+	private boolean isDict(Ty ty) {
+		ty = ty.base();
+		if (ty instanceof GenericTy) {
+			Ty base = ((GenericTy) ty).getBaseType().base();
+			return (base == Ty.tDict || base == Ty.tMDict);
+		}
+		return false;
+	}
+
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
@@ -46,11 +56,11 @@ public class DictCode extends CodeN {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
-			this.setType(this.isMutable() ? Ty.tMonad("Dict'", firstType) : Ty.tMonad("Dict", firstType));
+			this.setType(this.isMutable() ? Ty.tGeneric("Dict'", firstType) : Ty.tGeneric("Dict", firstType));
 		}
-		if (ret.isDict()) {
-			Ty ty = ret.getInnerTy();
-			if (!this.getType().getInnerTy().acceptTy(bEQ, ty, VarLogger.Update)) {
+		if (this.isDict(ret)) {
+			Ty ty = ret.getParamType();
+			if (!this.getType().getParamType().acceptTy(bEQ, ty, VarLogger.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
@@ -61,15 +71,15 @@ public class DictCode extends CodeN {
 	}
 
 	private Ty guessInnerType(Ty t) {
-		if (t.isDict()) {
-			return t.getInnerTy();
+		if (this.isDict(t)) {
+			return t.getParamType();
 		}
 		return Ty.tUntyped();
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.sexpr(sb, this.isMutable() ? "dict" : "map", 0, this.names.length, (n) -> {
+		this.sexpr(sb, this.isMutable() ? "dict" : Ty.Mut + "dict", 0, this.names.length, (n) -> {
 			OStrings.appendQuoted(sb, this.names[n]);
 			sb.append(":");
 			OStrings.append(sb, this.args[n]);
@@ -78,7 +88,7 @@ public class DictCode extends CodeN {
 
 	@Override
 	public void dumpCode(SyntaxBuilder sh) {
-		sh.Token(this.isMutable() ? "{" : "[");
+		sh.Token(this.isMutable() ? Ty.Mut + "{" : "{");
 		for (int i = 0; i < this.names.length; i++) {
 			if (i > 0) {
 				sh.Token(",");
@@ -87,7 +97,7 @@ public class DictCode extends CodeN {
 			sh.Token(":");
 			sh.Expr(this.args[i]);
 		}
-		sh.Token(this.isMutable() ? "}" : "]");
+		sh.Token("}");
 	}
 
 }
