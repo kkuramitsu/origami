@@ -5,9 +5,9 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 
+import blue.origami.chibi.Data$;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.konoha5.Data$;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
@@ -508,7 +508,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		GenericTy dt = (GenericTy) code.getType().base();
 		Class<?> c = this.ts.toClass(dt);
 		this.mBuilder.push(code.isMutable());
-		if (c == blue.origami.konoha5.List$.class) {
+		if (c == blue.origami.chibi.List$.class) {
 			Type ty = Type.getType(Object.class);
 			this.pushArray(ty, true, code.args());
 			String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));

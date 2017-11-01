@@ -37,7 +37,7 @@ public class TypeTest extends CommandTest {
 		runScript("'abc'", "String");
 		runScript("\"abc\"", "String");
 		runScript("[1,2,3]", "List[Int]");
-		runScript("{1,2,3}", "$List[Int]");
+		runScript("$[1,2,3]", "$List[Int]");
 	}
 
 	public void testHelloWorld() throws Throwable {
@@ -119,7 +119,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public void testMutation() throws Throwable {
-		runScript("f()={1,2};f", "()->List[Int]");
+		runScript("f()=$[1,2];f", "()->List[Int]");
 		runScript("f(a)=a[0];f", "List[a]->a");
 		runScript("f(a)=a[0]=1;f", "$List[Int]->()");
 		FIXME("f(a)={a[0];a[0]=1};f", "$List[Int]->()");
@@ -131,7 +131,7 @@ public class TypeTest extends CommandTest {
 
 	static Grammar g() throws Throwable {
 		if (g == null) {
-			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/konoha5.opeg");
+			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/chibi.opeg");
 		}
 		return g;
 	}

@@ -1,17 +1,17 @@
-package blue.origami.konoha5;
+package blue.origami.chibi;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import blue.origami.chibi.Func.FuncIntBool;
+import blue.origami.chibi.Func.FuncIntFloat;
+import blue.origami.chibi.Func.FuncIntInt;
+import blue.origami.chibi.Func.FuncIntIntInt;
+import blue.origami.chibi.Func.FuncIntObj;
+import blue.origami.chibi.Func.FuncIntVoid;
 import blue.origami.common.OStrings;
-import blue.origami.konoha5.Func.FuncIntBool;
-import blue.origami.konoha5.Func.FuncIntFloat;
-import blue.origami.konoha5.Func.FuncIntInt;
-import blue.origami.konoha5.Func.FuncIntIntInt;
-import blue.origami.konoha5.Func.FuncIntObj;
-import blue.origami.konoha5.Func.FuncIntVoid;
 
 public class List$Int implements OStrings, FuncIntInt {
 	protected int[] arrays = null;
@@ -110,11 +110,14 @@ public class List$Int implements OStrings, FuncIntInt {
 	@Override
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
-		sb.append(this instanceof ListM$Int ? "{" : "[");
+		// if (this instanceof ListM$Int) {
+		// sb.append("$");
+		// }
+		sb.append("[");
 		for (List$Int p = this; p != null; p = p.next) {
 			cnt = this.strOut(sb, p, cnt);
 		}
-		sb.append(this instanceof ListM$Int ? "}" : "]");
+		sb.append("]");
 	}
 
 	int strOut(StringBuilder sb, List$Int p, int cnt) {

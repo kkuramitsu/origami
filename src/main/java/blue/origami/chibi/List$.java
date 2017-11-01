@@ -1,18 +1,18 @@
-package blue.origami.konoha5;
+package blue.origami.chibi;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import blue.origami.chibi.Func.FuncIntObj;
+import blue.origami.chibi.Func.FuncObjBool;
+import blue.origami.chibi.Func.FuncObjFloat;
+import blue.origami.chibi.Func.FuncObjInt;
+import blue.origami.chibi.Func.FuncObjObj;
+import blue.origami.chibi.Func.FuncObjObjObj;
+import blue.origami.chibi.Func.FuncObjVoid;
 import blue.origami.common.OStrings;
-import blue.origami.konoha5.Func.FuncIntObj;
-import blue.origami.konoha5.Func.FuncObjBool;
-import blue.origami.konoha5.Func.FuncObjFloat;
-import blue.origami.konoha5.Func.FuncObjInt;
-import blue.origami.konoha5.Func.FuncObjObj;
-import blue.origami.konoha5.Func.FuncObjObjObj;
-import blue.origami.konoha5.Func.FuncObjVoid;
 
 public class List$ implements OStrings, FuncIntObj {
 	private Object[] arrays = null;
@@ -51,7 +51,7 @@ public class List$ implements OStrings, FuncIntObj {
 		sb.append("[");
 		for (int i = this.start; i < this.end; i++) {
 			if (cnt > 0) {
-				sb.append(", ");
+				sb.append(",");
 			}
 			OStrings.append(sb, this.arrays[i]);
 			cnt++;

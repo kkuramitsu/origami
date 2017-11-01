@@ -43,7 +43,7 @@ public class Otranspile extends Main {
 
 	@Override
 	protected String progName() {
-		return "Konoha🍃";
+		return "Chibi🍃";
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class Otranspile extends Main {
 	private Transpiler[] newTranspiler(OOption options) throws Throwable {
 		// String target = options.stringValue(MainOption.Target,
 		// this.getDefaultTarget());
-		// Grammar g = this.getGrammar(options, "konoha5.opeg");
+		// Grammar g = this.getGrammar(options, "chibi.opeg");
 		// Parser p = g.newParser(options);
 		// if (target.indexOf(":") > 0) {
 		// String[] t = target.split(":", -1);

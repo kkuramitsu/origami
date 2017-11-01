@@ -1,4 +1,4 @@
-# Konoha5 origami.file
+# Chibi-to-Python Codemap 
 
 # Bool
 ==:Bool:Bool:Bool      = %s == %s

@@ -48,7 +48,7 @@ public class Language implements OFactory<Language> {
 	}
 
 	public String getLangName() {
-		return "konoha5";
+		return "chibi";
 	}
 
 	public void initMe(Env env) {

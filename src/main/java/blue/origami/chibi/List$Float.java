@@ -1,18 +1,18 @@
-package blue.origami.konoha5;
+package blue.origami.chibi;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import blue.origami.chibi.Func.FuncFloatBool;
+import blue.origami.chibi.Func.FuncFloatFloat;
+import blue.origami.chibi.Func.FuncFloatFloatFloat;
+import blue.origami.chibi.Func.FuncFloatInt;
+import blue.origami.chibi.Func.FuncFloatObj;
+import blue.origami.chibi.Func.FuncFloatVoid;
+import blue.origami.chibi.Func.FuncIntFloat;
 import blue.origami.common.OStrings;
-import blue.origami.konoha5.Func.FuncFloatBool;
-import blue.origami.konoha5.Func.FuncFloatFloat;
-import blue.origami.konoha5.Func.FuncFloatFloatFloat;
-import blue.origami.konoha5.Func.FuncFloatInt;
-import blue.origami.konoha5.Func.FuncFloatObj;
-import blue.origami.konoha5.Func.FuncFloatVoid;
-import blue.origami.konoha5.Func.FuncIntFloat;
 
 public class List$Float implements OStrings, FuncIntFloat {
 	private double[] arrays = null;

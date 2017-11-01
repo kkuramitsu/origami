@@ -15,12 +15,12 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.FieldNode;
 
+import blue.origami.chibi.Data$;
+import blue.origami.chibi.Func;
+import blue.origami.chibi.Tuple$;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
-import blue.origami.konoha5.Data$;
-import blue.origami.konoha5.Func;
-import blue.origami.konoha5.Tuple$;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
@@ -48,7 +48,6 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	}
 
 	void loadType() {
-		// this.reg(Ty.tUntyped0, Object.class);
 		this.reg(Ty.tVarParam[0], Object.class);
 		this.reg(Ty.tAnyRef, Object.class);
 		this.reg(Ty.tVoid, void.class);
@@ -60,13 +59,13 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 		this.reg("Option", Object.class);
 
-		this.reg("{}", blue.origami.konoha5.Data$.class);
-		this.reg("${}", blue.origami.konoha5.Data$.class);
+		this.reg("{}", blue.origami.chibi.Data$.class);
+		this.reg("${}", blue.origami.chibi.Data$.class);
 
-		this.reg("List", blue.origami.konoha5.List$.class);
-		this.reg("$List", blue.origami.konoha5.List$.class);
-		this.reg("ListI", blue.origami.konoha5.List$Int.class);
-		this.reg("$ListI", blue.origami.konoha5.List$Int.class);
+		this.reg("List", blue.origami.chibi.List$.class);
+		this.reg("$List", blue.origami.chibi.List$.class);
+		this.reg("ListI", blue.origami.chibi.List$Int.class);
+		this.reg("$ListI", blue.origami.chibi.List$Int.class);
 
 		this.reg("Stream", Stream.class);
 		this.reg("StreamI", IntStream.class);
@@ -76,8 +75,8 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 		this.reg("$StreamI", IntStream.class);
 		this.reg("$StreamD", DoubleStream.class);
 
-		this.reg("Dict", blue.origami.konoha5.Dict$.class);
-		this.reg("$Dict", blue.origami.konoha5.Dict$.class);
+		this.reg("Dict", blue.origami.chibi.Dict$.class);
+		this.reg("$Dict", blue.origami.chibi.Dict$.class);
 
 		// Func
 		this.reg("V->Z", Func.FuncBool.class);

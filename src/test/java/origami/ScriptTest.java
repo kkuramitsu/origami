@@ -18,19 +18,19 @@ public class ScriptTest {
 	}
 
 	public void testHello() throws Throwable {
-		runScript("/konoha5-test/hello.k", 0);
+		runScript("/chibi-test/hello.chibi", 0);
 	}
 
 	public void testMax() throws Throwable {
-		runScript("/konoha5-test/max.k", 0);
+		runScript("/chibi-test/max.chibi", 0);
 	}
 
 	public void testFact() throws Throwable {
-		runScript("/konoha5-test/fact.k", 0);
+		runScript("/chibi-test/fact.chibi", 0);
 	}
 
 	public void testTake() throws Throwable {
-		runScript("/konoha5-test/take.k", 0);
+		runScript("/chibi-test/take.chibi", 0);
 	}
 
 	// public void testFib() throws Throwable {
@@ -38,7 +38,7 @@ public class ScriptTest {
 	// }
 
 	public void testMutualRecursion() throws Throwable {
-		runScript2("/konoha5-test/mutual_recursion.k", 0);
+		runScript("/chibi-test/mutual_recursion.chibi", 0);
 	}
 
 	//
@@ -47,7 +47,7 @@ public class ScriptTest {
 
 	static Grammar g() throws Throwable {
 		if (g == null) {
-			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/konoha5.opeg");
+			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/chibi.opeg");
 		}
 		return g;
 	}

@@ -19,10 +19,11 @@ public class EvalTest {
 		runScript("'abc'", "abc");
 		runScript("\"abc\"", "abc");
 		runScript("[1,2,3]", "[1,2,3]");
-		runScript("{1,2,3}", "{1,2,3}");
+		runScript("$[1,2,3]", "[1,2,3]");
+		// runScript("[false,true]", "[false,true]");
 	}
 
-	public void testBoolean() throws Throwable {
+	public void testBool() throws Throwable {
 		runScript("true && true", "true");
 		runScript("true || true", "true");
 		runScript("!false", "true");
@@ -66,8 +67,8 @@ public class EvalTest {
 	}
 
 	public void testIntArray() throws Throwable {
-		runScript("a={1,2};a[0]=9;a[0]", "9");
-		runScript("a={1,2}.map(\\n n+1);a", "{2,3}");
+		runScript("a=$[1,2];a[0]=9;a[0]", "9");
+		runScript("a=$[1,2].map(\\n n+1);a", "[2,3]");
 	}
 
 	public void testLambda() throws Throwable {
@@ -103,7 +104,7 @@ public class EvalTest {
 
 	static Grammar g() throws Throwable {
 		if (g == null) {
-			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/konoha5.opeg");
+			g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/chibi.opeg");
 		}
 		return g;
 	}

@@ -1,4 +1,4 @@
-package blue.origami.konoha5;
+package blue.origami.chibi;
 
 import java.lang.reflect.Field;
 

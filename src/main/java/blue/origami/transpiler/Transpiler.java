@@ -62,7 +62,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	@Override
 	public void init(OOption options) {
 		try {
-			String file = options.stringValue(MainOption.GrammarFile, "konoha5.opeg");
+			String file = options.stringValue(MainOption.GrammarFile, "chibi.opeg");
 			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 			Parser p = g.newParser(options);
 			this.initMe(g, p, options.newInstance(Language.class));

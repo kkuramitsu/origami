@@ -18,12 +18,12 @@ package blue.origami.asm;
 
 import java.util.Objects;
 
-import blue.origami.konoha5.Func.FuncObjObj;
-import blue.origami.konoha5.Func.FuncObjVoid;
-import blue.origami.konoha5.List$;
-import blue.origami.konoha5.List$Float;
-import blue.origami.konoha5.List$Int;
-import blue.origami.konoha5.Range$Int;
+import blue.origami.chibi.List$;
+import blue.origami.chibi.List$Float;
+import blue.origami.chibi.List$Int;
+import blue.origami.chibi.Range$Int;
+import blue.origami.chibi.Func.FuncObjObj;
+import blue.origami.chibi.Func.FuncObjVoid;
 
 public class APIs {
 	public final static Object box(boolean a) {
