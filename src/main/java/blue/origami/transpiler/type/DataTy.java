@@ -2,6 +2,7 @@ package blue.origami.transpiler.type;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
@@ -93,7 +94,12 @@ public class DataTy extends Ty {
 
 	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return false;
+		return f.test(this);
+	}
+
+	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		return f.apply(this);
 	}
 
 	@Override

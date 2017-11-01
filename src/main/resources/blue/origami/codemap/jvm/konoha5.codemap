@@ -75,19 +75,19 @@ Float-->String         = S|blue/origami/asm/APIs|toString
 println:String:()         = S|blue/origami/asm/APIs|p
 
 ## AnyRef
-a==>Bool              = S|blue/origami/asm/APIs|unboxZ
-Bool==>a              = S|blue/origami/asm/APIs|box
-a==>Int               = S|blue/origami/asm/APIs|unboxI
-Int==>a               = S|blue/origami/asm/APIs|box
-a==>Float             = S|blue/origami/asm/APIs|unboxD
-Float==>a             = S|blue/origami/asm/APIs|box
+AnyRef==>Bool              = S|blue/origami/asm/APIs|unboxZ
+Bool==>AnyRef              = S|blue/origami/asm/APIs|box
+AnyRef==>Int               = S|blue/origami/asm/APIs|unboxI
+Int==>AnyRef               = S|blue/origami/asm/APIs|box
+AnyRef==>Float             = S|blue/origami/asm/APIs|unboxD
+Float==>AnyRef             = S|blue/origami/asm/APIs|box
 
-a==>byte              = S|blue/origami/asm/APIs|unboxB
-byte==>a              = S|blue/origami/asm/APIs|box
-a==>char              = S|blue/origami/asm/APIs|unboxC
-char==>a              = S|blue/origami/asm/APIs|box
-a==>int64             = S|blue/origami/asm/APIs|unboxL
-int64==>a             = S|blue/origami/asm/APIs|box
+AnyRef==>byte              = S|blue/origami/asm/APIs|unboxB
+byte==>AnyRef              = S|blue/origami/asm/APIs|box
+AnyRef==>char              = S|blue/origami/asm/APIs|unboxC
+char==>AnyRef              = S|blue/origami/asm/APIs|box
+AnyRef==>int64             = S|blue/origami/asm/APIs|unboxL
+int64==>AnyRef             = S|blue/origami/asm/APIs|box
 
 ## List[a], $List[a], Stream[a]
 

@@ -47,7 +47,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	// Hidden Type
-	// public static final Ty tAny = m(new AnyTy());
+	public static final Ty tAnyRef = m(new SimpleTy("AnyRef"));
 	public static final Ty tByte = m(new SimpleTy("Byte"));
 	public static final Ty tInt64 = m(new SimpleTy("Int64"));
 	public static final Ty tFloat32 = m(new SimpleTy("Float32"));
@@ -135,7 +135,7 @@ public abstract class Ty implements TypeApi, OStrings {
 		if (inner instanceof TagTy) {
 			TagTy tag = (TagTy) inner;
 			inner = tag.getParamType();
-			names = TagTy.joins(names, tag.names);
+			names = TagTy.joins(names, tag.tags);
 		}
 		Arrays.sort(names);
 		return m(new TagTy(inner, names));
@@ -186,6 +186,8 @@ public abstract class Ty implements TypeApi, OStrings {
 
 	public abstract boolean hasSome(Predicate<Ty> f);
 
+	public abstract Ty map(Function<Ty, Ty> f);
+
 	public Ty dupVar(VarDomain dom) {
 		return this;
 	}
@@ -205,6 +207,33 @@ public abstract class Ty implements TypeApi, OStrings {
 	@Override
 	public Ty base() {
 		return this;
+	}
+
+	public void typeKey(StringBuilder sb) {
+		this.strOut(sb);
+	}
+
+	public static String mapKey2(Ty fromTy, Ty toTy) {
+		StringBuilder sb = new StringBuilder();
+		fromTy.typeKey(sb);
+		sb.append("->");
+		toTy.typeKey(sb);
+		return sb.toString();
+		// if (fromTy.isFunc()) {
+		// sb.append("(");
+		// fromTy.strOut(sb);
+		// sb.append(")");
+		// } else {
+		// fromTy.strOut(sb);
+		// }
+		// sb.append("->");
+		// if (toTy.isFunc()) {
+		// sb.append("(");
+		// toTy.strOut(sb);
+		// sb.append(")");
+		// } else {
+		// toTy.strOut(sb);
+		// }
 	}
 
 	@Override

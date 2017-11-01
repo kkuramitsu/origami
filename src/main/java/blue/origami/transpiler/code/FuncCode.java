@@ -7,20 +7,21 @@ import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.FuncUnit;
-import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FuncEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarParamTy;
 
-public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
+public class FuncCode extends Code1 {
 
 	AST[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
 
 	AST body = null;
-	FunctionContext funcContext = null;
+	FuncEnv funcEnv = null;
 
 	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, AST body) {
 		super(new DoneCode());
@@ -28,6 +29,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
 		this.body = body;
+		this.initVarTypes();
 	}
 
 	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
@@ -36,88 +38,97 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
 		this.body = null;
+		this.initVarTypes();
 	}
 
-	@Override
-	public String getName() {
-		return null;
+	private boolean isGeneric = false;
+
+	private void initVarTypes() {
+		if (OArrays.testSome(Ty.IsGeneric, this.paramTypes)) {
+			VarDomain dom = new VarDomain(this.paramTypes);
+			this.paramTypes = dom.conv(this.paramTypes);
+			this.returnType = dom.conv(this.returnType);
+			this.isGeneric = true;
+		} else {
+			if (this.returnType instanceof VarParamTy) {
+				this.returnType = Ty.tUntyped();
+			}
+		}
 	}
 
-	@Override
-	public AST[] getParamSource() {
+	// @Override
+	// public String getName() {
+	// return null;
+	// }
+	//
+	// @Override
+	public AST[] getParamNames() {
 		return this.paramNames;
 	}
 
-	@Override
 	public Ty[] getParamTypes() {
 		return this.paramTypes;
 	}
 
-	@Override
 	public Ty getReturnType() {
 		return this.returnType;
 	}
 
-	@Override
-	public void setParamTypes(Ty[] pats) {
-		this.paramTypes = pats;
-	}
-
-	@Override
-	public void setReturnType(Ty ret) {
-		this.returnType = ret;
-	}
-
 	public int getStartIndex() {
-		return this.funcContext.getStartIndex();
+		return this.funcEnv.getStartIndex();
 	}
 
 	public String[] getFieldNames() {
-		return this.funcContext.getFieldNames();
+		return this.funcEnv.getFieldNames();
 	}
 
 	public Code[] getFieldCode() {
-		return this.funcContext.getFieldCode();
+		return this.funcEnv.getFieldCode();
 	}
 
 	public Ty[] getFieldTypes() {
-		return this.funcContext.getFieldTypes();
+		return this.funcEnv.getFieldTypes();
 	}
 
-	private FunctionContext sync(Env env) {
-		FunctionContext fcx = new FunctionContext(env.get(FunctionContext.class));
-		if (this.funcContext != null) {
-			fcx.syncIndex(this.funcContext);
+	private FuncEnv getFuncEnv(Env env) {
+		if (this.funcEnv == null) {
+			this.funcEnv = env.newLambdaEnv(this);
 		}
-		this.funcContext = fcx;
-		return fcx;
+		return this.funcEnv;
+	}
+
+	public Code getCode(Env env) {
+		return this.body != null ? env.parseCode(env, this.body) : this.getInner();
 	}
 
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
-			FunctionContext fcx = this.sync(env);
-			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
-			this.inner = this.typeBody(env, fcx, inner);
+			FuncEnv fcx = this.getFuncEnv(env);
+			this.inner = fcx.typeCheck(this.getCode(env));
 			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
+			ODebug.trace("TODO1: %s as %s", this.getType(), ret);
 		}
-		if (ret.isFunc() && isGenericFunc(this.getType())) {
-			FuncTy retFuncTy = (FuncTy) ret.base();
-			if (retFuncTy.getParamSize() != this.paramTypes.length) {
-				throw new ErrorCode(this.getSource(), TFmt.mismatched_parameter_size_S_S, retFuncTy.getParamSize(),
-						this.paramTypes.length);
-			}
-			for (int i = 0; i < this.paramTypes.length; i++) {
-				if (this.paramTypes[i].hasSome(Ty.IsVar)) {
-					this.paramTypes[i] = retFuncTy.getParamTypes()[i];
+		// ret.hasSome(Ty.IsGeneric) comes with anycast
+		if (ret.isFunc() && this.getType().hasSome(Ty.IsVar) && !ret.hasSome(Ty.IsGeneric)) {
+			FuncTy toFuncTy = (FuncTy) ret.base();
+			if (!this.getType().eq(toFuncTy)) {
+				if (toFuncTy.getParamSize() != this.paramTypes.length) {
+					throw new ErrorCode(this.getSource(), TFmt.mismatched_parameter_size_S_S, toFuncTy.getParamSize(),
+							this.paramTypes.length);
 				}
+				for (int i = 0; i < this.paramTypes.length; i++) {
+					if (this.paramTypes[i].hasSome(Ty.IsVar)) {
+						this.paramTypes[i] = toFuncTy.getParamTypes()[i];
+					}
+				}
+				this.returnType = toFuncTy.getReturnType();
+				FuncEnv fcx = this.getFuncEnv(env);
+				fcx.update(this.paramTypes, this.returnType);
+				this.inner = fcx.typeCheck(fcx.typeCheck(this.getCode(env)));
+				this.setType(Ty.tFunc(this.returnType, this.paramTypes));
+				ODebug.trace("TODO2: %s as %s", this.getType(), ret);
 			}
-			this.returnType = retFuncTy.getReturnType();
-			FunctionContext fcx = this.sync(env);
-			Code inner = this.body != null ? env.parseCode(env, this.body) : this.getInner();
-			this.inner = this.typeBody(env, fcx, inner);
-			this.setType(Ty.tFunc(this.returnType, this.paramTypes));
-			ODebug.trace("TODO: %s as %s", this.getType(), ret);
 			return this;
 		}
 		return this.castType(env, ret);
@@ -126,7 +137,7 @@ public class FuncCode extends Code1 implements /* FuncParam, */ FuncUnit {
 	public static boolean isGenericFunc(Ty ty) {
 		if (ty.isFunc()) {
 			FuncTy funcTy = (FuncTy) ty.base();
-			return OArrays.testSomeTrue((t -> t.hasSome(Ty.IsGeneric)), funcTy.getParamTypes());
+			return OArrays.testSome((t -> t.hasSome(Ty.IsGeneric)), funcTy.getParamTypes());
 		}
 		return false;
 	}

@@ -50,7 +50,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	void loadType() {
 		// this.reg(Ty.tUntyped0, Object.class);
 		this.reg(Ty.tVarParam[0], Object.class);
-		// this.reg(Ty.tAny, Object.class);
+		this.reg(Ty.tAnyRef, Object.class);
 		this.reg(Ty.tVoid, void.class);
 		this.reg(Ty.tBool, boolean.class);
 		this.reg(Ty.tChar, char.class);

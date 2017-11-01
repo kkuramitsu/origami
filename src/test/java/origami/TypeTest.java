@@ -65,7 +65,7 @@ public class TypeTest extends CommandTest {
 		runScript("\\n n+1", "Int->Int");
 		runScript("\\a : Int a+1", "Int->Int");
 		runScript("\\() 1", "()->Int");
-		FIXME("\\a \\b a+b", "(a,b)->(a|b)");
+		runScript("\\a \\b a+b", "(a,b)->c");
 	}
 
 	public void testRec() throws Throwable {
@@ -78,11 +78,11 @@ public class TypeTest extends CommandTest {
 		runScript("f(a)=|a|;f(1);f", "Int->Int");
 		runScript("f(a,n)={m=a[n];m};f", "(List[a],Int)->a");
 		runScript("f(a,n)={m=a[n];m};f([0,1], 0);f", "(List[Int],Int)->Int");
-		FIXME("f(a, b) =\n  | (1, 1) -> 1\n  | (1, 0) -> 1\nf", "(Int,Int)->Int");
+		runScript("f(a, b) =\n  | (1, 1) -> 1\n  | (1, 0) -> 1\nf", "(Int,Int)->Int");
 	}
 
 	public void testAdHoc() throws Throwable {
-		FIXME("f(a)=2a+1;f", "a->b");
+		runScript("f(a)=2a+1;f", "a->b");
 		runScript("f(a)=2a+1;f(1);f", "Int->Int");
 		runScript("f(a)=2a+1;f(1.0);f", "Float->Float");
 	}

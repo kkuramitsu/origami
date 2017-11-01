@@ -145,13 +145,14 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 	}
 
-	void emitCode(Env env, OSource sc) throws Throwable {
-		Parser p = env.get(Parser.class);
+	void emitCode(Env env0, OSource sc) throws Throwable {
+		Parser p = env0.get(Parser.class);
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
 			OConsole.println(t);
 		});
 		this.cmapper.setup();
+		FuncEnv env = env0.newFuncEnv(); //
 		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
 		if (code.getType().isAmbigous()) {
 			code = new ErrorCode(code, TFmt.ambiguous_type__S, code.getType());
@@ -178,11 +179,12 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		Parser p = this.get(Parser.class);
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		this.cmapper.setup();
-		return this.parseCode(this, t).asType(this, Ty.tUntyped());
+		FuncEnv env = this.newFuncEnv(); //
+		return this.parseCode(env, t).asType(env, Ty.tUntyped());
 	}
 
 	public Ty testType(String s) throws Throwable {
-		return this.testCode(s).getType().memoed();
+		return VarDomain.eliminateVar(this.testCode(s).getType().memoed());
 	}
 
 	public Object testEval(String s) throws Throwable {
@@ -212,7 +214,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 
 	// ConstDecl
 
-	int functionId = 0;
+	int functionId = 1000;
 
 	public CodeMap defineConst(boolean isPublic, String name, Ty type, Code expr) {
 		Env env = this.newEnv();
@@ -223,6 +225,11 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		return tp;
 	}
 
+	private String getLocalName(String name) {
+		String prefix = "v" + (this.functionId++); // this.getSymbol(name);
+		return prefix + NameHint.safeName(name);
+	}
+
 	// FuncDecl
 
 	public CodeMap newCodeMap(String name, Ty returnType, Ty... paramTypes) {
@@ -230,47 +237,64 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		return this.cmapper.newCodeMap(this, name, lname, returnType, paramTypes);
 	}
 
-	public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
-		final Env env = this.newEnv();
-		final String lname = this.cmapper.safeName(name);
-		final CodeMap tp = this.cmapper.newCodeMap(env, name, lname, returnType, paramTypes);
-		this.add(name, tp);
-		FunctionContext fcx = new FunctionContext(null);
-		FuncUnit fu = FuncUnit.wrap(null, paramNames, tp);
-		Code code = fu.typeCheck(env, fcx, null, body);
-		this.cmapper.defineFunction(this, false, lname, AST.names(paramNames), tp.getParamTypes(), tp.getReturnType(),
-				code);
-		return tp;
-	}
-
-	public CodeMap defineFunction(boolean isPublic, AST aname, int seq, AST[] paramNames, Ty[] paramTypes,
-			Ty returnType, VarDomain dom, Code code0) {
-		final String name = aname.getString();
-		final String lname = isPublic ? name : this.getLocalName(name);
-		final CodeMap tp = this.cmapper.newCodeMap(this, name, lname, returnType, paramTypes);
-		this.add(name, tp);
-		FunctionContext fcx = new FunctionContext(null);
-		FuncUnit fu = FuncUnit.wrap(aname, paramNames, tp);
-
-		Code code = fu.typeCheck(this, fcx, dom, code0);
+	public CodeMap defineFunction2(boolean isPublic, String name, String nameId, AST[] paramNames, Ty[] paramTypes,
+			Ty returnType, Code body) {
+		final CodeMap cmap = this.cmapper.newCodeMap(this, name, nameId, returnType, paramTypes);
+		this.addCodeMap(name, cmap);
+		final FuncEnv env = this.newFuncEnv(nameId, paramNames, paramTypes, returnType);
+		Code code = env.typeCheck(body);
 		if (code.showError(this)) {
-			return tp;
+			return cmap; // FIXME
 		}
-		this.cmapper.defineFunction(this, isPublic, lname, AST.names(paramNames), tp.getParamTypes(),
-				tp.getReturnType(), code);
-		return tp;
+		this.cmapper.defineFunction(this, isPublic, nameId, AST.names(paramNames), cmap.getParamTypes(),
+				cmap.getReturnType(), code);
+		return cmap;
 	}
 
-	public CodeMap defineFunction(boolean isPublic, AST name, int seq, AST[] paramNames, Ty[] paramTypes, Ty returnType,
-			VarDomain dom, AST body) {
-		return this.defineFunction(isPublic, name, seq, paramNames, paramTypes, returnType, dom,
-				this.parseCode(this, body));
-	}
-
-	private String getLocalName(String name) {
-		String prefix = "f" + (this.functionId++); // this.getSymbol(name);
-		return prefix + NameHint.safeName(name);
-	}
+	// public CodeMap defineFunction(String name, AST[] paramNames, Ty[] paramTypes,
+	// Ty returnType, Code body) {
+	// final Env env = this.newEnv();
+	// final String lname = this.cmapper.safeName(name);
+	// final CodeMap tp = this.cmapper.newCodeMap(env, name, lname, returnType,
+	// paramTypes);
+	// this.add(name, tp);
+	// FunctionContext fcx = new FunctionContext(null);
+	// FuncUnit fu = FuncUnit.wrap(null, paramNames, tp);
+	// Code code = fu.typeCheck(env, fcx, null, body);
+	// this.cmapper.defineFunction(this, false, lname, AST.names(paramNames),
+	// tp.getParamTypes(), tp.getReturnType(),
+	// code);
+	// return tp;
+	// }
+	//
+	// public CodeMap defineFunction(boolean isPublic, AST aname, int seq, AST[]
+	// paramNames, Ty[] paramTypes,
+	// Ty returnType, VarDomain dom, Code code0) {
+	// final String name = aname.getString();
+	// final String lname = isPublic ? name : this.getLocalName(name);
+	// final CodeMap tp = this.cmapper.newCodeMap(this, name, lname, returnType,
+	// paramTypes);
+	// this.add(name, tp);
+	// FunctionContext fcx = new FunctionContext(null);
+	// FuncUnit fu = FuncUnit.wrap(aname, paramNames, tp);
+	//
+	// Code code = fu.typeCheck(this, fcx, dom, code0);
+	// if (code.showError(this)) {
+	// return tp;
+	// }
+	// this.cmapper.defineFunction(this, isPublic, lname, AST.names(paramNames),
+	// tp.getParamTypes(),
+	// tp.getReturnType(), code);
+	// return tp;
+	// }
+	//
+	// public CodeMap defineFunction(boolean isPublic, AST name, int seq, AST[]
+	// paramNames, Ty[] paramTypes, Ty returnType,
+	// VarDomain dom, AST body) {
+	// return this.defineFunction(isPublic, name, seq, paramNames, paramTypes,
+	// returnType, dom,
+	// this.parseCode(this, body));
+	// }
 
 	private boolean shellMode = false;
 

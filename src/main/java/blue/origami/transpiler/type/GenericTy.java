@@ -1,5 +1,6 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OStrings;
@@ -58,6 +59,20 @@ public class GenericTy extends Ty {
 	}
 
 	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		Ty self = f.apply(this);
+		if (self != this) {
+			return self;
+		}
+		Ty base = this.baseTy.map(f);
+		Ty inner = this.paramTy.map(f);
+		if (inner != this.paramTy || base != this.baseTy) {
+			return Ty.tGeneric(base, inner);
+		}
+		return this;
+	}
+
+	@Override
 	public Ty base() {
 		if (this.hasSome(Ty.IsVar)) {
 			Ty base = this.baseTy.base();
@@ -97,6 +112,14 @@ public class GenericTy extends Ty {
 		OStrings.append(sb, this.baseTy);
 		sb.append("[");
 		OStrings.append(sb, this.paramTy);
+		sb.append("]");
+	}
+
+	@Override
+	public void typeKey(StringBuilder sb) {
+		this.baseTy.typeKey(sb);
+		sb.append("[");
+		this.paramTy.typeKey(sb);
 		sb.append("]");
 	}
 

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FuncEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
@@ -77,7 +77,8 @@ class TupleAssignCode extends SugarCode {
 			}
 		}
 		ODebug.trace("::: %s", l);
-		if (env.get(FunctionContext.class) == null) {
+		FuncEnv fenv = env.getFuncEnv();
+		if (fenv.isGlobalScope()) {
 			l.forEach(c -> c.defineAsGlobal(env, false));
 			return new DoneCode();
 		}

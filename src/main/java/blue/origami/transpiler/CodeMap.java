@@ -112,7 +112,10 @@ public class CodeMap implements NameInfo {
 
 	void checkParamTypes() {
 		if (!this.is(ParamChecked)) {
-			this.set(Generic, OArrays.testSomeTrue(t -> t.hasSome(Ty.IsGeneric), this.paramTypes));
+			this.set(Generic, OArrays.testSome(t -> t.hasSome(Ty.IsGeneric), this.paramTypes));
+			// if (this.isAbstract() && this.paramTypes.length > 0) {
+			// this.paramTypes[0].isMutable();
+			// }
 			this.set(Mutation, this.paramTypes.length > 0 && this.paramTypes[0].isMutable());
 			this.set(ParamChecked);
 		}
@@ -176,7 +179,7 @@ public class CodeMap implements NameInfo {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getName());
 		sb.append("::");
-		FuncTy.stringfy(sb, this.getParamTypes(), this.getReturnType());
+		FuncTy.stringfy(sb, this.getParamTypes(), this.getReturnType(), t -> t.strOut(sb));
 		// if (!this.isPure()) {
 		// sb.append("@");
 		// }
@@ -187,7 +190,7 @@ public class CodeMap implements NameInfo {
 
 	public static CodeMap select(Env env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
 		CodeMap selected = null;
-		boolean allowAbstractMatch = OArrays.testSomeTrue(t -> t.hasSome(Ty.IsVar), p);
+		boolean allowAbstractMatch = OArrays.testSome(t -> t.hasSome(Ty.IsVar), p);
 		// System.out.println(":::::: allowAbstractMatch=" + allowAbstractMatch);
 		int mapCost = maxCost - 1;
 		for (int i = 0; i < founds.size(); i++) {

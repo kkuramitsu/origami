@@ -7,13 +7,9 @@ import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
-import blue.origami.transpiler.FunctionContext.Variable;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BinaryCode;
-import blue.origami.transpiler.code.CastCode.BoxCastCode;
-import blue.origami.transpiler.code.CastCode.FuncCastCode;
-import blue.origami.transpiler.code.CastCode.UnboxCastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
@@ -33,7 +29,6 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarLogger;
-import blue.origami.transpiler.type.VarParamTy;
 
 public class Language implements OFactory<Language> {
 
@@ -188,15 +183,11 @@ public class Language implements OFactory<Language> {
 
 	public Code typeLet(Env env, LetCode code, Ty ret) {
 		if (code.isUntyped()) {
-			FunctionContext fcx = env.get(FunctionContext.class);
-			if (fcx == null) {
-				fcx = new FunctionContext(null); // TopLevel
-				env.add(FunctionContext.class, fcx);
-			}
+			FuncEnv fenv = env.getFuncEnv();
 			if (code.isImplicit) {
 
 			}
-			Variable var = fcx.newVariable(code.getSource(), code.index, code.declType);
+			Variable var = fenv.newVariable(code.getSource(), code.index, code.declType);
 			env.add(code.name, var);
 			code.index = var.getIndex();
 
@@ -297,20 +288,20 @@ public class Language implements OFactory<Language> {
 			Ty gret = dom.conv(dret);
 			for (int i = 0; i < code.args.length; i++) {
 				code.args[i] = code.args[i].asType(env, gpars[i]);
-				if (!found.isAbstract()) {
-					if (dpars[i] instanceof VarParamTy) {
-						ODebug.trace("MUST upcast %s => %s", gpars[i], gpars[i]);
-						code.args[i] = new BoxCastCode(gpars[i], code.args[i]);
-					}
-					if (dpars[i] instanceof FuncTy && dpars[i].hasSome(Ty.IsGeneric)) {
-						VarDomain dom2 = new VarDomain(dpars);
-						dom2.useParamVar();
-						Ty anyTy = dpars[i].dupVar(dom2).memoed(); // AnyRef
-						CodeMap conv = env.findTypeMap(env, gpars[i], anyTy);
-						ODebug.trace("MUST funccast %s => %s :: %s", gpars[i], anyTy, conv);
-						code.args[i] = new FuncCastCode(anyTy, conv, code.args[i]);
-					}
-				}
+				// if (!found.isAbstract()) {
+				// if (dpars[i] instanceof VarParamTy) {
+				// ODebug.trace("MUST upcast %s => %s", gpars[i], gpars[i]);
+				// code.args[i] = new BoxCastCode(gpars[i], code.args[i]);
+				// }
+				// if (dpars[i] instanceof FuncTy && dpars[i].hasSome(Ty.IsGeneric)) {
+				// VarDomain dom2 = new VarDomain(dpars);
+				// dom2.useParamVar();
+				// Ty anyTy = dpars[i].dupVar(dom2).memoed(); // AnyRef
+				// CodeMap conv = env.findTypeMap(env, gpars[i], anyTy);
+				// ODebug.trace("MUST funccast %s => %s :: %s", gpars[i], anyTy, conv);
+				// code.args[i] = new FuncCastCode(anyTy, conv, code.args[i]);
+				// }
+				// }
 			}
 			if (found.isMutation()) {
 				Ty ty = code.args[0].getType();
@@ -320,20 +311,21 @@ public class Language implements OFactory<Language> {
 			code.setMapped(found);
 			code.setType(gret);
 			Code result = code;
-			if (!found.isAbstract()) {
-				if (found.getReturnType() instanceof VarParamTy) {
-					ODebug.trace("must downcast %s => %s", found.getReturnType(), gret);
-					result = new UnboxCastCode(gret, result);
-				}
-				if (found.getReturnType() instanceof FuncTy && found.getReturnType().hasSome(Ty.IsGeneric)) {
-					VarDomain dom2 = new VarDomain(dpars);
-					dom2.useParamVar();
-					Ty anyTy = found.getReturnType().dupVar(dom2); // AnyRef
-					CodeMap conv = env.findTypeMap(env, gret, anyTy);
-					ODebug.trace("MUST funccast %s => %s :: %s", anyTy, gret, conv);
-					result = new FuncCastCode(gret, conv, result);
-				}
-			}
+			// if (!found.isAbstract()) {
+			// if (found.getReturnType() instanceof VarParamTy) {
+			// ODebug.trace("must downcast %s => %s", found.getReturnType(), gret);
+			// result = new UnboxCastCode(gret, result);
+			// }
+			// if (found.getReturnType() instanceof FuncTy &&
+			// found.getReturnType().hasSome(Ty.IsGeneric)) {
+			// VarDomain dom2 = new VarDomain(dpars);
+			// dom2.useParamVar();
+			// Ty anyTy = found.getReturnType().dupVar(dom2); // AnyRef
+			// CodeMap conv = env.findTypeMap(env, gret, anyTy);
+			// ODebug.trace("MUST funccast %s => %s :: %s", anyTy, gret, conv);
+			// result = new FuncCastCode(gret, conv, result);
+			// }
+			// }
 			return result.castType(env, t);
 		} else {
 			for (int i = 0; i < code.args.length; i++) {
@@ -349,5 +341,4 @@ public class Language implements OFactory<Language> {
 			return code.castType(env, t);
 		}
 	}
-
 }

@@ -1,6 +1,7 @@
 package blue.origami.transpiler.type;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
@@ -28,16 +29,35 @@ public class TupleTy extends Ty {
 	}
 
 	@Override
+	public void typeKey(StringBuilder sb) {
+		Ty[] ts = this.paramTypes;
+		OStrings.forEach(sb, ts.length, "*", (n) -> ts[n].typeKey(sb));
+	}
+
+	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return OArrays.testSomeTrue(t -> t.hasSome(f), this.getParamTypes());
+		return OArrays.testSome(t -> t.hasSome(f), this.getParamTypes());
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
 		if (this.hasSome(Ty.IsVarParam)) {
-			return Ty.tTuple(Arrays.stream(this.paramTypes).map(x -> x.dupVar(dom)).toArray(Ty[]::new));
+			return Ty.tTuple(Ty.map(this.paramTypes, x -> x.dupVar(dom)));
 		}
 		return this;
+	}
+
+	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		Ty self = f.apply(this);
+		if (self != this) {
+			return self;
+		}
+		Ty[] ts = Ty.map(this.paramTypes, x -> x.map(f));
+		if (Arrays.equals(ts, this.paramTypes)) {
+			return this;
+		}
+		return Ty.tTuple(ts);
 	}
 
 	@Override

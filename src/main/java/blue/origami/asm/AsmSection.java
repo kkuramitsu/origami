@@ -8,6 +8,7 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.konoha5.Data$;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -51,6 +52,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.VarParamTy;
 
 public class AsmSection extends AsmBuilder implements CodeSection {
 
@@ -125,8 +127,8 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 	// I,+,
 	@Override
 	public void pushCall(MappedCode code) {
-		final CodeMap tp = code.getMapped();
-		final String[] def = tp.getDefined().split("\\|", -1);
+		final CodeMap cmap = code.getMapped();
+		final String[] def = cmap.getDefined().split("\\|", -1);
 		if (def[0].equals("X")) {
 			this.pushCall(code, def[1]);
 			return;
@@ -135,9 +137,37 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			this.mBuilder.visitTypeInsn(NEW, def[1]);
 			this.mBuilder.visitInsn(DUP);
 		}
+		int c = 0;
 		for (Code sub : code) {
-			sub.emitCode(this);
+			Ty gt = cmap.getParamTypes()[c];
+			this.pushArgu(gt, sub);
+			c++;
 		}
+		this.pushInst(cmap);
+		this.checkAnyCast(code.getType(), cmap.getReturnType());
+	}
+
+	private void pushArgu(Ty gt, Code sub) {
+		sub.emitCode(this);
+		this.checkAnyCast(gt, sub.getType());
+	}
+
+	private void checkAnyCast(Ty toTy, Ty fromTy) {
+		// Ty pt = sub.getType();
+		Class<?> toClass = this.ts.toClass(toTy);
+		Class<?> fromClass = this.ts.toClass(fromTy);
+		if (toClass != fromClass && !toClass.isAssignableFrom(fromClass)) {
+			ODebug.trace("::: MUST ANYCAST %s <- %s %s <- %s", toTy, fromTy, toClass.getSimpleName(),
+					fromClass.getSimpleName());
+			this.anyCast(toTy, toClass, fromTy, fromClass);
+		}
+	}
+
+	private void pushInst(final CodeMap cmap) {
+		final String[] def = cmap.getDefined().split("\\|", -1);
+		// String op = def[0];
+		// String def[1] = def[1];
+		// String def[2] = def[2];
 		String desc = null;
 		switch (def[0]) {
 		case "-":
@@ -145,7 +175,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			return;
 		case "F":
 		case "GETSTATIC":
-			desc = this.ts.desc(tp.getReturnType());
+			desc = this.ts.desc(cmap.getReturnType());
 			// ODebug.trace("GETSTATIC %s,%s,%s", def[1], def[2], desc);
 			this.mBuilder.visitFieldInsn(GETSTATIC, def[1], def[2], desc);
 			return;
@@ -153,39 +183,51 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		case "INVOKESTATIC":
 			// this.mw.visitMethodInsn(INVOKESTATIC, "java/lang/Math", "sqrt",
 			// "(D)D", false);
-			desc = this.ts.desc(tp.getReturnType(), tp.getParamTypes());
+			desc = this.ts.desc(cmap.getReturnType(), cmap.getParamTypes());
 			// ODebug.trace("INVOKESTATIC %s,%s,%s", def[1], def[2], desc);
 			// ODebug.trace("template %s", tp);
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, def[1], def[2], desc, false);
 			return;
 		case "V":
 		case "INVOKEVIRTUAL":
-			desc = this.ts.desc(tp.getReturnType(), OArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(cmap.getReturnType(), OArrays.ltrim(cmap.getParamTypes()));
 			// ODebug.trace("::::: desc=%s, %s", desc, tp);
 			this.mBuilder.visitMethodInsn(INVOKEVIRTUAL, def[1], def[2], desc, false);
 			return;
 		case "I":
 		case "INVOKEINTERFACE":
-			desc = this.ts.desc(tp.getReturnType(), OArrays.ltrim(tp.getParamTypes()));
+			desc = this.ts.desc(cmap.getReturnType(), OArrays.ltrim(cmap.getParamTypes()));
 			this.mBuilder.visitMethodInsn(INVOKEINTERFACE, def[1], def[2], desc, false);
 			return;
 		case "N":
 		case "INVOKESPECIAL":
-			desc = this.ts.desc(tp.getReturnType(), tp.getParamTypes());
+			desc = this.ts.desc(cmap.getReturnType(), cmap.getParamTypes());
 			this.mBuilder.visitMethodInsn(INVOKESPECIAL, def[1], def[2], desc, false);
 			return;
 		case "O":
-			int op = op(def[1]);
-			if (op != -1) {
-				this.mBuilder.visitInsn(op);
+			int opCode = op(def[1]);
+			if (opCode != -1) {
+				this.mBuilder.visitInsn(opCode);
 				return;
 			}
-		case "C":
-			this.mBuilder.checkCast(this.ts.ti(code.getType()));
-			return;
+			// case "C":
+			// this.mBuilder.checkCast(this.ts.ti(code.getType()));
+			// return;
 		default:
-			ODebug.trace("undefined call '%s' %s", tp.getDefined(), code.getClass().getName());
+			ODebug.trace("undefined call '%s'", cmap.getDefined());
 			// assert (tp.getDefined().length() > 0) : tp;
+		}
+	}
+
+	private void anyCast(Ty toTy, Class<?> toClass, Ty fromTy, Class<?> fromClass) {
+		if (toTy.isFunc() && fromTy.isFunc()) {
+			Ty f = fromTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+			Ty t = toTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+			ODebug.trace("(%s => %s) => (%s => %s)", fromTy, f, toTy, t);
+			CodeMap cmap = this.env().findTypeMap(this.env(), f, t);
+			if (cmap.mapCost() != CastCode.STUPID) {
+				this.pushInst(cmap);
+			}
 		}
 	}
 
@@ -526,7 +568,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = this.ts.loadFuncExprClass(this.env(), fieldNames, fieldTypes, code.getStartIndex(),
-				code.getParamNames(), code.getParamTypes(), code.getReturnType(), code.getInner());
+				AST.names(code.getParamNames()), code.getParamTypes(), code.getReturnType(), code.getInner());
 		Code[] inits = code.getFieldCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);

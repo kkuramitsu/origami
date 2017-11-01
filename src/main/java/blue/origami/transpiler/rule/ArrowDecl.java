@@ -1,12 +1,11 @@
 package blue.origami.transpiler.rule;
 
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.FuncMap;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.FuncMap;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
-import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 
 public class ArrowDecl extends SyntaxRule implements ParseRule {
@@ -23,7 +22,7 @@ public class ArrowDecl extends SyntaxRule implements ParseRule {
 			// env.reportWarning(t.get(_name), TFmt.redefined_name__YY1, name);
 			// }
 		}
-		String key = FuncTy.mapKey(fromTy, returnTy);
+		String key = Ty.mapKey2(fromTy, returnTy);
 		FuncMap tf = new FuncMap(fromTy, returnTy, t.get(_name), t.get(_body));
 		env.add(key, tf);
 		return new DoneCode();

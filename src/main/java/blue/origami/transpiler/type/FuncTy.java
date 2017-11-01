@@ -1,7 +1,10 @@
 package blue.origami.transpiler.type;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
@@ -38,38 +41,33 @@ public class FuncTy extends Ty {
 		return this.paramTypes;
 	}
 
+	public final static void stringfy(StringBuilder sb, Ty[] paramTypes, Ty returnType, Consumer<Ty> f) {
+		if (paramTypes.length != 1 || paramTypes[0].isFunc() /* group */) {
+			OStrings.forEach(sb, paramTypes.length, "(", ",", ")", (n) -> {
+				f.accept(paramTypes[n]);
+			});
+		} else {
+			f.accept(paramTypes[0]);
+		}
+		sb.append("->");
+		OStrings.enclosed(sb, returnType.isFunc(), "(", ")", () -> f.accept(returnType));
+	}
+
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.paramTypes.length != 1) {
-			sb.append("(");
-			OStrings.joins(sb, this.paramTypes, ",");
-			sb.append(")");
-		} else {
-			OStrings.joins(sb, this.paramTypes, ",", (ty) -> group(ty));
-		}
-		sb.append("->");
-		sb.append(group(this.returnType));
+		stringfy(sb, this.paramTypes, this.returnType, t -> t.strOut(sb));
 	}
 
-	public final static void stringfy(StringBuilder sb, Ty[] paramTypes, Ty returnType) {
-		if (paramTypes.length != 1) {
-			sb.append("(");
-			OStrings.joins(sb, paramTypes, ",");
-			sb.append(")");
-		} else {
-			OStrings.joins(sb, paramTypes, ",", (ty) -> group(ty));
-		}
-		sb.append("->");
-		sb.append(group(returnType));
-	}
-
-	private static String group(Ty ty) {
-		return (ty.isFunc()) ? "(" + ty + ")" : ty.toString();
+	@Override
+	public void typeKey(StringBuilder sb) {
+		sb.append("(");
+		stringfy(sb, this.paramTypes, this.returnType, t -> t.typeKey(sb));
+		sb.append(")");
 	}
 
 	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return this.returnType.hasSome(f) || OArrays.testSomeTrue(t -> t.hasSome(f), this.getParamTypes());
+		return this.returnType.hasSome(f) || OArrays.testSome(t -> t.hasSome(f), this.getParamTypes());
 	}
 
 	@Override
@@ -80,6 +78,20 @@ public class FuncTy extends Ty {
 			return Ty.tFunc(ret, p);
 		}
 		return this;
+	}
+
+	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		Ty self = f.apply(this);
+		if (self != this) {
+			return self;
+		}
+		Ty r = this.returnType.map(f);
+		Ty[] ts = Ty.map(this.paramTypes, x -> x.map(f));
+		if (r == this.returnType && Arrays.equals(ts, this.paramTypes)) {
+			return this;
+		}
+		return Ty.tFunc(r, ts);
 	}
 
 	@Override
@@ -150,29 +162,11 @@ public class FuncTy extends Ty {
 		return null;
 	}
 
-	public static String mapKey(Ty fromTy, Ty toTy) {
-		StringBuilder sb = new StringBuilder();
-		if (fromTy.isFunc()) {
-			sb.append("(");
-			fromTy.strOut(sb);
-			sb.append(")");
-		} else {
-			fromTy.strOut(sb);
-		}
-		sb.append("->");
-		if (toTy.isFunc()) {
-			sb.append("(");
-			toTy.strOut(sb);
-			sb.append(")");
-		} else {
-			toTy.strOut(sb);
-		}
-		return sb.toString();
-	}
+	static int seq = 1000;
 
 	public CodeMap genFuncConv(Env env, FuncTy fromTy, FuncTy toTy) {
-		ODebug.stackTrace("generating funcmap %s => %s", fromTy, toTy);
-		System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
+		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
+		// System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
 		Transpiler tr = env.getTranspiler();
 		AST[] names = AST.getNames("f");
 		Ty[] params = { fromTy };
@@ -184,16 +178,37 @@ public class FuncTy extends Ty {
 		l.add(new VarNameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {
 			Code p = new VarNameCode(String.valueOf((char) ('a' + c)));
-			l.add(new CastCode(fromTypes[c], p)); // Any->Int & (Int->Int? &
-													// Int?->Any?) ==> c->d
-			// ODebug.trace("[%d] %s->%s %s", c, toTypes[c], fromTypes[c],
-			// env.findTypeMap(env, toTypes[c], fromTypes[c]));
+			l.add(new CastCode(fromTypes[c], p));
+			ODebug.trace("[%d] casting %s to %s", c, toTypes[c], fromTypes[c]);
 		}
-		// ODebug.trace("[ret] %s->%s", fromTy.getReturnType(),
-		// toTy.getReturnType());
+		ODebug.trace("[ret] casting %s to %s", fromTy.getReturnType(), toTy.getReturnType());
 		Code body = new CastCode(toTy.getReturnType(), new ApplyCode(l));
 		FuncCode func = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);
-		return tr.defineFunction(mapKey(fromTy, toTy), names, params, toTy, func);
+		return tr.defineFunction2(false, Ty.mapKey2(fromTy, toTy), "funcConv" + (seq++), names, params, toTy, func);
+	}
+
+	public CodeMap genFuncConv2(Env env, FuncTy fromTy, FuncTy toTy) {
+		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
+		// System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
+		Transpiler tr = env.getTranspiler();
+		AST[] names = AST.getNames("f");
+		Ty[] params = { fromTy };
+
+		Ty[] fromTypes = fromTy.getParamTypes();
+		Ty[] toTypes = toTy.getParamTypes();
+		AST[] fnames = AST.getNames(OArrays.names(toTypes.length));
+		List<Code> l = new ArrayList<>();
+		l.add(new VarNameCode(names[0], 0, fromTy, 1));
+		for (int c = 0; c < toTy.getParamSize(); c++) {
+			Code p = new VarNameCode(fnames[c], c, toTypes[c], 0);
+			l.add(p.asType(env, fromTypes[c]));
+			ODebug.trace("[%d] casting %s to %s", c, toTypes[c], fromTypes[c]);
+		}
+		ODebug.trace("[ret] casting %s to %s", fromTy.getReturnType(), toTy.getReturnType());
+		Code body = new ApplyCode(l).asType(env, toTy.getReturnType());
+		FuncCode func = new FuncCode(fnames, toTypes, toTy.getReturnType(), body);
+		func.setType(Ty.tFunc(toTy, fromTy));
+		return tr.defineFunction2(false, Ty.mapKey2(fromTy, toTy), "funcConv" + (seq++), names, params, toTy, func);
 	}
 
 }

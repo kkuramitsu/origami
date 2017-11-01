@@ -1,5 +1,6 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 //enum Season = Spring|Summer|Fall|Winter
@@ -44,8 +45,13 @@ public class EnumTy extends Ty {
 	}
 
 	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		return f.apply(this);
+	}
+
+	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return false;
+		return f.test(this);
 	}
 
 	@Override

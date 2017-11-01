@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import blue.origami.Version;
+import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
 import blue.origami.common.SourcePosition;
@@ -13,13 +14,13 @@ import blue.origami.common.TLog;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
-import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarLogger;
 
-public class Env implements TEnvTraits, EnvApi {
+public class Env implements EnvAPIs, EnvApi {
 	private Env parent;
 	protected Language lang;
 	private HashMap<String, Binding> bindMap = null;
@@ -69,24 +70,13 @@ public class Env implements TEnvTraits, EnvApi {
 
 }
 
-interface TEnvTraits {
+interface EnvAPIs {
 
 	void addBinding(String name, Binding d);
 
 	Binding getBinding(String name);
 
-	TEnvTraits getParent();
-
-	public default Transpiler getTranspiler() {
-		if (this instanceof Transpiler) {
-			return (Transpiler) this;
-		}
-		return this.getParent().getTranspiler();
-	}
-
-	public default Env newEnv() {
-		return new Env((Env) this);
-	}
+	Env getParent();
 
 	public default void add(SourcePosition s, String name, Object value) {
 		addBinding(name, new Binding(s, value));
@@ -130,7 +120,7 @@ interface TEnvTraits {
 	}
 
 	public default <X, Y> Y get(String name, Class<X> c, EnvMatcher<X, Y> f) {
-		for (TEnvTraits env = this; env != null; env = env.getParent()) {
+		for (EnvAPIs env = this; env != null; env = env.getParent()) {
 			Y y = env.getLocal(name, c, f);
 			if (y != null) {
 				return y;
@@ -148,7 +138,7 @@ interface TEnvTraits {
 	}
 
 	public default <X> void findList(String name, Class<X> c, List<X> l, ListMatcher<X> f) {
-		for (TEnvTraits env = this; env != null; env = env.getParent()) {
+		for (EnvAPIs env = this; env != null; env = env.getParent()) {
 			for (Binding d = env.getBinding(name); d != null; d = d.pop()) {
 				X x = d.getHandled(c);
 				if (x != null && f.isMatched(x)) {
@@ -189,6 +179,38 @@ interface TEnvTraits {
 	public default void reportNotice(SourcePosition s, OFormat format, Object... args) {
 		this.reportLog(new TLog(s, TLog.Notice, format, args));
 	}
+
+	public default Transpiler getTranspiler() {
+		if (this instanceof Transpiler) {
+			return (Transpiler) this;
+		}
+		return this.getParent().getTranspiler();
+	}
+
+	public default Env newEnv() {
+		return new Env((Env) this);
+	}
+
+	public default FuncEnv getFuncEnv() {
+		if (this instanceof FuncEnv) {
+			return (FuncEnv) this;
+		}
+		return this.getParent().getFuncEnv();
+	}
+
+	public default FuncEnv newFuncEnv() { // TopLevel
+		return new FuncEnv((Env) this, null, "", OArrays.emptyTrees, OArrays.emptyTypes, Ty.tVarParam[0]);
+	}
+
+	public default FuncEnv newFuncEnv(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType) {
+		return new FuncEnv((Env) this, null, name, paramNames, paramTypes, returnType);
+	}
+
+	public default FuncEnv newLambdaEnv(FuncCode fc) {
+		return new FuncEnv((Env) this, this.getFuncEnv(), "", fc.getParamNames(), fc.getParamTypes(),
+				fc.getReturnType());
+	}
+
 }
 
 interface EnvApi {
@@ -237,6 +259,9 @@ interface EnvApi {
 	}
 
 	public default void addCodeMap(String name, CodeMap cmap) {
+		if (cmap.isAbstract()) {
+			name = " " + name;
+		}
 		env().add(name, cmap);
 	}
 
@@ -306,14 +331,14 @@ interface EnvApi {
 	}
 
 	public default CodeMap findTypeMap(Env env, Ty fromTy, Ty toTy) {
-		fromTy = fromTy.memoed();
-		toTy = toTy.memoed();
-		String key = FuncTy.mapKey(fromTy, toTy);
+		String key = Ty.mapKey2(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			// ODebug.trace("found %s => %s %s", fromTy, toTy, tp);
 			return tp;
 		}
+		fromTy = fromTy.memoed();
+		toTy = toTy.memoed();
 		tp = fromTy.findMapThisTo(env, fromTy, toTy);
 		if (tp != null) {
 			// ODebug.trace("builtin %s => %s %s", fromTy, toTy, tp);
@@ -333,13 +358,13 @@ interface EnvApi {
 		if (toTy.acceptTy(true, fromTy, logs)) {
 			return CastCode.SAME;
 		}
-		fromTy = fromTy.memoed();
-		toTy = toTy.memoed();
-		String key = FuncTy.mapKey(fromTy, toTy);
+		String key = Ty.mapKey2(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
 			return tp.mapCost();
 		}
+		fromTy = fromTy.memoed();
+		toTy = toTy.memoed();
 		int cost = fromTy.costMapThisTo(env, fromTy, toTy);
 		if (cost < CastCode.STUPID) {
 			return cost;

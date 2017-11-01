@@ -121,6 +121,24 @@ public interface OStrings {
 		sb.append(close);
 	}
 
+	public static void forEach(StringBuilder sb, int e, String open, String delim, String close, IntConsumer f) {
+		forEach(sb, 0, e, open, delim, close, f);
+	}
+
+	public static void forEach(StringBuilder sb, int e, String delim, IntConsumer f) {
+		forEach(sb, 0, e, "", delim, "", f);
+	}
+
+	public static void enclosed(StringBuilder sb, boolean enc, String open, String close, Runnable f) {
+		if (enc) {
+			sb.append(open);
+			f.run();
+			sb.append(close);
+		} else {
+			f.run();
+		}
+	}
+
 	public static <T> String joins(T[] objs, String delim) {
 		StringBuilder sb = new StringBuilder();
 		joins(sb, objs, delim);

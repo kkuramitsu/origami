@@ -1,5 +1,6 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.transpiler.code.Code;
@@ -59,6 +60,11 @@ public class SimpleTy extends Ty {
 			return (codeTy.acceptTy(false, this, logs));
 		}
 		return this == codeTy.base();
+	}
+
+	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		return f.apply(this);
 	}
 
 	@Override

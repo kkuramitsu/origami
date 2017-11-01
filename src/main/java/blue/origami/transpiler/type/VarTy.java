@@ -1,5 +1,6 @@
 package blue.origami.transpiler.type;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OStrings;
@@ -93,6 +94,15 @@ public class VarTy extends Ty {
 	}
 
 	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		Ty self = f.apply(this);
+		if (self != this) {
+			return self;
+		}
+		return this.resolvedTy == null ? this : this.resolvedTy.map(f);
+	}
+
+	@Override
 	public Ty base() {
 		return this.resolvedTy == null ? this : this.resolvedTy.base();
 	}
@@ -137,6 +147,15 @@ public class VarTy extends Ty {
 			sb.append(this.getId());
 			sb.append("=");
 			OStrings.append(sb, this.resolvedTy);
+		}
+	}
+
+	@Override
+	public void typeKey(StringBuilder sb) {
+		if (this.resolvedTy == null) {
+			sb.append("a");
+		} else {
+			this.resolvedTy.typeKey(sb);
 		}
 	}
 

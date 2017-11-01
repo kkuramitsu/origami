@@ -14,7 +14,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.FunctionContext;
+import blue.origami.transpiler.FuncEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 
@@ -56,11 +56,11 @@ public class MatchCode extends CodeN implements CodeBuilder {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.targetCode == null) {
-			FunctionContext fcx = env.get(FunctionContext.class);
-			if (fcx == null || fcx.size() == 0) {
+			FuncEnv fenv = env.getFuncEnv();
+			if (fenv.getParamSize() == 0) {
 				throw new ErrorCode(TFmt.required_first_argument);
 			}
-			this.targetCode = fcx.getArgumentsPattern(env);
+			this.targetCode = fenv.getArgumentsPattern(env);
 		}
 		Ty targetTy = this.inferTargetType();
 		Code desugar = null;

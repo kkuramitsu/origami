@@ -92,6 +92,7 @@ public class EvalTest {
 		runScript("f(a,b)=(a,b);f(1,false)", "(1,false)");
 	}
 
+	// Some(1) >>= (\n Some(n+1))
 	public void testOption() throws Throwable {
 		runScript("Some(1)", "1");
 		runScript("Some(1) >>= (\\n Some(n+1))", "2");

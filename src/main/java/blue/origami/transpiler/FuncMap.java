@@ -2,7 +2,6 @@ package blue.origami.transpiler;
 
 import java.util.HashMap;
 
-import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -10,21 +9,29 @@ import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import blue.origami.transpiler.type.VarParamTy;
+import blue.origami.transpiler.type.VarTy;
 
-public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
+public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 	static int seq = 0;
-	private int funcId;
+
+	static String newNameId(AST name) {
+		return name.getString() + (seq++);
+	}
+
+	//
 	protected boolean isPublic = false;
-	protected AST at;
+	protected AST name;
+	protected String nameId;
 	protected AST[] paramNames;
 	protected AST body;
 	private CodeMap generated = null;
 
 	public FuncMap(boolean isPublic, AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
 		super(0, name.getString(), "(uncompiled)", returnType, paramTypes);
-		this.at = name;
-		this.funcId = seq++;
 		this.isPublic = isPublic;
+		this.name = name;
+		this.nameId = newNameId(name);
 		this.paramNames = paramNames;
 		this.body = body;
 	}
@@ -35,7 +42,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 
 	public FuncMap(Ty fromTy, Ty toTy, AST var, AST body) {
 		this(AST.getName("conv"), toTy, new AST[] { var }, new Ty[] { fromTy }, body);
-		this.at = body;
+		this.name = body;
 	}
 
 	public boolean isPublic() {
@@ -48,6 +55,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	}
 
 	void setExpired() {
+		this.name = null;
 		this.paramNames = null;
 		this.body = null;
 	}
@@ -63,18 +71,9 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	}
 
 	@Override
-	public AST getSource() {
-		return this.at;
-	}
-
-	@Override
 	public String getName() {
-		return this.name;
-	}
-
-	@Override
-	public AST[] getParamSource() {
-		return this.paramNames;
+		// Don't change to nameId;
+		return this.name.getString();
 	}
 
 	@Override
@@ -83,46 +82,77 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 	}
 
 	@Override
-	public void setReturnType(Ty ret) {
-		this.returnType = ret;
-	}
-
-	boolean isTyping = false;
-
-	@Override
 	public void used(Env env) {
 		if (this.isUnused()) {
 			super.used(env);
-			this.isTyping = true;
-			Code code = this.typeBody(env, new FunctionContext(), this.body);
-			this.isTyping = false;
-			if (code == null) {
-				this.setExpired();
-				return;
+			this.typeThis(env);
+		}
+	}
+
+	void typeThis(Env env) {
+		boolean IsUnspecificReturnType = this.getReturnType() instanceof VarParamTy;
+		if (this.isGeneric()) {
+			VarDomain dom = new VarDomain(this.getParamTypes());
+			this.paramTypes = dom.conv(this.getParamTypes());
+			this.returnType = dom.conv(this.getReturnType());
+			FuncEnv fenv = env.newFuncEnv(this.nameId, this.paramNames, this.paramTypes, this.returnType);
+			fenv.tryTyping(true);
+			fenv.typeCheck(env.parseCode(env, this.body));
+			dom.useParamVar();
+			this.setParamTypes(Ty.map(this.getParamTypes(), ty -> {
+				Ty ty2 = dom.conv(ty).memoed();
+				if (ty instanceof VarTy) {
+					boolean hasMutation = ty.hasMutation();
+					// System.out.printf("::::: Mutation=%s, %s => %s\n", hasMutation, ty, ty2);
+					if (!hasMutation && ty2.isMutable()) {
+						ODebug.trace("To Immutable %s", ty2);
+						ty2 = ty2.toImmutable();
+					}
+				}
+				return ty2;
+			}));
+			int vars = dom.usedVars();
+			this.returnType = dom.conv(this.returnType).memoed();
+			if (vars == 0 && dom.usedVars() > vars) {
+				throw new ErrorCode(this.name, TFmt.ambiguous_type__S, this.getReturnType());
 			}
-			if (OArrays.testSomeTrue(t -> t.hasSome(Ty.IsGeneric), this.getParamTypes())) {
-				// this.isGeneric = true;
+			if (this.isGeneric()) {
 				ODebug.showBlue(TFmt.Template, () -> {
 					ODebug.println("%s : %s", this.name, this.getFuncType());
 				});
-			} else {
-				ODebug.trace("static %s %s generated=%s", this.name, this.getFuncType(), code.getType(),
-						this.generated);
-				// this.isGeneric = false;
-				if (this.generated == null) {
-					Transpiler tr = env.getTranspiler();
-					boolean hasAbstract = this.isAbstract(code);
-					this.generated = tr.defineFunction(this.isPublic, this.at, this.funcId, this.paramNames,
-							this.paramTypes, this.returnType, null, hasAbstract ? env.parseCode(env, this.body) : code);
-				}
-				this.setExpired();
 			}
+		} else {
+			if (this.returnType instanceof VarParamTy) {
+				this.returnType = Ty.tUntyped();
+			}
+			FuncEnv fenv = env.newFuncEnv(this.nameId, this.paramNames, this.getParamTypes(), this.getReturnType());
+			fenv.typeCheck(env.parseCode(env, this.body));
+			if (this.returnType.hasSome(Ty.IsVar)) {
+				throw new ErrorCode(this.name, TFmt.ambiguous_type__S, this.getReturnType());
+			}
+			this.returnType = this.returnType.memoed();
+		}
+		if (IsUnspecificReturnType) {
+			this.returnType = this.returnType.toImmutable();
 		}
 	}
 
 	public CodeMap generate(Env env) {
 		this.used(env);
+		if (this.generated != null) {
+			return this.generated;
+		}
 		return this;
+	}
+
+	CodeMap generate(Env env, Code body) {
+		if (this.generated != null) {
+			return this.generated;
+		}
+		Transpiler tr = env.getTranspiler();
+		CodeMap cmap = tr.defineFunction2(this.isPublic, this.getName(), this.nameId, this.paramNames,
+				this.getParamTypes(), this.getReturnType(), body);
+		return cmap;
 	}
 
 	@Override
@@ -131,25 +161,30 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 		if (this.generated != null) {
 			return this.generated;
 		}
-		if (this.body == null) {
-			throw new ErrorCode(this.getSource(), TFmt.function_S_remains_undefined, this.name);
-		}
-		if (this.isTyping) {
-			// return env.getTranspiler().newCodeMap(this.getName(), this.getReturnType(),
-			// this.getParamTypes());
+		// if (this.body == null) {
+		// throw new ErrorCode(this.getSource(), TFmt.function_S_remains_undefined,
+		// this.name);
+		// }
+		FuncEnv fenv = env.getFuncEnv();
+		if (fenv.IsTryTyping()) {
 			return new CodeMap(0, "rec", ""/* abstract */, this.getReturnType(), this.getParamTypes());
 		}
-		VarDomain dom = new VarDomain(this.getParamNames());
+		if (!this.isGeneric()) {
+			this.generated = this.generate(env, env.parseCode(env, this.body));
+			return this.generated;
+		}
+		VarDomain dom = new VarDomain(this.getParamTypes());
 		Ty[] p = dom.matched(this.getParamTypes(), params);
 		Ty ret = dom.conv(this.getReturnType());
-		String key = polykey(this.name, this.funcId, p);
+		String key = polyKey(this.nameId, p);
 		CodeMap tp = getGenerated(key);
-		ODebug.trace("polykey=%s %s", key, tp);
+		// ODebug.trace("polykey=%s %s", key, tp);
 		if (tp == null) {
 			Transpiler tr = env.getTranspiler();
-			ODebug.trace("Partial Evaluation: %s : %s => %s", this.name, this.getFuncType(), Ty.tFunc(ret, p));
-			final CodeMap tp2 = tr.defineFunction(this.isPublic, this.getSource(), this.funcId, this.paramNames, p, ret,
-					dom, this.body);
+			// ODebug.trace("Partial Evaluation: %s : %s => %s", this.name,
+			// this.getFuncType(), Ty.tFunc(ret, p));
+			final CodeMap tp2 = tr.defineFunction2(this.isPublic, this.getName(), newNameId(this.name), this.paramNames,
+					p, ret, env.parseCode(env, this.body));
 			ODebug.showBlue(TFmt.Template_Specialization, () -> {
 				ODebug.println("%s : %s => %s", this.name, this.getFuncType(), tp2.getFuncType());
 			});
@@ -158,16 +193,15 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 			return tp2;
 		}
 		return tp;
+
 	}
 
-	static String polykey(String name, int id, Ty[] p) {
+	static String polyKey(String name, Ty[] p) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(id);
-		sb.append("#");
 		sb.append(name);
 		for (Ty t : p) {
 			sb.append(":");
-			sb.append(t);
+			sb.append(t.memoed());
 		}
 		return sb.toString();
 	}
@@ -189,7 +223,7 @@ public class FuncMap extends CodeMap implements NameInfo, FuncUnit {
 
 	@Override
 	public Code newNameCode(Env env, AST s) {
-		return new FuncRefCode(this.name, this).setSource(s);
+		return new FuncRefCode(this.name.getString(), this).setSource(s);
 	}
 
 }

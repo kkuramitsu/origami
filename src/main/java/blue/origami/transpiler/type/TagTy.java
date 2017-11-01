@@ -2,17 +2,18 @@ package blue.origami.transpiler.type;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 
 public class TagTy extends Ty {
-	protected String[] names;
+	protected String[] tags;
 	protected Ty innerTy;
 
 	public TagTy(Ty ty, String... names) {
-		this.names = names;
+		this.tags = names;
 		this.innerTy = ty;
 	}
 
@@ -35,15 +36,24 @@ public class TagTy extends Ty {
 	public Ty dupVar(VarDomain dom) {
 		Ty inner = this.innerTy.dupVar(dom);
 		if (inner != this.innerTy) {
-			return Ty.tTag(inner, this.names);
+			return Ty.tTag(inner, this.tags);
 		}
 		return this;
 	}
 
 	@Override
+	public Ty map(Function<Ty, Ty> f) {
+		Ty self = f.apply(this);
+		if (self != this) {
+			return self;
+		}
+		return Ty.tTag(this.innerTy.map(f), this.tags);
+	}
+
+	@Override
 	public Ty memoed() {
 		if (!this.isMemoed()) {
-			return Ty.tTag(this.innerTy.memoed(), this.names);
+			return Ty.tTag(this.innerTy.memoed(), this.tags);
 		}
 		return this;
 	}
@@ -51,17 +61,17 @@ public class TagTy extends Ty {
 	@Override
 	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
 		if (codeTy instanceof TagTy && this.innerTy.acceptTy(sub, codeTy.getParamType(), logs)) {
-			return this.matchTags(sub, ((TagTy) codeTy).names);
+			return this.matchTags(sub, ((TagTy) codeTy).tags);
 		}
 		return this.acceptVarTy(sub, codeTy, logs);
 	}
 
 	public boolean matchTags(boolean sub, String[] names) {
-		if (this.names.length != names.length) {
+		if (this.tags.length != names.length) {
 			return false;
 		}
 		for (int i = 0; i < names.length; i++) {
-			if (!this.names[i].equals(names[i])) {
+			if (!this.tags[i].equals(names[i])) {
 				return false;
 			}
 		}
@@ -95,7 +105,7 @@ public class TagTy extends Ty {
 	public void strOut(StringBuilder sb) {
 		OStrings.append(sb, this.innerTy);
 		sb.append(" #");
-		OStrings.joins(sb, this.names, " #");
+		OStrings.joins(sb, this.tags, " #");
 	}
 
 	public static String[] joins(String[] ns, String[] names) {
