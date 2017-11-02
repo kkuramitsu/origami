@@ -41,8 +41,8 @@ abstract class AsmBuilder implements Opcodes, CodeSection {
 
 	void box(Class<?> c) {
 		if (c.isPrimitive()) {
-			Class<?> bc = AsmType.boxType(c);
-			String desc = String.format("(%s)%s", Type.getDescriptor(c), Type.getDescriptor(bc));
+			// Class<?> bc = AsmType.boxType(c);
+			String desc = String.format("(%s)%s", Type.getDescriptor(c), Type.getDescriptor(Object.class));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, APIs, "box", desc, false);
 		}
 	}

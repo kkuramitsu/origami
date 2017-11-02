@@ -26,17 +26,17 @@ public class Dict$ extends TreeMap<String, Object> implements OStrings {
 	@Override
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
-		sb.append(this.isMutable ? "{" : "[");
+		sb.append("{");
 		for (Map.Entry<String, Object> e : this.entrySet()) {
 			if (cnt > 0) {
-				sb.append(", ");
+				sb.append(",");
 			}
 			OStrings.appendQuoted(sb, e.getKey());
-			sb.append(": ");
+			sb.append(":");
 			OStrings.append(sb, e.getValue());
 			cnt++;
 		}
-		sb.append(this.isMutable ? "}" : "]");
+		sb.append("}");
 	}
 
 	public Object geti(String key) {

@@ -220,15 +220,17 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 	}
 
 	private void anyCast(Ty toTy, Class<?> toClass, Ty fromTy, Class<?> fromClass) {
-		if (toTy.isFunc() && fromTy.isFunc()) {
-			Ty f = fromTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
-			Ty t = toTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
-			ODebug.trace("(%s => %s) => (%s => %s)", fromTy, f, toTy, t);
-			CodeMap cmap = this.env().findTypeMap(this.env(), f, t);
-			if (cmap.mapCost() != CastCode.STUPID) {
-				this.pushInst(cmap);
-			}
+		// if (toTy.isFunc() && fromTy.isFunc()) {
+		Ty f = fromTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+		Ty t = toTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+		ODebug.trace("(%s => %s) => (%s => %s)", fromTy, f, toTy, t);
+		CodeMap cmap = this.env().findTypeMap(this.env(), f, t);
+		if (cmap.mapCost() != CastCode.STUPID) {
+			this.pushInst(cmap);
+		} else {
+			this.mBuilder.checkCast(Type.getType(toClass));
 		}
+		// }
 	}
 
 	static class VarEntry {
@@ -579,8 +581,6 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 			inits[i].emitCode(this);
 			this.mBuilder.visitFieldInsn(PUTFIELD, cname/* internal */, fieldNames[i] + i, this.ts.desc(fieldTypes[i]));
 		}
-		// ODebug.trace("FuncCode.asType %s", code.getType());
-
 	}
 
 	@Override
@@ -588,17 +588,12 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		for (Code sub : code) {
 			sub.emitCode(this);
 		}
-		FuncTy funcType = (FuncTy) code.args()[0].getType();
+		FuncTy funcType = (FuncTy) code.args()[0].getType().base();
 		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
 		String cname = Type.getInternalName(this.ts.toClass(funcType));
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmType.nameApply(funcType.getReturnType()), desc, true);
 		return;
 	}
-	//
-	// private void emitSugar(TEnv env, Code code, Ty ret) {
-	// Code sugar = env.catchCode(() -> code.asType(env, ret));
-	// sugar.emitCode(env, this);
-	// }
 
 	@Override
 	public void pushGet(GetCode code) {

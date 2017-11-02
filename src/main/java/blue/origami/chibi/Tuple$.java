@@ -21,9 +21,6 @@ public class Tuple$ implements OStrings, Cloneable {
 			if (cnt > 0) {
 				sb.append(",");
 			}
-			// String name = f.getName();
-			// sb.append(name);
-			// sb.append(": ");
 			OStrings.appendQuoted(sb, this.getf(f, this));
 			cnt++;
 		}

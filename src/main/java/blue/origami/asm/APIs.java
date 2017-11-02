@@ -18,12 +18,12 @@ package blue.origami.asm;
 
 import java.util.Objects;
 
+import blue.origami.chibi.Func.FuncObjObj;
+import blue.origami.chibi.Func.FuncObjVoid;
 import blue.origami.chibi.List$;
 import blue.origami.chibi.List$Float;
 import blue.origami.chibi.List$Int;
 import blue.origami.chibi.Range$Int;
-import blue.origami.chibi.Func.FuncObjObj;
-import blue.origami.chibi.Func.FuncObjVoid;
 
 public class APIs {
 	public final static Object box(boolean a) {
@@ -32,6 +32,30 @@ public class APIs {
 
 	public final static boolean unboxZ(Object a) {
 		return (Boolean) a;
+	}
+
+	public final static Object box(char a) {
+		return a;
+	}
+
+	public final static char unboxC(Object a) {
+		return ((Character) a);
+	}
+
+	public final static Object box(byte a) {
+		return a;
+	}
+
+	public final static byte unboxB(Object a) {
+		return (byte) ((Number) a).intValue();
+	}
+
+	public final static Object box(short a) {
+		return a;
+	}
+
+	public final static short unboxS(Object a) {
+		return (short) ((Number) a).intValue();
 	}
 
 	public final static Object box(int a) {

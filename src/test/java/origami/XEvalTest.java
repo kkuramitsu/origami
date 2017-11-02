@@ -7,7 +7,7 @@ import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 
-public class EvalTest {
+public class XEvalTest {
 
 	public void testLiteral() throws Throwable {
 		runScript("()", null);
@@ -20,7 +20,7 @@ public class EvalTest {
 		runScript("\"abc\"", "abc");
 		runScript("[1,2,3]", "[1,2,3]");
 		runScript("$[1,2,3]", "[1,2,3]");
-		// runScript("[false,true]", "[false,true]");
+		runScript("[false,true]", "[false,true]");
 	}
 
 	public void testBool() throws Throwable {
@@ -72,7 +72,9 @@ public class EvalTest {
 	}
 
 	public void testLambda() throws Throwable {
-		runScript("(\\n n+1)(0)", "1");
+		runScript("(\\n :Int n+1)(0)", "1");
+		runScript("f = \\n :Int n+1;f(0)", "1");
+		runScript("f(m: Int) = \\n:Int m+n;f(1)(2)", "3");
 	}
 
 	public void testBlock() throws Throwable {

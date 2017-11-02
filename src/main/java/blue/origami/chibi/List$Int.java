@@ -18,26 +18,20 @@ public class List$Int implements OStrings, FuncIntInt {
 	protected int start = 0;
 	protected int end = 0;
 	protected List$Int next;
-	protected int cost;
 
-	List$Int(int[] arrays, int start, int end, List$Int next, int cost) {
+	List$Int(int[] arrays, int start, int end, List$Int next) {
 		this.arrays = arrays;
 		this.start = start;
 		this.end = end;
 		this.next = next;
-		this.cost = cost;
 	}
 
 	List$Int(int[] arrays, int start, int end) {
-		this(arrays, start, end, null, 0);
+		this(arrays, start, end, null);
 	}
 
-	// private List$Int(int[] arrays, int size) {
-	// this(arrays, 0, size, null, 0);
-	// }
-
 	public List$Int(int[] arrays) {
-		this(arrays, 0, arrays.length, null, 0);
+		this(arrays, 0, arrays.length, null);
 	}
 
 	public static final List$Int newArray(boolean isMutable, int[] arrays) {
@@ -84,7 +78,7 @@ public class List$Int implements OStrings, FuncIntInt {
 
 	public static List$Int cons(int x, List$Int xs) {
 		int[] a = { x };
-		return new List$Int(a, 0, 1, xs, xs.cost + 1);
+		return new List$Int(a, 0, 1, xs);
 	}
 
 	public List$Int tail(int shift) {
@@ -120,7 +114,7 @@ public class List$Int implements OStrings, FuncIntInt {
 		sb.append("]");
 	}
 
-	int strOut(StringBuilder sb, List$Int p, int cnt) {
+	private int strOut(StringBuilder sb, List$Int p, int cnt) {
 		for (int i = p.start; i < p.end; i++) {
 			if (cnt > 0) {
 				sb.append(",");
@@ -150,6 +144,8 @@ public class List$Int implements OStrings, FuncIntInt {
 		this.end--;
 		return this.arrays[this.end];
 	}
+
+	/* High-order functions */
 
 	public void forEach(FuncIntVoid f) {
 		for (List$Int p = this; p != null; p = p.next) {
@@ -217,7 +213,7 @@ class ListM$Int extends List$Int {
 	private List$Int imm = null;
 
 	public ListM$Int(int[] arrays, int start, int end) {
-		super(arrays, start, end, null, 0);
+		super(arrays, start, end, null);
 	}
 
 	public ListM$Int(int[] arrays) {
