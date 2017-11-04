@@ -258,10 +258,14 @@ interface EnvApi {
 		return hint;
 	}
 
+	public default void addArrow(String name, CodeMap cmap) {
+		env().add(name, cmap);
+	}
+
 	public default void addCodeMap(String name, CodeMap cmap) {
-		if (cmap.isAbstract()) {
-			name = " " + name;
-		}
+		// if (cmap.isAbstract()) {
+		// name = " " + name;
+		// }
 		env().add(name, cmap);
 	}
 
@@ -305,15 +309,6 @@ interface EnvApi {
 		}
 		return params;
 	}
-
-	// public default Code[] parseParams(TEnv env, AST t, Symbol param) {
-	// AST p = t.get(param);
-	// Code[] params = new Code[p.size()];
-	// for (int i = 0; i < p.size(); i++) {
-	// params[i] = parseCode(env, p.get(i));
-	// }
-	// return params;
-	// }
 
 	public default Ty parseType(Env env, AST t, Supplier<Ty> def) {
 		if (t != null) {

@@ -7,7 +7,7 @@ import blue.origami.transpiler.type.Ty;
 
 public class ConstMap extends CodeMap {
 
-	public ConstMap(String name, Ty returnType, String template) {
+	public ConstMap(String name, String template, Ty returnType) {
 		super(0, name, template, returnType, OArrays.emptyTypes);
 	}
 

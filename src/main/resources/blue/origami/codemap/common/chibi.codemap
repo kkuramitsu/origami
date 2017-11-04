@@ -1,26 +1,23 @@
-# common origami.file
+// common origami.file
 
-# Type Inference
-# 
-#+:a:b:c     =
-#-:a:b:c     =
-+:a:b:c      =
--:a:b:c      =
-*:a:b:c      =
-/:a:b:c      =
-%:a:b:c      =
-++:a:a:a     =
+// Type Inference
++   :: (a,b)->c      =>
+-   :: (a,b)->c      =>
+*   :: (a,b)->c      =>
+/   :: (a,b)->c      =>
+%   :: (a,b)->c      =>
+++  :: (a,a)->a      =>
 
-==:a:a:Bool  =
-!=:a:a:Bool  = 
->:a:a:Bool   =
->=:a:a:Bool  = 
-<:a:a:Bool   =
-<=:a:a:Bool  = 
+==  :: (a,a)->Bool  =>
+!=  :: (a,a)->Bool  => 
+>   :: (a,a)->Bool  =>
+>=  :: (a,a)->Bool  => 
+<   :: (a,a)->Bool  =>
+<=  :: (a,a)->Bool  => 
 
-=:a:a                   =
-||:a:Int                = 
-[]:List[a]:Int:a        =
-[]=:$List[a]:Int:a:()   =
-map:a[b]:b->c:c[b]      =
+=   :: a->a                   =>
+||  :: a->Int                 => 
+[]  :: (List[a],Int)->a       =>
+[]= :: ($List[a],Int,a)->()   =>
+map :: (a[b],b->c)->a[c]      =>
 

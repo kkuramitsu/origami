@@ -133,7 +133,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 		sb.append("|");
 		sb.append(lname);
 		String template = sb.toString();
-		return new ConstMap(lname, ret, template);
+		return new ConstMap(lname, template, ret);
 	}
 
 	@Override

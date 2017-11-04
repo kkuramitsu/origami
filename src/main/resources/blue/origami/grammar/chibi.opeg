@@ -962,6 +962,68 @@ OPNAME =
 	/ '::'  / ':'
 	/ '~'
 
+/* CodeMap */
+
+example CodeFile '''
+// test
+#require foo, var
+
+BigInt => java.lang.BigInteger
++:(Int,Int)->Int    => s + s
+// hoge
+- :: (Int,Int)->Int => s - s
+<- :: Int->Int = s - s
+'''
+
+example CodeMapDecl '''
+codemap Python
+  #require foo, var
+  BigInt => java.lang.BigInteger
+  +:(Int,Int)->Int    => s + s
+  - :: (Int,Int)->Int => s - s
+  <- :: Int->Int => s - s
+'''
+
+CodeFile = { $( (_ / EOL)* CodeMap EOL (_ EOL)* )* #CodeFile } (_ EOL)* EOF
+
+CodeMapDecl = {
+	'codemap' _ 
+	$name(Identifier) EOL 
+	$list(CodeMapBody)
+	#CodeMapDecl
+}
+
+CodeMapBody = {
+	$(S+ CodeMap EOL)+
+}
+
+CodeMap = CodeRequire / {
+	$name(CodeName)
+	$type(':' ':'? _ Type)?
+	'=' '>'? S*
+	$value(LineCode)
+	#CodeMap
+}
+
+CodeRequire = {
+	'#require' _
+	$(CodePath _)	
+	$(',' _ CodePath _)
+	#Require
+}
+
+CodeName = {
+  . ( ![: \t\r\n] . )*
+} _
+
+CodePath = {
+  ( ![, \t\r\n] . )*
+} _
+
+LineCode = {
+  ( !EOL . )*
+}
+
 /* Type */
 
 example Type String

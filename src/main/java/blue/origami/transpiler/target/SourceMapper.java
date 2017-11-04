@@ -78,7 +78,7 @@ public class SourceMapper extends CodeMapper {
 	@Override
 	public CodeMap newConstMap(Env env, String lname, Ty ret) {
 		String template = String.format(this.syntax.fmt("constname", "name", "%s"), lname);
-		return new ConstMap(lname, ret, template);
+		return new ConstMap(lname, template, ret);
 	}
 
 	@Override

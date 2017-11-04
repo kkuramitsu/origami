@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -11,15 +12,24 @@ import java.util.HashMap;
 import blue.origami.Version;
 import blue.origami.common.OArrays;
 import blue.origami.common.OConsole;
+import blue.origami.common.OSource;
+import blue.origami.parser.Parser;
+import blue.origami.parser.ParserSource;
+import blue.origami.parser.peg.Grammar;
+import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.rule.CodeMapDecl;
 import blue.origami.transpiler.type.Ty;
 
 public class CodeLoader {
 	final Transpiler env;
+
 	final String common;
 	final String base;
 	final String defaul;
 	final HashMap<String, String> keyMap = new HashMap<>();
+
+	private Parser parser = null;
 
 	CodeLoader(Transpiler env) {
 		this.env = env;
@@ -27,6 +37,12 @@ public class CodeLoader {
 		this.base = Version.ResourcePath + "/codemap/" + target + "/";
 		this.common = this.base.replace(target, "common");
 		this.defaul = this.base.replace(target, "default");
+		try {
+			Grammar g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/chibi.opeg");
+			this.parser = g.newParser("CodeFile");
+		} catch (IOException e) {
+			OConsole.exit(1, e);
+		}
 	}
 
 	public String getPath(String file) {
@@ -50,6 +66,12 @@ public class CodeLoader {
 	}
 
 	private void load(String path, boolean isDefault) throws Throwable {
+		OSource s = ParserSource.newFileSource(path, null);
+		AST t = (AST) this.parser.parse(s, 0, AST.TreeFunc, AST.TreeFunc);
+		new CodeMapDecl().parseCodeMap(this.env, t);
+	}
+
+	private void load1(String path, boolean isDefault) throws Throwable {
 		// String path = this.base + file;
 		File f = new File(path);
 		InputStream s = f.isFile() ? new FileInputStream(path) : CodeLoader.class.getResourceAsStream(path);

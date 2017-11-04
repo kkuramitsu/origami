@@ -72,9 +72,9 @@ public class XEvalTest {
 	}
 
 	public void testLambda() throws Throwable {
-		runScript("(\\n :Int n+1)(0)", "1");
-		runScript("f = \\n :Int n+1;f(0)", "1");
-		runScript("f(m: Int) = \\n:Int m+n;f(1)(2)", "3");
+		runScript("(\\n:Int n+1)(0)", "1");
+		runScript("f = \\n:Int n+1;f(0)", "1");
+		runScript("f(m:Int) = \\n:Int m+n;f(1)(2)", "3");
 	}
 
 	public void testBlock() throws Throwable {
