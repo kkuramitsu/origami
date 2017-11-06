@@ -90,8 +90,10 @@ public class FuncEnv extends Env {
 
 	private boolean tryTyping = false;
 
-	public void tryTyping(boolean b) {
+	public boolean tryTyping(boolean b) {
+		boolean t = this.tryTyping;
 		this.tryTyping = b;
+		return t;
 	}
 
 	public boolean IsTryTyping() {
@@ -127,6 +129,7 @@ public class FuncEnv extends Env {
 	public void update(Ty[] paramTypes, Ty returnType) {
 		this.paramTypes = paramTypes;
 		this.returnType = returnType;
+		this.varList = new ArrayList<>();
 	}
 
 	public int getStartIndex() {

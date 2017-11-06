@@ -10,7 +10,6 @@ import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.code.BoolCode;
-import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.IntCode;
@@ -47,7 +46,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	// Hidden Type
-	public static final Ty tAnyRef = m(new SimpleTy("AnyRef"));
+	public static final Ty tAnyRef = m(new AnyRefTy("AnyRef"));
 	public static final Ty tByte = m(new SimpleTy("Byte"));
 	public static final Ty tInt64 = m(new SimpleTy("Int64"));
 	public static final Ty tFloat32 = m(new SimpleTy("Float32"));
@@ -131,14 +130,21 @@ public abstract class Ty implements TypeApi, OStrings {
 		return ty;
 	}
 
-	public static Ty tTag(Ty inner, String... names) {
-		if (inner instanceof TagTy) {
-			TagTy tag = (TagTy) inner;
-			inner = tag.getParamType();
+	public static Ty tTag(Ty base, String... names) {
+		if (base instanceof TagTy) {
+			TagTy tag = (TagTy) base;
+			base = tag.getParamType();
 			names = TagTy.joins(names, tag.tags);
 		}
+		if (names.length == 0) {
+			return m(base);
+		}
 		Arrays.sort(names);
-		return m(new TagTy(inner, names));
+		return m(new TagTy(m(base), names));
+	}
+
+	public static final Ty tCond(Ty base, boolean pred, Ty cond) {
+		return m(new CondTy(m(base), pred, m(cond)));
 	}
 
 	//
@@ -160,20 +166,24 @@ public abstract class Ty implements TypeApi, OStrings {
 		return false;
 	}
 
-	public boolean eq(Ty ty) {
-		return this.acceptTy(false, ty, VarLogger.Nop);
+	public abstract boolean match(boolean sub, Ty codeTy, TypeMatcher logs);
+
+	public final boolean eq(Ty ty) {
+		return this == ty || this.match(false, ty, TypeMatcher.Nop);
 	}
 
-	public final boolean accept(Code code) {
+	public final boolean match(Code code) {
 		Ty codeTy = code.getType();
-		return this == codeTy || this.acceptTy(true, codeTy, VarLogger.Update);
+		return this == codeTy || this.match(true, codeTy, TypeMatcher.Update);
 	}
 
-	public abstract boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs);
+	public final boolean match(Ty codeTy) {
+		return this == codeTy || this.match(true, codeTy, TypeMatcher.Update);
+	}
 
-	protected boolean acceptVarTy(boolean sub, Ty codeTy, VarLogger logs) {
+	protected boolean matchVar(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isVar()) {
-			return (codeTy.acceptTy(false, this, logs));
+			return (codeTy.match(false, this, logs));
 		}
 		return false;
 	}
@@ -263,6 +273,8 @@ public abstract class Ty implements TypeApi, OStrings {
 		return this.toString();
 	}
 
+	public abstract String keyFrom();
+
 	/* Mutable */
 
 	public static Ty[] map(Ty[] ts, Function<Ty, Ty> f) {
@@ -347,7 +359,7 @@ interface TypeApi {
 	}
 
 	public default int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
-		return CastCode.STUPID;
+		return CodeMap.STUPID;
 	}
 
 	public default CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
@@ -355,7 +367,7 @@ interface TypeApi {
 	}
 
 	public default int costMapThisTo(Env env, Ty fromTy, Ty toTy) {
-		return CastCode.STUPID;
+		return CodeMap.STUPID;
 	}
 
 	public default CodeMap findMapThisTo(Env env, Ty fromTy, Ty toTy) {
@@ -376,12 +388,12 @@ class VoidTy extends SimpleTy {
 
 	@Override
 	public int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
-		return CastCode.SAME;
+		return CodeMap.SAME;
 	}
 
 	@Override
 	public CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
-		return new CodeMap(CastCode.SAME | CodeMap.LazyFormat, "(void)", "voidcast", fromTy, Ty.tVoid);
+		return new CodeMap(CodeMap.SAME | CodeMap.LazyFormat, "(void)", "voidcast", fromTy, Ty.tVoid);
 	}
 
 }
@@ -438,7 +450,7 @@ class UntypedTy extends SimpleTy {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		return true;
 	}
 

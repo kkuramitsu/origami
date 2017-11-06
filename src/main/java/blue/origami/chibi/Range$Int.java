@@ -2,7 +2,6 @@ package blue.origami.chibi;
 
 import java.util.stream.IntStream;
 
-import blue.origami.chibi.Func.FuncIntVoid;
 import blue.origami.common.OStrings;
 
 public class Range$Int extends List$Int implements OStrings {
@@ -41,13 +40,6 @@ public class Range$Int extends List$Int implements OStrings {
 	@Override
 	public int geti(int index) {
 		return index - this.start;
-	}
-
-	@Override
-	public void forEach(FuncIntVoid f) {
-		for (int i = this.start; i <= this.until; i++) {
-			f.apply(i);
-		}
 	}
 
 	@Override

@@ -93,13 +93,13 @@ public class GenericTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isGeneric()) {
 			GenericTy gt = (GenericTy) codeTy.base();
-			return this.baseTy.acceptTy(false, gt.getBaseType(), logs)
-					&& this.paramTy.acceptTy(false, gt.getParamType(), logs);
+			return this.baseTy.match(false, gt.getBaseType(), logs)
+					&& this.paramTy.match(false, gt.getParamType(), logs);
 		}
-		return this.acceptVarTy(sub, codeTy, logs);
+		return this.matchVar(sub, codeTy, logs);
 	}
 
 	@Override
@@ -121,6 +121,11 @@ public class GenericTy extends Ty {
 		sb.append("[");
 		this.paramTy.typeKey(sb);
 		sb.append("]");
+	}
+
+	@Override
+	public String keyFrom() {
+		return this.baseTy.keyFrom();
 	}
 
 	@Override

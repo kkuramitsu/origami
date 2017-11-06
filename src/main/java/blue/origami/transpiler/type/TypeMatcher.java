@@ -5,9 +5,9 @@ import java.util.List;
 
 import blue.origami.common.ODebug;
 
-public class VarLogger {
-	public final static VarLogger Update = new VarLogger();
-	public final static VarLogger Nop = new VarLogger();
+public class TypeMatcher {
+	public final static TypeMatcher Update = new TypeMatcher();
+	public final static TypeMatcher Nop = new TypeMatcher();
 
 	static abstract class BackLog {
 		abstract void abort();
@@ -18,13 +18,13 @@ public class VarLogger {
 		VarTy varTy;
 
 		VarLog(VarTy v) {
-			this.prevTy = v.resolvedTy;
+			this.prevTy = v.inferredTy;
 			this.varTy = v;
 		}
 
 		@Override
 		void abort() {
-			this.varTy.resolvedTy = this.prevTy;
+			this.varTy.inferredTy = this.prevTy;
 		}
 	}
 
@@ -78,7 +78,7 @@ public class VarLogger {
 			assert (v.varId > 26);
 			return true;
 		}
-		v.resolvedTy = ty;
+		v.inferredTy = ty;
 		return true;
 	}
 	//

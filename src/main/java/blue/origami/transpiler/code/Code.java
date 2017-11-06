@@ -123,11 +123,11 @@ interface CodeAPI {
 	public default Code castType(Env env, Ty ret) {
 		Code self = self();
 		// ODebug.trace("casting %s => %s", self.getType(), ret0);
-		if (ret.accept(self)) {
+		if (ret.match(self)) {
 			return self;
 		}
 		Ty f = self.getType();
-		CodeMap tp = env.findTypeMap(env, f, ret);
+		CodeMap tp = env.findArrow(env, f, ret);
 		// ODebug.trace("found map %s", tp);
 		if (tp == CodeMap.StupidArrow) {
 			ODebug.log(() -> {

@@ -74,6 +74,8 @@ assert:: Bool->()            => S|blue/origami/asm/APIs|testAssert
 println:: String->()           => S|blue/origami/asm/APIs|p
 
 // AnyRef
+<=:: AnyRef->a                 => -
+<=:: a->AnyRef                 => -
 <=:: AnyRef->Bool              => S|blue/origami/asm/APIs|unboxZ
 <=:: Bool->AnyRef              => S|blue/origami/asm/APIs|box
 <=:: AnyRef->Int               => S|blue/origami/asm/APIs|unboxI
@@ -98,6 +100,13 @@ println:: String->()           => S|blue/origami/asm/APIs|p
 <-:: Stream[a]->List[a]                => S|blue/origami/chibi/List$|list
 =:: Stream[a]->List[a]                 => S|blue/origami/chibi/List$|list
 
+forEach:: (List[a],a->())->()               => V|blue/origami/chibi/List$|forEach
+filter:: (List[a],a->Bool)->Stream[a]       => V|blue/origami/chibi/List$|filter
+map::    (List[a],a->b)->Stream[b]             => V|blue/origami/chibi/List$|map
+map::    (List[a],a->Int)->Stream[Int]         => V|blue/origami/chibi/List$|map
+map::    (List[a],a->Float)->Stream[Float]     => V|blue/origami/chibi/List$|map
+reduce:: (List[a],a,(a,a)->a)->a              => V|blue/origami/chibi/List$|reduce
+
 forEach:: (Stream[a],a->())->()               => S|blue/origami/chibi/List$|forEach
 filter:: (Stream[a],a->Bool)->Stream[a]       => S|blue/origami/chibi/List$|filter
 map::    (Stream[a],a->b)->Stream[b]             => S|blue/origami/chibi/List$|map
@@ -109,11 +118,11 @@ reduce:: (Stream[a],a,(a,a)->a)->a              => S|blue/origami/chibi/List$|re
 || :: $List[a]->Int                     => V|blue/origami/chibi/List$|size
 [] :: ($List[a],Int)->a                 => V|blue/origami/chibi/List$|geti
 []=:: ($List[a],Int,a)->()              => V|blue/origami/chibi/List$|seti
-push:: ($List[a],a)->()                      => V|blue/origami/chibi/List|push
-pop::  $List[a]->a                          => V|blue/origami/chibi/List|pop
+push:: ($List[a],a)->()                 => V|blue/origami/chibi/List|push
+pop::  $List[a]->a                      => V|blue/origami/chibi/List|pop
 
-<-:: $List[a]->$Stream[a]                    => V|blue/origami/chibi/List$|stream
-<-:: $Stream[a]->$List[a]                    => S|blue/origami/chibi/List$|list
+<-:: $List[a]->$Stream[a]                   => V|blue/origami/chibi/List$|stream
+<-:: $Stream[a]->$List[a]                   => S|blue/origami/chibi/List$|list
 =::  $Stream[a]->$List[a]                   => S|blue/origami/chibi/List$|listM
 
 forEach:: ($Stream[a],a->())->()              => S|blue/origami/chibi/List$|forEach
@@ -121,19 +130,26 @@ filter:: ($Stream[a],a->Bool)->$Stream[a]     => S|blue/origami/chibi/List$|filt
 map:: ($Stream[a],a->b)->$Stream[b]           => S|blue/origami/chibi/List$|map
 map:: ($Stream[a],a->Int)->$Stream[Int]       => S|blue/origami/chibi/List$|map
 map:: ($Stream[a],a->Float)->$Stream[Float]   => S|blue/origami/chibi/List$|map
-reduce:: ($Stream[a],a,a->a)->a             => S|blue/origami/chibi/List$|reduce
+reduce:: ($Stream[a],a,a->a)->a               => S|blue/origami/chibi/List$|reduce
 
 // List[Int], $List[Int], Stream[Int]
 
-||  :: List[Int]->Int                           => V|blue/origami/chibi/List$Int|size
-[]  :: (List[Int],Int)->Int                     => V|blue/origami/chibi/List$Int|geti
-=   :: List[Int]->List[Int]                     => V|blue/origami/chibi/List$Int|bind
+||  :: List[Int]->Int                        => V|blue/origami/chibi/List$Int|size
+[]  :: (List[Int],Int)->Int                  => V|blue/origami/chibi/List$Int|geti
+=   :: List[Int]->List[Int]                  => V|blue/origami/chibi/List$Int|bind
 cons:: (Int,List[Int])->List[Int]            => S|blue/origami/chibi/List$Int|cons
 tail:: (List[Int],Int)->List[Int]            => V|blue/origami/chibi/List$Int|tail
 
-<- :: List[Int]->Stream[Int]                  => V|blue/origami/chibi/List$Int|stream
-<- :: Stream[Int]->List[Int]                  => S|blue/origami/chibi/List$Int|list
-=  :: Stream[Int]->List[Int]              => S|blue/origami/chibi/List$Int|list
+<- :: List[Int]->Stream[Int]                 => V|blue/origami/chibi/List$Int|stream
+<- :: Stream[Int]->List[Int]                 => S|blue/origami/chibi/List$Int|list
+=  :: Stream[Int]->List[Int]                 => S|blue/origami/chibi/List$Int|list
+
+forEach:: (List[Int],Int->())->()               => V|blue/origami/chibi/List$Int|forEach
+filter:: (List[Int],Int->Bool)->Stream[a]       => V|blue/origami/chibi/List$Int|filter
+map::    (List[Int],Int->a)->Stream[b]             => V|blue/origami/chibi/List$Int|map
+map::    (List[Int],Int->Int)->Stream[Int]         => V|blue/origami/chibi/List$Int|map
+map::    (List[Int],Int->Float)->Stream[Float]     => V|blue/origami/chibi/List$Int|map
+reduce:: (List[Int],Int,(Int,Int)->Int)->Int              => V|blue/origami/chibi/List$Int|reduce
 
 forEach:: (Stream[Int],Int->())->()               => S|blue/origami/chibi/List$Int|forEach
 filter:: (Stream[Int],Int->Bool)->Stream[Int]     => S|blue/origami/chibi/List$Int|filter
@@ -151,7 +167,7 @@ pop:: $List[Int]->Int                      => V|blue/origami/chibi/List$Int|pop
 <-:: $List[Int]->List[Int]                        => -
 <-:: $List[Int]->$Stream[Int]                => V|blue/origami/chibi/List$Int|stream
 <-:: $Stream[Int]->$List[Int]                => S|blue/origami/chibi/List$Int|listM
-=::  $Stream[Int]->$List[Int]            => S|blue/origami/chibi/List$Int|listM
+=::  $Stream[Int]->$List[Int]                => S|blue/origami/chibi/List$Int|listM
 
 forEach:: ($Stream[Int],Int->())->()               => S|blue/origami/chibi/List$Int|forEach
 filter:: ($Stream[Int],Int->Bool)->$Stream[Int]    => S|blue/origami/chibi/List$Int|filter
@@ -160,6 +176,13 @@ map:: ($Stream[Int],Int->Int)->$Stream[Int]        => S|blue/origami/chibi/List$
 map:: ($Stream[Int],Int->Float)->$Stream[Float]    => S|blue/origami/chibi/List$Int|map
 reduce:: ($Stream[Int],Int,(Int,Int)->Int)->Int      => S|blue/origami/chibi/List$Int|reduce
 
+
+
+
+
+
+
+
 // Dict[a]
 ||:: Dict[a]->Int                    => V|blue/origami/chibi/Dict$|size
 []:: (Dict[a],String)->Option[a]     => V|blue/origami/chibi/Dict$|get
@@ -167,8 +190,8 @@ reduce:: ($Stream[Int],Int,(Int,Int)->Int)->Int      => S|blue/origami/chibi/Lis
 forEach:: (Dict[a],(String,a)->())->()      => V|blue/origami/chibi/Dict$|forEach
 
 // $Dict[a]
-||:: $Dict[a]->Int                           => V|blue/origami/chibi/Dict|size
-[]:: ($Dict[a],String)->Option[a]              => V|blue/origami/chibi/Dict|get
+||:: $Dict[a]->Int                          => V|blue/origami/chibi/Dict|size
+[]:: ($Dict[a],String)->Option[a]           => V|blue/origami/chibi/Dict|get
 []=:: ($Dict[a],String,a)->()               => V|blue/origami/chibi/Dict|set
 <--:: $Dict[a]->List[String]                => V|blue/origami/chibi/Dict|keys
 forEach:: ($Dict[a],(String,a)->())->()     => V|blue/origami/chibi/Dict$|forEach
@@ -176,6 +199,7 @@ forEach:: ($Dict[a],(String,a)->())->()     => V|blue/origami/chibi/Dict$|forEac
 // Option
 Some:: a->Option[a]                            => -
 <---:: Option[a]->a                            => S|blue/origami/asm/APIs|unwrap
+
 Some?:: Option[a]->Bool                        => S|blue/origami/asm/APIs|isSome
 None?:: Option[a]->Bool                        => S|blue/origami/asm/APIs|isNone
 |?:: (Option[a],a)->a                          => X|orElse

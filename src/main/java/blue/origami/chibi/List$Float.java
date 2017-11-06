@@ -173,37 +173,64 @@ public class List$Float implements OStrings, FuncIntFloat {
 		return new ListM$Float(s.toArray());
 	}
 
+	public final void forEach(FuncFloatVoid f) {
+		forEach(this.stream(), f);
+	}
+
 	public static final void forEach(DoubleStream s, FuncFloatVoid f) {
 		s.forEach(f);
+	}
+
+	public final DoubleStream filter(FuncFloatBool f) {
+		return filter(this.stream(), f);
 	}
 
 	public static final DoubleStream filter(DoubleStream s, FuncFloatBool f) {
 		return s.filter(f);
 	}
 
+	public final DoubleStream map(FuncFloatFloat f) {
+		return map(this.stream(), f);
+	}
+
 	public static final DoubleStream map(DoubleStream s, FuncFloatFloat f) {
 		return s.map(f);
+	}
+
+	public final Stream<Object> map(FuncFloatObj f) {
+		return map(this.stream(), f);
 	}
 
 	public static final Stream<Object> map(DoubleStream s, FuncFloatObj f) {
 		return s.mapToObj(f);
 	}
 
+	public final IntStream map(FuncFloatInt f) {
+		return map(this.stream(), f);
+	}
+
 	public static final IntStream map(DoubleStream s, FuncFloatInt f) {
 		return s.mapToInt(f);
+	}
+
+	public final DoubleStream flatMap(FuncFloatObj f) {
+		return flatMap(this.stream(), f);
 	}
 
 	public static final DoubleStream flatMap(DoubleStream s, FuncFloatObj f) {
 		return s.flatMap(x -> downCast(f.apply(x)));
 	}
 
+	public final double reduce(double acc, FuncFloatFloatFloat f) {
+		return reduce(this.stream(), acc, f);
+	}
+
 	public static final double reduce(DoubleStream s, double acc, FuncFloatFloatFloat f) {
 		return s.reduce(acc, f);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static final DoubleStream downCast(Object o) {
-		if (o instanceof Stream<?>) {
+		if (o instanceof DoubleStream) {
 			return (DoubleStream) o;
 		}
 		return ((List$Float) o).stream();

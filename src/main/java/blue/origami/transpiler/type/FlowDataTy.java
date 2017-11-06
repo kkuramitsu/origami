@@ -30,7 +30,7 @@ public class FlowDataTy extends DataTy {
 	}
 
 	@Override
-	public boolean hasField(String field, VarLogger logs) {
+	public boolean hasField(String field, TypeMatcher logs) {
 		if (!super.hasField(field, logs)) {
 			if (logs.isUpdate()) {
 				this.fields.add(field);

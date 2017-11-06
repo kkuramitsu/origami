@@ -71,7 +71,7 @@ public class OArrays {
 		return names;
 	}
 
-	public static <T> boolean testSome(Predicate<T> f, T[] list) {
+	public static <T> boolean testSome(T[] list, Predicate<T> f) {
 		for (T e : list) {
 			if (f.test(e)) {
 				return true;
@@ -80,7 +80,7 @@ public class OArrays {
 		return false;
 	}
 
-	public static <T> boolean testAllTrue(Predicate<T> f, T[] list) {
+	public static <T> boolean testAll(T[] list, Predicate<T> f) {
 		for (T e : list) {
 			if (!f.test(e)) {
 				return false;

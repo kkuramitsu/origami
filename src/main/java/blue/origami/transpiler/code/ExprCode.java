@@ -53,7 +53,7 @@ public class ExprCode extends CodeN implements MappedCode {
 	}
 
 	public int maxCost() {
-		return CastCode.BADCONV;
+		return CodeMap.BADCONV;
 	}
 
 	public Code asUnfound(Env env, List<CodeMap> l) {
@@ -119,7 +119,7 @@ class OptionalExprCode extends ExprCode implements MappedCode {
 
 	@Override
 	public int maxCost() {
-		return CastCode.CAST;
+		return CodeMap.CAST;
 	}
 
 	@Override

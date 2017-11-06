@@ -8,7 +8,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FlowDataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.TypeMatcher;
 
 public class GetCode extends Code1 {
 	final String name;
@@ -34,7 +34,7 @@ public class GetCode extends Code1 {
 			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
 			if (recvTy.isVar()) {
 				Ty infer = new FlowDataTy();
-				recvTy.acceptTy(bSUB, infer, VarLogger.Update);
+				recvTy.match(bSUB, infer, TypeMatcher.Update);
 				recvTy = infer;
 			}
 			if (recvTy.isData()) {

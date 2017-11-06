@@ -115,6 +115,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public void testData() throws Throwable {
+		runScript("f(p) = p.x; f", "[x]->Float");
 		runScript("f(p) = p.x + p.y; f", "[x,y]->Float");
 	}
 

@@ -3,6 +3,8 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import blue.origami.transpiler.CodeMap;
+import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 
 public class SimpleTy extends Ty {
@@ -22,6 +24,11 @@ public class SimpleTy extends Ty {
 	@Override
 	public String keyMemo() {
 		return this.name;
+	}
+
+	@Override
+	public String keyFrom() {
+		return this.keyMemo();
 	}
 
 	@Override
@@ -55,9 +62,9 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isVar()) {
-			return (codeTy.acceptTy(false, this, logs));
+			return (codeTy.match(false, this, logs));
 		}
 		return this == codeTy.base();
 	}
@@ -80,6 +87,34 @@ public class SimpleTy extends Ty {
 	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.mapType(this.name);
+	}
+
+}
+
+class AnyRefTy extends SimpleTy {
+
+	public AnyRefTy(String name) {
+		super(name);
+	}
+
+	@Override
+	public int costMapThisTo(Env env, Ty fromTy, Ty toTy) {
+		return CodeMap.CAST;
+	}
+
+	@Override
+	public int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
+		return CodeMap.CAST;
+	}
+
+	@Override
+	public CodeMap findMapThisTo(Env env, Ty fromTy, Ty toTy) {
+		return env.getArrow(env, Ty.tAnyRef, Ty.tVarParam[0]);
+	}
+
+	@Override
+	public CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
+		return env.getArrow(env, Ty.tVarParam[0], Ty.tAnyRef);
 	}
 
 }

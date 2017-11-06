@@ -7,7 +7,7 @@ import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.TypeMatcher;
 
 public class DictCode extends CodeN {
 	protected String[] names;
@@ -60,7 +60,7 @@ public class DictCode extends CodeN {
 		}
 		if (this.isDict(ret)) {
 			Ty ty = ret.getParamType();
-			if (!this.getType().getParamType().acceptTy(bEQ, ty, VarLogger.Update)) {
+			if (!this.getType().getParamType().match(bEQ, ty, TypeMatcher.Update)) {
 				for (int i = 0; i < this.args.length; i++) {
 					this.args[i] = this.args[i].asType(env, ty);
 				}

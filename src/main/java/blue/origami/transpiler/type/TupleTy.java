@@ -35,8 +35,13 @@ public class TupleTy extends Ty {
 	}
 
 	@Override
+	public String keyFrom() {
+		return "Tuple" + this.paramTypes.length;
+	}
+
+	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return OArrays.testSome(t -> t.hasSome(f), this.getParamTypes());
+		return OArrays.testSome(this.getParamTypes(), t -> t.hasSome(f));
 	}
 
 	@Override
@@ -61,20 +66,20 @@ public class TupleTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isTuple()) {
 			TupleTy tupleTy = (TupleTy) codeTy.base();
 			if (tupleTy.getParamSize() != this.getParamSize()) {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptTy(false, tupleTy.paramTypes[i], logs)) {
+				if (!this.paramTypes[i].match(false, tupleTy.paramTypes[i], logs)) {
 					return false;
 				}
 			}
 			return true;
 		}
-		return this.acceptVarTy(sub, codeTy, logs);
+		return this.matchVar(sub, codeTy, logs);
 	}
 
 	@Override

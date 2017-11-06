@@ -66,10 +66,10 @@ public class DataTy extends Ty {
 	}
 
 	public final boolean hasField(String field) {
-		return this.hasField(field, VarLogger.Update);
+		return this.hasField(field, TypeMatcher.Update);
 	}
 
-	public boolean hasField(String field, VarLogger logs) {
+	public boolean hasField(String field, TypeMatcher logs) {
 		return this.fields.contains(field);
 	}
 
@@ -112,7 +112,7 @@ public class DataTy extends Ty {
 		return this;
 	}
 
-	public final boolean hasFields(Set<String> fields, VarLogger logs) {
+	public final boolean hasFields(Set<String> fields, TypeMatcher logs) {
 		for (String f : fields) {
 			if (!this.hasField(f, logs)) {
 				return false;
@@ -123,13 +123,13 @@ public class DataTy extends Ty {
 
 	// f(b)
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isVar()) {
 			// VarTy varTy = (VarTy) codeTy.real();
 			// if (varTy.isParameter()) {
 			DataTy pt = new FlowDataTy();
 			pt.hasFields(this.fields, logs);
-			return (codeTy.acceptTy(false, pt, logs));
+			return (codeTy.match(false, pt, logs));
 			// }
 			// return (codeTy.acceptTy(false, this, logs));
 		}
@@ -150,4 +150,10 @@ public class DataTy extends Ty {
 	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.forDataType(this);
 	}
+
+	@Override
+	public String keyFrom() {
+		return "{}";
+	}
+
 }

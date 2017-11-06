@@ -1,5 +1,5 @@
 /**
- * Chibi-Konoha Grammar
+ * Chibi Konoha Grammar
  *  Free Style Syntax Language designed by K. Kuramitsu
  *
  * Authors:
@@ -1049,15 +1049,13 @@ Type =
 
 TSUFFIX =
     / "[" ']' _  #ListType
-    / "{" '}' _  #ArrayType
     / "[" $param(Type) ']' _  #MonadType
-    / "{" $param(Type) '}' _  #StateType
     / '?' _  #OptionType
     / "->"   $type(Type) #FuncType
 	/ '*' _  $type(Type) #RightTupleType
 	/ '#'    $name(Identifier) #RightTagType
-	/ '&' _  $name(Type) #AndType
-	/ '!' _  $name(Type) #NotType
+	/ '&' _  $param(PrimaryType) #AndType
+	/ '!' _  $param(PrimaryType) #NotType
 
 PrimaryType =
 	{ "<" $expr(Expression) ">" #ExprType }

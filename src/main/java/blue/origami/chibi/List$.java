@@ -148,14 +148,6 @@ public class List$ implements OStrings, FuncIntObj {
 
 	/* High-order functions */
 
-	public void forEach(FuncObjVoid f) {
-		for (List$ p = this; p != null; p = p.next) {
-			for (int i = p.start; i < p.end; i++) {
-				f.apply(p.arrays[i]);
-			}
-		}
-	}
-
 	public Stream<Object> stream() {
 		Stream<Object> s = Arrays.stream(this.arrays, this.start, this.end);
 		if (this.next != null) {
@@ -172,20 +164,40 @@ public class List$ implements OStrings, FuncIntObj {
 		return new ListM$(s.toArray());
 	}
 
+	public void forEach(FuncObjVoid f) {
+		forEach(this.stream(), f);
+	}
+
 	public static final void forEach(Stream<Object> s, FuncObjVoid f) {
 		s.forEach(f);
+	}
+
+	public Stream<Object> filter(FuncObjBool f) {
+		return filter(this.stream(), f);
 	}
 
 	public static final Stream<Object> filter(Stream<Object> s, FuncObjBool f) {
 		return s.filter(f);
 	}
 
+	public Stream<Object> map(FuncObjObj f) {
+		return map(this.stream(), f);
+	}
+
 	public static final Stream<Object> map(Stream<Object> s, FuncObjObj f) {
 		return s.map(f);
 	}
 
+	public IntStream map(FuncObjInt f) {
+		return map(this.stream(), f);
+	}
+
 	public static final IntStream map(Stream<Object> s, FuncObjInt f) {
 		return s.mapToInt(f);
+	}
+
+	public DoubleStream map(FuncObjFloat f) {
+		return map(this.stream(), f);
 	}
 
 	public static final DoubleStream map(Stream<Object> s, FuncObjFloat f) {
@@ -200,8 +212,16 @@ public class List$ implements OStrings, FuncIntObj {
 		return ((List$) o).stream();
 	}
 
+	public final Stream<Object> flatMap(FuncObjObj f) {
+		return flatMap(this.stream(), f);
+	}
+
 	public static final Stream<Object> flatMap(Stream<Object> s, FuncObjObj f) {
 		return s.flatMap(x -> downCast(f.apply(x)));
+	}
+
+	public final Object reduce(Object acc, FuncObjObjObj f) {
+		return reduce(this.stream(), acc, f);
 	}
 
 	public static final Object reduce(Stream<Object> s, Object acc, FuncObjObjObj f) {

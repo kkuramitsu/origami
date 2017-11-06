@@ -9,33 +9,33 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 
 public class TagTy extends Ty {
+	protected Ty baseTy;
 	protected String[] tags;
-	protected Ty innerTy;
 
-	public TagTy(Ty ty, String... names) {
-		this.tags = names;
-		this.innerTy = ty;
+	public TagTy(Ty ty, String... tags) {
+		this.baseTy = ty;
+		this.tags = tags;
 	}
 
 	@Override
 	public Ty getParamType() {
-		return this.innerTy;
+		return this.baseTy;
 	}
 
 	@Override
 	public boolean isMutable() {
-		return this.innerTy.isMutable();
+		return this.baseTy.isMutable();
 	}
 
 	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return this.innerTy.hasSome(f);
+		return this.baseTy.hasSome(f);
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		Ty inner = this.innerTy.dupVar(dom);
-		if (inner != this.innerTy) {
+		Ty inner = this.baseTy.dupVar(dom);
+		if (inner != this.baseTy) {
 			return Ty.tTag(inner, this.tags);
 		}
 		return this;
@@ -47,26 +47,26 @@ public class TagTy extends Ty {
 		if (self != this) {
 			return self;
 		}
-		return Ty.tTag(this.innerTy.map(f), this.tags);
+		return Ty.tTag(this.baseTy.map(f), this.tags);
 	}
 
 	@Override
 	public Ty memoed() {
 		if (!this.isMemoed()) {
-			return Ty.tTag(this.innerTy.memoed(), this.tags);
+			return Ty.tTag(this.baseTy.memoed(), this.tags);
 		}
 		return this;
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
-		if (codeTy instanceof TagTy && this.innerTy.acceptTy(sub, codeTy.getParamType(), logs)) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
+		if (codeTy instanceof TagTy && this.baseTy.match(sub, codeTy.getParamType(), logs)) {
 			return this.matchTags(sub, ((TagTy) codeTy).tags);
 		}
-		return this.acceptVarTy(sub, codeTy, logs);
+		return this.matchVar(sub, codeTy, logs);
 	}
 
-	public boolean matchTags(boolean sub, String[] names) {
+	boolean matchTags(boolean sub, String[] names) {
 		if (this.tags.length != names.length) {
 			return false;
 		}
@@ -77,35 +77,22 @@ public class TagTy extends Ty {
 		}
 		return true;
 	}
-	//
-	// @Override
-	// public int costMapTo(TEnv env, Ty toTy) {
-	// if(toTy.acceptTy(false, this.innerTy, logs)) {
-	// return
-	// }
-	// return CastCode.STUPID;
-	// }
-	//
-	// @Override
-	// public Template findMapTo(TEnv env, Ty toTy) {
-	// return null;
-	// }
-
-	// @Override
-	// public String key() {
-	// return this.name + "[" + this.innerTy.key() + "]";
-	// }
 
 	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
-		return this.innerTy.mapType(codeType);
+		return this.baseTy.mapType(codeType);
 	}
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		OStrings.append(sb, this.innerTy);
+		OStrings.append(sb, this.baseTy);
 		sb.append(" #");
 		OStrings.joins(sb, this.tags, " #");
+	}
+
+	@Override
+	public String keyFrom() {
+		return this.baseTy.keyFrom();
 	}
 
 	public static String[] joins(String[] ns, String[] names) {

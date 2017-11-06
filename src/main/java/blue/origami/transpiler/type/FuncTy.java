@@ -66,8 +66,13 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
+	public String keyFrom() {
+		return "@";
+	}
+
+	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return this.returnType.hasSome(f) || OArrays.testSome(t -> t.hasSome(f), this.getParamTypes());
+		return this.returnType.hasSome(f) || OArrays.testSome(this.getParamTypes(), t -> t.hasSome(f));
 	}
 
 	@Override
@@ -95,20 +100,20 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.isFunc()) {
 			FuncTy funcTy = (FuncTy) codeTy.base();
 			if (funcTy.getParamSize() != this.getParamSize()) {
 				return false;
 			}
 			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].acceptTy(false, funcTy.paramTypes[i], logs)) {
+				if (!this.paramTypes[i].match(false, funcTy.paramTypes[i], logs)) {
 					return false;
 				}
 			}
-			return this.returnType.acceptTy(false, funcTy.returnType, logs);
+			return this.returnType.match(false, funcTy.returnType, logs);
 		}
-		return this.acceptVarTy(sub, codeTy, logs);
+		return this.matchVar(sub, codeTy, logs);
 	}
 
 	@Override
@@ -130,23 +135,23 @@ public class FuncTy extends Ty {
 		if (ty.isFunc()) {
 			FuncTy toTy = (FuncTy) ty.base();
 			if (this.getParamSize() == toTy.getParamSize()) {
-				VarLogger logger = new VarLogger();
+				TypeMatcher logger = new TypeMatcher();
 				Ty[] fromTys = this.getParamTypes();
 				Ty[] toTys = toTy.getParamTypes();
 				int cost = 0;
 				for (int i = 0; i < fromTys.length; i++) {
-					cost = Math.max(cost, env.mapCost(env, toTys[i], fromTys[i], logger));
-					if (cost >= CastCode.STUPID) {
+					cost = Math.max(cost, env.arrowCost(env, toTys[i], fromTys[i], logger));
+					if (cost >= CodeMap.STUPID) {
 						logger.abort();
-						return CastCode.STUPID;
+						return CodeMap.STUPID;
 					}
 				}
-				cost = Math.max(cost, env.mapCost(env, this.getReturnType(), toTy.getReturnType(), logger));
+				cost = Math.max(cost, env.arrowCost(env, this.getReturnType(), toTy.getReturnType(), logger));
 				logger.abort();
 				return cost;
 			}
 		}
-		return CastCode.STUPID;
+		return CodeMap.STUPID;
 	}
 
 	@Override
@@ -155,7 +160,7 @@ public class FuncTy extends Ty {
 		if (ty.isFunc()) {
 			FuncTy toTy = (FuncTy) ty.base();
 			int cost = this.costMapThisTo(env, a, ty);
-			if (cost < CastCode.STUPID) {
+			if (cost < CodeMap.STUPID) {
 				return this.genFuncConv(env, this, toTy).setMapCost(cost);
 			}
 		}

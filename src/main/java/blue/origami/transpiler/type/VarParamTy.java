@@ -4,7 +4,6 @@ import java.util.function.Predicate;
 
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.code.CastCode;
 
 public class VarParamTy extends SimpleTy {
 	public VarParamTy(String name) {
@@ -31,7 +30,7 @@ public class VarParamTy extends SimpleTy {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		return true;
 		// return codeTy == this;
 	}
@@ -43,22 +42,22 @@ public class VarParamTy extends SimpleTy {
 
 	@Override
 	public int costMapThisTo(Env env, Ty fromTy, Ty toTy) {
-		return CastCode.BESTCAST;
+		return CodeMap.BESTCAST;
 	}
 
 	@Override
 	public CodeMap findMapThisTo(Env env, Ty fromTy, Ty toTy) {
-		return new CodeMap(CastCode.BESTCAST | CodeMap.LazyFormat, "anycast", "anycast", this, toTy);
+		return new CodeMap(CodeMap.BESTCAST | CodeMap.LazyFormat, "anycast", "anycast", this, toTy);
 	}
 
 	@Override
 	public int costMapFromToThis(Env env, Ty fromTy, Ty toTy) {
-		return CastCode.BESTCAST;
+		return CodeMap.BESTCAST;
 	}
 
 	@Override
 	public CodeMap findMapFromToThis(Env env, Ty fromTy, Ty toTy) {
-		return new CodeMap(CastCode.BESTCAST | CodeMap.LazyFormat, "upcast", "upcast", fromTy, this);
+		return new CodeMap(CodeMap.BESTCAST | CodeMap.LazyFormat, "upcast", "upcast", fromTy, this);
 	}
 
 }

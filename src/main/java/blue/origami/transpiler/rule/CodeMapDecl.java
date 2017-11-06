@@ -4,7 +4,6 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.ConstMap;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
 import blue.origami.transpiler.type.FuncTy;
@@ -13,7 +12,7 @@ import blue.origami.transpiler.type.Ty;
 public class CodeMapDecl implements ParseRule, Symbols {
 	@Override
 	public Code apply(Env env, AST t) {
-		String name = t.getStringAt(_name, "");
+		// String name = t.getStringAt(_name, "");
 		return this.parseCodeMap(env, t.get(_list));
 	}
 
@@ -54,29 +53,31 @@ public class CodeMapDecl implements ParseRule, Symbols {
 
 	private void parseConst(Env env, String name, Ty ty, String value) {
 		CodeMap codeMap = new ConstMap(name, value, ty);
-		env.addArrow(name, codeMap);
+		env.addConst(name, codeMap);
 	}
 
 	public static int parseArrowLevel(String key) {
 		switch (key) {
 		case "<---":
-			return CastCode.BADCONV | CodeMap.Faulty;
+			return CodeMap.BADCONV | CodeMap.Faulty;
 		case "<--":
-			return CastCode.CONV;
+			return CodeMap.CONV;
 		case "<-":
-			return CastCode.BESTCONV;
+			return CodeMap.BESTCONV;
 		case "<==":
-			return CastCode.CAST;
+			return CodeMap.CAST;
 		case "<=":
-			return CastCode.BESTCAST;
+			return CodeMap.BESTCAST;
 		}
 		return -1;
 	}
 
 	private void parseArrow(Env env, int acc, FuncTy ty, String value) {
-		String key = ty.keyMemo();
-		CodeMap codeMap = new CodeMap(acc, key, value, ty.getReturnType(), ty.getParamTypes());
-		env.addArrow(key, codeMap);
+		if (ty.getParamTypes().length == 1) {
+			String key = ty.keyMemo();
+			CodeMap codeMap = new CodeMap(acc, key, value, ty.getReturnType(), ty.getParamTypes());
+			env.addArrow(key, codeMap);
+		}
 	}
 
 	private void parseFuncMap(Env env, String name, FuncTy ty, String value) {

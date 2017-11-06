@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.common.OStrings;
-import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.CodeMap;
 
 public class VarDomain implements OStrings {
 
@@ -44,7 +44,7 @@ public class VarDomain implements OStrings {
 			for (int i = 0; i < ts.length; i++) {
 				// ODebug.trace("[%d] %s as %s %s", i, codeTy[i], dParamTypes[i],
 				// gParamTypes[i]);
-				p[i].acceptTy(true, codeTy[i], VarLogger.Update);
+				p[i].match(true, codeTy[i], TypeMatcher.Update);
 			}
 			for (int i = 0; i < ts.length; i++) {
 				p[i] = p[i].memoed();
@@ -101,10 +101,10 @@ public class VarDomain implements OStrings {
 		for (int i = 0; i < this.len; i++) {
 			Ty ty = this.dom[i].memoed();
 			if (ty == this.dom[i]) {
-				mapCost += CastCode.STUPID;
+				mapCost += CodeMap.STUPID;
 			}
 			if (ty == Ty.tBool || ty == Ty.tInt || ty == Ty.tFloat) {
-				mapCost += CastCode.CAST;
+				mapCost += CodeMap.CAST;
 			}
 		}
 		return mapCost;

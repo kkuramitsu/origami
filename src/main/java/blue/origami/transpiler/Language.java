@@ -27,8 +27,8 @@ import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.TypeMatcher;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.transpiler.type.VarLogger;
 
 public class Language implements OFactory<Language> {
 
@@ -229,7 +229,7 @@ public class Language implements OFactory<Language> {
 				p[i - 1] = code.args[i].getType();
 			}
 			Ty funcType = Ty.tFunc(ret, p);
-			firstType.acceptTy(Code.bSUB, funcType, VarLogger.Update);
+			firstType.match(Code.bSUB, funcType, TypeMatcher.Update);
 			code.setType(ret);
 			return code;
 		}
@@ -249,7 +249,7 @@ public class Language implements OFactory<Language> {
 				return this.typeMatchedExpr(env, code, founds.get(0).generate(env, p), ret);
 			}
 			// code.typeArgs(env, founds);
-			CodeMap selected = CodeMap.select(env, founds, ret, p, code.maxCost());
+			CodeMap selected = this.select(env, founds, ret, p, code.maxCost());
 			if (selected == null) {
 				return code.asMismatched(env, founds).castType(env, ret);
 			}
@@ -279,53 +279,95 @@ public class Language implements OFactory<Language> {
 		// return ty;
 	}
 
+	CodeMap select(Env env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
+		CodeMap selected = null;
+		FuncEnv fenv = env.getFuncEnv();
+		boolean allowAbstractMatch = fenv.IsTryTyping() && OArrays.testSome(p, t -> t.hasSome(Ty.IsVar));
+		int mapCost = maxCost - 1;
+		for (int i = 0; i < founds.size(); i++) {
+			CodeMap next = founds.get(i);
+			if (next.isAbstract() && !allowAbstractMatch) {
+				continue;
+			}
+			int nextCost = this.match(env, next, ret, p, maxCost);
+			ODebug.log(() -> ODebug.p("cost=%d,%s", nextCost, next));
+			if (nextCost < mapCost) {
+				mapCost = nextCost;
+				selected = next;
+			}
+			if (mapCost == 0) {
+				break;
+			}
+		}
+		if (allowAbstractMatch) {
+			CodeMap abst = founds.get(founds.size() - 1);
+			if (abst != selected && abst.isAbstract()) {
+				int nextCost = this.match(env, abst, ret, p, maxCost);
+				// System.out.printf(":::: select=%s, abst=%d\n", mapCost, nextCost);
+				if (nextCost <= mapCost) {
+					ODebug.log(() -> ODebug.p("ABSTRACT cost=%s,%s", nextCost, abst));
+					return abst;
+				}
+			}
+		}
+		return (mapCost >= maxCost) ? null : selected;
+	}
+
+	int match(Env env, CodeMap cmap, Ty ret, Ty[] params, int maxCost) {
+		int mapCost = 0;
+		VarDomain dom = null;
+		TypeMatcher logs = new TypeMatcher();
+		Ty[] cparams = cmap.getParamTypes();
+		// Ty codeRet = tp.getReturnType();
+		// System.out.printf(":::: isGeneric=%s %s\n", cmap.isGeneric(), cmap);
+		if (cmap.isGeneric()) {
+			dom = new VarDomain(cparams);
+			cparams = dom.matched(cparams, null);
+			// codeRet = dom.conv(codeRet);
+		}
+		for (int i = 0; i < params.length; i++) {
+			mapCost += env.arrowCost(env, params[i], cparams[i], logs);
+			// ODebug.trace("mapCost[%d]=%d %s => %s", i, mapCost, params[i], p[i]);
+			if (mapCost >= maxCost) {
+				logs.abort();
+				return mapCost;
+			}
+		}
+		if (!ret.isVoid()) {
+			Ty cret = cmap.getReturnType();
+			if (dom != null) {
+				cret = dom.conv(cret);
+			}
+			mapCost += env.arrowCost(env, cret, ret, logs);
+			// ODebug.trace("mapCost[ret]=%d %s => %s", mapCost, codeRet, ret);
+		}
+		// if (dom != null) {
+		// mapCost += dom.mapCost();
+		// }
+		logs.abort();
+		// ODebug.trace("mapCost=%d %s => %s", mapCost, codeRet, ret);
+		return mapCost;
+	}
+
 	private Code typeMatchedExpr(Env env, ExprCode code, CodeMap found, Ty t) {
 		Ty[] dpars = found.getParamTypes();
 		Ty dret = found.getReturnType();
 		if (found.isGeneric()) {
 			VarDomain dom = new VarDomain(dpars);
 			Ty[] gpars = dom.conv(dpars);
-			Ty gret = dom.conv(dret);
 			for (int i = 0; i < code.args.length; i++) {
 				code.args[i] = code.args[i].asType(env, gpars[i]);
-				// if (!found.isAbstract()) {
-				// if (dpars[i] instanceof VarParamTy) {
-				// ODebug.trace("MUST upcast %s => %s", gpars[i], gpars[i]);
-				// code.args[i] = new BoxCastCode(gpars[i], code.args[i]);
-				// }
-				// if (dpars[i] instanceof FuncTy && dpars[i].hasSome(Ty.IsGeneric)) {
-				// VarDomain dom2 = new VarDomain(dpars);
-				// dom2.useParamVar();
-				// Ty anyTy = dpars[i].dupVar(dom2).memoed(); // AnyRef
-				// CodeMap conv = env.findTypeMap(env, gpars[i], anyTy);
-				// ODebug.trace("MUST funccast %s => %s :: %s", gpars[i], anyTy, conv);
-				// code.args[i] = new FuncCastCode(anyTy, conv, code.args[i]);
-				// }
-				// }
+				// ODebug.trace("[%d] %s => %s", i, gpars[i], code.args[i].getType());
 			}
 			if (found.isMutation()) {
 				Ty ty = code.args[0].getType();
 				ODebug.trace("MUTATION %s", ty);
 				ty.foundMutation();
 			}
+			Ty gret = dom.conv(dret);
 			code.setMapped(found);
 			code.setType(gret);
 			Code result = code;
-			// if (!found.isAbstract()) {
-			// if (found.getReturnType() instanceof VarParamTy) {
-			// ODebug.trace("must downcast %s => %s", found.getReturnType(), gret);
-			// result = new UnboxCastCode(gret, result);
-			// }
-			// if (found.getReturnType() instanceof FuncTy &&
-			// found.getReturnType().hasSome(Ty.IsGeneric)) {
-			// VarDomain dom2 = new VarDomain(dpars);
-			// dom2.useParamVar();
-			// Ty anyTy = found.getReturnType().dupVar(dom2); // AnyRef
-			// CodeMap conv = env.findTypeMap(env, gret, anyTy);
-			// ODebug.trace("MUST funccast %s => %s :: %s", anyTy, gret, conv);
-			// result = new FuncCastCode(gret, conv, result);
-			// }
-			// }
 			return result.castType(env, t);
 		} else {
 			for (int i = 0; i < code.args.length; i++) {

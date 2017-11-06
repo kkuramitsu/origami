@@ -32,11 +32,11 @@ public class EnumTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		if (codeTy.base() == this) {
 			return true;
 		}
-		return this.acceptVarTy(sub, codeTy, logs);
+		return this.matchVar(sub, codeTy, logs);
 	}
 
 	@Override
@@ -62,6 +62,11 @@ public class EnumTy extends Ty {
 	@Override
 	public void strOut(StringBuilder sb) {
 		sb.append(this.name);
+	}
+
+	@Override
+	public String keyFrom() {
+		return this.name;
 	}
 
 }

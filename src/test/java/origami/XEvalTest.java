@@ -62,13 +62,21 @@ public class XEvalTest {
 	public void testIntList() throws Throwable {
 		runScript("a=[1,2];a", "[1,2]");
 		runScript("a=[1,2];a[1]", "2");
-		runScript("a=[1,2].map(\\n n+1);a", "[2,3]");
+		// a=[1,2].map(\n :Int n+1);a
+		runScript("a=[1,2].map(\\n :Int n+1);a", "[2,3]");
 		runScript("1::[]", "[1]");
 	}
 
 	public void testIntArray() throws Throwable {
 		runScript("a=$[1,2];a[0]=9;a[0]", "9");
 		runScript("a=$[1,2].map(\\n n+1);a", "[2,3]");
+	}
+
+	public void testStringList() throws Throwable {
+		runScript("a=[\"a\"];a", "[a]");
+		runScript("a=[\"a\"].map(\\a :String |a|);a", "[1]");
+		runScript("a=[\"a\"].map(\\a |a|);a", "[1]");
+		// runScript("1::[]", "[1]");
 	}
 
 	public void testLambda() throws Throwable {

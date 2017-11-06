@@ -10,87 +10,81 @@ public class VarTy extends Ty {
 
 	private String name;
 	final int varId;
-	Ty resolvedTy;
+	Ty inferredTy;
 
 	boolean hasMutation = false;
 
 	VarTy(String varName) {
 		this.name = varName;
-		this.resolvedTy = null;
+		this.inferredTy = null;
 		this.varId = seq++;
 		assert (seq > 0);
 	}
-
-	// public boolean isParameter() {
-	// return (this.name != null && NameHint.isOneLetterName(this.name));
-	// }
 
 	public String getId() {
 		return this.name + Memo.NonChar + this.varId;
 	}
 
-	// public String getName() {
-	// if (this.name == null) {
-	// return "?";
-	// }
-	// return this.varId < 27 ? this.name : this.name + Memo.NonId + this.varId;
-	// }
-
 	@Override
 	public String keyMemo() {
-		if (this.resolvedTy != null) {
-			return this.resolvedTy.keyMemo();
+		if (this.inferredTy != null) {
+			return this.inferredTy.keyMemo();
 		}
 		return this.getId();
 	}
 
 	@Override
+	public String keyFrom() {
+		return this.inferredTy == null ? "a" : this.inferredTy.keyMemo();
+	}
+
+	@Override
 	public Ty newGeneric(Ty paramTy) {
-		if (this.resolvedTy != null) {
-			return this.resolvedTy.newGeneric(paramTy);
+		if (this.inferredTy != null) {
+			return this.inferredTy.newGeneric(paramTy);
 		}
 		return new GenericTy(this, paramTy);
 	}
 
 	@Override
 	public Ty getParamType() {
-		return this.resolvedTy == null ? this : this.resolvedTy.getParamType();
+		return this.inferredTy == null ? this : this.inferredTy.getParamType();
 	}
 
 	@Override
 	public boolean hasMutation() {
-		return this.hasMutation || (this.resolvedTy != null && this.resolvedTy.hasMutation());
+		return this.hasMutation || (this.inferredTy != null && this.inferredTy.hasMutation());
 	}
 
 	@Override
 	public void foundMutation() {
 		this.hasMutation = true;
-		if (this.resolvedTy != null) {
-			this.resolvedTy.foundMutation();
+		if (this.inferredTy != null) {
+			this.inferredTy.foundMutation();
 		}
 	}
 
 	@Override
 	public boolean isMutable() {
-		return this.resolvedTy == null ? this.hasMutation : this.resolvedTy.isMutable();
+		return this.inferredTy == null ? this.hasMutation : this.inferredTy.isMutable();
 	}
 
 	@Override
 	public Ty toImmutable() {
-		if (this.resolvedTy != null) {
-			this.resolvedTy = this.resolvedTy.toImmutable();
+		if (this.inferredTy != null) {
+			this.inferredTy = this.inferredTy.toImmutable();
 		}
 		return this;
 	}
 
 	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return this.isVar() || this.resolvedTy == null || this.resolvedTy.hasSome(f);
+		return this.isVar() || this.inferredTy == null || this.inferredTy.hasSome(f);
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.resolvedTy == null ? dom.convToParam(this) : this.resolvedTy.dupVar(dom);
+		return this.inferredTy == null ? dom.convToParam(this) : this.inferredTy.dupVar(dom);
 	}
 
 	@Override
@@ -99,17 +93,17 @@ public class VarTy extends Ty {
 		if (self != this) {
 			return self;
 		}
-		return this.resolvedTy == null ? this : this.resolvedTy.map(f);
+		return this.inferredTy == null ? this : this.inferredTy.map(f);
 	}
 
 	@Override
 	public Ty base() {
-		return this.resolvedTy == null ? this : this.resolvedTy.base();
+		return this.inferredTy == null ? this : this.inferredTy.base();
 	}
 
 	@Override
 	public Ty memoed() {
-		return (this.resolvedTy == null) ? this : this.resolvedTy.memoed();
+		return (this.inferredTy == null) ? this : this.inferredTy.memoed();
 	}
 
 	private boolean lt(VarTy vt) {
@@ -117,15 +111,15 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public boolean acceptTy(boolean sub, Ty codeTy, VarLogger logs) {
+	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
 		// ODebug.trace("%s %s", this, codeTy);
-		if (this.resolvedTy != null) {
-			return this.resolvedTy.acceptTy(sub, codeTy, logs);
+		if (this.inferredTy != null) {
+			return this.inferredTy.match(sub, codeTy, logs);
 		}
 		if (codeTy.isVar()) {
 			VarTy varTy = (VarTy) codeTy.base();
-			if (varTy.resolvedTy != null) {
-				return this.acceptTy(sub, varTy.resolvedTy, logs);
+			if (varTy.inferredTy != null) {
+				return this.match(sub, varTy.inferredTy, logs);
 			}
 			if (this.varId != varTy.varId) {
 				return this.lt(varTy) ? logs.updateVar(varTy, this) : logs.updateVar(this, varTy);
@@ -141,30 +135,30 @@ public class VarTy extends Ty {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.resolvedTy == null) {
+		if (this.inferredTy == null) {
 			sb.append(this.getId());
 		} else {
 			sb.append(this.getId());
 			sb.append("=");
-			OStrings.append(sb, this.resolvedTy);
+			OStrings.append(sb, this.inferredTy);
 		}
 	}
 
 	@Override
 	public void typeKey(StringBuilder sb) {
-		if (this.resolvedTy == null) {
+		if (this.inferredTy == null) {
 			sb.append("a");
 		} else {
-			this.resolvedTy.typeKey(sb);
+			this.inferredTy.typeKey(sb);
 		}
 	}
 
 	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
-		if (this.resolvedTy == null) {
+		if (this.inferredTy == null) {
 			return codeType.mapType("a");
 		} else {
-			return this.resolvedTy.mapType(codeType);
+			return this.inferredTy.mapType(codeType);
 		}
 	}
 

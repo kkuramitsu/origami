@@ -58,15 +58,6 @@ public class CastCode extends Code1 implements MappedCode {
 		sh.Expr(this.getInner());
 	}
 
-	// constants
-	public static final int SAME = 0;
-	public static final int BESTCAST = 1;
-	public static final int CAST = 3;
-	public static final int BESTCONV = 8;
-	public static final int CONV = 12;
-	public static final int BADCONV = 64;
-	public static final int STUPID = 256;
-
 	public static class MutableCode extends CastCode {
 
 		public MutableCode(Code inner) {

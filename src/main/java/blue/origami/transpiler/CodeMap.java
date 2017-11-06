@@ -4,20 +4,29 @@ import java.util.List;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.TypeMatcher;
 import blue.origami.transpiler.type.VarDomain;
-import blue.origami.transpiler.type.VarLogger;
 
 public class CodeMap implements NameInfo {
 	public final static CodeMap Null = null;
-	public static final CodeMap StupidArrow = new CodeMap(CastCode.STUPID, "%s", "stupid", Ty.tVoid, Ty.tVoid);
+	public static final CodeMap StupidArrow = new CodeMap(CodeMap.STUPID, "%s", "stupid", Ty.tVoid, Ty.tVoid);
 
 	protected int acc;
+	// constants
+	public static final int SAME = 0;
+	public static final int BESTCAST = 1;
+	public static final int CAST = 3;
+	public static final int BESTCONV = 8;
+	public static final int CONV = 12;
+	public static final int BADCONV = 64;
+	public static final int STUPID = 256;
+
+	// Mask
 	public final static int Mask = 0xffff;
 	public final static int Impure = Mask + 1;
 	public final static int Effect = Impure << 1;
@@ -112,7 +121,7 @@ public class CodeMap implements NameInfo {
 
 	void checkParamTypes() {
 		if (!this.is(ParamChecked)) {
-			this.set(Generic, OArrays.testSome(t -> t.hasSome(Ty.IsGeneric), this.paramTypes));
+			this.set(Generic, OArrays.testSome(this.paramTypes, t -> t.hasSome(Ty.IsGeneric)));
 			// if (this.isAbstract() && this.paramTypes.length > 0) {
 			// this.paramTypes[0].isMutable();
 			// }
@@ -190,7 +199,7 @@ public class CodeMap implements NameInfo {
 
 	public static CodeMap select(Env env, List<CodeMap> founds, Ty ret, Ty[] p, int maxCost) {
 		CodeMap selected = null;
-		boolean allowAbstractMatch = OArrays.testSome(t -> t.hasSome(Ty.IsVar), p);
+		boolean allowAbstractMatch = OArrays.testSome(p, t -> t.hasSome(Ty.IsVar));
 		// System.out.println(":::::: allowAbstractMatch=" + allowAbstractMatch);
 		int mapCost = maxCost - 1;
 		for (int i = 0; i < founds.size(); i++) {
@@ -225,7 +234,7 @@ public class CodeMap implements NameInfo {
 	static int match(Env env, CodeMap cmap, Ty ret, Ty[] params, int maxCost) {
 		int mapCost = 0;
 		VarDomain dom = null;
-		VarLogger logs = new VarLogger();
+		TypeMatcher logs = new TypeMatcher();
 		Ty[] cparams = cmap.getParamTypes();
 		// Ty codeRet = tp.getReturnType();
 		// System.out.printf(":::: isGeneric=%s %s\n", cmap.isGeneric(), cmap);
@@ -235,7 +244,7 @@ public class CodeMap implements NameInfo {
 			// codeRet = dom.conv(codeRet);
 		}
 		for (int i = 0; i < params.length; i++) {
-			mapCost += env.mapCost(env, params[i], cparams[i], logs);
+			mapCost += env.arrowCost(env, params[i], cparams[i], logs);
 			// ODebug.trace("mapCost[%d]=%d %s => %s", i, mapCost, params[i], p[i]);
 			if (mapCost >= maxCost) {
 				logs.abort();
@@ -247,7 +256,7 @@ public class CodeMap implements NameInfo {
 			if (dom != null) {
 				cret = dom.conv(cret);
 			}
-			mapCost += env.mapCost(env, cret, ret, logs);
+			mapCost += env.arrowCost(env, cret, ret, logs);
 			// ODebug.trace("mapCost[ret]=%d %s => %s", mapCost, codeRet, ret);
 		}
 		// if (dom != null) {

@@ -51,7 +51,7 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.TypeMatcher;
 import blue.origami.transpiler.type.VarParamTy;
 
 public class AsmSection extends AsmBuilder implements CodeSection {
@@ -115,7 +115,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		}
 		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
 		// code.getTemplate());
-		if (t.acceptTy(true, f, VarLogger.Nop)) {
+		if (t.match(true, f, TypeMatcher.Nop)) {
 			code.getInner().emitCode(this);
 			return;
 		}
@@ -157,21 +157,35 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		Class<?> toClass = this.ts.toClass(toTy);
 		Class<?> fromClass = this.ts.toClass(fromTy);
 		if (toClass != fromClass && !toClass.isAssignableFrom(fromClass)) {
+			if (fromClass.isAssignableFrom(toClass)) { // upcast
+				this.mBuilder.checkCast(Type.getType(toClass));
+				return;
+			}
 			ODebug.trace("::: MUST ANYCAST %s <- %s %s <- %s", toTy, fromTy, toClass.getSimpleName(),
 					fromClass.getSimpleName());
 			this.anyCast(toTy, toClass, fromTy, fromClass);
 		}
 	}
 
+	private void anyCast(Ty toTy, Class<?> toClass, Ty fromTy, Class<?> fromClass) {
+		// if (toTy.isFunc() && fromTy.isFunc()) {
+		Ty f = fromTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+		Ty t = toTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
+		CodeMap cmap = this.env().findArrow(this.env(), f, t);
+		if (cmap.mapCost() != CodeMap.STUPID) {
+			this.pushInst(cmap);
+		} else {
+			ODebug.trace("UNDEF (%s => %s)", f, t);
+			this.mBuilder.checkCast(Type.getType(toClass));
+		}
+		// }
+	}
+
 	private void pushInst(final CodeMap cmap) {
 		final String[] def = cmap.getDefined().split("\\|", -1);
-		// String op = def[0];
-		// String def[1] = def[1];
-		// String def[2] = def[2];
 		String desc = null;
 		switch (def[0]) {
 		case "-":
-		case "%s": // NOP
 			return;
 		case "F":
 		case "GETSTATIC":
@@ -210,27 +224,10 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 				this.mBuilder.visitInsn(opCode);
 				return;
 			}
-			// case "C":
-			// this.mBuilder.checkCast(this.ts.ti(code.getType()));
-			// return;
 		default:
-			ODebug.trace("undefined call '%s'", cmap.getDefined());
+			ODebug.trace("************ UNDEFINED INST '%s'", cmap.getDefined());
 			// assert (tp.getDefined().length() > 0) : tp;
 		}
-	}
-
-	private void anyCast(Ty toTy, Class<?> toClass, Ty fromTy, Class<?> fromClass) {
-		// if (toTy.isFunc() && fromTy.isFunc()) {
-		Ty f = fromTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
-		Ty t = toTy.map(ty -> ty instanceof VarParamTy ? Ty.tAnyRef : ty);
-		ODebug.trace("(%s => %s) => (%s => %s)", fromTy, f, toTy, t);
-		CodeMap cmap = this.env().findTypeMap(this.env(), f, t);
-		if (cmap.mapCost() != CastCode.STUPID) {
-			this.pushInst(cmap);
-		} else {
-			this.mBuilder.checkCast(Type.getType(toClass));
-		}
-		// }
 	}
 
 	static class VarEntry {

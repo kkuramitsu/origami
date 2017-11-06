@@ -9,16 +9,17 @@ import blue.origami.Version;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
+import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.TLog;
-import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.VarLogger;
+import blue.origami.transpiler.type.TypeMatcher;
+import blue.origami.transpiler.type.VarDomain;
 
 public class Env implements EnvAPIs, EnvApi {
 	private Env parent;
@@ -258,8 +259,16 @@ interface EnvApi {
 		return hint;
 	}
 
+	public default void addConst(String name, CodeMap cmap) {
+		env().add(name, cmap);
+	}
+
 	public default void addArrow(String name, CodeMap cmap) {
 		env().add(name, cmap);
+		if (cmap.mapCost() < CodeMap.BADCONV) {
+			String key = cmap.getParamTypes()[0].keyFrom() + "->";
+			env().add(key, cmap);
+		}
 	}
 
 	public default void addCodeMap(String name, CodeMap cmap) {
@@ -325,11 +334,15 @@ interface EnvApi {
 		return def.get();
 	}
 
-	public default CodeMap findTypeMap(Env env, Ty fromTy, Ty toTy) {
+	public default CodeMap getArrow(Env env, Ty fromTy, Ty toTy) {
+		String key = Ty.mapKey2(fromTy, toTy);
+		return env.get(key, CodeMap.class);
+	}
+
+	public default CodeMap findArrow(Env env, Ty fromTy, Ty toTy) {
 		String key = Ty.mapKey2(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
 		if (tp != null) {
-			// ODebug.trace("found %s => %s %s", fromTy, toTy, tp);
 			return tp;
 		}
 		fromTy = fromTy.memoed();
@@ -346,12 +359,109 @@ interface EnvApi {
 			env.getTranspiler().add(key, tp);
 			return tp;
 		}
+		// findArrows(fromTy, toTy);
 		return CodeMap.StupidArrow;
 	}
 
-	public default int mapCost(Env env, Ty fromTy, Ty toTy, VarLogger logs) {
-		if (toTy.acceptTy(true, fromTy, logs)) {
-			return CastCode.SAME;
+	public default CodeMap genArrow(Ty fromTy, Ty toTy) {
+		List<ArrowPair> results = new ArrayList<>();
+		for (int depth = 1; depth < 3; depth++) {
+			findArrowChain(new ArrowPair(fromTy), fromTy, toTy, depth, results);
+			if (results.size() == 1) {
+				System.out.println("::: " + results);
+				return results.get(0).map();
+			}
+			if (results.size() > 1) {
+				System.out.println("TOO MANY ::: " + results);
+				break;
+			}
+		}
+		ODebug.trace("genArrow %s %s NULL", fromTy, toTy);
+		return null;
+	}
+
+	static class ArrowPair implements OStrings {
+		ArrowPair prev;
+		CodeMap cmap;
+		Ty ty;
+
+		ArrowPair(ArrowPair prev, CodeMap next, Ty ty) {
+			this.prev = prev;
+			this.cmap = next;
+			this.ty = ty;
+		}
+
+		ArrowPair(Ty ty) {
+			this.prev = null;
+			this.cmap = null;
+			this.ty = ty;
+		}
+
+		ArrowPair then(CodeMap next, Ty ty) {
+			return new ArrowPair(this, next, ty);
+		}
+
+		@Override
+		public void strOut(StringBuilder sb) {
+			if (prev != null) {
+				prev.strOut(sb);
+				sb.append("->");
+			}
+			this.ty.strOut(sb);
+		}
+
+		public CodeMap map() {
+			ArrayList<CodeMap> l = new ArrayList<>();
+			push(l);
+			if (l.size() == 1) {
+				return l.get(0);
+			}
+			return new ArrowMap(toString(), l.toArray(new CodeMap[l.size()]));
+		}
+
+		void push(ArrayList<CodeMap> l) {
+			if (prev != null) {
+				push(l);
+			}
+			if (cmap != null) {
+				l.add(cmap);
+			}
+		}
+
+	}
+
+	default void findArrowChain(ArrowPair prev, Ty fromTy, Ty toTy, int depth, List<ArrowPair> results) {
+		if (depth > 0) {
+			List<CodeMap> l = new ArrayList<>(8);
+			String key = fromTy.keyFrom() + "->";
+			env().findList(key, CodeMap.class, l, (tt) -> !tt.isExpired());
+			ODebug.trace("%s :: %s", key, l);
+			for (CodeMap cmap : l) {
+				Ty ret = cmap.getReturnType();
+				if (cmap.isGeneric()) {
+					VarDomain dom = new VarDomain(cmap.getParamTypes());
+					Ty[] p = dom.conv(cmap.getParamTypes());
+					if (!p[0].match(fromTy)) {
+						continue;
+					}
+					ret = dom.conv(cmap.getReturnType()).memoed();
+				} else {
+					if (!cmap.getParamTypes()[0].match(fromTy)) {
+						continue;
+					}
+				}
+				if (ret == toTy) {
+					results.add(prev.then(cmap, toTy));
+				} else {
+					findArrowChain(prev.then(cmap, ret), ret, toTy, depth - 1, results);
+				}
+			}
+		}
+	}
+
+	public default int arrowCost(Env env, Ty fromTy, Ty toTy, TypeMatcher logs) {
+		if (toTy.match(true, fromTy, logs)) {
+			return CodeMap.SAME;
 		}
 		String key = Ty.mapKey2(fromTy, toTy);
 		CodeMap tp = env.get(key, CodeMap.class);
@@ -360,8 +470,12 @@ interface EnvApi {
 		}
 		fromTy = fromTy.memoed();
 		toTy = toTy.memoed();
+		// tp = genArrow(fromTy, toTy);
+		// if (tp != null) {
+		// return tp.mapCost();
+		// }
 		int cost = fromTy.costMapThisTo(env, fromTy, toTy);
-		if (cost < CastCode.STUPID) {
+		if (cost < CodeMap.STUPID) {
 			return cost;
 		}
 		return toTy.costMapFromToThis(env, fromTy, toTy);
