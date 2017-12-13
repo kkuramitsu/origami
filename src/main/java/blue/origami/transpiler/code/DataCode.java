@@ -73,7 +73,8 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.sexpr(sb, this.isMutable() ? "data" : "record", 0, this.names.length, (n) -> {
+		//this.sexpr(sb, this.isMutable() ? "data" : "record", 0, this.names.length, (n) -> {
+		this.sexpr(sb, this.isMutable() ? Ty.Mut + "data" : "data", 0, this.names.length, (n) -> {
 			sb.append(this.names[n]);
 			sb.append(":");
 			OStrings.append(sb, this.args[n]);
@@ -82,7 +83,8 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void dumpCode(SyntaxBuilder sh) {
-		sh.Token(this.isMutable() ? "{" : "[");
+		//sh.Token(this.isMutable() ? "{" : "[");
+		sh.Token(this.isMutable() ? Ty.Mut + "{" : "{");
 		for (int i = 0; i < this.args.length; i++) {
 			if (i > 0) {
 				sh.Token(",");
@@ -91,7 +93,8 @@ public class DataCode extends CodeN {
 			sh.Token(":");
 			sh.Expr(this.args[i]);
 		}
-		sh.Token(this.isMutable() ? "}" : "]");
+		//sh.Token(this.isMutable() ? "}" : "]");
+		sh.Token("}");
 	}
 
 }

@@ -109,13 +109,17 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	public static final DataTy tRecord(String... names) {
-		Arrays.sort(names);
+		//Arrays.sort(names);
 		return (DataTy) m(new DataTy(false, names));
 	}
 
 	public static final DataTy tData(String... names) {
-		Arrays.sort(names);
+		//Arrays.sort(names);
 		return (DataTy) m(new DataTy(true, names));
+	}
+
+	public static final DataTy tData(boolean isMutable, String... names) {
+		return (DataTy) m(new DataTy(isMutable, names));
 	}
 
 	/* FuncType */

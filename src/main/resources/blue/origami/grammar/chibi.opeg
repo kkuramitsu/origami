@@ -41,7 +41,7 @@ BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
              / '(*' ( !'*)' . )* '*)'
 LINECOMMENT  = '//' ( !EOL . )* EOS
 EOL          = ('\r'? '\n') / EOF
-__           = (EOL)? _
+__           = _ (EOL _)?
 EOS          = (EOL _)+
 EOT          = (!W _)
 
@@ -349,9 +349,9 @@ else :
 '''
 
 Statement =
-	FuncDecl
+  FuncDecl
 	/ LetDecl
-	/ IfStmt
+  / IfStmt
 	/ ReturnStmt
 	/ AssertStmt
 	/ Expression
@@ -367,8 +367,8 @@ LetDecl = {
 
 IfStmt = {
 	[Ii] 'f' EOT ( "(" $cond(Expression) ")" / $cond(Expression) )
-	(__ [Tt] 'hen' EOT)? $then(Block)
-  (__ [Ee] 'lse' EOT ($else(IfStmt) / $else(Block)) )?
+	__ ([Tt] 'hen' EOT)? $then(Block)
+  (__ [Ee] 'lse' EOT __ $else(Block))?
 	#IfExpr
 }
 
@@ -546,7 +546,7 @@ SomeCase = {
 }
 
 NoneCase = {
-	[Nn] ('one' / 'ull' / 'ULL' / 'il' / 'othing' ) EOT
+	(([Nn] ('one' / 'ull' / 'il' / 'othing' )) / 'NULL' ) EOT
 	#NoneCase
 }
 
@@ -843,16 +843,16 @@ DEntry = {
 	$value(Expression)
 }
 
-DataExpr = MDataExpr / 
-	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr	
+DataExpr = MDataExpr /
+	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr
 
-MDataExpr = 
-	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }	
+MDataExpr =
+	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }
 
 ListExpr = RangeExpr / MListExpr /
 	{ "[" LIST  #ListExpr "]" }
 
-MListExpr = 
+MListExpr =
 	MUT { "[" LIST  #DataListExpr "]" }
 
 RangeExpr = {
@@ -933,7 +933,7 @@ EXPONENT =
 
 TrueExpr  = { [Tt] 'rue' (&W !W)?  #TrueExpr } _
 FalseExpr = { [Ff] 'alse' (&W !W)? #FalseExpr } _
-NullExpr  = { [Nn] ('ull' / 'one' / 'il' / 'ULL' / 'othing' )  (&W !W)? #NullExpr } _
+NullExpr  = { (([Nn] ('ull' / 'one' / 'il' / 'othing' )) / 'NULL')  (&W !W)? #NullExpr } _
 
 /* Identifier */
 
@@ -947,17 +947,17 @@ Quantity = {
 } _
 
 OPNAME =
-	/ '++'  / '+' 
-	/ '-->' / '->' / '--' / '-'  
+	/ '++'  / '+'
+	/ '-->' / '->' / '--' / '-'
 	/ '**'  / '*'
 	/ '^^'  / '^'
-	/ '/' 
-	/ '%' 
-	/ '&&&' / '&&' / '&' 
-	/ '|||' / '||' / '|' 
+	/ '/'
+	/ '%'
+	/ '&&&' / '&&' / '&'
+	/ '|||' / '||' / '|'
 	/ '===' / '==>' / '==' / '=>'
 	/ '!='  / '!'
-	/ '>='  / '>' 
+	/ '>='  / '>'
 	/ '<='  / '<'
 	/ '::'  / ':'
 	/ '~'
@@ -987,8 +987,8 @@ codemap Python
 CodeFile = { $( (_ / EOL)* CodeMap EOL (_ EOL)* )* #CodeFile } (_ EOL)* EOF
 
 CodeMapDecl = {
-	'codemap' _ 
-	$name(Identifier) EOL 
+	'codemap' _
+	$name(Identifier) EOL
 	$list(CodeMapBody)
 	#CodeMapDecl
 }
@@ -1007,7 +1007,7 @@ CodeMap = CodeRequire / {
 
 CodeRequire = {
 	'#require' _
-	$(CodePath _)	
+	$(CodePath _)
 	$(',' _ CodePath _)
 	#Require
 }
