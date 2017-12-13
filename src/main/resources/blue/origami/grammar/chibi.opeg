@@ -368,7 +368,7 @@ LetDecl = {
 IfStmt = {
 	[Ii] 'f' EOT ( "(" $cond(Expression) ")" / $cond(Expression) )
 	__ ([Tt] 'hen' EOT)? $then(Block)
-  (__ [Ee] 'lse' EOT __ $else(Block))?
+  (__ [Ee] 'lse' EOT __ ($else(IfStmt) / $else(Block)) )?
 	#IfExpr
 }
 

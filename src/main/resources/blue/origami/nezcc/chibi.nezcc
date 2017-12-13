@@ -100,7 +100,7 @@ rMemo(memos: $|Tmemos|,tree: $|Tree|,cnt: $|Int|,length: $|Int|) -> $|Tmemos| {
   ((cnt < length) ? (rMemo(${key: -1, result: 0, mpos: 0, mtree: tree, mstate: $|null|}::memos, tree, cnt+1, length) : (memos))
 }
 newMemos(tree: $|Tree|,length: $|Int|) -> $|Tmemos| {
-  rMemo(${},tree,0,length)
+  rMemo($[],tree,0,length)
 }
 parse(inputs: $|Byte[]|,length: $|Int|,newFunc: $|TnewFunc|,setFunc: $|TsetFunc|) -> $|Tree| {
   tree: $|Tree| = newFunc(gettag(0),inputs,0,length,$|null|)
