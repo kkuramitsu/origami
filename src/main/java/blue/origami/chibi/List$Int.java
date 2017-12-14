@@ -50,6 +50,15 @@ public class List$Int implements OStrings, FuncIntInt {
 		return len;
 	}
 
+	public List$Int connect(List$Int last) {
+		List$Int p = this;
+		while (p.next != null) {
+			p = p.next;
+		}
+		p.next = last;
+		return this;
+	}
+
 	private void flatten() {
 		if (this.next != null) {
 			int[] buf = new int[this.size()];
