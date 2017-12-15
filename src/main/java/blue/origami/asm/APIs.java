@@ -1,6 +1,6 @@
 /***********************************************************************
  * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ public class APIs {
 	}
 
 	public final static char unboxC(Object a) {
-		return ((Character) a);
+		return ((Character) a).charValue();
 	}
 
 	public final static Object box(byte a) {
@@ -278,6 +278,40 @@ public class APIs {
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+
+	/* Char */
+
+	public static final boolean eq(char a, char b) {
+		return a == b;
+	}
+
+	public static final boolean ne(char a, char b) {
+		return a != b;
+	}
+
+	public final static boolean lt(char a, char b) {
+		return a < b;
+	}
+
+	public final static boolean gt(char a, char b) {
+		return a > b;
+	}
+
+	public final static boolean lte(char a, char b) {
+		return a <= b;
+	}
+
+	public final static boolean gte(char a, char b) {
+		return a >= b;
+	}
+
+	public final static int toint(char x) {
+		return x;
+	}
+
+	public final static String toString(char x) {
+		return String.valueOf(x);
 	}
 
 	// Data

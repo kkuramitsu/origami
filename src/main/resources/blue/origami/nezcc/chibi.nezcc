@@ -27,7 +27,7 @@ Tf                 = ($|Tpx|) -> $|Bool|
 TreeList.empty     = []
 TreeList.cons      = ${%s,%s,%s}
 
-String->Byte[]     = (Char[])(%s)
+String->Byte[]     = ($|Byte[]|)(%s)
 
 array              = [
 arrays             = ,
@@ -85,7 +85,7 @@ assume subtrees: $|Tsubtrees|
 '''
 
 def backpos = '''
-backpos(px: $[inputs,length,pos,headpos,tree,treelog,newFunc,setFunc,state,memos],pos: Int) -> Int {
+backpos(px: $|Tpx|,pos: Int) -> Int {
   if px.headpos < pos {
     px.headpos = pos
     pos
@@ -136,7 +136,7 @@ Tree_dump(t: $|Tree|) -> String {
 
 def newAST = '''
 newAST(tag: $|Symbol|,inputs: $|Byte[]|, pos: $|Int|, epos: $|Int|, subtrees: $|Tsubtrees|) -> $|Tree| {
-  ${tkey: tag, tvalue: subtrees == $|null| ? inputs[pos to <|inputs|].map(\a a) : subtrees}
+  ${tkey: tag, tvalue: subtrees == $|null| ? inputs[pos to <epos].map(\a a) : subtrees}
 }
 '''
 

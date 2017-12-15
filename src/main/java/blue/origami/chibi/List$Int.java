@@ -69,7 +69,7 @@ public class List$Int implements OStrings, FuncIntInt {
 			}
 			this.arrays = buf;
 			this.start = 0;
-			this.end = 0;
+			this.end = offset;
 			this.next = null;
 		}
 	}

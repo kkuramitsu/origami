@@ -20,6 +20,7 @@ import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
+import blue.origami.transpiler.code.CharCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DictCode;
@@ -90,6 +91,11 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 	@Override
 	public void pushString(StringCode code) {
 		this.mBuilder.push((String) code.getValue());
+	}
+
+	@Override
+	public void pushChar(CharCode code) {
+		this.mBuilder.push((char) code.getValue());
 	}
 
 	@Override

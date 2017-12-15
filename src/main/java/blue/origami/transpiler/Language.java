@@ -97,6 +97,7 @@ public class Language implements OFactory<Language> {
 		env.add("Int", Ty.tInt);
 		env.add("Float", Ty.tFloat);
 		env.add("String", Ty.tString);
+		env.add("Char", Ty.tChar);
 		// env.add("a", VarDomain.var(0));
 		// env.add("Data", Ty.tData());
 		env.addNameDecl(env, "i,j,k,m,n", Ty.tInt);

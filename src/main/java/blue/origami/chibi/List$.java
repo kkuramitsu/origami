@@ -70,7 +70,7 @@ public class List$ implements OStrings, FuncIntObj {
 			}
 			this.arrays = buf;
 			this.start = 0;
-			this.end = 0;
+			this.end = offset;
 			this.next = null;
 		}
 	}
@@ -111,6 +111,15 @@ public class List$ implements OStrings, FuncIntObj {
 		return OStrings.stringfy(this);
 	}
 
+	private Object getFirst() {
+		for (List$ p = this; p != null; p = p.next) {
+			if (this.start < this.end) {
+				return this.arrays[this.start];
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public void strOut(StringBuilder sb) {
 		int cnt = 0;
@@ -118,8 +127,15 @@ public class List$ implements OStrings, FuncIntObj {
 		// sb.append("$");
 		// }
 		sb.append("[");
-		for (List$ p = this; p != null; p = p.next) {
-			cnt = this.strOut(sb, p, cnt);
+		Object o = getFirst();
+		if (o != null && o instanceof Character) {
+			for (List$ p = this; p != null; p = p.next) {
+				cnt = this.strOutC(sb, p, cnt);
+			}
+		}else{
+			for (List$ p = this; p != null; p = p.next) {
+				cnt = this.strOut(sb, p, cnt);
+			}
 		}
 		sb.append("]");
 	}
@@ -130,6 +146,19 @@ public class List$ implements OStrings, FuncIntObj {
 				sb.append(",");
 			}
 			sb.append(p.arrays[i]);
+			cnt++;
+		}
+		return cnt;
+	}
+
+	private int strOutC(StringBuilder sb, List$ p, int cnt) {
+		for (int i = p.start; i < p.end; i++) {
+			if (cnt > 0) {
+				sb.append(",");
+			}
+			sb.append("'");
+			sb.append(p.arrays[i]);
+			sb.append("'");
 			cnt++;
 		}
 		return cnt;
@@ -154,6 +183,30 @@ public class List$ implements OStrings, FuncIntObj {
 		this.end--;
 		return this.arrays[this.end];
 	}
+
+	public String castToString() {
+		this.flatten();
+		Object o = getFirst();
+		if (o != null && o instanceof Character) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < this.end; i++) {
+				sb.append(this.arrays[i].toString());
+			}
+			return sb.toString();
+		}
+		return "";
+	}
+
+	public static List$ castFromString(String s) {
+		char[] cs = s.toCharArray();
+		Object[] newOs = new Object[cs.length];
+		for (int i = 0; i < cs.length; i++) {
+			newOs[i] = (Object)cs[i];
+		}
+		return new List$(newOs);
+	}
+
+
 
 	/* High-order functions */
 
