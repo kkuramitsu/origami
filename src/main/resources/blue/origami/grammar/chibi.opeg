@@ -771,6 +771,7 @@ POSTOP =
 	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
 	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
+  / "[" $left(Expression) '..' _ $right(Expression) "]" #SliceExpr
 	/ TO $type(Type) ('!!' _ #UnsafeCastExpr / #CastExpr )
 
 TO = 'to' EOT / 'as' EOT / '=>' _
@@ -843,16 +844,16 @@ DEntry = {
 	$value(Expression)
 }
 
-DataExpr = MDataExpr / 
-	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr	
+DataExpr = MDataExpr /
+	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr
 
-MDataExpr = 
-	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }	
+MDataExpr =
+	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }
 
 ListExpr = RangeExpr / MListExpr /
 	{ "[" LIST  #ListExpr "]" }
 
-MListExpr = 
+MListExpr =
 	MUT { "[" LIST  #DataListExpr "]" }
 
 RangeExpr = {
@@ -947,17 +948,17 @@ Quantity = {
 } _
 
 OPNAME =
-	/ '++'  / '+' 
-	/ '-->' / '->' / '--' / '-'  
+	/ '++'  / '+'
+	/ '-->' / '->' / '--' / '-'
 	/ '**'  / '*'
 	/ '^^'  / '^'
-	/ '/' 
-	/ '%' 
-	/ '&&&' / '&&' / '&' 
-	/ '|||' / '||' / '|' 
+	/ '/'
+	/ '%'
+	/ '&&&' / '&&' / '&'
+	/ '|||' / '||' / '|'
 	/ '===' / '==>' / '==' / '=>'
 	/ '!='  / '!'
-	/ '>='  / '>' 
+	/ '>='  / '>'
 	/ '<='  / '<'
 	/ '::'  / ':'
 	/ '~'
@@ -987,8 +988,8 @@ codemap Python
 CodeFile = { $( (_ / EOL)* CodeMap EOL (_ EOL)* )* #CodeFile } (_ EOL)* EOF
 
 CodeMapDecl = {
-	'codemap' _ 
-	$name(Identifier) EOL 
+	'codemap' _
+	$name(Identifier) EOL
 	$list(CodeMapBody)
 	#CodeMapDecl
 }
@@ -1007,7 +1008,7 @@ CodeMap = CodeRequire / {
 
 CodeRequire = {
 	'#require' _
-	$(CodePath _)	
+	$(CodePath _)
 	$(',' _ CodePath _)
 	#Require
 }
