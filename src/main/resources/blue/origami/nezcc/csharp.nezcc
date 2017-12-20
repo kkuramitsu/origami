@@ -104,20 +104,20 @@ class SimpleTree {
     private void strOut(StringBuilder sb) {
       sb.Append("[#");
       sb.Append(this.key);
-      if (this.value is SimpleTree[]) 
+      if (this.value is SimpleTree[])
       {
         SimpleTree[] sub = (SimpleTree[]) this.value;
-        foreach (SimpleTree child in sub) 
+        foreach (SimpleTree child in sub)
         {
           sb.Append(" ");
-          if (child.key != null) 
+          if (child.key != null)
           {
             sb.Append("$" + child.key + "=");
           }
           ((SimpleTree) child.value).strOut(sb);
         }
       }
-       else 
+       else
        {
         sb.Append(" '");
         sb.Append(Encoding.UTF8.GetString((byte[])this.value));
@@ -126,7 +126,7 @@ class SimpleTree {
       sb.Append("]");
     }
   }
-  
+
 delegate SimpleTree TreeFunc(string tag, byte[] inputs, int pos, int epos, int size);
 delegate SimpleTree TreeSetFunc(SimpleTree parent, int n, string label, SimpleTree child);
 '''
@@ -192,7 +192,7 @@ public static T parse<T>(byte[] inputs, int length, TreeFunc newFunc, TreeSetFun
 		tree = (T)((e0(px)) ? (px.tree) : (newFunc(gettag<T>(nezerror), inputs, px.headpos, length, 0)));
 		return tree;
 	}
-	
+
 '''
 
 def parseText = '''
@@ -206,7 +206,7 @@ public static T parseText<T>(string text, TreeFunc newFunc, TreeSetFunc setFunc)
 
 def AST = '''
   /** Here is the main part. You may remove them if unnecessary. **/
-  
+
 '''
 
 def newAST = '''
@@ -228,7 +228,7 @@ def subAST = '''
 mainparams = newf, subf
 main = '''
   static byte[] readInputs(string a) {
-    if(File.Exists(a)) 
+    if(File.Exists(a))
     {
       System.IO.FileStream fs = new System.IO.FileStream(a,System.IO.FileMode.Open,System.IO.FileAccess.Read);
       byte[] buf = new byte[(fs.Length)+1];  // adding '\0' termination
@@ -236,14 +236,14 @@ main = '''
       fs.Read(buf, 0, (int)fs.Length);
       return buf;
     }
-    else 
+    else
     {
       return Encoding.UTF8.GetBytes(a + "\0");
     }
   }
-  
+
   public static void Main(string[] args) {
-    foreach(String a in args) 
+    foreach(String a in args)
     {
       byte[] buf = readInputs(a);
       System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
@@ -264,11 +264,11 @@ man = '''
 =============
  QUICK START
 =============
- 
- msc $|base|.cs
+
+ mcs $|base|.cs
  mono $|base|.exe <file> or <input-text>
- 
+
 Read the main function. You will know how to
 integrate the parser into your programs.
- 
+
 '''
