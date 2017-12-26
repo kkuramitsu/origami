@@ -167,7 +167,7 @@ main = '''
   fun readInputs(a:String):ByteArray {
     var file:File = File(a)
     if(file.exists()) {
-      var buf:ByteArray = byteArrayOf(((file.length())+1).toInt())  // adding '\0' termination
+      var buf:ByteArray = ByteArray(((file.length())+1).toInt())  // adding '\0' termination
       var fin:FileInputStream = FileInputStream(file)
       fin.read(buf, 0, file.length().toInt())
       return buf
@@ -216,4 +216,3 @@ Read the main function. You will know how to
 integrate the parser into your programs.
 
 '''
-

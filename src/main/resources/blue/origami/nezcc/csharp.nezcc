@@ -9,7 +9,7 @@ Bool               = bool
 Byte               = byte
 Byte[]             = byte[]
 Int                = int
-Int64              = uint64/*long*/
+Int64              = long
 Array              = %s[]
 Tree               = T
 String             = string
@@ -158,37 +158,55 @@ private static  bool endT<T>(NezParserContext<T> px,int shift,int ntag0) where T
   int ntag = ntag0;
   int nvalue = 0;
   int cnt = 0;
-  while(tcur.op != 0) {
-    if(tcur.op == 3) {
+  while(tcur.lop != 0) {
+    if(tcur.lop == 3) {
       cnt = cnt + 1;
     }
-    else if(ntag == 0 && tcur.op == 1) {
-      ntag = tcur.log;
+    else if(ntag == 0 && tcur.lop == 1) {
+      ntag = tcur.lpos;
     }
-    else if(nvalue == 0 && tcur.op == 2) {
-      nvalue = tcur.log;
+    else if(nvalue == 0 && tcur.lop == 2) {
+      nvalue = tcur.lpos;
     }
-    tcur = tcur.prevLog;
+    tcur = tcur.lprev;
   }
-  px.tree = (T)((nvalue == 0) ? (px.newFunc(gettag<T>(ntag),px.inputs,tcur.log,epos,cnt)) : (px.newFunc(gettag<T>(ntag),getvalue<T>(nvalue),0,getlength<T>(nvalue),cnt)));
+  px.tree = (T)((nvalue == 0) ? (px.newFunc(gettag<T>(ntag),px.inputs,tcur.lpos,epos,cnt)) : (px.newFunc(gettag<T>(ntag),getvalue<T>(nvalue),0,getlength<T>(nvalue),cnt)));
   tcur = px.treeLog;
-  while(tcur.op != 0) {
-    if(tcur.op == 3) {
+  while(tcur.lop != 0) {
+    if(tcur.lop == 3) {
       cnt = cnt - 1;
-      px.tree = (T)px.setFunc(px.tree,cnt,getlabel<T>(tcur.log),tcur.tree);
+      px.tree = (T)px.setFunc(px.tree,cnt,getlabel<T>(tcur.lpos),tcur.ltree);
     }
-    tcur = tcur.prevLog;
+    tcur = tcur.lprev;
   }
-  px.treeLog = tcur.prevLog;
+  px.treeLog = tcur.lprev;
   return true;
 }
+
 '''
 
 def parse = '''
+
+private static List<MemoEntry<T>> rMemo<T>(List<MemoEntry<T>> memos, T tree, int cnt, int length) where T : SimpleTree
+  {
+    if(cnt < length){
+      memos.Add(new MemoEntry<T>(-1,0,0,tree,null));
+      return rMemo<T>(memos, tree, cnt + 1, length);
+    }else{
+      return memos;
+    }
+  }
+
+private static List<MemoEntry<T>> newMemos<T>(T tree,int length) where T : SimpleTree
+  {
+    List<MemoEntry<T>> memos = new List<MemoEntry<T>>(length);
+    return rMemo<T>(memos, tree, 0, length);
+  }
+
 public static T parse<T>(byte[] inputs, int length, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
 	{
 		T tree = (T)newFunc(gettag<T>(0), inputs, 0, length, 0);
-		NezParserContext<T> px = new NezParserContext<T>(inputs, length, 0, 0, tree, new TreeLog<T>(0, 0, tree, null, null), newFunc, setFunc, null, newMemos(tree, 257));
+		NezParserContext<T> px = new NezParserContext<T>(inputs, length, 0, 0, tree, new TreeLog<T>(0, 0, tree, null, null), newFunc, setFunc, null, newMemos<T>(tree, 257));// FIXME 257
 		tree = (T)((e0(px)) ? (px.tree) : (newFunc(gettag<T>(nezerror), inputs, px.headpos, length, 0)));
 		return tree;
 	}
