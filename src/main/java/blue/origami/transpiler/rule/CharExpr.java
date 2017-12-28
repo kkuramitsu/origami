@@ -17,7 +17,11 @@ public class CharExpr implements ParseRule {
 		}else if (s.length() == 0) {
 			return new CharCode('\0');
 		}
-		return new StringCode(OStringUtils.unquoteString(s));
+		String str = OStringUtils.unquoteString(s);
+		if (s.charAt(0) == '\\' && str.length() == 1) {
+			return new CharCode(str.charAt(0));
+		}
+		return new StringCode(str);
 	}
 
 }

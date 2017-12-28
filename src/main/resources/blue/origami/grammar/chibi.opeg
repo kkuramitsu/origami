@@ -844,7 +844,8 @@ DEntry = {
 }
 
 DataExpr = MDataExpr /
-	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr
+	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } /
+  { '{}' _ #DataEmptyExpr } / BlockExpr
 
 MDataExpr =
 	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }
@@ -1064,7 +1065,7 @@ PrimaryType =
 	/ TupleType
 	/ {'()' #ClassType } _
 	/ "(" Type ")"
-	/ DataType
+  / DataType
 	/ RecordType
 	/ UnitType
 
@@ -1110,10 +1111,11 @@ TupleType =  {
 	")"
 }
 
-DataType =  { "{"
-	($(Identifier) ("," $(Identifier))*)?
-	#DataType
-"}" }
+DataParams = $(Identifier) ("," $(Identifier))*
+
+DataType =  MDataType / { "{" (DataParams)? #DataType "}" }
+
+MDataType = MUT { "{" (DataParams)? #MDataType "}" }
 
 RecordType =  { "["
 	($(Identifier) ("," $(Identifier))*)?

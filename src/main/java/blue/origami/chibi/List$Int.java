@@ -12,6 +12,7 @@ import blue.origami.chibi.Func.FuncIntIntInt;
 import blue.origami.chibi.Func.FuncIntObj;
 import blue.origami.chibi.Func.FuncIntVoid;
 import blue.origami.common.OStrings;
+import blue.origami.chibi.List$;
 
 public class List$Int implements OStrings, FuncIntInt {
 	protected int[] arrays = null;
@@ -98,6 +99,20 @@ public class List$Int implements OStrings, FuncIntInt {
 	public List$Int head(int shift) {
 		this.flatten();
 		return new List$Int(this.arrays, this.start, this.end - shift);
+	}
+
+	private Character ch(char c) {
+		return c;
+	}
+
+	public List$ toChars() {
+		this.flatten();
+		int size = this.size();
+		Object[] objs = new Object[size];
+		for (int i = 0; i < size; i++) {
+			objs[i] = 0 <= this.arrays[i] && this.arrays[i] < 65536 ? (char)this.arrays[i] : '\0';
+		}
+		return new List$(objs);
 	}
 
 	@Override

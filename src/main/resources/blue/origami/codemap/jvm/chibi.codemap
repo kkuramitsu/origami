@@ -78,6 +78,7 @@ assert:: Bool->()            => S|blue/origami/asm/APIs|testAssert
 <-- :: Char->String        => S|blue/origami/asm/APIs|toString
 <-- :: List[Char]->String  => V|blue/origami/chibi/List$|castToString
 <-- :: $List[Char]->String => V|blue/origami/chibi/List$|castToString
+<-- :: List[Int]->List[Char] => V|blue/origami/chibi/List$Int|toChars
 
 ||:: String->Int               => V|java/lang/String|length
 ++:: (String,String)->String   => V|java/lang/String|concat

@@ -11,21 +11,21 @@ Int                = Int
 Int64              = Int
 Array              = %s[]
 Symbol             = String
-Tree               = ${tkey,tvalue}
+Tree               = {tkey,tvalue,tsubs}
 String             = String
 Int32              = Int
 
-TtreeLog           = ${lop,lpos,ltree,lprev}
-Tstate             = ${ntag,cnt,value,sprev}
-Tmemos             = ${key,result,mpos,mtree,mstate}[]
+TtreeLog           = {lop,lpos,ltree,lprev}
+Tstate             = {ntag,cnt,value,sprev}
+Tmemos             = {key,result,mpos,mtree,mstate}[]
 Tm                 = $|Tmemos|
-Tpx                = ${inputs,length,pos,headpos,tree,treelog,newFunc,setFunc,state,memos}
-Tsubtrees          = ${subtlabel,subttree,subtnext}
+Tpx                = {inputs,length,pos,headpos,tree,treeLog,newFunc,setFunc,state,memos}
+Tsubtrees          = {subtlabel,subttree,subtnext}
 TnewFunc           = ($|Symbol|,$|Byte[]|,$|Int|,$|Int|,$|Tsubtrees|) -> $|Tree|
 TsetFunc           = ($|Tree|,$|Int|,$|Symbol|,$|Tree|) -> $|Tree|
 Tf                 = ($|Tpx|) -> $|Bool|
-TreeList.empty     = []
-TreeList.cons      = ${%s,%s,%s}
+TreeList.empty     = {}
+TreeList.cons      = {%s,%s,%s}
 
 String->Byte[]     = ($|Byte[]|)(%s)
 
@@ -57,7 +57,7 @@ param            = %2$s: %1$s
 params           = ,
 return           = %s
 
-object           = ${%2$s}
+object           = {%2$s}
 objectparam      = %1$s: %2$s
 objectparams     = ,
 
@@ -71,13 +71,14 @@ case             = case %s => %s
 default          = case _ => %s
 ifexpr           = %1$s ? %2$s : %3$s
 
-null             = NULL
+null             = {}
 lambda           = \%s -> %s
 ;                =
 
 imports = '''
 assume tkey: $|Symbol|
-assume tvalue: a
+assume tvalue: $|Byte[]|
+assume tsubs: $|Tsubtrees|
 assume subtlabel: $|Symbol|
 assume subttree: $|Tree|
 assume subtnext: $|Tsubtrees|
@@ -85,31 +86,30 @@ assume subtrees: $|Tsubtrees|
 '''
 
 def backpos = '''
-backpos(px: $|Tpx|,pos: Int) -> Int {
-  if px.headpos < pos {
-    px.headpos = pos
-    pos
-  }else{
-    pos
-  }
+backpos2(px: $|Tpx|,pos: $|Int|) -> $|Int| {
+  px.headpos = pos
+  pos
+}
+backpos(px: $|Tpx|,pos: $|Int|) -> $|Int| {
+  px.headpos < pos ? backpos2(px, pos) : pos
 }
 '''
 
 def parse = '''
 rMemo(memos: $|Tmemos|,tree: $|Tree|,cnt: $|Int|,length: $|Int|) -> $|Tmemos| {
-  ((cnt < length) ? (rMemo(${key: -1, result: 0, mpos: 0, mtree: tree, mstate: $|null|}::memos, tree, cnt+1, length) : (memos))
+  ((cnt < length) ? (rMemo({key: -1, result: 0, mpos: 0, mtree: tree, mstate: $|null|}::memos, tree, cnt+1, length) : (memos))
 }
 newMemos(tree: $|Tree|,length: $|Int|) -> $|Tmemos| {
-  rMemo($[],tree,0,length)
+  rMemo([],tree,0,length)
 }
 parse(inputs: $|Byte[]|,length: $|Int|,newFunc: $|TnewFunc|,setFunc: $|TsetFunc|) -> $|Tree| {
   tree: $|Tree| = newFunc(gettag(0),inputs,0,length,$|null|)
-  px: $|Tpx| = ${inputs: inputs,length: length,pos: 0,headpos: 0,tree: tree,treeLog: ${lop: 0,lpos: 0,ltree: tree,lprev: $|null|},newFunc: newFunc == $|null| ? newAST : newFunc,setFunc: setFunc == $|null| ? subAST : setFunc,state: $|null|,memos: newMemos(tree,257)}
+  px: $|Tpx| = {inputs: inputs,length: length,pos: 0,headpos: 0,tree: tree,treeLog: {lop: 0,lpos: 0,ltree: tree,lprev: $|null|},newFunc: newFunc,setFunc: setFunc,state: $|null|,memos: newMemos(tree,257)}
   tree = e0(px) ? px.tree : newFunc(gettag(nezerror),inputs,px.headpos,length,$|null|)
   tree
 }
 parseText(text: String,newFunc: $|TnewFunc|,setFunc: $|TsetFunc|) -> $|Tree| {
-  inputs: $|Byte[]| = ($|Byte[]|)(text)
+  inputs: $|Byte[]| = ($|Byte[]|)text
   length: $|Int| = |inputs| - 1
   parse(inputs,length,newFunc,setFunc)
 }
@@ -117,26 +117,25 @@ parseText(text: String,newFunc: $|TnewFunc|,setFunc: $|TsetFunc|) -> $|Tree| {
 
 def AST = '''
 Subtlabel_dump(label: String) -> String {
-  label == NULL ? "" : "$" ++ label ++ "="
+  label == "" ? "" : "$" ++ label ++ "="
 }
 Subttree_dump(tree: $|Tree|) -> String {
-  tree == NULL ? "" : Tree_dump(tree)
+  tree == $|null| ? "" : Tree_dump(tree)
 }
 Subtnext_dump(next: $|Tsubtrees|) -> String {
-  next == NULL ? "" Subtree_dump(next)
+  next == $|null| ? "" Subtree_dump(next)
 }
 Subtree_dump(subtrees: $|Tsubtrees|) -> String {
   Subtlabel_dump(subtrees.subtlabel) ++ Subttree_dump(subtrees.subttree) ++ Subtnext_dump(subtrees.subtnext)
 }
 Tree_dump(t: $|Tree|) -> String {
-  value = t.tvalue
-  "[#" ++ t.tkey ++ " " ++ (value is $|Byte[]| ? ("'" ++ (String)value ++ "'") : (Subtree_dump(($|Tsubtrees|)value))) ++ "]"
+  "[#" ++ t.tkey ++ " " ++ (|t.tvalue| != 0 ? ("'" ++ (String)t.tvalue ++ "'") : (Subtree_dump(t.tsubs))) ++ "]"
 }
 '''
 
 def newAST = '''
 newAST(tag: $|Symbol|,inputs: $|Byte[]|, pos: $|Int|, epos: $|Int|, subtrees: $|Tsubtrees|) -> $|Tree| {
-  ${tkey: tag, tvalue: subtrees == $|null| ? inputs[pos to <epos].map(\a a) : subtrees}
+  {tkey: tag, tvalue: subtrees == $|null| ? inputs[pos .. epos].map(\a a) : [], tsubs: subtrees}
 }
 '''
 
@@ -175,7 +174,7 @@ main2(input: String) {
   println("")
 }
 main(av: String[]) {
-  |av| == 1 ? println("Usage: " ++ av[0] ++ "file [or 'input-text']\n") : av.map(\a -> main2(a))
+  |av| == 1 ? println("Usage: " ++ av[0] ++ "file [or 'input-text']\n") : av[1 .. |av|].map(\a -> main2(a))
 }
 '''
 

@@ -16,6 +16,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.code.DataEmptyCode;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override
@@ -125,6 +126,8 @@ interface CodeAPI {
 		// ODebug.trace("casting %s => %s", self.getType(), ret0);
 		if (ret.match(self)) {
 			return self;
+		}else if (self instanceof DataEmptyCode) {
+			return ((DataEmptyCode)self).cast(env, ret);
 		}
 		Ty f = self.getType();
 		CodeMap tp = env.findArrow(env, f, ret);

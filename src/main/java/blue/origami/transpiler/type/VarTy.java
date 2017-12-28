@@ -25,6 +25,10 @@ public class VarTy extends Ty {
 		return this.name + Memo.NonChar + this.varId;
 	}
 
+	public String getName() {
+		return this.name;
+	}
+
 	@Override
 	public String keyMemo() {
 		if (this.inferredTy != null) {

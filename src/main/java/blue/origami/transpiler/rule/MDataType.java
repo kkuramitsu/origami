@@ -9,14 +9,14 @@ import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
 
-public class DataType implements ParseRule {
-	boolean isMutable = false;
+public class MDataType implements ParseRule {
+	boolean isMutable = true;
 
-	public DataType() {
-		this(false);
+	public MDataType() {
+		this(true);
 	}
 
-	public DataType(boolean isMutable) {
+	public MDataType(boolean isMutable) {
 		this.isMutable = isMutable;
 	}
 
