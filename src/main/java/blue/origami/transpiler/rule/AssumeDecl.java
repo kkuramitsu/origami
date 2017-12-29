@@ -5,15 +5,22 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.common.ODebug;
 
 public class AssumeDecl implements ParseRule, Symbols {
 
 	@Override
 	public Code apply(Env env, AST t) {
+		Env tr = env.getTranspiler();
+
 		for (AST sub : t.get(_body)) {
-			Ty type = env.parseType(env, sub.get(_type), null);
 			String[] names = this.parseNames(sub.get(_name));
-			env.addNameDecl(env.getTranspiler(), names, type);
+			env.addNameDecl(tr, names, Ty.tVoid);
+		}
+		for (AST sub : t.get(_body)) {
+			String[] names = this.parseNames(sub.get(_name));
+			Ty type = env.parseType(env, sub.get(_type), null);
+			env.addNameDecl(tr, names, type);
 		}
 		return new DoneCode();
 	}

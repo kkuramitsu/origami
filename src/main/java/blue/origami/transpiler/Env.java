@@ -229,7 +229,7 @@ interface EnvApi {
 		NameHint hint = null;
 		for (String n : names) {
 			hint = NameHint.newNameDecl(n, t);
-			env().add(NameHint.shortName(n), hint);
+			env.add(NameHint.shortName(n), hint);
 		}
 		return hint;
 	}
