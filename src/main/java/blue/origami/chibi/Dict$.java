@@ -18,6 +18,10 @@ public class Dict$ extends TreeMap<String, Object> implements OStrings {
 		this.isMutable = true;
 	}
 
+	public Dict$ bind() {
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return OStrings.stringfy(this);

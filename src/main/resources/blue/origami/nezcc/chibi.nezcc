@@ -1,0 +1,196 @@
+# konoha5.nezcc
+
+extension          = chibi
+
+# type
+
+Bool               = Bool
+Byte               = Char
+Byte[]             = Char[]
+Int                = Int
+Int64              = Int
+Array              = %s[]
+Symbol             = String
+Tree               = {tkey,tvalue,tsubs}
+String             = String
+Int32              = Int
+
+TtreeLog           = {lop,lpos,ltree,lprev}
+Tstate             = {ntag,cnt,value,sprev}
+Tmemos             = {key,result,mpos,mtree,mstate}[]
+Tm                 = $|Tmemos|
+Tpx                = {inputs,length,pos,headpos,tree,treeLog,newFunc,setFunc,state,memos}
+Tsubtrees          = {subtlabel,subttree,subtnext}
+TnewFunc           = ($|Symbol|,$|Byte[]|,$|Int|,$|Int|,$|Tsubtrees|) -> $|Tree|
+TsetFunc           = ($|Tree|,$|Int|,$|Symbol|,$|Tree|) -> $|Tree|
+Tf                 = ($|Tpx|) -> $|Bool|
+TreeList.empty     = {}
+TreeList.cons      = {subtlabel: %s, subttree: %s, subtnext: %s}
+
+String->Byte[]     = ($|Byte[]|)(%s)
+
+array              = [
+arrays             = ,
+end array          = ]
+struct             =
+end struct         =
+#field              =
+
+Array.size         = |%s|
+Array.get          = %s[%s]
+Array.new          = []
+
+# syntax
+
+comment            = // %s
+begin              = {
+end                = }
+delim              = ,
+
+const            = %2$s = %3$s
+val              = $|const|
+var              = $|const|
+assign           = %s = %s
+
+function         = %2$s(%3$s) =
+end function     =
+param            = %2$s
+params           = ,
+return           = %s
+
+object           = {%2$s}
+objectparam      = %1$s: %2$s
+objectparams     = ,
+
+cast             = (%s)%s
+
+if               = if %s {
+else if          = else if %s {
+switch           = match %s
+end switch       =
+case             = case %s => %s
+default          = case _ => %s
+ifexpr           = if %1$s then %2$s else %3$s
+
+null             = {}
+lambda           = \%s -> %s
+;                =
+
+imports = '''
+assume tkey, subtlabel, text, tag: $|Symbol|
+assume tvalue, value, inputs, bits: $|Byte[]|
+assume subttree, ltree, mtree, tree: $|Tree|,
+       tsubs, subtnext, subtrees: $|Tsubtrees|
+assume lop, lpos, ntag, cnt, key, result, mpos, length, pos, epos, headpos, shift, mpoint, nlabel: $|Int|
+assume matched: $|Bool|
+assume treeLog, lprev, tcur: $|TtreeLog|
+assume newFunc: $|TnewFunc|
+assume setFunc: $|TsetFunc|
+assume state, mstate, sprev: $|Tstate|
+assume memos, m: $|Tmemos|
+assume px: $|Tpx|, f: $|Tf|
+'''
+
+def backpos = '''
+backpos2(px, pos) =
+  px.headpos = pos
+  pos
+
+backpos(px, pos) =
+  if px.headpos < pos then backpos2(px, pos) else pos
+
+'''
+
+def parse = '''
+rMemo(memos, tree, cnt, length) =
+  if (cnt < length) then rMemo({key: -1, result: 0, mpos: 0, mtree: tree, mstate: $|null|}::memos, tree, cnt+1, length) else memos
+
+newMemos(tree, length) =
+  rMemo([],tree,0,length)
+
+parse(inputs, length, newFunc, setFunc) =
+  tree = newFunc(gettag(0),inputs,0,length,$|null|)
+  px = {inputs: inputs,length: length,pos: 0,headpos: 0,tree: tree,treeLog: {lop: 0,lpos: 0,ltree: tree,lprev: $|null|},newFunc: newFunc,setFunc: setFunc,state: $|null|,memos: newMemos(tree,257)}
+  tree = if e0(px) then px.tree else newFunc(gettag(nezerror),inputs,px.headpos,length,$|null|)
+  tree
+
+parseText(text, newFunc, setFunc) =
+  inputs = ($|Byte[]|)text
+  parse(inputs,|inputs|,newFunc,setFunc)
+
+'''
+
+def AST = '''
+Subtlabel_dump(subtlabel) =
+  if subtlabel == "" then "" else "$" ++ subtlabel ++ "="
+
+Subttree_dump(tree) =
+  if tree == $|null| then "" else Tree_dump(tree)
+
+Subtnext_dump(subtnext) =
+  if subtnext == $|null| then "" else Subtree_dump(subtnext)
+
+Subtree_dump(subtrees) =
+  Subtlabel_dump(subtrees.subtlabel) ++ Subttree_dump(subtrees.subttree) ++ Subtnext_dump(subtrees.subtnext)
+
+Tree_dump(tree) =
+  "[#" ++ tree.tkey ++ " " ++ (if |tree.tvalue| != 0 then ("'" ++ (String)tree.tvalue ++ "'") else (Subtree_dump(tree.tsubs))) ++ "]"
+
+'''
+
+def newAST = '''
+newAST(tag, inputs, pos, epos, subtrees) =
+  {tkey: tag, tvalue: if subtrees == $|null| then inputs[pos .. epos].map(\a a) else [], tsubs: subtrees}
+
+'''
+
+def subAST = '''
+subAST(tree, n, tag, subttree) = tree
+'''
+
+main = '''
+readInputs(path: String) =
+  loadFile(path)
+
+main2(input: String) =
+  inputs = readInputs(input)
+  start = time()
+  data = parseText(inputs, newAST, subAST)
+  time = difTime(start)
+  println(input ++ " " ++ (String)(time) ++ "[ms]:\n" ++ input ++ ": ")
+  println(Tree_dump(data))
+  println("")
+
+main(av: String[]) =
+  if |av| == 1 then println("Usage: " ++ av[0] ++ "file [or 'input-text']\n") else av[1 .. |av|].map(\a -> main2(a))
+'''
+
+man = '''
+=============
+ INTEGRATION
+=============
+
+Just call the following function to parse a tree.
+
+Tree *Nez_parseTree(const char *inputs);
+
+Example (in $|base|.c)
+
+   Tree *t = Nez_parseTree("sometext");
+   if(t != NULL) {
+      Tree_dump(t);
+   }
+
+NOTE: This parser has no GC support for trees.
+Add some reference counting for trees.
+
+=============
+ QUICK START
+=============
+
+ make $|base| CFLAGS='-g -O3'
+ ./$|base| <file> or <input-text>
+
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''

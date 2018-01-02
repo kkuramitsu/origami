@@ -1,6 +1,6 @@
 /***********************************************************************
  * Copyright 2017 Kimio Kuramitsu and ORIGAMI project
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -66,8 +66,8 @@ public final class Parser {
 	/* --------------------------------------------------------------------- */
 
 	public final Object parse(OSource s, int pos, TreeFunc newTree, TreeSetFunc linkTree) throws IOException {
-		ParserCode parser = this.getExecutable();
-		return parser.parse(s, pos, newTree, linkTree);
+		ParserCode parserCode = this.getExecutable();
+		return parserCode.parse(s, pos, newTree, linkTree);
 	}
 
 	public final long match(OSource s, int pos) {

@@ -4,11 +4,11 @@ import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.type.Ty;
 
-public class IntCode extends CommonCode implements ValueCode {
-	private int value;
+public class CharCode extends CommonCode implements ValueCode {
+	private char value;
 
-	public IntCode(int value) {
-		super(Ty.tInt);
+	public CharCode(char value) {
+		super(Ty.tChar);
 		this.value = value;
 	}
 
@@ -19,7 +19,7 @@ public class IntCode extends CommonCode implements ValueCode {
 
 	@Override
 	public void emitCode(CodeSection sec) {
-		sec.pushInt(this);
+		sec.pushChar(this);
 	}
 
 	@Override

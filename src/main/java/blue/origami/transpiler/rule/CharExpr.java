@@ -4,7 +4,7 @@ import blue.origami.common.OStringUtils;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.IntCode.TCharCode;
+import blue.origami.transpiler.code.CharCode;
 import blue.origami.transpiler.code.StringCode;
 
 public class CharExpr implements ParseRule {
@@ -13,9 +13,15 @@ public class CharExpr implements ParseRule {
 	public Code apply(Env env, AST t) {
 		String s = t.getString();
 		if (s.length() == 1) {
-			return new TCharCode(s.charAt(0));
+			return new CharCode(s.charAt(0));
+		}else if (s.length() == 0) {
+			return new CharCode('\0');
 		}
-		return new StringCode(OStringUtils.unquoteString(s));
+		String str = OStringUtils.unquoteString(s);
+		if (s.charAt(0) == '\\' && str.length() == 1) {
+			return new CharCode(str.charAt(0));
+		}
+		return new StringCode(str);
 	}
 
 }

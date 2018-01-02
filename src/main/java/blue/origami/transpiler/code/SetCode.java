@@ -12,6 +12,7 @@ import blue.origami.transpiler.type.TypeMatcher;
 
 public class SetCode extends CodeN {
 	final String name;
+	private String cnt = "";
 
 	public SetCode(Code recv, AST nameTree, Code right) {
 		super(recv, right);
@@ -25,7 +26,7 @@ public class SetCode extends CodeN {
 	}
 
 	public String getName() {
-		return this.name;
+		return this.name + this.cnt;
 	}
 
 	@Override
@@ -39,6 +40,9 @@ public class SetCode extends CodeN {
 			}
 			if (recvTy.isData()) {
 				DataTy dt = (DataTy) recvTy.base();
+				if (this.cnt.isEmpty()) {
+					this.cnt = dt.getCnt();
+				}
 				this.asTypeAt(env, 1, dt.fieldTy(env, this.getSource(), this.name));
 				ret.foundMutation();
 				this.setType(Ty.tVoid);

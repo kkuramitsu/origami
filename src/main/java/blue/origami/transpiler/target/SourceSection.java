@@ -14,6 +14,7 @@ import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CharCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DictCode;
@@ -102,6 +103,11 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	@Override
 	public void pushString(StringCode code) {
 		this.push(OStringUtils.quoteString('"', code.getValue().toString(), '"'));
+	}
+
+	@Override
+	public void pushChar(CharCode code) {
+		this.push("''" + String.valueOf(code.getValue()) + "'");
 	}
 
 	@Override

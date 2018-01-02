@@ -1,9 +1,8 @@
 
 take(a, n) = {
-	b = {}
+	b = $[]
 	[0 to <n].forEach(\n b.push(a[n]))
 	b
 }
 
 take
-

@@ -247,6 +247,8 @@ public abstract class OStringUtils {
 
 		private char readEsc(char ch1) {
 			switch (ch1) {
+			case '0':
+			  return '\0'; /* null */
 			case 'a':
 				return '\007'; /* bel */
 			case 'b':

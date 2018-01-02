@@ -5,6 +5,7 @@ import blue.origami.transpiler.code.AssignCode;
 import blue.origami.transpiler.code.BoolCode;
 import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
+import blue.origami.transpiler.code.CharCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DictCode;
@@ -47,6 +48,8 @@ public interface CodeSection {
 	public void pushDouble(DoubleCode code);
 
 	public void pushString(StringCode code);
+
+	public void pushChar(CharCode code);
 
 	public void pushCast(CastCode code);
 

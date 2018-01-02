@@ -5,6 +5,9 @@ import java.util.function.Supplier;
 
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
+import blue.origami.transpiler.TFmt;
+import blue.origami.transpiler.code.ErrorCode;
+import blue.origami.common.ODebug;
 
 public abstract class TypeMapper<C> {
 	protected Env env;
@@ -118,7 +121,16 @@ public abstract class TypeMapper<C> {
 
 	public final Ty fieldTy(String name) {
 		NameHint hint = this.env.findGlobalNameHint(this.env, name);
-		return hint.getType();
+		if (hint == null) {
+			NameHint hint2 = this.env.findGlobalNameHint(this.env, DataTy.deleteCnt(name));
+			if (hint2 == null) {
+				throw new ErrorCode(TFmt.undefined_name__YY1, name);
+			}
+			Ty ty = hint2.getType().base();
+			this.env.addGlobalName(this.env, name, ty);
+			return ty;
+		}
+		return hint.getType().base();
 	}
 
 }

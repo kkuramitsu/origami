@@ -20,6 +20,7 @@ import blue.origami.transpiler.code.BreakCode;
 import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.CastCode.BoxCastCode;
 import blue.origami.transpiler.code.CastCode.UnboxCastCode;
+import blue.origami.transpiler.code.CharCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.DictCode;
@@ -90,6 +91,11 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 	@Override
 	public void pushString(StringCode code) {
 		this.mBuilder.push((String) code.getValue());
+	}
+
+	@Override
+	public void pushChar(CharCode code) {
+		this.mBuilder.push((char) code.getValue());
 	}
 
 	@Override
@@ -488,7 +494,9 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushData(DataCode code) {
-		Class<?> c = this.ts.loadDataClass((DataTy) code.getType());
+		//ODebug.p("type:%s, base:%s, names:%s, args:%s", code.getType(), code.getType().base(), code.getNames(), code.args());
+		Ty type = code.getType();
+		Class<?> c = this.ts.loadDataClass((DataTy) ((type instanceof DataTy) ? type : type.base()));
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();

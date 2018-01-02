@@ -15,6 +15,7 @@ import blue.origami.transpiler.code.DoubleCode;
 import blue.origami.transpiler.code.IntCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.code.StringCode;
+import blue.origami.transpiler.code.CharCode;
 
 public abstract class Ty implements TypeApi, OStrings {
 	public final static String Mut = "$";
@@ -25,6 +26,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tInt = m(new IntTy());
 	public static final Ty tFloat = m(new FloatTy());
 	public static final Ty tString = m(new StringTy());
+	public static final Ty tChar = m(new CharTy());
 	//
 	public static final Ty tOption = m(new OptionTy());
 	public static final Ty tList = m(new SimpleTy("List", 1));
@@ -50,7 +52,6 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tByte = m(new SimpleTy("Byte"));
 	public static final Ty tInt64 = m(new SimpleTy("Int64"));
 	public static final Ty tFloat32 = m(new SimpleTy("Float32"));
-	public static final Ty tChar = m(new SimpleTy("Char"));
 
 	// public static final Ty tNULL = m(new SimpleTy("?"));
 	public static final Ty tThis = m(new SimpleTy("_"));
@@ -65,10 +66,6 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	/* DynamicType */
-
-	public static final DataTy tData() {
-		return new DataTy();
-	}
 
 	public static final VarTy tUntyped() {
 		return new VarTy("");
@@ -108,14 +105,40 @@ public abstract class Ty implements TypeApi, OStrings {
 		return tGeneric(tMList, ty);
 	}
 
+	public static final DataTy tRecord() {
+		return (DataTy) m(new DataTy(false));
+	}
+
 	public static final DataTy tRecord(String... names) {
-		Arrays.sort(names);
 		return (DataTy) m(new DataTy(false, names));
 	}
 
+	public static final DataTy tRecord(int id, String... names) {
+		return (DataTy) m(new DataTy(false, id, names));
+	}
+
+	public static final DataTy tData() {
+		return new DataTy();
+	}
+
 	public static final DataTy tData(String... names) {
-		Arrays.sort(names);
 		return (DataTy) m(new DataTy(true, names));
+	}
+
+	public static final DataTy tData(int id, String... names) {
+		return (DataTy) m(new DataTy(true, id, names));
+	}
+
+	public static final DataTy tData(boolean isMutable) {
+		return (DataTy) m(new DataTy(isMutable));
+	}
+
+	public static final DataTy tData(boolean isMutable, String... names) {
+		return (DataTy) m(new DataTy(isMutable, names));
+	}
+
+	public static final DataTy tData(boolean isMutable, int id, String... names) {
+		return (DataTy) m(new DataTy(isMutable, id, names));
 	}
 
 	/* FuncType */
@@ -440,6 +463,17 @@ class StringTy extends SimpleTy {
 	@Override
 	public Code getDefaultValue() {
 		return new StringCode("");
+	}
+}
+
+class CharTy extends SimpleTy {
+	CharTy() {
+		super("Char");
+	}
+
+	@Override
+	public Code getDefaultValue() {
+		return new CharCode('\0');
 	}
 }
 

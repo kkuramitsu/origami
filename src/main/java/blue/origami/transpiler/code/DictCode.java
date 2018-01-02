@@ -79,7 +79,7 @@ public class DictCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.sexpr(sb, this.isMutable() ? "dict" : Ty.Mut + "dict", 0, this.names.length, (n) -> {
+		this.sexpr(sb, this.isMutable() ? Ty.Mut + "dict" : "dict", 0, this.names.length, (n) -> {
 			OStrings.appendQuoted(sb, this.names[n]);
 			sb.append(":");
 			OStrings.append(sb, this.args[n]);
