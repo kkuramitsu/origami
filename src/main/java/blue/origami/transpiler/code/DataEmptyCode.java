@@ -17,30 +17,6 @@ public class DataEmptyCode extends DataCode {
     super(true, OArrays.emptyNames, OArrays.emptyCodes);
   }
 
-  public Code cast(Env env, Ty ret) {
-    if (ret.isVar()) {
-      return cast(env, Ty.tData(((VarTy)ret).getName()));
-    }else if (!(ret.isData())) {
-      throw new ErrorCode(this, TFmt.type_error_YY1_YY2, ret, "Data");
-    }
-    DataTy dt = (DataTy) ret;
-    this.names = dt.names();
-    this.args = new Code[this.names.length];
-    for (int i = 0; i < this.names.length; i++) {
-      NameHint hint = env.findGlobalNameHint(env, names[i]);
-      if (hint != null) {
-        Code value = hint.getType().base().getDefaultValue();
-        this.args[i] = value == null ? new DoneCode() : value;
-        //ODebug.p("%s,%s,%s,%s",this.args[i],ret,value,hint.getType().base());
-      } else {
-        this.args[i] = new DoneCode();
-        //ODebug.p("%s,%s",this.args[i],ret);
-      }
-    }
-    this.setType(ret);
-		return this;
-  }
-
   @Override
 	public Code asType(Env env, Ty ret) {
     if (ret.isVar()) {
@@ -48,7 +24,7 @@ public class DataEmptyCode extends DataCode {
     }else if (!(ret.isData())) {
       throw new ErrorCode(this, TFmt.type_error_YY1_YY2, ret, "Data");
     }
-    this.setType(ret);
-		return super.castType(env, ret);
+    this.setType(new DataTy());
+    return super.castType(env, ret);
 	}
 }

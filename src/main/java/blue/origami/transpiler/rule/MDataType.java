@@ -33,7 +33,6 @@ public class MDataType implements ParseRule {
 			names[c] = name;
 			c++;
 		}
-		//return new TypeCode(this.isMutable ? Ty.tData(names) : Ty.tRecord(names));
-		return new TypeCode(Ty.tData(this.isMutable, names));
+		return new TypeCode(Ty.tData(names));
 	}
 }

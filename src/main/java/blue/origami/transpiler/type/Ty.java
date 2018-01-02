@@ -67,10 +67,6 @@ public abstract class Ty implements TypeApi, OStrings {
 
 	/* DynamicType */
 
-	public static final DataTy tData() {
-		return new DataTy();
-	}
-
 	public static final VarTy tUntyped() {
 		return new VarTy("");
 	}
@@ -109,18 +105,40 @@ public abstract class Ty implements TypeApi, OStrings {
 		return tGeneric(tMList, ty);
 	}
 
+	public static final DataTy tRecord() {
+		return (DataTy) m(new DataTy(false));
+	}
+
 	public static final DataTy tRecord(String... names) {
-		//Arrays.sort(names);
 		return (DataTy) m(new DataTy(false, names));
 	}
 
+	public static final DataTy tRecord(int id, String... names) {
+		return (DataTy) m(new DataTy(false, id, names));
+	}
+
+	public static final DataTy tData() {
+		return new DataTy();
+	}
+
 	public static final DataTy tData(String... names) {
-		//Arrays.sort(names);
 		return (DataTy) m(new DataTy(true, names));
+	}
+
+	public static final DataTy tData(int id, String... names) {
+		return (DataTy) m(new DataTy(true, id, names));
+	}
+
+	public static final DataTy tData(boolean isMutable) {
+		return (DataTy) m(new DataTy(isMutable));
 	}
 
 	public static final DataTy tData(boolean isMutable, String... names) {
 		return (DataTy) m(new DataTy(isMutable, names));
+	}
+
+	public static final DataTy tData(boolean isMutable, int id, String... names) {
+		return (DataTy) m(new DataTy(isMutable, id, names));
 	}
 
 	/* FuncType */

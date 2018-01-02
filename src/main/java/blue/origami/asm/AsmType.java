@@ -365,6 +365,9 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 	Class<?> loadDataClass(DataTy dataTy) {
 		String[] names = dataTy.names();
+		if (names.length == 0) {
+			return blue.origami.chibi.Data$.class;
+		}
 		String cname1 = "Data$" + OStrings.joins(names, "");
 		return this.reg(cname1, () -> {
 			Class<?> c = this.toClass(dataTy);

@@ -23,6 +23,7 @@ import blue.origami.transpiler.type.VarDomain;
 
 public class Env implements EnvAPIs, EnvApi {
 	private Env parent;
+	private int cnt = -1;
 	protected Language lang;
 	private HashMap<String, Binding> bindMap = null;
 
@@ -67,6 +68,11 @@ public class Env implements EnvAPIs, EnvApi {
 	@Override
 	public Env env() {
 		return this;
+	}
+
+	@Override
+	final public int getCnt() {
+		return ++this.cnt;
 	}
 
 }
@@ -216,6 +222,7 @@ interface EnvAPIs {
 
 interface EnvApi {
 	Env env();
+	int getCnt();
 
 	public default Ty getType(String tsig) {
 		return env().get(tsig, Ty.class);

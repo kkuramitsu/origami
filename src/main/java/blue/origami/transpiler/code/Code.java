@@ -127,7 +127,9 @@ interface CodeAPI {
 		if (ret.match(self)) {
 			return self;
 		}else if (self instanceof DataEmptyCode) {
-			return ((DataEmptyCode)self).cast(env, ret);
+			return self;
+		}else if (self instanceof DataCode) {
+			return ((DataCode)self).cast(env, ret);
 		}
 		Ty f = self.getType();
 		CodeMap tp = env.findArrow(env, f, ret);
