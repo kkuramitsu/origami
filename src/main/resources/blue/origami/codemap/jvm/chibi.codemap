@@ -208,8 +208,8 @@ Some?:: Option[a]->Bool                        => S|blue/origami/asm/APIs|isSome
 None?:: Option[a]->Bool                        => S|blue/origami/asm/APIs|isNone
 |?:: (Option[a],a)->a                          => X|orElse
 forEach:: (Option[a],a->())->()                => S|blue/origami/asm/APIs|forEach
-map:: (Option[a],a->b)->Option[b]                       => S|blue/origami/asm/APIs|map
-flatMap:: (Option[a],a->Option[b])->Option[b]                  => S|blue/origami/asm/APIs|flatMap
+map:: (Option[a],a->b)->Option[b]              => S|blue/origami/asm/APIs|map
+flatMap:: (Option[a],a->Option[b])->Option[b]  => S|blue/origami/asm/APIs|flatMap
 
 Some:: Bool->Option[Bool]                      => S|blue/origami/asm/APIs|box
 <---:: Option[Bool]->Bool                      => S|blue/origami/asm/APIs|unwrapZ
