@@ -12,7 +12,6 @@ import blue.origami.transpiler.type.Ty;
 public class CodeMapDecl implements ParseRule, Symbols {
 	@Override
 	public Code apply(Env env, AST t) {
-		// String name = t.getStringAt(_name, "");
 		return this.parseCodeMap(env, t.get(_list));
 	}
 

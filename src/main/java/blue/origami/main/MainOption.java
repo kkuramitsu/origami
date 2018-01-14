@@ -5,7 +5,7 @@ import blue.origami.common.OOption.OOptionKey;
 public enum MainOption implements OOptionKey {
 	Verbose, WindowSize, Pass, Optimized, PassPath, StrictChecker, TrapActions, //
 	TreeConstruction, PackratParsing, Coverage, GrammarFile, GrammarPath, Start, //
-	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles, Target, Debug;
+	PartialFailure, ThrowingParserError, InlineGrammar, InputFiles, Target, Language, Debug;
 
 	@Override
 	public String toString() {

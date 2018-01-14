@@ -6,6 +6,7 @@ import blue.origami.parser.Parser;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
+import blue.origami.transpiler.Language;
 import blue.origami.transpiler.Transpiler;
 
 //import junit.framework.Assert;
@@ -60,7 +61,7 @@ public class ScriptTest {
 	}
 
 	public static void runScript(String file, int pass) throws Throwable {
-		Transpiler env = new Transpiler(g(), p());
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		APIs.resetCount();
 		env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 		if (pass > 0) {
@@ -71,7 +72,7 @@ public class ScriptTest {
 	}
 
 	public static void runScript2(String file, int pass) throws Throwable {
-		Transpiler env = new Transpiler(g(), p());
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		try {
 			env.testScriptFile(ParserSource.newFileSource(ScriptTest.class, file, null));
 		} catch (Throwable e) {

@@ -161,19 +161,20 @@ public abstract class Main extends OConsole {
 		p2("  -X                         ", MainFmt.specify_an_extension_class);
 		p2("  -D                         ", MainFmt.specify_an_optional_value);
 		p("Example:");
-		p("  origami run sample.iroha");
-		p("  origami example -g js.opeg");
+		p("  origami nez -g js.nez -X JsonWriter jquery.js");
 		p("  origami parse -g js.nez -X JsonWriter jquery.js");
+		p("  origami chibi sample.chibi");
 		p("");
 
 		p(bold("The most commonly used origami commands are:"));
-		p2("  run      ", MainFmt.run_script_files);
-		p2("  hack     ", MainFmt.run_in_a_hacker_mode);
-		p2("  check    ", MainFmt.test_script_files);
-		p2("  parse    ", MainFmt.parse_files);
-		p2("  example  ", MainFmt.display_examples_in_a_grammar);
-		p2("  test     ", MainFmt.test_a_grammar_file);
-		p2("  nez      ", MainFmt.run_an_interactive_parser);
+		p2(" nez        ", MainFmt.run_an_interactive_parser);
+		p2(" nezcc      ", MainFmt.generate_nez_parser);
+		p2("   parse    ", MainFmt.parse_files);
+		p2("   example  ", MainFmt.display_examples_in_a_grammar);
+		p2("   test     ", MainFmt.test_a_grammar_file);
+		p2(" chibi      ", MainFmt.run_script_files);
+		p2("   hack     ", MainFmt.run_in_a_hacker_mode);
+		p2("   check    ", MainFmt.test_script_files);
 		exit(0, msg);
 	}
 

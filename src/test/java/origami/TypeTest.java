@@ -21,6 +21,7 @@ import blue.origami.common.OConsole;
 import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
+import blue.origami.transpiler.Language;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
@@ -145,7 +146,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public static void runScript(String text, String checked) throws Throwable {
-		Transpiler env = new Transpiler(g(), p());
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		Ty ty = env.testType(text);
 		System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);
 		if (checked != null) {
@@ -154,7 +155,7 @@ public class TypeTest extends CommandTest {
 	}
 
 	public static void FIXME(String text, String checked) throws Throwable {
-		Transpiler env = new Transpiler(g(), p());
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		Ty ty = env.testType(text);
 		if (checked.equals(ty.toString())) {
 			System.out.printf("%s %s :: %s\n", TFmt.Checked, text, ty);

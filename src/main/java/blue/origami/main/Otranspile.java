@@ -52,23 +52,12 @@ public class Otranspile extends Main {
 	}
 
 	private Transpiler[] newTranspiler(OOption options) throws Throwable {
-		// String target = options.stringValue(MainOption.Target,
-		// this.getDefaultTarget());
-		// Grammar g = this.getGrammar(options, "chibi.opeg");
-		// Parser p = g.newParser(options);
-		// if (target.indexOf(":") > 0) {
-		// String[] t = target.split(":", -1);
-		// return Arrays.stream(t).map((ta) ->
-		// options.newInstance(Transpiler.class)).toArray(Transpiler[]::new);
-		// // return Arrays.stream(t).map((ta) -> new Transpiler(g, p, ta,
-		// // options)).toArray(Transpiler[]::new);
-		// }
 		return new Transpiler[] { options.newInstance(Transpiler.class) };
 	}
 
-	public String getDefaultTarget() {
-		return "Jvm8";
-	}
+	// public String getDefaultTarget() {
+	// return "Jvm8";
+	// }
 
 	private void shell(Transpiler[] trcc, String source, int line, String script) {
 		if (trcc.length == 1) {

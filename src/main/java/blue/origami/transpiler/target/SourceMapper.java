@@ -29,13 +29,13 @@ public class SourceMapper extends CodeMapper {
 		ts.setSyntaxMapper(this.syntax);
 	}
 
-	public SourceSection newSourceSection() {
-		return new SourceSection(this.syntax, this.ts);
-	}
-
 	@Override
 	public void init() {
 		this.ts.initProperties();
+	}
+
+	public SourceSection newSourceSection() {
+		return new SourceSection(this.syntax, this.ts);
 	}
 
 	@Override
@@ -47,11 +47,6 @@ public class SourceMapper extends CodeMapper {
 		this.secList = new ArrayList<>();
 		this.secMap = new HashMap<>();
 		this.writer = new OWriter();
-		// try {
-		// this.writer.open("| python -");
-		// } catch (IOException e) {
-		// OConsole.exit(1, e);
-		// }
 	}
 
 	@Override

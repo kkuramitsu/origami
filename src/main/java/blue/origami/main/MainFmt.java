@@ -14,7 +14,7 @@ public enum MainFmt implements OFormat {
 	test_a_grammar_file, run_an_interactive_parser, //
 	no_specified_inputs, no_specified_grammar,
 	// nez command
-	grammar_is_successfully_loaded; //
+	grammar_is_successfully_loaded, generate_nez_parser; //
 
 	@Override
 	public String error() {
