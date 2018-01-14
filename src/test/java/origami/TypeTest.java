@@ -38,7 +38,7 @@ public class TypeTest extends CommandTest {
 		runScript("'abc'", "String");
 		runScript("\"abc\"", "String");
 		runScript("[1,2,3]", "List[Int]");
-		runScript("$[1,2,3]", "$List[Int]");
+		// runScript("$[1,2,3]", "$List[Int]");
 	}
 
 	public void testHelloWorld() throws Throwable {
@@ -52,14 +52,16 @@ public class TypeTest extends CommandTest {
 
 	public void testLet() throws Throwable {
 		runScript("a = 1\na", "Int");
+		runScript("a = [1,2]\na", "List[Int]");
+		runScript("a$ = [1,2]\na$", "$List[Int]");
 	}
 
 	public void testParamType() throws Throwable {
 		runScript("f(a:Int)=a;f", "Int->Int");
 		runScript("f(a:Option[a])=a;f", "Option[a]->Option[a]");
 		runScript("f(a:List[a])=a;f", "List[a]->List[a]");
-		runScript("f(a:$List[a]):$List[a]=a;f", "$List[a]->$List[a]");
-		runScript("f(a:$List[a])=a;f", "$List[a]->List[a]");
+		// runScript("f(a:$List[a]):$List[a]=a;f", "$List[a]->$List[a]");
+		// runScript("f(a:$List[a])=a;f", "$List[a]->List[a]");
 	}
 
 	public void testLambda() throws Throwable {
@@ -116,8 +118,8 @@ public class TypeTest extends CommandTest {
 	}
 
 	public void testData() throws Throwable {
-		runScript("f(p) = p.x; f", "[x]->Float");
-		runScript("f(p) = p.x + p.y; f", "[x,y]->Float");
+		runScript("f(p) = p.m; f", "[m]->Int");
+		runScript("f(p) = p.m + p.n; f", "[m,n]->Int");
 	}
 
 	public void testMutation() throws Throwable {

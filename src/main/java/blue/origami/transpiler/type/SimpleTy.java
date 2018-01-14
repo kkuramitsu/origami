@@ -37,6 +37,14 @@ public class SimpleTy extends Ty {
 	}
 
 	@Override
+	public Ty toMutable() {
+		if (!this.isMutable()) {
+			return Ty.t(Ty.Mut + this.name);
+		}
+		return this;
+	}
+
+	@Override
 	public Ty toImmutable() {
 		if (this.isMutable()) {
 			return Ty.t(this.name.substring(Ty.Mut.length()));

@@ -187,11 +187,11 @@ public class Language implements OFactory<Language> {
 			if (code.isImplicit) {
 
 			}
+			code.inner = code.inner.bindAs(env, code.declType);
+			code.toMutableType();
 			Variable var = fenv.newVariable(code.getSource(), code.index, code.declType);
 			env.add(code.name, var);
 			code.index = var.getIndex();
-
-			code.inner = code.inner.bindAs(env, code.declType);
 			ODebug.trace("let %s %s %s", code.name, code.declType, code.inner.getType());
 			code.setType(Ty.tVoid);
 		}

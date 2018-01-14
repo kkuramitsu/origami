@@ -210,6 +210,10 @@ public abstract class Ty implements TypeApi, OStrings {
 		return false;
 	}
 
+	public Ty toMutable() {
+		return this;
+	}
+
 	public Ty toImmutable() {
 		return this;
 	}

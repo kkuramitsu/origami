@@ -937,9 +937,9 @@ NullExpr  = { [Nn] ('ull' / 'one' / 'il' / 'ULL' / 'othing' )  (&W !W)? #NullExp
 
 /* Identifier */
 
-Identifier = { NAME [']* '?'? #NameExpr } _
+Identifier = { NAME [']* [?$]? #NameExpr } _
            / '(' { OPNAME #NameExpr } ')' _
-W          = [a-zA-Z0-9_$\x80-\xF7]
+W          = [a-zA-Z0-9_\x80-\xF7]
 NAME       = [a-zA-Z_\x80-\xF7] W*
 
 Quantity = {
@@ -1010,6 +1010,11 @@ CodeRequire = {
 	$(CodePath _)	
 	$(',' _ CodePath _)
 	#Require
+} / CodeInclude
+
+CodeInclude = {
+	'#include' _ $value(LineCode)
+	#Include
 }
 
 CodeName = {

@@ -26,6 +26,14 @@ public class CondTy extends Ty {
 	}
 
 	@Override
+	public Ty toMutable() {
+		if (!this.isMutable()) {
+			return Ty.tCond(this.baseTy.toMutable(), this.pred, this.condTy);
+		}
+		return this;
+	}
+
+	@Override
 	public Ty toImmutable() {
 		if (this.isMutable()) {
 			return Ty.tCond(this.baseTy.toImmutable(), this.pred, this.condTy);

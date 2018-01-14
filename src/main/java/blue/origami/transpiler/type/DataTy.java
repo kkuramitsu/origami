@@ -24,6 +24,14 @@ public class DataTy extends Ty {
 	}
 
 	@Override
+	public Ty toMutable() {
+		if (!this.isMutable()) {
+			return Ty.tData(this.names());
+		}
+		return this;
+	}
+
+	@Override
 	public Ty toImmutable() {
 		if (this.isMutable()) {
 			return Ty.tRecord(this.names());

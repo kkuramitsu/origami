@@ -32,7 +32,15 @@ public class GenericTy extends Ty {
 
 	@Override
 	public boolean isMutable() {
-		return this.baseTy.isMutable() || this.paramTy.isMutable();
+		return this.baseTy.isMutable();
+	}
+
+	@Override
+	public Ty toMutable() {
+		if (!this.isMutable()) {
+			return Ty.tGeneric(this.baseTy.toMutable(), this.getParamType());
+		}
+		return this;
 	}
 
 	@Override

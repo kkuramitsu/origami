@@ -70,6 +70,14 @@ public class VarTy extends Ty {
 	}
 
 	@Override
+	public Ty toMutable() {
+		if (this.inferredTy != null) {
+			this.inferredTy = this.inferredTy.toMutable();
+		}
+		return this;
+	}
+
+	@Override
 	public Ty toImmutable() {
 		if (this.inferredTy != null) {
 			this.inferredTy = this.inferredTy.toImmutable();

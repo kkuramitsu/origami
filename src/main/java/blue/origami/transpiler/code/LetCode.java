@@ -42,6 +42,12 @@ public class LetCode extends Code1 {
 		return this.declType;
 	}
 
+	public void toMutableType() {
+		if (this.name.endsWith("$")) {
+			this.declType = this.declType.toMutable();
+		}
+	}
+
 	@Override
 	public Code asType(Env env, Ty ret) {
 		return env.getLanguage().typeLet(env, this, ret);
@@ -51,6 +57,7 @@ public class LetCode extends Code1 {
 		Code right = this.getInner();
 		try {
 			right = right.bindAs(env, this.declType);
+			this.toMutableType();
 			if (!right.showError(env)) {
 				Transpiler tp = env.getTranspiler();
 				CodeMap defined = tp.defineConst(isPublic, this.name, this.declType, right);

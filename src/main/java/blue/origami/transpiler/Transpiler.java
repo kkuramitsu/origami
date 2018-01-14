@@ -50,10 +50,15 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 			String file = options.stringValue(MainOption.GrammarFile, lang.getLangName() + ".opeg");
 			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 			Parser p = g.newParser(options);
-			this.initMe(g, p, this.lang);
+			this.initMe(g, p, lang);
 		} catch (IOException e) {
 			OConsole.exit(1, e);
 		}
+	}
+
+	public String getTargetName() {
+		Class<?> c = this.getClass();
+		return (c == Transpiler.class) ? "jvm" : c.getSimpleName();
 	}
 
 	public Transpiler initMe(Grammar g, Parser p, Language lang) {
@@ -65,11 +70,6 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		this.codeMapper.init();
 		this.loadCodeMap(lang.getLangName() + ".codemap");
 		return this;
-	}
-
-	public String getTargetName() {
-		Class<?> c = this.getClass();
-		return (c == Transpiler.class) ? "jvm" : c.getSimpleName();
 	}
 
 	public CodeMapper getCodeMapper() {
