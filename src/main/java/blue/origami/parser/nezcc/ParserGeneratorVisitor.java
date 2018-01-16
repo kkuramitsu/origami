@@ -339,14 +339,18 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 
 	private C emitMany(ParserGenerator<B, C> pg, String funcName, int stacks, C cond) {
 		C back = this.emitBacktrack(pg, stacks);
+		C func = pg.emitFunc(funcName, pg.V("px"), pg.V("f"));
 		if ((stacks & CNT) == CNT) {
 			back = pg.emitAnd(pg.checkCountVar(), back);
+			if (!pg.isDefined("while")) {
+				func = pg.emitFunc(funcName, pg.V("px"), pg.V("f"), pg.emitOp(pg.V("cnt"), "+", pg.vInt(1)));
+			}
 		}
 		if ((stacks & EMPTY) == EMPTY) {
 			cond = pg.emitAnd(cond, pg.emitCheckNonEmpty());
 		}
 		if (!pg.isDefined("while")) {
-			C main = pg.emitIfB(cond, pg.emitFunc(funcName, pg.V("px"), pg.V("f")), back);
+			C main = pg.emitIfB(cond, func, back);
 			return this.emitVarDecl(pg, stacks, false, pg.emitReturn(main));
 		} else {
 			B block = pg.beginBlock();
@@ -367,7 +371,11 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 				stacks |= EMPTY;
 			}
 			String func = pg.makeLib("many", stacks);
-			return pg.emitFunc(func, pg.V("px"), lambda);
+			if (!pg.isDefined("while") && (stacks & CNT) == CNT) {
+				return pg.emitFunc(func, pg.V("px"), lambda, pg.vInt(0));
+			} else {
+				return pg.emitFunc(func, pg.V("px"), lambda);
+			}
 		}
 		return null;
 	}
@@ -560,7 +568,7 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 		for (String n : pg.getStackNames(stacks & ~(CNT | EMPTY))) {
 			pg.emitVarDecl(block, mutable, n, pg.emitGetter(n));
 		}
-		if ((stacks & CNT) == CNT) {
+		if (pg.isDefined("while") && (stacks & CNT) == CNT) {
 			pg.emitVarDecl(block, mutable, "cnt", pg.vInt(0));
 		}
 		pg.emitStmt(block, returnExpr);
@@ -628,9 +636,15 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			pg.defineLib(funcName, () -> {
 				pg.makeLib("back", stacks & ~(CNT | EMPTY));
 				pg.makeLib("ParserFunc");
-				pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-					return (this.emitMany(pg, funcName, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
-				});
+				if (!pg.isDefined("while") && (stacks & CNT) == CNT) {
+					pg.declFunc(pg.T("matched"), funcName, "px", "f", "cnt", () -> {
+						return (this.emitMany(pg, funcName, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+					});
+				} else {
+					pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
+						return (this.emitMany(pg, funcName, stacks, pg.emitApply(pg.V("f"), pg.V("px"))));
+					});
+				}
 			});
 		});
 
