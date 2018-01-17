@@ -733,7 +733,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		});
 
 		this.defineLib("longkey", () -> {
-			this.defFunc(pg, 0, this.T("key"), "longkey", "key", "mpoint", () -> {
+			this.defFunc(pg, 2, this.T("key"), "longkey", "key", "mpoint", () -> {
 				C key = pg.emitOp(pg.V("key"), "*", pg.emitConv("Int->Int64", pg.vInt(window)));
 				key = pg.emitOp(key, "+", pg.emitConv("Int->Int64", pg.V("mpoint")));
 				return (key);
