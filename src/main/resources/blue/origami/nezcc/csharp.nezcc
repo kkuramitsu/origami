@@ -14,11 +14,11 @@ Array              = %s[]
 Tree               = T
 String             = string
 ParserFunc         =ParserFunc<T>
-longkey            =longkey<T>
-gettag             =gettag<T>
-getlabel           =getlabel<T>
-getvalue           =getvalue<T>
-getlength          =getlength<T>
+#longkey            =longkey<T>
+#gettag             =gettag<T>
+#getlabel           =getlabel<T>
+#getvalue           =getvalue<T>
+#getlength          =getlength<T>
 
 Byte->Int          = %s & 0xff
 Int64->Int         = (int)(%s)
@@ -57,6 +57,7 @@ const            = static %1$s %2$s = %3$s;
 
 function         = private static %1$s %2$s<T>(%3$s) where T : SimpleTree {
 function1        = public static %1$s %2$s<T>(%3$s) where T : SimpleTree {
+function2        = private static %1$s %2$s(%3$s){
 return           = return %s;
 
 #apply            = %s.apply
@@ -213,14 +214,14 @@ public static T parse<T>(byte[] inputs, int length, TreeFunc newFunc, TreeSetFun
 
 '''
 
-def parseText = '''
-public static T parseText<T>(string text, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
-	{
-		byte[] inputs = Encoding.UTF8.GetBytes(text);
-		int length = inputs.Length - 1;
-		return parse<SimpleTree>(inputs, length, newFunc, setFunc);
-	}
-'''
+#def parseText = '''
+#public static T parseText<T>(string text, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
+#	{
+#		byte[] inputs = Encoding.UTF8.GetBytes(text);
+#		int length = inputs.Length - 1;
+#		return parse<SimpleTree>(inputs, length, newFunc, setFunc);
+#	}
+#'''
 
 def AST = '''
   /** Here is the main part. You may remove them if unnecessary. **/
