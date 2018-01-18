@@ -124,6 +124,7 @@ def AST = '''
       return sb.toString()
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun strOut(sb:StringBuilder) {
       sb.append("[#")
       sb.append(this.key)
@@ -154,6 +155,7 @@ def newAST = '''
     }
 '''
 def subAST = '''
+    @Suppress("UNCHECKED_CAST")
     var subast = fun(parent:SimpleTree, n:Int, label:String, child:SimpleTree):SimpleTree {
         var childs:Array<SimpleTree?> = (parent).value as (Array<SimpleTree?>)
         childs[n] = SimpleTree(label, child)
