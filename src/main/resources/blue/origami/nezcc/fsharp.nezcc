@@ -17,12 +17,12 @@ Byte->Int          = (int %s)
 
 Int64              = uint64
 Int64->Int         = (int (%s))
-Int->Int64         = (uint64 %s) 
+Int->Int64         = (uint64 %s)
 String->Byte[]     = System.Text.Encoding.ASCII.GetBytes(%s)
 String.+0          = (%s + "\0")
-Byte''             = %suy
+Int8''             = %suy
 
-# If 32bit-length integer exists, 
+# If 32bit-length integer exists,
 Int32             = int32
 
 Array.size        = %s.Length
@@ -41,9 +41,9 @@ Option.isNone      = (Option.isNone %s)
 # syntax
 
 comment          = // %s
-begin            = 
-end              = 
-;                = 
+begin            =
+end              =
+;                =
 delim            = $|space|
 
 module           = module $|base|
@@ -54,9 +54,9 @@ struct           = type %s<'t> = {%s}
 record           = mutable %2$s: %1$s
 records          = ;
 
-object           = (* %1$s *){%2$s} 
-objectparam      = %1$s=%2$s 
-objectparams     = ; 
+object           = (* %1$s *){%2$s}
+objectparam      = %1$s=%2$s
+objectparams     = ;
 
 getter           = %s.%s
 setter           = %s.%s <- %s
@@ -115,7 +115,7 @@ not              = not %s
 ##
 def newMemos = '''
 let newMemos (tree: 't) (length: int): array<MemoEntry<'t>> =
-  Array.init<MemoEntry<'t>> length (fun x -> {key=(uint64 -1);result=0;pos=0;tree=tree;state=None})
+  Array.init<MemoEntry<'t>> length (fun x -> {key=(uint64 -1);result=0;mpos=0;mtree=tree;mstate=None})
 '''
 
 ## Default AST
@@ -136,7 +136,7 @@ let newAST (tag: string) (inputs: byte array) (pos: int) (epos: int) (size: int)
 '''
 
 def subAST = '''
-let subAST parent n label child = parent 
+let subAST parent n label child = parent
 '''
 
 imports = '''
@@ -148,12 +148,12 @@ open System.IO
 
 main = '''
 let readinputs (a: string) =
-  if File.Exists(a) then 
+  if File.Exists(a) then
     let buf = File.ReadAllBytes a
     Array.append buf [|0uy;0uy|]
   else
-    System.Text.Encoding.ASCII.GetBytes(a + "\0")  
-  
+    System.Text.Encoding.ASCII.GetBytes(a + "\0")
+
 [<EntryPoint>]
 let main args =
   for a in args do
@@ -171,9 +171,8 @@ man = '''
 =============
  QUICK START
 =============
- 
+
  fsharpc $|base|.fs
  mono $|base|.exe <file> or <input-text>
- 
- '''
 
+ '''
