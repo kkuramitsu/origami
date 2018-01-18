@@ -231,7 +231,7 @@ for i in 1..<arguments.count {
   let finish = Date()
   let time = Double(finish.timeIntervalSince(start)) * 1000
   arr += [time]
-  //print(object.print(inputByte))
+  print(object.print(inputByte))
 }
 
 for t in 0..<arr.count {

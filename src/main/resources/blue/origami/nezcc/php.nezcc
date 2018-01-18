@@ -28,7 +28,7 @@ comment          = /* */
 begin            = {
 end              = }
 ;                = ;
-delim            = ,
+#delim            = ,
 
 struct           = class %s {
 end struct       = }
@@ -99,6 +99,7 @@ apply            = %s
 
 imports = '''
 <?php
+error_reporting(E_ALL & ~E_NOTICE);
 ini_set('memory_limit', '-1');
 '''
 
