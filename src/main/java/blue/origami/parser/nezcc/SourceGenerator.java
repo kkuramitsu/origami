@@ -956,8 +956,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		} else if (this.useLambda() && this.isNotIncludeMemo(cases)) {
 			StringBuilder block = this.beginBlock();
 			this.emitLine(block, this.format("const", this.s("Bool"), "funcMap", this.vFuncMap(cases)));
-			this.emitStmt(block, this
-					.emitReturn(this.emitApply(this.emitGroup(this.emitArrayIndex("funcMap", index)), this.V("px"))));
+			this.emitStmt(block, this.emitReturn(
+					this.emitApply(this.emitGroup(this.emitArrayIndex(this.V("funcMap"), index)), this.V("px"))));
 			return this.endBlock(block);
 		} else {
 			StringBuilder block = this.beginBlock();
