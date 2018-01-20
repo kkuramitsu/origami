@@ -1056,6 +1056,7 @@ TSUFFIX =
     / "[" ']' _  #ListType
     / "[" $param(Type) ']' _  #MonadType
     / '?' _  #OptionType
+    / '$' _  #MutableType
     / "->"   $type(Type) #FuncType
 	/ '*' _  $type(Type) #RightTupleType
 	/ '#'    $name(Identifier) #RightTagType

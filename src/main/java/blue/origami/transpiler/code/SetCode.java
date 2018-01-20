@@ -5,10 +5,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.type.DataTy;
-import blue.origami.transpiler.type.FlowDataTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMatcher;
 
 public class SetCode extends CodeN {
 	final String name;
@@ -31,20 +28,28 @@ public class SetCode extends CodeN {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
-			Ty recvTy = this.asTypeAt(env, 0, Ty.tUntyped());
-			if (recvTy.isVar()) {
-				Ty infer = new FlowDataTy();
-				recvTy.match(bSUB, infer, TypeMatcher.Update);
-				recvTy = infer;
+			Ty recvTy = this.asTypeAt(env, 0, Ty.tVar(null));
+			if (!recvTy.isMutable()) {
+				throw new ErrorCode(this.getSource(), TFmt.immutable_name__YY1, this.name);
 			}
-			if (recvTy.isData()) {
-				DataTy dt = (DataTy) recvTy.base();
-				this.asTypeAt(env, 1, dt.fieldTy(env, this.getSource(), this.name));
-				ret.foundMutation();
-				this.setType(Ty.tVoid);
-				return this.castType(env, ret);
-			}
-			throw new ErrorCode(this.getSource(), TFmt.unsupported_error);
+			Ty fieldTy = recvTy.resolveFieldType(env, this.getSource(), this.name);
+			this.asTypeAt(env, 1, fieldTy);
+			this.setType(Ty.tVoid);
+			return this.castType(env, ret);
+			//
+			// if (recvTy.isVar()) {
+			// Ty infer = new DataVarTy();
+			// recvTy.match(TypeMatchContext.Update, bSUB, infer);
+			// recvTy = infer;
+			// }
+			// if (recvTy.isData()) {
+			// DataTy dt = (DataTy) recvTy.devar();
+			// this.asTypeAt(env, 1, dt.fieldType(env, this.getSource(), this.name));
+			// // ret.foundMutation();
+			// this.setType(Ty.tVoid);
+			// return this.castType(env, ret);
+			// }
+			// throw new ErrorCode(this.getSource(), TFmt.unsupported_error);
 		}
 		return this.castType(env, ret);
 	}

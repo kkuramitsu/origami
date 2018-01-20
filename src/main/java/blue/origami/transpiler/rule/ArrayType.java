@@ -10,6 +10,6 @@ public class ArrayType implements ParseRule, Symbols {
 	@Override
 	public Code apply(Env env, AST t) {
 		Ty ty = env.parseType(env, t.get(_base), null);
-		return new TypeCode(Ty.tArray(ty));
+		return new TypeCode(Ty.tList(ty));
 	}
 }

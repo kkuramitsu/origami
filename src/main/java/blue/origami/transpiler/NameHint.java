@@ -1,6 +1,5 @@
 package blue.origami.transpiler;
 
-import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
 
 public interface NameHint {
@@ -24,8 +23,6 @@ public interface NameHint {
 	}
 
 	public Ty getType();
-
-	public Code getDefaultValue();
 
 	public static NameHint newNameDecl(String name, Ty t) {
 		return new NameDecl(name, t);
@@ -66,7 +63,7 @@ public interface NameHint {
 		int loc = name.length() - 1;
 		for (; loc > 0; loc--) {
 			char c = name.charAt(loc);
-			if (c != '\'' && !Character.isDigit(c) && c != '_') {
+			if (c != '\'' && c != '$' && !Character.isDigit(c) && c != '_') {
 				break;
 			}
 		}
@@ -124,11 +121,6 @@ class NameDecl implements NameHint {
 	@Override
 	public Ty getType() {
 		return this.ty;
-	}
-
-	@Override
-	public Code getDefaultValue() {
-		return this.ty.getDefaultValue();
 	}
 
 }

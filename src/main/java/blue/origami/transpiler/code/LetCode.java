@@ -18,7 +18,7 @@ public class LetCode extends Code1 {
 		super(expr);
 		this.setSource(name);
 		this.name = name.getString();
-		this.declType = type == null ? Ty.tUntyped() : type;
+		this.declType = type == null ? Ty.tVar(name) : type;
 	}
 
 	public LetCode(String name, Code expr) {

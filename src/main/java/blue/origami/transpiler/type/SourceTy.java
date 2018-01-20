@@ -1,6 +1,6 @@
 package blue.origami.transpiler.type;
 
-public class SourceTy extends SimpleTy {
+public class SourceTy extends BaseTy {
 
 	private String target;
 

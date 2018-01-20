@@ -9,7 +9,7 @@ import blue.origami.transpiler.code.FuncRefCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMatcher;
+import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 
 public class CodeMap implements NameInfo {
@@ -234,7 +234,7 @@ public class CodeMap implements NameInfo {
 	static int match(Env env, CodeMap cmap, Ty ret, Ty[] params, int maxCost) {
 		int mapCost = 0;
 		VarDomain dom = null;
-		TypeMatcher logs = new TypeMatcher();
+		TypeMatchContext logs = new TypeMatchContext();
 		Ty[] cparams = cmap.getParamTypes();
 		// Ty codeRet = tp.getReturnType();
 		// System.out.printf(":::: isGeneric=%s %s\n", cmap.isGeneric(), cmap);

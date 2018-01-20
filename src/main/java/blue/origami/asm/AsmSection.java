@@ -51,7 +51,7 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMatcher;
+import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarParamTy;
 
 public class AsmSection extends AsmBuilder implements CodeSection {
@@ -115,7 +115,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		}
 		// ODebug.trace("calling cast %s => %s %s %s", f, t, code.getInner(),
 		// code.getTemplate());
-		if (t.match(true, f, TypeMatcher.Nop)) {
+		if (t.match(TypeMatchContext.Nop, true, f)) {
 			code.getInner().emitCode(this);
 			return;
 		}
@@ -504,18 +504,18 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushList(ListCode code) {
-		GenericTy dt = (GenericTy) code.getType().base();
+		GenericTy dt = (GenericTy) code.getType().devar();
 		Class<?> c = this.ts.toClass(dt);
-		this.mBuilder.push(code.isMutable());
+		// this.mBuilder.push(false); // FIXME
 		if (c == blue.origami.chibi.List$.class) {
 			Type ty = Type.getType(Object.class);
 			this.pushArray(ty, true, code.args());
-			String desc = String.format("(Z[%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
+			String desc = String.format("([%s)%s", ty.getDescriptor(), Type.getDescriptor(this.ts.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 		} else {
 			Ty t = dt.getParamType();
 			this.pushArray(this.ts.ti(t), false, code.args());
-			String desc = String.format("(Z[%s)%s", Type.getDescriptor(this.ts.toClass(t)),
+			String desc = String.format("([%s)%s", Type.getDescriptor(this.ts.toClass(t)),
 					Type.getDescriptor(this.ts.toClass(dt)));
 			this.mBuilder.visitMethodInsn(INVOKESTATIC, Type.getInternalName(c), "newArray", desc, false);
 		}
@@ -523,7 +523,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushRange(RangeCode code) {
-		GenericTy dt = (GenericTy) code.getType().base();
+		GenericTy dt = (GenericTy) code.getType().devar();
 		for (Code sub : code) {
 			sub.emitCode(this);
 		}
@@ -585,7 +585,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		for (Code sub : code) {
 			sub.emitCode(this);
 		}
-		FuncTy funcType = (FuncTy) code.args()[0].getType().base();
+		FuncTy funcType = (FuncTy) code.args()[0].getType().devar();
 		String desc = this.ts.desc(funcType.getReturnType(), funcType.getParamTypes());
 		String cname = Type.getInternalName(this.ts.toClass(funcType));
 		this.mBuilder.visitMethodInsn(INVOKEINTERFACE, cname, AsmType.nameApply(funcType.getReturnType()), desc, true);
@@ -634,7 +634,6 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 	@Override
 	public void pushGroup(GroupCode code) {
 		code.getInner().emitCode(this);
-
 	}
 
 	/* Imperative Programming */

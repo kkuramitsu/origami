@@ -8,7 +8,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
-import blue.origami.transpiler.type.SimpleTy;
+import blue.origami.transpiler.type.BaseTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
@@ -90,7 +90,7 @@ public class SourceTypeMapper extends TypeMapper<String> {
 
 	@Override
 	protected String keyDataType(DataTy dataTy) {
-		return dataTy.names().toString();
+		return dataTy.fields().toString();
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class SourceTypeMapper extends TypeMapper<String> {
 		String key = ty.toString() + "^";
 		String t = this.syntax.symbol(key, (String) null);
 		if (t != null) {
-			return new SimpleTy(key);
+			return new BaseTy(key);
 		}
 		return ty;
 	}

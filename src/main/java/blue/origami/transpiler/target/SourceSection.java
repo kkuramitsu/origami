@@ -217,7 +217,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	@Override
 	public void pushList(ListCode code) {
 		Ty innTy = code.getType().getParamType();
-		String cons = code.isMutable() ? "array" : this.syntax.symbol("list", "array");
+		String cons = "list";
 		this.pushEnc(cons, innTy, code.size(), (n) -> code.args[n].emitCode(this));
 		return;
 	}
@@ -230,8 +230,8 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	@Override
 	public void pushDict(DictCode code) {
 		Ty innTy = code.getType().getParamType();
-		String cons = code.isMutable() ? "dict" : this.syntax.symbol("strmap", "dict");
-		String kv = "pair " + cons;
+		String cons = "dict";
+		String kv = "pair dict";
 		this.pushEnc(cons, innTy, code.size(), (n) -> {
 			this.pushf(this.syntax.fmt(kv, "\"%1$s\": %2$s"), code.getNames()[n], code.args[n]);
 		});

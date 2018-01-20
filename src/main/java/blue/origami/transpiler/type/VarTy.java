@@ -3,96 +3,96 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
+import blue.origami.transpiler.AST;
+import blue.origami.transpiler.Env;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
 
-	private String name;
+	private AST name1;
+	Ty varref;
+	Ty[] nots;
 	final int varId;
-	Ty inferredTy;
 
-	boolean hasMutation = false;
-
-	VarTy(String varName) {
-		this.name = varName;
-		this.inferredTy = null;
+	VarTy(AST name) {
+		this.name1 = name;
+		this.varref = null;
 		this.varId = seq++;
 		assert (seq > 0);
+		this.nots = OArrays.emptyTypes;
+	}
+
+	@Override
+	public boolean eq(Ty ty) {
+		if (this == ty) {
+			return true;
+		}
+		if (this.varref != null) {
+			return this.varref.eq(ty);
+		}
+		return false;
+	}
+
+	private String name() {
+		return this.name1 == null ? "" : this.name1.getString();
 	}
 
 	public String getId() {
-		return this.name + Memo.NonChar + this.varId;
+		return this.name() + Ty.NonMemoChar + this.varId;
 	}
 
 	@Override
-	public String keyMemo() {
-		if (this.inferredTy != null) {
-			return this.inferredTy.keyMemo();
-		}
-		return this.getId();
+	public String keyOfMemo() {
+		return this.varref == null ? this.getId() : this.varref.keyOfMemo();
 	}
 
 	@Override
-	public String keyFrom() {
-		return this.inferredTy == null ? "a" : this.inferredTy.keyMemo();
+	public String keyOfArrows() {
+		return this.varref == null ? "a" : this.varref.keyOfArrows();
 	}
 
 	@Override
 	public Ty newGeneric(Ty paramTy) {
-		if (this.inferredTy != null) {
-			return this.inferredTy.newGeneric(paramTy);
-		}
-		return new GenericTy(this, paramTy);
+		return this.varref == null ? new GenericTy(this, paramTy) : this.varref.newGeneric(paramTy);
 	}
 
 	@Override
 	public Ty getParamType() {
-		return this.inferredTy == null ? this : this.inferredTy.getParamType();
-	}
-
-	@Override
-	public boolean hasMutation() {
-		return this.hasMutation || (this.inferredTy != null && this.inferredTy.hasMutation());
-	}
-
-	@Override
-	public void foundMutation() {
-		this.hasMutation = true;
-		if (this.inferredTy != null) {
-			this.inferredTy.foundMutation();
-		}
+		return this.varref == null ? this : this.varref.getParamType();
 	}
 
 	@Override
 	public boolean isMutable() {
-		return this.inferredTy == null ? this.hasMutation : this.inferredTy.isMutable();
+		return this.varref == null ? this.name().endsWith("$") : this.varref.isMutable();
 	}
 
 	@Override
 	public Ty toMutable() {
-		if (this.inferredTy != null) {
-			this.inferredTy = this.inferredTy.toMutable();
+		if (this.varref != null) {
+			this.varref = this.varref.toMutable();
+			return this;
 		}
-		return this;
+		return super.toMutable();
 	}
 
 	@Override
 	public Ty toImmutable() {
-		if (this.inferredTy != null) {
-			this.inferredTy = this.inferredTy.toImmutable();
+		if (this.varref != null) {
+			this.varref = this.varref.toImmutable();
 		}
 		return this;
 	}
 
 	@Override
 	public boolean hasSome(Predicate<Ty> f) {
-		return this.isVar() || this.inferredTy == null || this.inferredTy.hasSome(f);
+		return this.isVar() || this.varref == null || this.varref.hasSome(f);
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
-		return this.inferredTy == null ? dom.convToParam(this) : this.inferredTy.dupVar(dom);
+		return this.varref == null ? dom.convToParam(this) : this.varref.dupVar(dom);
 	}
 
 	@Override
@@ -101,40 +101,39 @@ public class VarTy extends Ty {
 		if (self != this) {
 			return self;
 		}
-		return this.inferredTy == null ? this : this.inferredTy.map(f);
+		return this.varref == null ? this : this.varref.map(f);
 	}
 
 	@Override
-	public Ty base() {
-		return this.inferredTy == null ? this : this.inferredTy.base();
+	public Ty devar() {
+		return this.varref == null ? this : this.varref.devar();
 	}
 
 	@Override
 	public Ty memoed() {
-		return (this.inferredTy == null) ? this : this.inferredTy.memoed();
+		return (this.varref == null) ? this : this.varref.memoed();
 	}
 
 	private boolean lt(VarTy vt) {
 		return this.varId > vt.varId;
 	}
 
-	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		// ODebug.trace("%s %s", this, codeTy);
-		if (this.inferredTy != null) {
-			return this.inferredTy.match(sub, codeTy, logs);
-		}
-		if (codeTy.isVar()) {
-			VarTy varTy = (VarTy) codeTy.base();
-			if (varTy.inferredTy != null) {
-				return this.match(sub, varTy.inferredTy, logs);
-			}
+	boolean matchVar(TypeMatchContext tmx, Ty left) {
+		assert this.varref == null;
+		// if (this.varref != null) {
+		// return this.varref.match(tmx, sub, right);
+		// }
+		if (left.isVar()) {
+			VarTy varTy = (VarTy) left.devar();
+			// if (varTy.varref != null) {
+			// return this.match(tmx, sub, varTy.varref);
+			// }
 			if (this.varId != varTy.varId) {
-				return this.lt(varTy) ? logs.updateVar(varTy, this) : logs.updateVar(this, varTy);
+				return this.lt(varTy) ? tmx.updateVar(varTy, this) : tmx.updateVar(this, varTy);
 			}
 			return true;
 		}
-		if (logs.updateVar(this, codeTy) && this.name != null) {
+		if (tmx.updateVar(this, left) && this.name1 != null) {
 			// ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s",
 			// this.getName(), codeTy));
 		}
@@ -143,30 +142,38 @@ public class VarTy extends Ty {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		if (this.inferredTy == null) {
+		if (this.varref == null) {
 			sb.append(this.getId());
 		} else {
 			sb.append(this.getId());
 			sb.append("=");
-			OStrings.append(sb, this.inferredTy);
+			OStrings.append(sb, this.varref);
 		}
 	}
 
 	@Override
 	public void typeKey(StringBuilder sb) {
-		if (this.inferredTy == null) {
+		if (this.varref == null) {
 			sb.append("a");
 		} else {
-			this.inferredTy.typeKey(sb);
+			this.varref.typeKey(sb);
 		}
 	}
 
 	@Override
+	public Ty resolveFieldType(Env env, AST s, String name) {
+		if (this.varref == null) {
+			this.varref = new DataVarTy();
+		}
+		return this.varref.resolveFieldType(env, s, name);
+	}
+
+	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
-		if (this.inferredTy == null) {
+		if (this.varref == null) {
 			return codeType.mapType("a");
 		} else {
-			return this.inferredTy.mapType(codeType);
+			return this.varref.mapType(codeType);
 		}
 	}
 

@@ -5,9 +5,9 @@ import java.util.List;
 
 import blue.origami.common.ODebug;
 
-public class TypeMatcher {
-	public final static TypeMatcher Update = new TypeMatcher();
-	public final static TypeMatcher Nop = new TypeMatcher();
+public class TypeMatchContext {
+	public final static TypeMatchContext Update = new TypeMatchContext();
+	public final static TypeMatchContext Nop = new TypeMatchContext();
 
 	static abstract class BackLog {
 		abstract void abort();
@@ -18,13 +18,13 @@ public class TypeMatcher {
 		VarTy varTy;
 
 		VarLog(VarTy v) {
-			this.prevTy = v.inferredTy;
+			this.prevTy = v.varref;
 			this.varTy = v;
 		}
 
 		@Override
 		void abort() {
-			this.varTy.inferredTy = this.prevTy;
+			this.varTy.varref = this.prevTy;
 		}
 	}
 
@@ -78,7 +78,7 @@ public class TypeMatcher {
 			assert (v.varId > 26);
 			return true;
 		}
-		v.inferredTy = ty;
+		v.varref = ty;
 		return true;
 	}
 	//

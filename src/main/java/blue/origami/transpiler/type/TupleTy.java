@@ -15,6 +15,39 @@ public class TupleTy extends Ty {
 		assert (this.paramTypes.length > 1) : "tuple size " + this.paramTypes.length;
 	}
 
+	@Override
+	public boolean eq(Ty ty) {
+		Ty right = ty.devar();
+		if (this == right) {
+			return true;
+		}
+		if (right instanceof TupleTy) {
+			TupleTy dt = (TupleTy) right;
+			for (int i = 0; i < dt.paramSize(); i++) {
+				if (!dt.param(i).eq(this.param(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public int paramSize() {
+		return this.paramTypes.length;
+	}
+
+	@Override
+	public Ty param(int n) {
+		return this.paramTypes[n];
+	}
+
+	@Override
+	public Ty[] params() {
+		return this.paramTypes;
+	}
+
 	public int getParamSize() {
 		return this.paramTypes.length;
 	}
@@ -35,7 +68,7 @@ public class TupleTy extends Ty {
 	}
 
 	@Override
-	public String keyFrom() {
+	public String keyOfArrows() {
 		return "Tuple" + this.paramTypes.length;
 	}
 
@@ -66,20 +99,13 @@ public class TupleTy extends Ty {
 	}
 
 	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		if (codeTy.isTuple()) {
-			TupleTy tupleTy = (TupleTy) codeTy.base();
-			if (tupleTy.getParamSize() != this.getParamSize()) {
-				return false;
-			}
-			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].match(false, tupleTy.paramTypes[i], logs)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return this.matchVar(sub, codeTy, logs);
+	public boolean matchBase(boolean sub, Ty right) {
+		return right.isTuple() && this.paramSize() <= right.paramSize();
+	}
+
+	@Override
+	public boolean hasSuperType(Ty left) {
+		return left == this;
 	}
 
 	@Override

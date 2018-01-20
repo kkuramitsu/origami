@@ -25,8 +25,6 @@ public class GenericType implements ParseRule, Symbols {
 			return new TypeCode(Ty.tOption(p[0]));
 		case "List":
 			return new TypeCode(Ty.tList(p[0]));
-		case "List'":
-			return new TypeCode(Ty.tArray(p[0]));
 		default:
 			ODebug.TODO();
 			// if (Ty.isDefinedMonad(name)) {

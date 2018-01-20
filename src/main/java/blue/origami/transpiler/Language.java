@@ -27,7 +27,7 @@ import blue.origami.transpiler.rule.SourceUnit;
 import blue.origami.transpiler.rule.UnaryExpr;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMatcher;
+import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 
 public class Language implements OFactory<Language> {
@@ -88,8 +88,8 @@ public class Language implements OFactory<Language> {
 		env.add("DataDictExpr", new DictExpr(true));
 		env.add("RecordExpr", new DataExpr(false));
 
-		env.add("RecordType", new DataType(false));
-		env.add("DataType", new DataType(true));
+		env.add("RecordType", new DataType());
+		// env.add("DataType", new DataType());
 
 		// type
 		// env.add("?", Ty.tUntyped0);
@@ -202,7 +202,7 @@ public class Language implements OFactory<Language> {
 		if (!code.isUntyped()) {
 			return code.castType(env, ret);
 		}
-		code.args[0] = code.args[0].asType(env, Ty.tUntyped());
+		code.args[0] = code.args[0].asType(env, Ty.tVar(null));
 		if (code.args[0] instanceof FuncRefCode) {
 			// ODebug.trace("switching to expr %s", code.args[0]);
 			String name = ((FuncRefCode) code.args[0]).getName();
@@ -211,7 +211,7 @@ public class Language implements OFactory<Language> {
 
 		Ty firstType = code.args[0].getType();
 		if (firstType.isFunc()) {
-			FuncTy funcType = (FuncTy) firstType.base();
+			FuncTy funcType = (FuncTy) firstType.devar();
 			Ty[] p = funcType.getParamTypes();
 			if (p.length + 1 != code.args.length) {
 				throw new ErrorCode(TFmt.mismatched_parameter_size_S_S, p.length, code.args.length);
@@ -225,11 +225,11 @@ public class Language implements OFactory<Language> {
 		if (firstType.isVar()) {
 			Ty[] p = new Ty[code.args.length - 1];
 			for (int i = 1; i < code.args.length; i++) {
-				code.args[i] = code.args[i].asType(env, Ty.tUntyped());
+				code.args[i] = code.args[i].asType(env, Ty.tVar(null));
 				p[i - 1] = code.args[i].getType();
 			}
 			Ty funcType = Ty.tFunc(ret, p);
-			firstType.match(Code.bSUB, funcType, TypeMatcher.Update);
+			firstType.match(TypeMatchContext.Update, Code.bSUB, funcType);
 			code.setType(ret);
 			return code;
 		}
@@ -273,7 +273,7 @@ public class Language implements OFactory<Language> {
 		// ODebug.trace("DD %s", l);
 		// for (int i = 1; i < l.size(); i++) {
 		// if (!ty.eq(l.get(i).getParamTypes()[n])) {
-		return Ty.tUntyped();
+		return Ty.tVar(null);
 		// }
 		// }
 		// return ty;
@@ -316,7 +316,7 @@ public class Language implements OFactory<Language> {
 	int match(Env env, CodeMap cmap, Ty ret, Ty[] params, int maxCost) {
 		int mapCost = 0;
 		VarDomain dom = null;
-		TypeMatcher logs = new TypeMatcher();
+		TypeMatchContext logs = new TypeMatchContext();
 		Ty[] cparams = cmap.getParamTypes();
 		// Ty codeRet = tp.getReturnType();
 		// System.out.printf(":::: isGeneric=%s %s\n", cmap.isGeneric(), cmap);
@@ -359,11 +359,11 @@ public class Language implements OFactory<Language> {
 				code.args[i] = code.args[i].asType(env, gpars[i]);
 				// ODebug.trace("[%d] %s => %s", i, gpars[i], code.args[i].getType());
 			}
-			if (found.isMutation()) {
-				Ty ty = code.args[0].getType();
-				ODebug.trace("MUTATION %s", ty);
-				ty.foundMutation();
-			}
+			// if (found.isMutation()) {
+			// Ty ty = code.args[0].getType();
+			// ODebug.trace("MUTATION %s", ty);
+			// ty.foundMutation();
+			// }
 			Ty gret = dom.conv(dret);
 			code.setMapped(found);
 			code.setType(gret);
@@ -373,11 +373,11 @@ public class Language implements OFactory<Language> {
 			for (int i = 0; i < code.args.length; i++) {
 				code.args[i] = code.args[i].asType(env, dpars[i]);
 			}
-			if (found.isMutation()) {
-				Ty ty = code.args[0].getType();
-				ODebug.trace("MUTATION %s", ty);
-				ty.foundMutation();
-			}
+			// if (found.isMutation()) {
+			// Ty ty = code.args[0].getType();
+			// ODebug.trace("MUTATION %s", ty);
+			// ty.foundMutation();
+			// }
 			code.setMapped(found);
 			code.setType(dret);
 			return code.castType(env, t);

@@ -10,7 +10,6 @@ import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarParamTy;
-import blue.origami.transpiler.type.VarTy;
 
 public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 	static int seq = 0;
@@ -101,14 +100,14 @@ public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 			dom.useParamVar();
 			this.setParamTypes(Ty.map(this.getParamTypes(), ty -> {
 				Ty ty2 = dom.conv(ty).memoed();
-				if (ty instanceof VarTy) {
-					boolean hasMutation = ty.hasMutation();
-					// System.out.printf("::::: Mutation=%s, %s => %s\n", hasMutation, ty, ty2);
-					if (!hasMutation && ty2.isMutable()) {
-						ODebug.trace("To Immutable %s", ty2);
-						ty2 = ty2.toImmutable();
-					}
-				}
+				// if (ty instanceof VarTy) {
+				// boolean hasMutation = ty.hasMutation();
+				// // System.out.printf("::::: Mutation=%s, %s => %s\n", hasMutation, ty, ty2);
+				// if (!hasMutation && ty2.isMutable()) {
+				// ODebug.trace("To Immutable %s", ty2);
+				// ty2 = ty2.toImmutable();
+				// }
+				// }
 				return ty2;
 			}));
 			int vars = dom.usedVars();
@@ -123,7 +122,7 @@ public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 			}
 		} else {
 			if (this.returnType instanceof VarParamTy) {
-				this.returnType = Ty.tUntyped();
+				this.returnType = Ty.tVar(null);
 			}
 			FuncEnv fenv = env.newFuncEnv(this.nameId, this.paramNames, this.getParamTypes(), this.getReturnType());
 			fenv.typeCheck(env.parseCode(env, this.body));

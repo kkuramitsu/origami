@@ -182,7 +182,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		});
 		this.codeMapper.setup();
 		FuncEnv env = env0.newFuncEnv(); //
-		Code code = env.parseCode(env, t).asType(env, Ty.tUntyped());
+		Code code = env.parseCode(env, t).asType(env, Ty.tVar(null));
 		if (code.getType().isAmbigous()) {
 			code = new ErrorCode(code, TFmt.ambiguous_type__S, code.getType());
 		}
@@ -209,7 +209,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
 		this.codeMapper.setup();
 		FuncEnv env = this.newFuncEnv(); //
-		return this.parseCode(env, t).asType(env, Ty.tUntyped());
+		return this.parseCode(env, t).asType(env, Ty.tVar(null));
 	}
 
 	public Ty testType(String s) throws Throwable {

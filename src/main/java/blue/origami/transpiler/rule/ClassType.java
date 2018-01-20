@@ -18,7 +18,7 @@ public class ClassType implements ParseRule {
 		return new TypeCode(type);
 	}
 
-	public Ty parseType(Env env, AST t) {
+	Ty parseType(Env env, AST t) {
 		String name = t.getString();
 		Ty ty = env.getType(name);
 		if (ty == null) {
@@ -47,7 +47,6 @@ public class ClassType implements ParseRule {
 			}
 			ty = Ty.t(name);
 		}
-
 		return ty;
 	}
 }

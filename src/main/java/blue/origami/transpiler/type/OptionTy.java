@@ -3,7 +3,7 @@ package blue.origami.transpiler.type;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 
-public class OptionTy extends SimpleTy {
+public class OptionTy extends BaseTy {
 
 	public OptionTy() {
 		super("Option", 1);

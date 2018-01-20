@@ -15,7 +15,7 @@ public class VarDomain implements OStrings {
 		this.len = 0;
 	}
 
-	public <T> VarDomain(T[] a) {
+	public <T> VarDomain(Ty[] a) {
 		this(a.length + 4);
 	}
 
@@ -42,9 +42,7 @@ public class VarDomain implements OStrings {
 		Ty[] p = this.conv(ts);
 		if (codeTy != null) {
 			for (int i = 0; i < ts.length; i++) {
-				// ODebug.trace("[%d] %s as %s %s", i, codeTy[i], dParamTypes[i],
-				// gParamTypes[i]);
-				p[i].match(true, codeTy[i], TypeMatcher.Update);
+				p[i].match(TypeMatchContext.Update, true, codeTy[i]);
 			}
 			for (int i = 0; i < ts.length; i++) {
 				p[i] = p[i].memoed();
@@ -69,7 +67,7 @@ public class VarDomain implements OStrings {
 			if (ty != null) {
 				return ty;
 			}
-			ty = new VarTy(key);
+			ty = new VarTy(null/**/);
 			this.dom[this.len] = ty;
 			this.names[this.len] = key;
 			this.len++;

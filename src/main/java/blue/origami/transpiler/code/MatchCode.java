@@ -48,7 +48,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			}
 		}
 		if (infTy == null) {
-			infTy = Ty.tUntyped();
+			infTy = Ty.tVar(null);
 		}
 		return infTy;
 	}
@@ -510,7 +510,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 		public Ty inferType() {
 			Ty[] ts = new Ty[this.args.length];
 			for (int i = 0; i < this.args.length; i++) {
-				ts[i] = Ty.tUntyped();
+				ts[i] = Ty.tVar(null);
 			}
 			return Ty.tTuple(ts);
 		}
@@ -564,7 +564,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			// return Ty.tList(ty);
 			// }
 			// }
-			return Ty.tList(Ty.tUntyped());
+			return Ty.tList(Ty.tVar(null));
 		}
 
 		@Override

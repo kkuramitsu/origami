@@ -18,13 +18,28 @@ public class TagTy extends Ty {
 	}
 
 	@Override
-	public Ty getParamType() {
-		return this.baseTy;
+	public boolean eq(Ty ty) {
+		Ty right = ty.devar();
+		if (this == right) {
+			return true;
+		}
+		if (right instanceof TagTy) {
+			TagTy dt = (TagTy) right;
+			if (dt.tags.length == this.tags.length) {
+				for (String tag : this.tags) {
+					if (!dt.hasTag(tag)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
-	public boolean isMutable() {
-		return this.baseTy.isMutable();
+	public Ty getParamType() {
+		return this.baseTy;
 	}
 
 	@Override
@@ -59,24 +74,48 @@ public class TagTy extends Ty {
 	}
 
 	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		if (codeTy instanceof TagTy && this.baseTy.match(sub, codeTy.getParamType(), logs)) {
-			return this.matchTags(sub, ((TagTy) codeTy).tags);
+	public boolean hasSuperType(Ty left0) {
+		if (left0 instanceof TagTy) {
+			TagTy left = (TagTy) left0;
+			for (String tag : left.tags) {
+				if (!this.hasTag(tag)) {
+					return false;
+				}
+			}
+			return this.baseTy.hasSuperType(left.baseTy);
 		}
-		return this.matchVar(sub, codeTy, logs);
+		return this.baseTy.hasSuperType(left0);
 	}
 
-	boolean matchTags(boolean sub, String[] names) {
-		if (this.tags.length != names.length) {
-			return false;
-		}
-		for (int i = 0; i < names.length; i++) {
-			if (!this.tags[i].equals(names[i])) {
-				return false;
+	private boolean hasTag(String tag) {
+		for (String t : this.tags) {
+			if (tag.equals(t)) {
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
+
+	// @Override
+	// public boolean match(TypeMatchContext logs, boolean sub, Ty codeTy) {
+	// if (codeTy instanceof TagTy && this.baseTy.match(logs, sub,
+	// codeTy.getParamType())) {
+	// return this.matchTags(sub, ((TagTy) codeTy).tags);
+	// }
+	// return this.matchVar(sub, codeTy, logs);
+	// }
+	//
+	// boolean matchTags(boolean sub, String[] names) {
+	// if (this.tags.length != names.length) {
+	// return false;
+	// }
+	// for (int i = 0; i < names.length; i++) {
+	// if (!this.tags[i].equals(names[i])) {
+	// return false;
+	// }
+	// }
+	// return true;
+	// }
 
 	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
@@ -91,8 +130,8 @@ public class TagTy extends Ty {
 	}
 
 	@Override
-	public String keyFrom() {
-		return this.baseTy.keyFrom();
+	public String keyOfArrows() {
+		return this.baseTy.keyOfArrows();
 	}
 
 	public static String[] joins(String[] ns, String[] names) {

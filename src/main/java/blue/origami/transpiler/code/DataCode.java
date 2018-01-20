@@ -51,7 +51,7 @@ public class DataCode extends CodeN {
 						hint.useGlobal();
 					}
 				} else {
-					Ty ty = Ty.tUntyped();
+					Ty ty = Ty.tVar(null);
 					value = value.asType(env, ty);
 					if (ty == value.getType()) {
 						throw new ErrorCode(value, TFmt.failed_type_inference);

@@ -11,59 +11,79 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
-import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.DataCode;
 import blue.origami.transpiler.code.ErrorCode;
 
 public class DataTy extends Ty {
-	boolean isMutable = false;
-
-	@Override
-	public boolean isMutable() {
-		return this.isMutable;
-	}
-
-	@Override
-	public Ty toMutable() {
-		if (!this.isMutable()) {
-			return Ty.tData(this.names());
-		}
-		return this;
-	}
-
-	@Override
-	public Ty toImmutable() {
-		if (this.isMutable()) {
-			return Ty.tRecord(this.names());
-		}
-		return this;
-	}
 
 	TreeSet<String> fields;
 
 	DataTy() {
-		this.isMutable = true;
 		this.fields = new TreeSet<>();
 	}
 
-	DataTy(boolean isMutable, String... names) {
+	DataTy(String... names) {
 		this();
-		this.isMutable = isMutable;
 		for (String n : names) {
 			this.fields.add(n);
 		}
 	}
 
-	public String[] names() {
-		if (this.fields == null) {
-			return OArrays.emptyNames;
-		}
-		return this.fields.toArray(new String[this.fields.size()]);
+	@Override
+	public String keyOfArrows() {
+		return "{}";
 	}
 
 	@Override
-	public Code getDefaultValue() {
-		return new DataCode(this.isMutable ? Ty.tData() : Ty.tRecord());
+	public void strOut(StringBuilder sb) {
+		sb.append("{");
+		OStrings.joins(sb, this.fields(), ",");
+		sb.append("}");
+	}
+
+	@Override
+	public boolean eq(Ty ty) {
+		Ty right = ty.devar();
+		if (this == right) {
+			return true;
+		}
+		if (right instanceof DataTy) {
+			DataTy dt = (DataTy) right;
+			if (dt.size() == this.size()) {
+				for (String field : this.fields) {
+					if (!dt.hasField2(field)) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// @Override
+	// public Ty inferType(TypeMatchContext tmx) {
+	// DataTy pt = new DataVarTy();
+	// pt.hasFields(tmx, this.fields);
+	// return pt;
+	// }
+
+	@Override
+	public boolean matchBase(boolean sub, Ty right) {
+		return right.isData() && this.eq(right) || (sub && right.hasSuperType(this));
+	}
+
+	@Override
+	public boolean hasSuperType(Ty left0) {
+		if (left0 instanceof DataTy) {
+			DataTy left = (DataTy) left0;
+			for (String f : left.fields) {
+				if (!this.hasField2(f)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public int size() {
@@ -73,16 +93,16 @@ public class DataTy extends Ty {
 		return this.fields.size();
 	}
 
-	public final boolean hasField(String field) {
-		return this.hasField(field, TypeMatcher.Update);
+	public String[] fields() {
+		if (this.fields == null) {
+			return OArrays.emptyNames;
+		}
+		return this.fields.toArray(new String[this.fields.size()]);
 	}
 
-	public boolean hasField(String field, TypeMatcher logs) {
-		return this.fields.contains(field);
-	}
-
-	public Ty fieldTy(Env env, AST s, String name) {
-		if (this.hasField(name)) {
+	@Override
+	public Ty resolveFieldType(Env env, AST s, String name) {
+		if (this.hasField2(name)) {
 			NameHint hint = env.findGlobalNameHint(env, name);
 			if (hint != null) {
 				Ty ty = hint.getType();
@@ -90,14 +110,7 @@ public class DataTy extends Ty {
 			}
 			throw new ErrorCode(s, TFmt.undefined_name__YY1, name);
 		}
-		throw new ErrorCode(s, TFmt.undefined_name__YY1_in_YY2, name, this);
-	}
-
-	@Override
-	public void strOut(StringBuilder sb) {
-		sb.append(DataTy.this.isMutable ? "{" : "[");
-		OStrings.joins(sb, this.names(), ",");
-		sb.append(DataTy.this.isMutable ? "}" : "]");
+		return super.resolveFieldType(env, s, name);
 	}
 
 	@Override
@@ -111,57 +124,36 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public Ty memoed() {
-		return this;
-	}
-
-	@Override
 	public Ty dupVar(VarDomain dom) {
 		return this;
 	}
 
-	public final boolean hasFields(Set<String> fields, TypeMatcher logs) {
-		for (String f : fields) {
-			if (!this.hasField(f, logs)) {
+	@Override
+	public Ty memoed() {
+		assert (this.isMemoed());
+		return this;
+	}
+
+	public final boolean hasFields(TypeMatchContext tmx, Set<String> fields) {
+		for (String f : this.fields) {
+			if (!this.hasField(tmx, f)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	// f(b)
-	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		if (codeTy.isVar()) {
-			// VarTy varTy = (VarTy) codeTy.real();
-			// if (varTy.isParameter()) {
-			DataTy pt = new FlowDataTy();
-			pt.hasFields(this.fields, logs);
-			return (codeTy.match(false, pt, logs));
-			// }
-			// return (codeTy.acceptTy(false, this, logs));
-		}
-		if (codeTy.isData()) {
-			DataTy dt = (DataTy) codeTy.base();
-			if (dt.hasFields(this.fields, logs)) {
-				if (!sub) {
-					return this.hasFields(dt.fields, logs);
-				}
-				return true;
-			}
-			return false;
-		}
-		return false;
+	public boolean hasField(TypeMatchContext tmx, String field) {
+		return this.fields.contains(field);
+	}
+
+	public final boolean hasField2(String field) {
+		return this.hasField(TypeMatchContext.Update, field);
 	}
 
 	@Override
 	public <C> C mapType(TypeMapper<C> codeType) {
 		return codeType.forDataType(this);
-	}
-
-	@Override
-	public String keyFrom() {
-		return "{}";
 	}
 
 }

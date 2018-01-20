@@ -59,7 +59,7 @@ class TupleAssignCode extends SugarCode {
 	public Code asType(Env env, Ty ret) {
 		Ty[] ts = new Ty[this.left.size()];
 		for (int i = 0; i < ts.length; i++) {
-			ts[i] = Ty.tUntyped();
+			ts[i] = Ty.tVar(null);
 		}
 		TupleTy tupleTy = (TupleTy) Ty.tTuple(ts);
 		this.right = this.right.asType(env, tupleTy);

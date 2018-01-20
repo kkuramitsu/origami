@@ -22,13 +22,13 @@ public class OArrays {
 		return p;
 
 	}
-	//
-	// public static Ty[] join(Ty first, Ty... params) {
-	// Ty[] p = new Ty[params.length + 1];
-	// p[0] = first;
-	// System.arraycopy(params, 0, p, 1, params.length);
-	// return p;
-	// }
+
+	public static Ty[] join(Ty first, Ty... params) {
+		Ty[] p = new Ty[params.length + 1];
+		p[0] = first;
+		System.arraycopy(params, 0, p, 1, params.length);
+		return p;
+	}
 
 	public static Code[] join(Code first, Code... params) {
 		Code[] p = new Code[params.length + 1];

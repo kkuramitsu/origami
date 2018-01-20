@@ -28,12 +28,12 @@ public class TupleIndexCode extends Code1 {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
-			this.inner = this.inner.asType(env, Ty.tUntyped());
+			this.inner = this.inner.asType(env, Ty.tVar(null));
 			Ty ty = this.inner.getType();
 			if (!ty.isTuple()) {
 				throw new ErrorCode(this.inner, TFmt.not_tuple);
 			}
-			TupleTy tupleTy = (TupleTy) ty.base();
+			TupleTy tupleTy = (TupleTy) ty.devar();
 			if (!(this.index < tupleTy.getParamSize())) {
 				throw new ErrorCode(this.inner, TFmt.bad_tuple__YY1);
 			}

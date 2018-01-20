@@ -16,7 +16,7 @@ public class TupleCode extends CodeN {
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (ret.isTuple()) {
-			TupleTy ty = (TupleTy) ret.base();
+			TupleTy ty = (TupleTy) ret.devar();
 			if (ty != this.getType()) {
 				Ty[] ts = ty.getParamTypes();
 				if (ts.length != this.args.length) {
@@ -32,8 +32,7 @@ public class TupleCode extends CodeN {
 		if (this.isUntyped()) {
 			Ty[] ts = new Ty[this.args.length];
 			for (int i = 0; i < this.args.length; i++) {
-				Ty ty = Ty.tUntyped();
-				this.args[i] = this.args[i].bindAs(env, ty);
+				this.args[i] = this.args[i].bindAs(env, Ty.tVar(null));
 				ts[i] = this.args[i].getType();
 			}
 			this.setType(Ty.tTuple(ts));

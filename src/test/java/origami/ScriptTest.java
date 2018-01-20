@@ -9,8 +9,8 @@ import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.Language;
 import blue.origami.transpiler.Transpiler;
 
-//import junit.framework.Assert;
-//import org.junit.Test;
+// import junit.framework.Assert;
+// import org.junit.Test;
 
 public class ScriptTest {
 

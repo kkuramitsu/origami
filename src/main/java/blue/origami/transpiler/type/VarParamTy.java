@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 
-public class VarParamTy extends SimpleTy {
+public class VarParamTy extends BaseTy {
 	public VarParamTy(String name) {
 		super(name, 1);
 	}
@@ -27,12 +27,6 @@ public class VarParamTy extends SimpleTy {
 
 	public String getId() {
 		return this.name;
-	}
-
-	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		return true;
-		// return codeTy == this;
 	}
 
 	@Override

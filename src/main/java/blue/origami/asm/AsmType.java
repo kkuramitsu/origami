@@ -221,12 +221,12 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 
 	@Override
 	protected String keyDataType(DataTy dataTy) {
-		return dataTy.size() == 0 ? "{}" : OStrings.joins(dataTy.names(), ",");
+		return dataTy.size() == 0 ? "{}" : OStrings.joins(dataTy.fields(), ",");
 	}
 
 	@Override
 	protected Class<?> genDataType(DataTy dataTy) {
-		String[] names = dataTy.names();
+		String[] names = dataTy.fields();
 		String cname1 = "D$" + this.seq();
 		String[] infs = Arrays.stream(names).map(x -> Type.getInternalName(this.gen(x))).toArray(String[]::new);
 		ClassWriter cw1 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -364,7 +364,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	}
 
 	Class<?> loadDataClass(DataTy dataTy) {
-		String[] names = dataTy.names();
+		String[] names = dataTy.fields();
 		String cname1 = "Data$" + OStrings.joins(names, "");
 		return this.reg(cname1, () -> {
 			Class<?> c = this.toClass(dataTy);

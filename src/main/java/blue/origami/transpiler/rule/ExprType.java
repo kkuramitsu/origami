@@ -11,7 +11,7 @@ import blue.origami.transpiler.type.Ty;
 public class ExprType implements ParseRule, Symbols {
 	@Override
 	public Code apply(Env env, AST t) {
-		Ty req = Ty.tUntyped();
+		Ty req = Ty.tVar(null);
 		Code c = env.parseCode(env, t.get(_expr)).asType(env, req);
 		if (c.getType() == req) {
 			throw new ErrorCode(t.get(_expr), TFmt.failed_type_inference);

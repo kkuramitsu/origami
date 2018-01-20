@@ -20,7 +20,6 @@ public class XEvalTest {
 		runScript("'abc'", "abc");
 		runScript("\"abc\"", "abc");
 		runScript("[1,2,3]", "[1,2,3]");
-		runScript("$[1,2,3]", "[1,2,3]");
 		runScript("[false,true]", "[false,true]");
 	}
 
@@ -69,8 +68,8 @@ public class XEvalTest {
 	}
 
 	public void testIntArray() throws Throwable {
-		runScript("a=$[1,2];a[0]=9;a[0]", "9");
-		runScript("a=$[1,2].map(\\n n+1);a", "[2,3]");
+		runScript("a$=[1,2];a$[0]=9;a$[0]", "9");
+		runScript("a=[1,2].map(\\n n+1);a", "[2,3]");
 	}
 
 	public void testStringList() throws Throwable {

@@ -73,7 +73,7 @@ public class CodeMapDecl implements ParseRule, Symbols {
 
 	private void parseArrow(Env env, int acc, FuncTy ty, String value) {
 		if (ty.getParamTypes().length == 1) {
-			String key = ty.keyMemo();
+			String key = ty.keyOfMemo();
 			CodeMap codeMap = new CodeMap(acc, key, value, ty.getReturnType(), ty.getParamTypes());
 			env.addArrow(key, codeMap);
 		}

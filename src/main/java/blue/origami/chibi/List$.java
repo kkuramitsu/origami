@@ -35,8 +35,8 @@ public class List$ implements OStrings, FuncIntObj {
 		this(arrays, 0, arrays.length, null);
 	}
 
-	public static final List$ newArray(boolean isMutable, Object[] arrays) {
-		return isMutable ? new ListM$(arrays) : new List$(arrays);
+	public static final List$ newArray(Object[] arrays) {
+		return new List$(arrays);
 	}
 
 	public List$ bind() {
@@ -160,10 +160,6 @@ public class List$ implements OStrings, FuncIntObj {
 		return new List$(s.toArray());
 	}
 
-	public static final List$ listM(Stream<Object> s) {
-		return new ListM$(s.toArray());
-	}
-
 	public void forEach(FuncObjVoid f) {
 		forEach(this.stream(), f);
 	}
@@ -228,43 +224,4 @@ public class List$ implements OStrings, FuncIntObj {
 		return s.reduce(acc, f);
 	}
 
-}
-
-class ListM$ extends List$ {
-
-	private List$ imm = null;
-
-	public ListM$(Object[] arrays, int start, int end) {
-		super(arrays, start, end, null);
-	}
-
-	public ListM$(Object[] arrays) {
-		super(arrays);
-	}
-
-	@Override
-	public List$ bind() {
-		if (this.imm == null) {
-			this.imm = new List$(this.arrays, this.start, this.end);
-		}
-		return this.imm;
-	}
-
-	@Override
-	public void seti(int index, Object value) {
-		this.imm = null;
-		super.seti(index, value);
-	}
-
-	@Override
-	public void push(Object v) {
-		this.imm = null;
-		super.push(v);
-	}
-
-	@Override
-	public Object pop() {
-		this.imm = null;
-		return super.pop();
-	}
 }

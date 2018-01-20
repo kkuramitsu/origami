@@ -36,8 +36,8 @@ public class List$Float implements OStrings, FuncIntFloat {
 		this(arrays, 0, arrays.length, null);
 	}
 
-	public static final List$Float newArray(boolean isMutable, double[] arrays) {
-		return isMutable ? new ListM$Float(arrays) : new List$Float(arrays);
+	public static final List$Float newArray(double[] arrays) {
+		return new List$Float(arrays);
 	}
 
 	public List$Float bind() {
@@ -169,10 +169,6 @@ public class List$Float implements OStrings, FuncIntFloat {
 		return new List$Float(s.toArray());
 	}
 
-	public static final List$Float listM(DoubleStream s) {
-		return new ListM$Float(s.toArray());
-	}
-
 	public final void forEach(FuncFloatVoid f) {
 		forEach(this.stream(), f);
 	}
@@ -234,44 +230,5 @@ public class List$Float implements OStrings, FuncIntFloat {
 			return (DoubleStream) o;
 		}
 		return ((List$Float) o).stream();
-	}
-}
-
-class ListM$Float extends List$Float {
-
-	private List$Float imm = null;
-
-	public ListM$Float(double[] arrays, int start, int end) {
-		super(arrays, start, end, null);
-	}
-
-	public ListM$Float(double[] arrays) {
-		super(arrays);
-	}
-
-	@Override
-	public List$Float bind() {
-		if (this.imm == null) {
-			this.imm = new List$Float(this.arrays, this.start, this.end);
-		}
-		return this.imm;
-	}
-
-	@Override
-	public void seti(int index, double value) {
-		this.imm = null;
-		super.seti(index, value);
-	}
-
-	@Override
-	public void push(double v) {
-		this.imm = null;
-		super.push(v);
-	}
-
-	@Override
-	public double pop() {
-		this.imm = null;
-		return super.pop();
 	}
 }

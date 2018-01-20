@@ -11,6 +11,12 @@ public class EnumTy extends Ty {
 	String name;
 	String[] names;
 
+	@Override
+	public boolean eq(Ty ty) {
+		Ty right = ty.devar();
+		return this == right;
+	}
+
 	public boolean isBool() {
 		return this.names.length <= 2;
 	}
@@ -31,13 +37,13 @@ public class EnumTy extends Ty {
 		return -1;
 	}
 
-	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		if (codeTy.base() == this) {
-			return true;
-		}
-		return this.matchVar(sub, codeTy, logs);
-	}
+	// @Override
+	// public boolean match(TypeMatchContext logs, boolean sub, Ty codeTy) {
+	// if (codeTy.devar() == this) {
+	// return true;
+	// }
+	// return this.matchVar(sub, codeTy, logs);
+	// }
 
 	@Override
 	public Ty memoed() {
@@ -65,7 +71,7 @@ public class EnumTy extends Ty {
 	}
 
 	@Override
-	public String keyFrom() {
+	public String keyOfArrows() {
 		return this.name;
 	}
 

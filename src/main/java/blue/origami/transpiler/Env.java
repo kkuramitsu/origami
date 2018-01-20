@@ -18,7 +18,7 @@ import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
-import blue.origami.transpiler.type.TypeMatcher;
+import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 
 public class Env implements EnvAPIs, EnvApi {
@@ -266,7 +266,7 @@ interface EnvApi {
 	public default void addArrow(String name, CodeMap cmap) {
 		env().add(name, cmap);
 		if (cmap.mapCost() < CodeMap.BADCONV) {
-			String key = cmap.getParamTypes()[0].keyFrom() + "->";
+			String key = cmap.getParamTypes()[0].keyOfArrows() + "->";
 			env().add(key, cmap);
 		}
 	}
@@ -433,7 +433,7 @@ interface EnvApi {
 	default void findArrowChain(ArrowPair prev, Ty fromTy, Ty toTy, int depth, List<ArrowPair> results) {
 		if (depth > 0) {
 			List<CodeMap> l = new ArrayList<>(8);
-			String key = fromTy.keyFrom() + "->";
+			String key = fromTy.keyOfArrows() + "->";
 			env().findList(key, CodeMap.class, l, (tt) -> !tt.isExpired());
 			ODebug.trace("%s :: %s", key, l);
 			for (CodeMap cmap : l) {
@@ -459,8 +459,8 @@ interface EnvApi {
 		}
 	}
 
-	public default int arrowCost(Env env, Ty fromTy, Ty toTy, TypeMatcher logs) {
-		if (toTy.match(true, fromTy, logs)) {
+	public default int arrowCost(Env env, Ty fromTy, Ty toTy, TypeMatchContext logs) {
+		if (toTy.match(logs, true, fromTy)) {
 			return CodeMap.SAME;
 		}
 		String key = Ty.mapKey2(fromTy, toTy);

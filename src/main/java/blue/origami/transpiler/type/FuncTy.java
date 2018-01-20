@@ -29,6 +29,45 @@ public class FuncTy extends Ty {
 		this.returnType = returnType;
 	}
 
+	@Override
+	public boolean eq(Ty ty) {
+		Ty right = ty.devar();
+		if (this == right) {
+			return true;
+		}
+		if (right instanceof FuncTy) {
+			FuncTy dt = (FuncTy) right;
+			for (int i = 0; i < dt.paramSize(); i++) {
+				if (!dt.param(i).eq(this.param(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public int paramSize() {
+		return this.paramTypes.length + 1;
+	}
+
+	@Override
+	public Ty param(int n) {
+		if (n < this.paramTypes.length) {
+			return this.paramTypes[n];
+		}
+		return this.returnType;
+	}
+
+	@Override
+	public Ty[] params() {
+		Ty[] p = new Ty[this.paramTypes.length + 1];
+		System.arraycopy(this.paramTypes, 0, p, 0, this.paramTypes.length);
+		p[this.paramTypes.length] = this.returnType;
+		return p;
+	}
+
 	public Ty getReturnType() {
 		return this.returnType;
 	}
@@ -66,7 +105,7 @@ public class FuncTy extends Ty {
 	}
 
 	@Override
-	public String keyFrom() {
+	public String keyOfArrows() {
 		return "@";
 	}
 
@@ -99,21 +138,26 @@ public class FuncTy extends Ty {
 		return Ty.tFunc(r, ts);
 	}
 
+	// @Override
+	// public boolean match(TypeMatchContext logs, boolean sub, Ty codeTy) {
+	// if (codeTy.isFunc()) {
+	// FuncTy funcTy = (FuncTy) codeTy.devar();
+	// if (funcTy.getParamSize() != this.getParamSize()) {
+	// return false;
+	// }
+	// for (int i = 0; i < this.getParamSize(); i++) {
+	// if (!this.paramTypes[i].match(logs, false, funcTy.paramTypes[i])) {
+	// return false;
+	// }
+	// }
+	// return this.returnType.match(logs, false, funcTy.returnType);
+	// }
+	// return this.matchVar(sub, codeTy, logs);
+	// }
+
 	@Override
-	public boolean match(boolean sub, Ty codeTy, TypeMatcher logs) {
-		if (codeTy.isFunc()) {
-			FuncTy funcTy = (FuncTy) codeTy.base();
-			if (funcTy.getParamSize() != this.getParamSize()) {
-				return false;
-			}
-			for (int i = 0; i < this.getParamSize(); i++) {
-				if (!this.paramTypes[i].match(false, funcTy.paramTypes[i], logs)) {
-					return false;
-				}
-			}
-			return this.returnType.match(false, funcTy.returnType, logs);
-		}
-		return this.matchVar(sub, codeTy, logs);
+	public boolean matchBase(boolean sub, Ty right) {
+		return right.isFunc() && this.paramSize() == right.paramSize();
 	}
 
 	@Override
@@ -133,9 +177,9 @@ public class FuncTy extends Ty {
 	public int costMapThisTo(Env env, Ty a, Ty ty) {
 		assert (this == a);
 		if (ty.isFunc()) {
-			FuncTy toTy = (FuncTy) ty.base();
+			FuncTy toTy = (FuncTy) ty.devar();
 			if (this.getParamSize() == toTy.getParamSize()) {
-				TypeMatcher logger = new TypeMatcher();
+				TypeMatchContext logger = new TypeMatchContext();
 				Ty[] fromTys = this.getParamTypes();
 				Ty[] toTys = toTy.getParamTypes();
 				int cost = 0;
@@ -158,7 +202,7 @@ public class FuncTy extends Ty {
 	public CodeMap findMapThisTo(Env env, Ty a, Ty ty) {
 		assert (this == a);
 		if (ty.isFunc()) {
-			FuncTy toTy = (FuncTy) ty.base();
+			FuncTy toTy = (FuncTy) ty.devar();
 			int cost = this.costMapThisTo(env, a, ty);
 			if (cost < CodeMap.STUPID) {
 				return this.genFuncConv(env, this, toTy).setMapCost(cost);
