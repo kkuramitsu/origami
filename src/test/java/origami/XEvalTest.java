@@ -36,7 +36,8 @@ public class XEvalTest {
 		check("2+-3", "-1");
 		check("1+2*3", "7");
 		check("(1+2)*3", "9");
-		check("7/2", "3");
+		check("7 / 2", "3");
+		check("7/2", "3.5");
 		check("7%2", "1");
 	}
 

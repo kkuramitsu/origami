@@ -817,6 +817,7 @@ Constant =
 	/ StringExpr
 	/ CharExpr
 	/ FloatExpr
+	/ RationalExpr  // from Racket
 	/ IntExpr
 	/ TrueExpr
 	/ FalseExpr
@@ -872,6 +873,7 @@ example TripleExpr&Expression  ```
 
 example StringExpr&Expression "\n\u1234a\0"
 example CharExpr&Expression '\''
+example RationalExpr&Expression 4/5
 example IntExpr&Expression 0177
 example IntExpr&Expression 0b1010_1010
 example IntExpr&Expression 0xdeadbeaf
@@ -899,6 +901,11 @@ ESCAPE =
     / '\\' [0-7] [0-7]
     / '\\' [0-7]
 	/ '\\' 'u'+ HEX HEX HEX HEX
+
+public RationalExpr = {
+	DECIMAL '/' DECIMAL
+	#RationalExpr
+} _
 
 public IntExpr = {
 	(DECIMAL / HEXADECIMAL / BINARY / OCTAL)
