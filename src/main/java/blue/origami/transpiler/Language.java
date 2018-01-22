@@ -208,7 +208,6 @@ public class Language implements OFactory<Language> {
 			String name = ((FuncRefCode) code.args[0]).getName();
 			return new ExprCode(name, OArrays.ltrim(code.args)).asType(env, ret);
 		}
-
 		Ty firstType = code.args[0].getType();
 		if (firstType.isFunc()) {
 			FuncTy funcType = (FuncTy) firstType.devar();
@@ -228,10 +227,19 @@ public class Language implements OFactory<Language> {
 				code.args[i] = code.args[i].asType(env, Ty.tVar(null));
 				p[i - 1] = code.args[i].getType();
 			}
+			// a(a+1)
 			Ty funcType = Ty.tFunc(ret, p);
 			firstType.match(TypeMatchContext.Update, Code.bSUB, funcType);
 			code.setType(ret);
 			return code;
+		}
+		if (code.args.length == 2) {
+			// n(n+1) => n * n+1
+			try {
+				Code sugar = new BinaryCode("*", code.args[0], code.args[1]);
+				return sugar.asType(env, ret);
+			} catch (ErrorCode e) {
+			}
 		}
 		throw new ErrorCode(code.args[0], TFmt.not_function__YY1, code.args[0].getType());
 	}

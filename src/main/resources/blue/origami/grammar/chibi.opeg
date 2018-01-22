@@ -918,7 +918,8 @@ public FloatExpr = {
 } MULTI _
 
 MULTI = {$left $right(Var1) #MulExpr }*
-Var1  = { [A-Za-z] [0-9]? [']* #NameExpr }
+Var1  = { [A-Za-z] [0-9]? [']* #NameExpr }  // xy => x * y
+      / '(' _ Expression ')'                // 2(n+1) => 2 * (n+1)
 
 FLOAT =
 	FRACTION EXPONENT?
