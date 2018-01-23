@@ -166,7 +166,7 @@ reduce:: (Stream[Int],Int,(Int,Int)->Int)->Int      => S|blue/origami/chibi/List
 
 || :: List[Int]$->Int                       => V|blue/origami/chibi/List$Int|size
 [] :: (List[Int]$,Int)->Int                   => V|blue/origami/chibi/List$Int|geti
-[] :: (List[Int]$,Int,Int)->List[Int]        => V|blue/origami/chibi/List$Int|getl
+[] :: (List[Int]$,Int,Int)->List[Int]$       => V|blue/origami/chibi/List$Int|getl
 []=:: (List[Int]$,Int,Int)->()               => V|blue/origami/chibi/List$Int|seti
 push:: (List[Int]$,Int)->()                  => V|blue/origami/chibi/List$Int|push
 pop:: List[Int]$->Int                      => V|blue/origami/chibi/List$Int|pop
