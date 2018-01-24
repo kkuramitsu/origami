@@ -4,62 +4,12 @@ import blue.origami.transpiler.type.Ty;
 
 public interface NameHint {
 
-	public boolean equalsName(String key);
-
-	public default boolean isLocalOnly() {
-		return true;
-	}
-
-	public default boolean isGloballyUsed() {
-		return false;
-	}
-
-	public default boolean useLocal() {
-		return false; // first used;
-	}
-
-	public default NameHint useGlobal() {
-		return this;
-	}
-
 	public Ty getType();
 
-	public static NameHint newNameDecl(String name, Ty t) {
-		return new NameDecl(name, t);
-	}
+	public boolean equalsName(String key);
 
-	static NameHint find(Env env, boolean globalOnly, String name) {
-		if (globalOnly) {
-			return env.get(name, NameHint.class, (d, c) -> d.isGloballyUsed() ? d : null);
-		} else {
-			return env.get(name, NameHint.class);
-		}
-	}
-
-	static NameHint lookupSubNames(Env env, boolean globalOnly, String name) {
-		NameHint t = find(env, globalOnly, name);
-		if (t != null) {
-			return t;
-		}
-		for (int loc = 1; loc < name.length() - 2; loc++) {
-			String subname = name.substring(loc);
-			t = find(env, globalOnly, subname);
-			if (t != null) {
-				return t;
-			}
-		}
-		return null;
-	}
-
-	public static NameHint lookupNameHint(Env env, boolean globalOnly, String name) {
-		return lookupSubNames(env, globalOnly, shortName(name));
-	}
-
-	public static String safeName(String name) {
-		return shortName(name.replace('?', 'Q'));
-	}
-
-	public static String shortName(String name) {
+	// a, a', a'', a2, a12, a$ => a
+	public static String keyName(String name) {
 		int loc = name.length() - 1;
 		for (; loc > 0; loc--) {
 			char c = name.charAt(loc);
@@ -70,47 +20,83 @@ public interface NameHint {
 		return name.substring(0, loc + 1);
 	}
 
+	public static String flatName(String name) {
+		return safeName(name.replace("_", "").toLowerCase()) + "_";
+	}
+
+	static boolean isFlatName(String name) {
+		return flatName(name).equals(name + "_");
+	}
+
+	public static NameHint addNameHint(Env env, AST sname, Ty ty) {
+		String name = keyName(sname.getString());
+		NameHint hint = env.get(name, NameHint.class);
+		if (hint == null) {
+			hint = new NameDecl(name, ty);
+			env.add(name, hint);
+		} else {
+			if (!hint.getType().eq(ty)) {
+				System.out.println("duplicated definition " + name);
+			}
+		}
+		if (!isFlatName(name)) {
+			String flatName = NameHint.flatName(name);
+			NameHint hint2 = env.get(flatName, NameHint.class);
+			if (hint2 == null) {
+				env.add(flatName, new NameDecl(name, ty));
+			}
+		}
+		return hint;
+	}
+
+	public static Ty findNameHint(Env env, String name) {
+		NameHint hint = matchSubNames(env, keyName(name));
+		if (hint == null) {
+			if (name.endsWith("s") || name.endsWith("*")) {
+				Ty ty = findNameHint(env, name.substring(0, name.length() - 1));
+				if (ty != null) {
+					return Ty.tList(ty);
+				}
+			}
+			return null;
+		}
+		return hint.getType();
+	}
+
+	static NameHint matchSubNames(Env env, String name) {
+		NameHint hint = env.get(name, NameHint.class);
+		if (hint == null && name.length() > 2) {
+			return matchSubNames(env, name.substring(1));
+		}
+		if (hint == null && !isFlatName(name)) {
+			System.out.println(flatName(name));
+			hint = matchSubNames(env, flatName(name));
+		}
+		return hint;
+	}
+
+	public static String safeName(String name) {
+		return keyName(name.replace('?', 'Q'));
+	}
+
 	public static boolean isOneLetterName(String name) {
-		String n = shortName(name);
-		// ODebug.trace("shortname %s", n);
+		String n = keyName(name);
 		return n.length() == 1 && Character.isLowerCase(n.charAt(0));
+	}
+
+	public static boolean isMutable(String name) {
+		return name.endsWith("$");
 	}
 
 }
 
 class NameDecl implements NameHint {
-
 	String name;
 	Ty ty;
-	boolean useGlobal = false;
-	boolean useLocal = false;
 
 	NameDecl(String name, Ty ty) {
 		this.name = name;
 		this.ty = ty;
-	}
-
-	@Override
-	public boolean isLocalOnly() {
-		return false;
-	}
-
-	@Override
-	public boolean useLocal() {
-		boolean b = this.useLocal;
-		this.useLocal = true;
-		return !b;
-	}
-
-	@Override
-	public boolean isGloballyUsed() {
-		return this.useGlobal;
-	}
-
-	@Override
-	public NameHint useGlobal() {
-		this.useGlobal = true;
-		return this;
 	}
 
 	@Override

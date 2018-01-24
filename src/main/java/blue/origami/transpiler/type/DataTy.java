@@ -9,7 +9,6 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 
@@ -103,12 +102,11 @@ public class DataTy extends Ty {
 	@Override
 	public Ty resolveFieldType(Env env, AST s, String name) {
 		if (this.hasField2(name)) {
-			NameHint hint = env.findGlobalNameHint(env, name);
-			if (hint != null) {
-				Ty ty = hint.getType();
+			Ty ty = env.findNameHint(name);
+			if (ty != null) {
 				return ty == Ty.tThis ? this : ty;
 			}
-			throw new ErrorCode(s, TFmt.undefined_name__YY1, name);
+			throw new ErrorCode(s, TFmt.no_type_hint__YY1, name);
 		}
 		return super.resolveFieldType(env, s, name);
 	}

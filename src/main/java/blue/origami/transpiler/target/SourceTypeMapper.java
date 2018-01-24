@@ -4,11 +4,10 @@ import java.util.Arrays;
 
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
+import blue.origami.transpiler.type.BaseTy;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.FuncTy;
-import blue.origami.transpiler.type.BaseTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
@@ -141,8 +140,8 @@ public class SourceTypeMapper extends TypeMapper<String> {
 	String genFieldClass(Env env, String cname, String name) {
 		String key = "F$" + name;
 		if (!this.typeMap.containsKey(key)) {
-			NameHint hint = env.findGlobalNameHint(env, name);
-			this.head.pushf("fieldtype", "", cname, hint.getType(), name);
+			Ty hint = env.findNameHint(name);
+			this.head.pushf("fieldtype", "", cname, hint, name);
 			this.typeMap.put(key, key);
 		}
 		return key;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import blue.origami.common.ODebug;
 import blue.origami.transpiler.AST;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -20,6 +19,7 @@ import blue.origami.transpiler.code.MatchCode.RangeCase;
 import blue.origami.transpiler.code.MatchCode.RuleCode;
 import blue.origami.transpiler.code.MatchCode.TupleCase;
 import blue.origami.transpiler.code.MatchCode.ValuesCase;
+import blue.origami.transpiler.type.Ty;
 
 public class MatchExpr implements ParseRule, Symbols {
 
@@ -98,7 +98,7 @@ public class MatchExpr implements ParseRule, Symbols {
 			for (AST e : t) {
 				l[i] = this.parseCase(env, 0, e);
 				String name = l[i].getName();
-				NameHint hint = env.findGlobalNameHint(env, name);
+				Ty hint = env.findNameHint(name);
 				if (hint == null) {
 					throw new ErrorCode(e, TFmt.no_type_hint__YY1, name);
 				}

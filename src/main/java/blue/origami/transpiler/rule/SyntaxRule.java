@@ -12,7 +12,7 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 
 	public AST[] parseParamNames(Env env, AST params) {
 		if (params == null) {
-			return OArrays.emptyTrees;
+			return OArrays.emptyASTs;
 		} else if (params.has(_name)) {
 			return new AST[] { params.get(_name) };
 		} else {
@@ -62,9 +62,9 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 		return p;
 	}
 
-	private Ty parseParamType(Env env, AST param, AST type, Ty defaultType) {
-		String name = param.getString();
-		boolean isMutable = name.endsWith("$");
+	private Ty parseParamType(Env env, AST ns, AST type, Ty defaultType) {
+		String name = ns.getString();
+		boolean isMutable = NameHint.isMutable(name);
 		Ty ty = null;
 		if (type != null) {
 			ty = env.parseType(env, type, null);
@@ -73,38 +73,21 @@ public class SyntaxRule extends LoggerRule implements Symbols {
 			if (name.endsWith("?")) {
 				ty = Ty.tBool;
 			} else {
-				NameHint hint = env.findNameHint(env, name);
-				if (hint != null) {
-					ty = hint.getType();
-				} else if (NameHint.isOneLetterName(name)) {
-					ty = Ty.tVarParam(name);
-				} else if (defaultType != null) {
-					ty = defaultType;
+				ty = env.findNameHint(name);
+				if (ty == null) {
+					if (NameHint.isOneLetterName(name)) {
+						ty = Ty.tVarParam(name);
+					} else {
+						ty = defaultType;
+					}
 				}
 			}
 		}
 		if (ty == null) {
-			throw new ErrorCode(param, TFmt.no_type_hint__YY1, param.getString());
+			throw new ErrorCode(ns, TFmt.no_type_hint__YY1, ns.getString());
 		}
 		return isMutable ? ty.toMutable() : ty;
 	}
-
-	// public Ty parseTypeArity(TEnv env, Ty ty, AST param) {
-	// if (param.has(_suffix)) {
-	// String suffix = param.getStringAt(_suffix, "");
-	// // if (ty != null && suffix.equals("?")) {
-	// // ty = TType.tOption(ty);
-	// // ODebug.trace("arity %s", ty);
-	// // return ty;
-	// // }
-	// if (ty != null && suffix.equals("*")) {
-	// ty = Ty.tImList(ty);
-	// ODebug.trace("arity %s", ty);
-	// return ty;
-	// }
-	// }
-	// return ty;
-	// }
 
 	public Ty[] parseTypes(Env env, AST types) {
 		if (types == null) {

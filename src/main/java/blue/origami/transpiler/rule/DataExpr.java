@@ -7,27 +7,17 @@ import blue.origami.transpiler.code.DataCode;
 
 public class DataExpr extends LoggerRule implements Symbols, ParseRule {
 
-	boolean isMutable = true;
-
-	public DataExpr() {
-		this(true);
-	}
-
-	public DataExpr(boolean isMutable) {
-		this.isMutable = isMutable;
-	}
-
 	@Override
 	public Code apply(Env env, AST t) {
-		String[] names = new String[t.size()];
+		AST[] names = new AST[t.size()];
 		Code[] values = new Code[names.length];
 		int c = 0;
 		for (AST keyvalue : t) {
-			names[c] = keyvalue.getStringAt(_name, "");
+			names[c] = keyvalue.get(_name);
 			values[c] = env.parseCode(env, keyvalue.get(_value));
 			c++;
 		}
-		return new DataCode(this.isMutable, names, values);
+		return new DataCode(names, values);
 	}
 
 }

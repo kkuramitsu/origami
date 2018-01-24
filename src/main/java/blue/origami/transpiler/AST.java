@@ -228,7 +228,7 @@ class ASTString extends AST {
 
 	@Override
 	public AST[] sub() {
-		return OArrays.emptyTrees;
+		return OArrays.emptyASTs;
 	}
 
 	@Override

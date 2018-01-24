@@ -13,7 +13,7 @@ public class OArrays {
 	public static final Ty[] emptyTypes = new Ty[0];
 	public static final Code[] emptyCodes = new Code[0];
 	public static final String[] emptyNames = new String[0];
-	public static final AST[] emptyTrees = new AST[0];
+	public static final AST[] emptyASTs = new AST[0];
 
 	public static <T> T[] join(IntFunction<T[]> gen, T a, @SuppressWarnings("unchecked") T... as) {
 		T[] p = gen.apply(as.length + 1);

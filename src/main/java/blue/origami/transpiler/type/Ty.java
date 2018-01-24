@@ -10,7 +10,6 @@ import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -157,7 +156,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	@Override
 	public final boolean equals(Object t) {
 		if (t instanceof Ty) {
-			return this.toString().equals(t.toString());
+			return this.eq((Ty) t);
 		}
 		return false;
 	}
@@ -225,11 +224,9 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tList = m(new BaseTy("List", 1));
 	public static final Ty tDict = m(new BaseTy("Dict", 1));
 	public static final Ty tStream = m(new BaseTy("Stream", 1));
-	// public static final Ty tMDict = m(new BaseType(Mut + "Dict", 1));
-	// public static final Ty tMList = m(new BaseType(Mut + "List", 1));
-	// public static final Ty tMStream = m(new BaseType(Mut + "Stream", 1));
+
 	// VarParam
-	public static final Ty[] tVarParam = new Ty[10];
+	public static final Ty[] tVarParam = new Ty[26];
 	static {
 		for (int i = 0; i < tVarParam.length; i++) {
 			tVarParam[i] = m(new VarParamTy(String.valueOf((char) ('a' + i))));
@@ -237,7 +234,9 @@ public abstract class Ty implements TypeApi, OStrings {
 	}
 
 	public static final Ty tVarParam(String varname) {
-		return new VarParamTy(Ty.NonMemoStr + NameHint.shortName(varname));
+		char ch = varname.charAt(0);
+		assert (Character.isLowerCase(ch));
+		return tVarParam[(ch - 'a')];
 	}
 
 	// Hidden Type

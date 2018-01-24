@@ -114,6 +114,13 @@ public class TypeTest {
 	}
 
 	//
+	public void testNameTest() throws Throwable {
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
+		env.addNameHint("hoge", Ty.tList(Ty.tInt));
+
+	}
+
+	//
 	static Grammar g = null;
 	static Parser p = null;
 

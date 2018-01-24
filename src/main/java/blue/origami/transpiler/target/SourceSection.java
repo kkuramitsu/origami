@@ -207,7 +207,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 	@Override
 	public void pushData(DataCode code) {
 		Ty innTy = code.getType();
-		String cons = code.isMutable() ? "data" : this.syntax.symbol("record", "data");
+		String cons = "data";
 		String kv = "pair " + cons;
 		this.pushEnc(cons, innTy, code.size(), (n) -> {
 			this.pushf(this.syntax.fmt(kv, "\"%1$s\": %2$s"), code.getNames()[n], code.args[n]);

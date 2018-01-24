@@ -86,10 +86,9 @@ public class Language implements OFactory<Language> {
 		env.add("DataListExpr", new ListExpr(true));
 		env.add("RangeUntilExpr", new RangeExpr(false));
 		env.add("DataDictExpr", new DictExpr(true));
-		env.add("RecordExpr", new DataExpr(false));
+		env.add("RecordExpr", new DataExpr());
 
 		env.add("RecordType", new DataType());
-		// env.add("DataType", new DataType());
 
 		// type
 		// env.add("?", Ty.tUntyped0);
@@ -99,9 +98,9 @@ public class Language implements OFactory<Language> {
 		env.add("String", Ty.tString);
 		// env.add("a", VarDomain.var(0));
 		// env.add("Data", Ty.tData());
-		env.addNameDecl(env, "i,j,k,m,n", Ty.tInt);
-		env.addNameDecl(env, "x,y,z,w", Ty.tFloat);
-		env.addNameDecl(env, "s,t,u,name", Ty.tString);
+		env.addNameHint("i,j,k,m,n", Ty.tInt);
+		env.addNameHint("x,y,z,w", Ty.tFloat);
+		env.addNameHint("s,t,u,name", Ty.tString);
 	}
 
 	/* literal */
@@ -126,9 +125,9 @@ public class Language implements OFactory<Language> {
 			String var = this.parseName(name, i);
 			NameInfo ref = env.get(var, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 			if (ref == null) {
-				NameHint hint = env.findNameHint(env, name);
+				Ty hint = env.findNameHint(name);
 				if (hint != null) {
-					return new ErrorCode(code, TFmt.undefined_name__YY1__YY2, code.name, hint.getType());
+					return new ErrorCode(code, TFmt.undefined_name__YY1__YY2, code.name, hint);
 				}
 				return new ErrorCode(code, TFmt.undefined_name__YY1, code.name);
 			}
@@ -389,6 +388,42 @@ public class Language implements OFactory<Language> {
 			code.setMapped(found);
 			code.setType(dret);
 			return code.castType(env, t);
+		}
+	}
+
+	public Ty findType(Env env, String name) {
+		Ty ty = env.get(name, Ty.class);
+		if (ty == null) {
+			ty = env.findNameHint(name);
+		}
+		if (ty != null) {
+			return ty;
+		}
+		switch (name) {
+		case "()":
+			return Ty.tVoid;
+		case "bool":
+		case "boolean":
+			return Ty.tBool;
+		case "byte":
+			return Ty.tByte;
+		case "char":
+			return Ty.tChar;
+		case "int":
+		case "int32":
+		case "long":
+		case "int64":
+			return Ty.tInt;
+		case "double":
+		case "float":
+			return Ty.tFloat;
+		case "string":
+			return Ty.tString;
+		case "_":
+			return Ty.tThis;
+		default:
+			// System.out.println("FIXME:: " + name);
+			return Ty.t(name);
 		}
 	}
 }

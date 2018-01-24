@@ -4,6 +4,7 @@ import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
@@ -12,52 +13,45 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
 
 public class DataCode extends CodeN {
-	protected String[] names;
-	boolean isMutable = false;
+	protected AST[] names;
 
-	public DataCode(boolean isMutable, String[] names, Code[] values) {
+	public DataCode(AST[] names, Code[] values) {
 		super(values);
 		this.names = names;
-		this.isMutable = isMutable;
 	}
 
 	public DataCode(Ty dt) { // DefaultValue
 		super(dt, OArrays.emptyCodes);
-		this.names = OArrays.emptyNames;
-		this.isMutable = dt.isMutable();
+		this.names = OArrays.emptyASTs;
 	}
 
 	public String[] getNames() {
-		return this.names;
+		return AST.names(this.names);
 	}
-
-	public boolean isMutable() {
-		return this.isMutable;
-	}
+	//
+	// public boolean isMutable() {
+	// return this.isMutable;
+	// }
 
 	@Override
 	public Code asType(Env env, Ty ret) {
 		if (this.isUntyped()) {
-			DataTy dt = Ty.tData(this.names);
+			DataTy dt = Ty.tData(AST.names(this.names));
 			for (int i = 0; i < this.args.length; i++) {
-				String key = this.names[i];
+				AST key = this.names[i];
 				Code value = this.args[i];
-				NameHint hint = env.findGlobalNameHint(env, key);
-				if (hint != null) {
-					value = value.asType(env, hint.getType());
-					if (!hint.equalsName(key) && hint.isLocalOnly()) {
-						env.addGlobalName(env, key, hint.getType());
-					} else {
-						hint.useGlobal();
-					}
+				String name = key.getString();
+				Ty ty = env.findNameHint(name);
+				if (ty != null) {
+					value = value.asType(env, ty);
 				} else {
-					Ty ty = Ty.tVar(null);
+					ty = Ty.tVar(null);
 					value = value.asType(env, ty);
 					if (ty == value.getType()) {
-						throw new ErrorCode(value, TFmt.failed_type_inference);
+						throw new ErrorCode(key, TFmt.no_type_hint__YY1, name);
 					}
-					ODebug.trace("implicit name definition %s as %s", key, ty);
-					env.addGlobalName(env, key, ty);
+					ODebug.trace("implicit name definition %s as %s", name, ty);
+					NameHint.addNameHint(env.getTranspiler(), key, ty);
 				}
 				this.args[i] = value;
 			}
@@ -73,7 +67,7 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		this.sexpr(sb, this.isMutable() ? "data" : "record", 0, this.names.length, (n) -> {
+		this.sexpr(sb, "data", 0, this.names.length, (n) -> {
 			sb.append(this.names[n]);
 			sb.append(":");
 			OStrings.append(sb, this.args[n]);
@@ -82,16 +76,16 @@ public class DataCode extends CodeN {
 
 	@Override
 	public void dumpCode(SyntaxBuilder sh) {
-		sh.Token(this.isMutable() ? "{" : "[");
+		sh.Token("{");
 		for (int i = 0; i < this.args.length; i++) {
 			if (i > 0) {
 				sh.Token(",");
 			}
-			sh.Name(this.names[i]);
+			sh.Name(this.names[i].getString());
 			sh.Token(":");
 			sh.Expr(this.args[i]);
 		}
-		sh.Token(this.isMutable() ? "}" : "]");
+		sh.Token("}");
 	}
 
 }

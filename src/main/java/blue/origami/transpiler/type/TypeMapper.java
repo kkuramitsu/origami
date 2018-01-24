@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 import blue.origami.transpiler.Env;
-import blue.origami.transpiler.NameHint;
 
 public abstract class TypeMapper<C> {
 	protected Env env;
@@ -117,8 +116,8 @@ public abstract class TypeMapper<C> {
 	protected abstract C genDataType(DataTy dataTy);
 
 	public final Ty fieldTy(String name) {
-		NameHint hint = this.env.findGlobalNameHint(this.env, name);
-		return hint.getType();
+		Ty hint = this.env.findNameHint(name);
+		return hint;
 	}
 
 }

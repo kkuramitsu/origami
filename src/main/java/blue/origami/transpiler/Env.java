@@ -200,7 +200,7 @@ interface EnvAPIs {
 	}
 
 	public default FuncEnv newFuncEnv() { // TopLevel
-		return new FuncEnv((Env) this, null, "", OArrays.emptyTrees, OArrays.emptyTypes, Ty.tVarParam[0]);
+		return new FuncEnv((Env) this, null, "", OArrays.emptyASTs, OArrays.emptyTypes, Ty.tVarParam[0]);
 	}
 
 	public default FuncEnv newFuncEnv(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType) {
@@ -217,46 +217,18 @@ interface EnvAPIs {
 interface EnvApi {
 	Env env();
 
-	public default Ty getType(String tsig) {
-		return env().get(tsig, Ty.class);
-	}
+	// public default Ty getType(String tsig) {
+	// return env().get(tsig, Ty.class);
+	// }
 
-	public default NameHint addNameDecl(Env env, String names, Ty t) {
-		return this.addNameDecl(env, names.split(","), t);
-	}
-
-	public default NameHint addNameDecl(Env env, String[] names, Ty t) {
-		NameHint hint = null;
-		for (String n : names) {
-			hint = NameHint.newNameDecl(n, t);
-			env().add(NameHint.shortName(n), hint);
+	public default void addNameHint(String names, Ty ty) {
+		for (String name : names.split(",")) {
+			NameHint.addNameHint(env().getTranspiler(), AST.getName(name), ty);
 		}
-		return hint;
 	}
 
-	public default void addGlobalName(Env env, String name, Ty t) {
-		Transpiler tr = env.getTranspiler();
-		NameHint hint = NameHint.newNameDecl(name, t).useGlobal();
-		tr.add(name, hint);
-	}
-
-	public default NameHint findNameHint(Env env, String name) {
-		return NameHint.lookupNameHint(env, false, name);
-	}
-
-	public default NameHint findGlobalNameHint(Env env, String name) {
-		NameHint hint = NameHint.lookupNameHint(env.getTranspiler(), true, name);
-		if (hint == null) {
-			hint = NameHint.lookupNameHint(env, false, name);
-		}
-		if (hint != null) {
-			if (!hint.equalsName(name) && hint.isLocalOnly()) {
-				env.addGlobalName(env, name, hint.getType());
-			} else {
-				hint.useGlobal();
-			}
-		}
-		return hint;
+	public default Ty findNameHint(String name) {
+		return NameHint.findNameHint(env().getTranspiler(), NameHint.keyName(name));
 	}
 
 	public default void addConst(String name, CodeMap cmap) {
