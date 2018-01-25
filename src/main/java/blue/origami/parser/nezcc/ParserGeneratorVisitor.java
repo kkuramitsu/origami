@@ -215,7 +215,6 @@ class ParserGeneratorVisitor<B, C> extends ExpressionVisitor<C, ParserGenerator<
 			C second = pg.emitAnd(this.emitBacktrack(pg, stacks), this.match(e.get(i), pg));
 			first = pg.emitOr(first, second);
 		}
-		System.out.println(pg.getFuncName(e));
 		return this.emitVarDecl(pg, stacks, false, pg.emitReturn(first));
 	}
 
