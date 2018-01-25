@@ -6,6 +6,8 @@ import blue.origami.transpiler.type.Ty;
 
 public class BoolCode extends CommonCode implements ValueCode {
 	private boolean value;
+	public final static BoolCode True = new BoolCode(true);
+	public final static BoolCode False = new BoolCode(false);
 
 	public BoolCode(boolean value) {
 		super(Ty.tBool);

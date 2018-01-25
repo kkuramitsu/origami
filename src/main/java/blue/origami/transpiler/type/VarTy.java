@@ -3,7 +3,6 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import blue.origami.common.OArrays;
 import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
@@ -11,17 +10,13 @@ import blue.origami.transpiler.Env;
 public class VarTy extends Ty {
 	private static int seq = 27;
 
-	private AST name1;
 	Ty varref;
-	Ty[] nots;
 	final int varId;
 
 	VarTy(AST name) {
-		this.name1 = name;
 		this.varref = null;
 		this.varId = seq++;
 		assert (seq > 0);
-		this.nots = OArrays.emptyTypes;
 	}
 
 	@Override
@@ -36,7 +31,7 @@ public class VarTy extends Ty {
 	}
 
 	private String name() {
-		return this.name1 == null ? "" : this.name1.getString();
+		return ""; // this.name1 == null ? "" : this.name1.getString();
 	}
 
 	public String getId() {
@@ -133,10 +128,7 @@ public class VarTy extends Ty {
 			}
 			return true;
 		}
-		if (tmx.updateVar(this, left) && this.name1 != null) {
-			// ODebug.log(() -> ODebug.trace("type inferencing.. %s as %s",
-			// this.getName(), codeTy));
-		}
+		tmx.updateVar(this, left);
 		return true;
 	}
 

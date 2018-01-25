@@ -13,6 +13,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
@@ -138,8 +139,14 @@ interface CodeAPI {
 		return new CastCode(ret, tp, self);
 	}
 
-	public default Code bindAs(Env env, Ty ret) {
-		return ExprCode.option("=", self()).asType(env, ret);
+	public default Code bindAs(Env env, AST ns, Ty ret) {
+		Code right = ExprCode.option("=", self()).asType(env, ret);
+		// Code right = self().asType(env, ret);
+		Ty rightTy = right.getType();
+		if (!rightTy.isMutable() && NameHint.isMutable(ns.getString())) {
+			new ErrorCode(ns, TFmt.mutable_name__YY1, ns.getString());
+		}
+		return right;
 	}
 
 	public default Ty guessType() {

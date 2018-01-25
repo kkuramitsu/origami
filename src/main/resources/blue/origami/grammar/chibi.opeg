@@ -795,7 +795,7 @@ example PrimaryExpression&Expression (1,2) //
 example PrimaryExpression&Expression (1)
 example PrimaryExpression&Expression () //
 example PrimaryExpression&Expression [1,2,3]
-example PrimaryExpression&Expression {name: 'naruto', age: 17}
+example PrimaryExpression&Expression { name: 'naruto', age: 17 }
 example PrimaryExpression&Expression {"name": 'naruto', "age": '17'}
 example PrimaryExpression&Expression {1;2}
 example PrimaryExpression&Expression {}
@@ -829,8 +829,12 @@ Constant =
 
 MUT  = '$'
 LIST = $(Expression)? (","+ $(Expression))* ","*
-DATA = $(KeyValue) ("," $(KeyValue))*
+DATA = $(TagKeyValue ","?)* $(KeyValue) ("," $(KeyValue))*
 DICT = $(DEntry) ("," $(DEntry))*
+
+TagKeyValue = {
+	'#' $name(Identifier)
+}
 
 KeyValue = {
 	$name(Identifier)
@@ -844,17 +848,10 @@ DEntry = {
 	$value(Expression)
 }
 
-DataExpr = MDataExpr / 
+DataExpr = MUT? 
 	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr	
 
-MDataExpr = 
-	MUT { "{" (DICT #DataDictExpr / DATA #DataExpr ) "}" }	
-
-ListExpr = RangeExpr / MListExpr /
-	{ "[" LIST  #ListExpr "]" }
-
-MListExpr = 
-	MUT { "[" LIST  #DataListExpr "]" }
+ListExpr = RangeExpr / { MUT? "[" LIST  #ListExpr "]" }
 
 RangeExpr = {
 	"["

@@ -18,7 +18,7 @@ public class DictCode extends CodeN {
 		assert (this.isDict(dt));
 	}
 
-	public DictCode(boolean isMutable, String[] names, Code[] values) {
+	public DictCode(String[] names, Code[] values) {
 		super(values);
 		this.names = names;
 		assert (names.length == values.length);
@@ -34,7 +34,7 @@ public class DictCode extends CodeN {
 	}
 
 	private boolean isDict(Ty ty) {
-		ty = ty.devar();
+		ty = ty.devar().toImmutable();
 		if (ty instanceof GenericTy) {
 			Ty base = ((GenericTy) ty).getBaseType().devar();
 			return (base == Ty.tDict);
@@ -49,7 +49,7 @@ public class DictCode extends CodeN {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
-			this.setType(Ty.tGeneric(Ty.tDict, firstType));
+			this.setType(Ty.tGeneric(Ty.tDict, firstType).toMutable());
 		}
 		if (this.isDict(ret)) {
 			Ty ty = ret.getParamType();

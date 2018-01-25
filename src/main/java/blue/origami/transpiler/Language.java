@@ -18,9 +18,6 @@ import blue.origami.transpiler.code.LetCode;
 import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.rule.BinaryExpr;
 import blue.origami.transpiler.rule.DataExpr;
-import blue.origami.transpiler.rule.DataType;
-import blue.origami.transpiler.rule.DictExpr;
-import blue.origami.transpiler.rule.ListExpr;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.rule.RangeExpr;
 import blue.origami.transpiler.rule.SourceUnit;
@@ -83,12 +80,12 @@ public class Language implements OFactory<Language> {
 		env.add("PlusExpr", new UnaryExpr("+"));
 		env.add("CmplExpr", new UnaryExpr("~"));
 
-		env.add("DataListExpr", new ListExpr(true));
+		// env.add("DataListExpr", new ListExpr(true));
 		env.add("RangeUntilExpr", new RangeExpr(false));
-		env.add("DataDictExpr", new DictExpr(true));
+		// env.add("DataDictExpr", new DictExpr(true));
 		env.add("RecordExpr", new DataExpr());
 
-		env.add("RecordType", new DataType());
+		// env.add("RecordType", new DataType());
 
 		// type
 		// env.add("?", Ty.tUntyped0);
@@ -163,7 +160,7 @@ public class Language implements OFactory<Language> {
 			if (ref != null && ref.getLevel() == 0) {
 				ref.used(env);
 				code.index = ref.getIndex();
-				code.inner = code.inner.bindAs(env, ref.getType());
+				code.inner = code.inner.bindAs(env, code.getSource(), ref.getType());
 				code.setType(ref.getType());
 			} else {
 				NameInfo ref2 = env.get(code.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
@@ -186,8 +183,10 @@ public class Language implements OFactory<Language> {
 			if (code.isImplicit) {
 
 			}
-			code.inner = code.inner.bindAs(env, code.declType);
-			code.toMutableType();
+			code.inner = code.inner.bindAs(env, code.getSource(), code.declType);
+			if (!NameHint.isMutable(code.name)) {
+				code.declType = code.declType.toImmutable();
+			}
 			Variable var = fenv.newVariable(code.getSource(), code.index, code.declType);
 			env.add(code.name, var);
 			code.index = var.getIndex();
@@ -423,7 +422,11 @@ public class Language implements OFactory<Language> {
 			return Ty.tThis;
 		default:
 			// System.out.println("FIXME:: " + name);
-			return Ty.t(name);
+			ty = Ty.t(name);
+			if (ty != null) {
+				env.addNameHint(name, ty);
+			}
+			return ty;
 		}
 	}
 }

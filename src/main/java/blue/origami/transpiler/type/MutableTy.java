@@ -3,6 +3,9 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import blue.origami.transpiler.AST;
+import blue.origami.transpiler.Env;
+
 class MutableTy extends Ty {
 	Ty base;
 
@@ -80,13 +83,22 @@ class MutableTy extends Ty {
 
 	@Override
 	public Ty map(Function<Ty, Ty> f) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.base.map(f);
 	}
 
 	@Override
 	public Ty dupVar(VarDomain dom) {
 		return new MutableTy(this.base.dupVar(dom));
+	}
+
+	@Override
+	public Ty getParamType() {
+		return this.base.getParamType();
+	}
+
+	@Override
+	public Ty resolveFieldType(Env env, AST s, String name) {
+		return this.base.resolveFieldType(env, s, name);
 	}
 
 	@Override

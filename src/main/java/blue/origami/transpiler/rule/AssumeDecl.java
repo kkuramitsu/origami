@@ -15,7 +15,8 @@ public class AssumeDecl implements ParseRule, Symbols {
 			Ty ty = env.parseType(env, sub.get(_type), null);
 			for (AST ns : sub.get(_name)) {
 				NameHint.addNameHint(env, ns, ty);
-				System.out.println("hint " + ns.getString() + " " + env.findNameHint(ns.getString()));
+				// System.out.println("defined " + ns.getString() + " " +
+				// env.findNameHint(ns.getString()));
 			}
 		}
 		return new DoneCode();

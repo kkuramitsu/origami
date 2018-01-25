@@ -7,16 +7,6 @@ import blue.origami.transpiler.code.DictCode;
 
 public class DictExpr extends LoggerRule implements Symbols, ParseRule {
 
-	boolean isMutable;
-
-	public DictExpr() {
-		this(false);
-	}
-
-	public DictExpr(boolean isMutable) {
-		this.isMutable = isMutable;
-	}
-
 	@Override
 	public Code apply(Env env, AST t) {
 		String[] names = new String[t.size()];
@@ -27,6 +17,6 @@ public class DictExpr extends LoggerRule implements Symbols, ParseRule {
 			values[c] = env.parseCode(env, keyvalue.get(_value));
 			c++;
 		}
-		return new DictCode(this.isMutable, names, values);
+		return new DictCode(names, values);
 	}
 }

@@ -21,29 +21,30 @@ public interface NameHint {
 	}
 
 	public static String flatName(String name) {
-		return safeName(name.replace("_", "").toLowerCase()) + "_";
+		return safeName(name.replace("_", "").toLowerCase());
 	}
 
 	static boolean isFlatName(String name) {
-		return flatName(name).equals(name + "_");
+		return flatName(name).equals(name);
 	}
 
-	public static NameHint addNameHint(Env env, AST sname, Ty ty) {
-		String name = keyName(sname.getString());
+	public static NameHint addNameHint(Env env, AST ns, Ty ty) {
+		String name = keyName(ns.getString());
 		NameHint hint = env.get(name, NameHint.class);
 		if (hint == null) {
 			hint = new NameDecl(name, ty);
-			env.add(name, hint);
+			env.getTranspiler().add(name, hint);
 		} else {
 			if (!hint.getType().eq(ty)) {
-				System.out.println("duplicated definition " + name);
+				env.reportWarning(ns, TFmt.already_defined_YY1_as_YY2, name, hint.getType());
 			}
 		}
 		if (!isFlatName(name)) {
 			String flatName = NameHint.flatName(name);
+			// System.out.println("defining flat: " + flatName);
 			NameHint hint2 = env.get(flatName, NameHint.class);
 			if (hint2 == null) {
-				env.add(flatName, new NameDecl(name, ty));
+				env.getTranspiler().add(flatName, new NameDecl(name, ty));
 			}
 		}
 		return hint;
@@ -51,6 +52,10 @@ public interface NameHint {
 
 	public static Ty findNameHint(Env env, String name) {
 		NameHint hint = matchSubNames(env, keyName(name));
+		if (hint == null && !isFlatName(name)) {
+			// System.out.println("trying flat matching " + flatName(name));
+			hint = matchSubNames(env, flatName(name));
+		}
 		if (hint == null) {
 			if (name.endsWith("s") || name.endsWith("*")) {
 				Ty ty = findNameHint(env, name.substring(0, name.length() - 1));
@@ -67,10 +72,6 @@ public interface NameHint {
 		NameHint hint = env.get(name, NameHint.class);
 		if (hint == null && name.length() > 2) {
 			return matchSubNames(env, name.substring(1));
-		}
-		if (hint == null && !isFlatName(name)) {
-			System.out.println(flatName(name));
-			hint = matchSubNames(env, flatName(name));
 		}
 		return hint;
 	}

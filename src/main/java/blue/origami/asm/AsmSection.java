@@ -488,7 +488,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushData(DataCode code) {
-		Class<?> c = this.ts.loadDataClass((DataTy) code.getType());
+		Class<?> c = this.ts.loadDataClass((DataTy) code.getType().toImmutable());
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);
 		this.mBuilder.dup();
@@ -504,9 +504,8 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 
 	@Override
 	public void pushList(ListCode code) {
-		GenericTy dt = (GenericTy) code.getType().devar();
+		GenericTy dt = (GenericTy) code.getType().devar().toImmutable();
 		Class<?> c = this.ts.toClass(dt);
-		// this.mBuilder.push(false); // FIXME
 		if (c == blue.origami.chibi.List$.class) {
 			Type ty = Type.getType(Object.class);
 			this.pushArray(ty, true, code.args());

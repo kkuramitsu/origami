@@ -10,10 +10,10 @@ public class AssignCode extends Code1 {
 	public String name;
 	public int index = -1;
 
-	public AssignCode(AST name, Code expr) {
+	public AssignCode(AST ns, Code expr) {
 		super(expr);
-		this.setSource(name);
-		this.name = name.getString();
+		this.setSource(ns);
+		this.name = ns.getString();
 	}
 
 	public AssignCode(String name, Code expr) {

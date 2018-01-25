@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.SyntaxBuilder;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
@@ -21,7 +22,7 @@ public class TupleIndexCode extends Code1 {
 	}
 
 	@Override
-	public Code bindAs(Env env, Ty ret) {
+	public Code bindAs(Env env, AST ns, Ty ret) {
 		return this.asType(env, ret);
 	}
 

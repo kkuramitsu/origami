@@ -39,11 +39,6 @@ public class VarNameCode extends CommonCode {
 	}
 
 	@Override
-	public Code bindAs(Env env, Ty ret) {
-		return this.asType(env, ret);
-	}
-
-	@Override
 	public Code asType(Env env, Ty ret) {
 		return env.getLanguage().typeName(env, this, ret);
 	}

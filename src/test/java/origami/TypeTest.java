@@ -21,8 +21,8 @@ public class TypeTest {
 		runScript("'a'", "Char");
 		runScript("'abc'", "String");
 		runScript("\"abc\"", "String");
-		runScript("[1,2,3]", "List[Int]");
-		// runScript("$[1,2,3]", "$List[Int]");
+		runScript("(1,2)", "Int*Int");
+		runScript("[1,2,3]", "List[Int]$");
 	}
 
 	public void testHelloWorld() throws Throwable {
@@ -101,6 +101,11 @@ public class TypeTest {
 		runScript("f(a,b)=(a,b);f", "(a,b)->a*b");
 	}
 
+	// public void testAssume() throws Throwable {
+	// runScript("assume age : Int", "{m}->Int");
+	// runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
+	// }
+
 	public void testData() throws Throwable {
 		runScript("f(p) = p.m; f", "{m}->Int");
 		runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
@@ -109,15 +114,8 @@ public class TypeTest {
 	public void testMutation() throws Throwable {
 		runScript("f()=$[1,2];f", "()->List[Int]");
 		runScript("f(a)=a[0];f", "List[a]->a");
-		FIXME("f(a$)=a[0]=1;f", "List[Int]$->()");
-		FIXME("f(a$)={a[0];a[0]=1};f", "List[Int]$->()");
-	}
-
-	//
-	public void testNameTest() throws Throwable {
-		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
-		env.addNameHint("hoge", Ty.tList(Ty.tInt));
-
+		FIXME("f(a$)=a$[0]=1;f", "List[Int]$->()");
+		FIXME("f(a$)={a$[0];a$[0]=1};f", "List[Int]$->()");
 	}
 
 	//

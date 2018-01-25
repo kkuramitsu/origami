@@ -23,7 +23,7 @@ public class TupleCode extends CodeN {
 					throw new ErrorCode(this, TFmt.bad_tuple__YY1, ret);
 				}
 				for (int i = 0; i < this.args.length; i++) {
-					this.args[i] = this.args[i].bindAs(env, ts[i]);
+					this.args[i] = this.args[i].asType(env, ts[i]);
 				}
 				this.setType(ty);
 			}
@@ -32,7 +32,7 @@ public class TupleCode extends CodeN {
 		if (this.isUntyped()) {
 			Ty[] ts = new Ty[this.args.length];
 			for (int i = 0; i < this.args.length; i++) {
-				this.args[i] = this.args[i].bindAs(env, Ty.tVar(null));
+				this.args[i] = this.args[i].asType(env, Ty.tVar(null));
 				ts[i] = this.args[i].getType();
 			}
 			this.setType(Ty.tTuple(ts));
@@ -40,10 +40,10 @@ public class TupleCode extends CodeN {
 		return super.castType(env, ret);
 	}
 
-	@Override
-	public Code bindAs(Env env, Ty ret) {
-		return this.asType(env, ret);
-	}
+	// @Override
+	// public Code bindAs(Env env, Ty ret) {
+	// return this.asType(env, ret);
+	// }
 
 	@Override
 	public void emitCode(CodeSection sec) {

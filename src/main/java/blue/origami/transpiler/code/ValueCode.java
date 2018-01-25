@@ -1,6 +1,7 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OStrings;
+import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
 
@@ -8,7 +9,7 @@ public interface ValueCode extends Code {
 	public Object getValue();
 
 	@Override
-	public default Code bindAs(Env env, Ty ret) {
+	public default Code bindAs(Env env, AST ns, Ty ret) {
 		return this.asType(env, ret);
 	}
 

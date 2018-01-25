@@ -13,12 +13,12 @@ public class ListCode extends CodeN {
 		assert (this.isList(dt));
 	}
 
-	public ListCode(boolean isMutable, Code... values) {
+	public ListCode(Code... values) {
 		super(values);
 	}
 
 	private boolean isList(Ty ty) {
-		ty = ty.devar();
+		ty = ty.devar().toImmutable();
 		if (ty instanceof GenericTy) {
 			Ty base = ((GenericTy) ty).getBaseType().devar();
 			return (base == Ty.tList);
@@ -33,7 +33,7 @@ public class ListCode extends CodeN {
 			for (int i = 0; i < this.args.length; i++) {
 				this.args[i] = this.args[i].asType(env, firstType);
 			}
-			this.setType(Ty.tList(firstType));
+			this.setType(Ty.tList(firstType).toMutable());
 			// ODebug.trace("first %s %s", firstType, this.getType());
 		}
 		if (this.isList(ret)) {
@@ -43,7 +43,7 @@ public class ListCode extends CodeN {
 					this.args[i] = this.args[i].asType(env, ty);
 				}
 			}
-			this.setType(Ty.tList(ty));
+			this.setType(Ty.tList(ty).toMutable());
 		}
 		return this.castType(env, ret);
 	}

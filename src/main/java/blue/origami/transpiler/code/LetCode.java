@@ -5,8 +5,10 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
+import blue.origami.transpiler.type.VarTy;
 
 public class LetCode extends Code1 {
 	public boolean isImplicit = false;
@@ -14,11 +16,16 @@ public class LetCode extends Code1 {
 	public String name;
 	public int index = -1;
 
-	public LetCode(AST name, Ty type, Code expr) {
+	public LetCode(AST ns, Ty type, Code expr) {
 		super(expr);
-		this.setSource(name);
-		this.name = name.getString();
-		this.declType = type == null ? Ty.tVar(name) : type;
+		this.setSource(ns);
+		this.name = ns.getString();
+		if (type != null) {
+			this.declType = NameHint.isMutable(this.name) ? type.toMutable() : type;
+		} else {
+			VarTy varTy = Ty.tVar(ns);
+			this.declType = varTy;
+		}
 	}
 
 	public LetCode(String name, Code expr) {
@@ -42,12 +49,6 @@ public class LetCode extends Code1 {
 		return this.declType;
 	}
 
-	public void toMutableType() {
-		if (this.name.endsWith("$")) {
-			this.declType = this.declType.toMutable();
-		}
-	}
-
 	@Override
 	public Code asType(Env env, Ty ret) {
 		return env.getLanguage().typeLet(env, this, ret);
@@ -56,8 +57,10 @@ public class LetCode extends Code1 {
 	public Code defineAsGlobal(Env env, boolean isPublic) {
 		Code right = this.getInner();
 		try {
-			right = right.bindAs(env, this.declType);
-			this.toMutableType();
+			right = right.bindAs(env, this.getSource(), this.declType);
+			if (!NameHint.isMutable(this.name)) {
+				this.declType = this.declType.toImmutable();
+			}
 			if (!right.showError(env)) {
 				Transpiler tp = env.getTranspiler();
 				CodeMap defined = tp.defineConst(isPublic, this.name, this.declType, right);
