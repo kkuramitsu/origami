@@ -71,7 +71,7 @@ public class List$ implements OStrings, FuncIntObj {
 		return this.arrays[this.start + index];
 	}
 
-	public List$ getl(int left, int right) {
+	public List$ slice(int left, int right) {
 		this.flatten();
 		return new List$(this.arrays, this.start + left, this.start + right);
 	}

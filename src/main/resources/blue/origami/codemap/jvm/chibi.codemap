@@ -94,7 +94,7 @@ println:: String->()           => S|blue/origami/asm/APIs|p
 
 ||:: List[a]->Int                      => V|blue/origami/chibi/List$|size
 []:: (List[a],Int)->a                  => V|blue/origami/chibi/List$|geti
-[]:: (List[a],Int,Int)->List[a]        => V|blue/origami/chibi/List$|getl
+[]:: (List[a],Int,Int)->List[a]        => V|blue/origami/chibi/List$|slice
 //= :: List[a]->List[a]                  => V|blue/origami/chibi/List$|bind
 cons:: (a,List[a])->List[a]            => S|blue/origami/chibi/List$|cons
 tail:: (List[a],a)->List[a]            => V|blue/origami/chibi/List$|tail
@@ -119,7 +119,7 @@ reduce:: (Stream[a],a,(a,a)->a)->a              => S|blue/origami/chibi/List$|re
 
 || :: List[a]$->Int                     => V|blue/origami/chibi/List$|size
 [] :: (List[a]$,Int)->a                 => V|blue/origami/chibi/List$|geti
-[] :: (List[a]$,Int,Int)->List[a]$      => V|blue/origami/chibi/List$|getl
+[] :: (List[a]$,Int,Int)->List[a]$      => V|blue/origami/chibi/List$|slice
 []=:: (List[a]$,Int,a)->()              => V|blue/origami/chibi/List$|seti
 push:: (List[a]$,a)->()                 => V|blue/origami/chibi/List|push
 pop::  List[a]$->a                      => V|blue/origami/chibi/List|pop
@@ -141,7 +141,7 @@ pop::  List[a]$->a                      => V|blue/origami/chibi/List|pop
 
 ||  :: List[Int]->Int                        => V|blue/origami/chibi/List$Int|size
 []  :: (List[Int],Int)->Int                  => V|blue/origami/chibi/List$Int|geti
-[]  :: (List[Int],Int,Int)->List[Int]        => V|blue/origami/chibi/List$Int|getl
+[]  :: (List[Int],Int,Int)->List[Int]        => V|blue/origami/chibi/List$Int|slice
 //=   :: List[Int]->List[Int]                  => V|blue/origami/chibi/List$Int|bind
 cons:: (Int,List[Int])->List[Int]            => S|blue/origami/chibi/List$Int|cons
 tail:: (List[Int],Int)->List[Int]            => V|blue/origami/chibi/List$Int|tail
@@ -166,7 +166,7 @@ reduce:: (Stream[Int],Int,(Int,Int)->Int)->Int      => S|blue/origami/chibi/List
 
 || :: List[Int]$->Int                       => V|blue/origami/chibi/List$Int|size
 [] :: (List[Int]$,Int)->Int                   => V|blue/origami/chibi/List$Int|geti
-[] :: (List[Int]$,Int,Int)->List[Int]$       => V|blue/origami/chibi/List$Int|getl
+[] :: (List[Int]$,Int,Int)->List[Int]$       => V|blue/origami/chibi/List$Int|slice
 []=:: (List[Int]$,Int,Int)->()               => V|blue/origami/chibi/List$Int|seti
 push:: (List[Int]$,Int)->()                  => V|blue/origami/chibi/List$Int|push
 pop:: List[Int]$->Int                      => V|blue/origami/chibi/List$Int|pop

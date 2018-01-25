@@ -131,7 +131,7 @@ function endT($px,$shift,$ntag0){
     }
     $tcur = $tcur->lprev;
   }
-  $px->tree = ($nvalue == 0) ? (call_user_func($px->newFunc,gettag($ntag),$px->inputs,$tcur->ltree,$epos,$cnt)) : (call_user_func($px->newFunc,gettag($ntag),getvalue($nvalue),0,getlength($nvalue),$cnt));
+  $px->tree = ($nvalue == 0) ? (call_user_func($px->newFunc,gettag($ntag),$px->inputs,$tcur->lpos,$epos,$cnt)) : (call_user_func($px->newFunc,gettag($ntag),getvalue($nvalue),0,getlength($nvalue),$cnt));
   $tcur = $px->treeLog;
   while($tcur->lop != 0) {
     if($tcur->lop == 3) {

@@ -70,7 +70,7 @@ public class List$Int implements OStrings, FuncIntInt {
 		return this.arrays[this.start + index];
 	}
 
-	public List$Int getl(int left, int right) {
+	public List$Int slice(int left, int right) {
 		this.flatten();
 		return new List$Int(this.arrays, this.start + left, this.start + right);
 	}

@@ -132,9 +132,7 @@ def AST = '''
         var sub:Array<SimpleTree> = this.value as Array<SimpleTree>
         for (child:SimpleTree in sub) {
           sb.append(" ")
-          if (child.key != null) {
-            sb.append("$" + child.key + "=")
-          }
+          sb.append("$" + child.key + "=")
           if(child.value is SimpleTree){
               (child.value as SimpleTree).strOut(sb)
           }
