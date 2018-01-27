@@ -105,11 +105,17 @@ public abstract class Ty implements TypeApi, OStrings {
 		Ty left = this.devar();
 		right = right.devar();
 		if (left.isVar()) {
-			right = right.inferType(tmx);
+			// right = right.inferType(tmx);
+			// if (((VarTy) left).enforceMutable) {
+			// right = right.toMutable();
+			// }
 			return (((VarTy) left).matchVar(tmx, right));
 		}
 		if (right.isVar()) {
-			left = left.inferType(tmx);
+			// left = left.inferType(tmx);
+			// if (((VarTy) left).enforceMutable) {
+			// left = left.toMutable();
+			// }
 			return (((VarTy) right).matchVar(tmx, left));
 		}
 		// System.out.println("BASE: " + left + ", " + right + ", " +
@@ -352,6 +358,10 @@ public abstract class Ty implements TypeApi, OStrings {
 		sb.append("->");
 		toTy.typeKey(sb);
 		return sb.toString();
+	}
+
+	public String show() {
+		return this.toString();
 	}
 
 }

@@ -9,7 +9,6 @@ import blue.origami.transpiler.Env;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
-
 	Ty varref;
 	final int varId;
 
@@ -58,24 +57,33 @@ public class VarTy extends Ty {
 		return this.varref == null ? this : this.varref.getParamType();
 	}
 
+	private boolean enforceMutable = false;
+	private boolean enforceImmutable = false;
+
 	@Override
 	public boolean isMutable() {
-		return this.varref == null ? this.name().endsWith("$") : this.varref.isMutable();
+		return this.varref == null ? this.enforceMutable : this.varref.isMutable();
 	}
 
 	@Override
 	public Ty toMutable() {
-		if (this.varref != null) {
-			this.varref = this.varref.toMutable();
-			return this;
+		if (!this.enforceImmutable) {
+			if (this.varref != null) {
+				this.varref = this.varref.toMutable();
+				return this;
+			}
+			this.enforceMutable = true;
 		}
-		return super.toMutable();
+		return this;
 	}
 
 	@Override
 	public Ty toImmutable() {
-		if (this.varref != null) {
-			this.varref = this.varref.toImmutable();
+		if (!this.enforceMutable) {
+			if (this.varref != null) {
+				this.varref = this.varref.toImmutable();
+			}
+			this.enforceImmutable = true;
 		}
 		return this;
 	}
@@ -115,6 +123,11 @@ public class VarTy extends Ty {
 
 	boolean matchVar(TypeMatchContext tmx, Ty left) {
 		assert this.varref == null;
+		left = left.inferType(tmx);
+		if (this.enforceMutable) {
+			left = left.toMutable();
+		}
+
 		// if (this.varref != null) {
 		// return this.varref.match(tmx, sub, right);
 		// }

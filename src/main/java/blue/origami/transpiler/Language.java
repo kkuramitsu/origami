@@ -124,9 +124,9 @@ public class Language implements OFactory<Language> {
 			if (ref == null) {
 				Ty hint = env.findNameHint(name);
 				if (hint != null) {
-					return new ErrorCode(code, TFmt.undefined_name__YY1__YY2, code.name, hint);
+					throw new ErrorCode(code, TFmt.undefined_name__YY1__YY2, code.name, hint);
 				}
-				return new ErrorCode(code, TFmt.undefined_name__YY1, code.name);
+				throw new ErrorCode(code, TFmt.undefined_name__YY1, code.name);
 			}
 			ref.used(env);
 			mul = this.mul(mul, ref.newNameCode(env, code.getSource()));
@@ -165,9 +165,9 @@ public class Language implements OFactory<Language> {
 			} else {
 				NameInfo ref2 = env.get(code.name, NameInfo.class, (e, c) -> e.isNameInfo(env) ? e : null);
 				if (ref2 == null) {
-					return new ErrorCode(code, TFmt.undefined_name__YY1, code.name);
+					throw new ErrorCode(code, TFmt.undefined_name__YY1, code.name);
 				} else {
-					return new ErrorCode(code, TFmt.immutable_name__YY1, code.name);
+					throw new ErrorCode(code, TFmt.immutable_name__YY1, code.name);
 				}
 			}
 		}

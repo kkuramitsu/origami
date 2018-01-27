@@ -1,5 +1,7 @@
 package blue.origami.common;
 
+import blue.origami.transpiler.type.Ty;
+
 public class TLog implements OStrings {
 	public final static int Error = 1;
 	public final static int Warning = 1 << 1;
@@ -54,6 +56,9 @@ public class TLog implements OStrings {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i] != null && args[i].getClass().isArray()) {
 				args[i] = new ArrayFormatter((Object[]) args[i], ",");
+			}
+			if (args[i] != null && args[i] instanceof Ty) {
+				args[i] = ((Ty) args[i]).show();
 			}
 		}
 		return args;

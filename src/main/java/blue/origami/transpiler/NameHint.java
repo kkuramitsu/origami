@@ -6,7 +6,7 @@ public interface NameHint {
 
 	public Ty getType();
 
-	public boolean equalsName(String key);
+	// public boolean equalsName(String key);
 
 	// a, a', a'', a2, a12, a$ => a
 	public static String keyName(String name) {
@@ -51,9 +51,15 @@ public interface NameHint {
 	}
 
 	public static Ty findNameHint(Env env, String name) {
+		if (isOptional(name)) {
+			Ty ty = findNameHint(env, name.substring(0, name.length() - 1));
+			if (ty != null) {
+				return Ty.tOption(ty);
+			}
+			return Ty.tBool;
+		}
 		NameHint hint = matchSubNames(env, keyName(name));
 		if (hint == null && !isFlatName(name)) {
-			// System.out.println("trying flat matching " + flatName(name));
 			hint = matchSubNames(env, flatName(name));
 		}
 		if (hint == null) {
@@ -85,6 +91,10 @@ public interface NameHint {
 		return n.length() == 1 && Character.isLowerCase(n.charAt(0));
 	}
 
+	public static boolean isOptional(String name) {
+		return name.endsWith("?");
+	}
+
 	public static boolean isMutable(String name) {
 		return name.endsWith("$");
 	}
@@ -92,17 +102,10 @@ public interface NameHint {
 }
 
 class NameDecl implements NameHint {
-	String name;
 	Ty ty;
 
 	NameDecl(String name, Ty ty) {
-		this.name = name;
 		this.ty = ty;
-	}
-
-	@Override
-	public boolean equalsName(String name) {
-		return this.name.equals(name);
 	}
 
 	@Override
