@@ -230,6 +230,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tList = m(new BaseTy("List", 1));
 	public static final Ty tDict = m(new BaseTy("Dict", 1));
 	public static final Ty tStream = m(new BaseTy("Stream", 1));
+	public static final Ty tThis = m(new BaseTy("_"));
 
 	// VarParam
 	public static final Ty[] tVarParam = new Ty[26];
@@ -253,7 +254,6 @@ public abstract class Ty implements TypeApi, OStrings {
 	public static final Ty tChar = m(new BaseTy("Char"));
 
 	// public static final Ty tNULL = m(new SimpleTy("?"));
-	public static final Ty tThis = m(new BaseTy("_"));
 	public static final Ty tAuto = m(new BaseTy("auto"));
 
 	/* DynamicType */

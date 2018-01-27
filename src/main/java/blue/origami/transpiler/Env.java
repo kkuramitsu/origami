@@ -161,8 +161,24 @@ interface EnvAPIs {
 		}
 	}
 
+	public default TLog setLogger() {
+		TLog logs = new TLog();
+		this.add(TLog.class, logs);
+		return logs;
+	}
+
+	public default TLog getLogger() {
+		return this.get(TLog.class);
+	}
+
 	public default void reportLog(TLog log) {
-		log.dump();
+		TLog logger = this.getLogger();
+		if (logger == null) {
+			log.emit(TLog.Warning, TLog::report);
+		} else {
+			logger.append(log);
+			// logger.emit(TLog.Warning, TLog::report);
+		}
 	}
 
 	public default void reportError(Code code, OFormat format, Object... args) {

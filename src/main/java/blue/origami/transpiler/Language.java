@@ -96,8 +96,8 @@ public class Language implements OFactory<Language> {
 		// env.add("a", VarDomain.var(0));
 		// env.add("Data", Ty.tData());
 		env.addNameHint("i,j,k,m,n", Ty.tInt);
-		env.addNameHint("x,y,z,w", Ty.tFloat);
-		env.addNameHint("s,t,u,name", Ty.tString);
+		// env.addNameHint("x,y,z,w", Ty.tFloat);
+		// env.addNameHint("s,t,u,name", Ty.tString);
 	}
 
 	/* literal */

@@ -5,7 +5,7 @@ import java.util.function.Function;
 import blue.origami.common.OConsole;
 import blue.origami.transpiler.type.Ty;
 
-public class TyTest {
+public class TyClassTest {
 
 	public void testMatchIntVar() {
 		Ty left = Ty.tVar(null);
@@ -219,7 +219,7 @@ public class TyTest {
 	public void check(Object o, Object o2) {
 		String t = o.toString();
 		String ok = o2.toString();
-		if (!t.equals(ok)) {
+		if (!t.endsWith(ok)) {
 			OConsole.println("" + t + "" + OConsole.color(OConsole.Red, " != " + ok));
 		}
 	}

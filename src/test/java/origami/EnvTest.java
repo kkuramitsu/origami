@@ -27,6 +27,13 @@ public class EnvTest {
 		this.check("rightHoges", env.findNameHint("rightHoges"), "List[List[Int]]");
 	}
 
+	public void testOptionalNameTest() throws Throwable {
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
+		env.addNameHint("linenum", Ty.tInt);
+		this.check("linenum", env.findNameHint("linenum"), "Int");
+		this.check("linenum?", env.findNameHint("linenum"), "Option[Int]");
+	}
+
 	//
 	static Grammar g = null;
 	static Parser p = null;

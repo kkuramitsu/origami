@@ -101,10 +101,10 @@ public class TypeTest {
 		runScript("f(a,b)=(a,b);f", "(a,b)->a*b");
 	}
 
-	// public void testAssume() throws Throwable {
-	// runScript("assume age : Int", "{m}->Int");
-	// runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
-	// }
+	public void testAssume() throws Throwable {
+		runScript("assume age : Int", "()");
+		// runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
+	}
 
 	public void testData() throws Throwable {
 		runScript("f(p) = p.m; f", "{m}->Int");

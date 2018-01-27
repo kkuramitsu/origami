@@ -79,7 +79,6 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 	@Override
 	public void emitTopLevel(Env env, Code code) {
 		code = this.emitHeader(env, code);
-		// ODebug.trace("gen %s %s", code.isGenerative(), code);
 		if (!code.showError(env) && code.isGenerative()) {
 			Method m = new Method(evalName, Type.getType(this.ts.toClass(code.getType())), emptyTypes);
 			GeneratorAdapter mw = new GeneratorAdapter(ACC_PUBLIC + ACC_STATIC, m, null, null, this.cw());

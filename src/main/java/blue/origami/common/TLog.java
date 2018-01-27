@@ -1,33 +1,35 @@
 package blue.origami.common;
 
+import java.util.function.Consumer;
+
+import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 
 public class TLog implements OStrings {
-	public final static int Error = 1;
-	public final static int Warning = 1 << 1;
-	public final static int Notice = 1 << 2;
-	public final static int Info = 1 << 3;
-	public final static int Syntax = 1 << 4;
-	public final static int Type = 1 << 5;
-
-	public final static int TypeInfo = Info | Type;
+	public final static int Error = 0;
+	public final static int Warning = 1;
+	public final static int Notice = 2;
+	public final static int Info = 3;
+	public final static int None = 4;
+	// public final static int Syntax = 1 << 4;
+	// public final static int Type = 1 << 5;
 
 	public SourcePosition s;
 	public final int level;
 	public final OFormat format;
 	public final Object[] args;
-	public TLog prev = null;
+	public TLog next = null;
 
-	public TLog(TLog log, SourcePosition s, int level, OFormat format, Object... args) {
+	public TLog(SourcePosition s, int level, OFormat format, Object... args) {
 		this.s = s == null ? SourcePosition.UnknownPosition : s;
 		this.level = level;
 		this.format = format;
 		this.args = filter(args);
-		this.prev = log;
+		this.next = null;
 	}
 
-	public TLog(SourcePosition s, int level, OFormat format, Object... args) {
-		this(null, s, level, format, args);
+	public TLog() {
+		this(null, None, TFmt.Checked);
 	}
 
 	static Object[] filter(Object... args) {
@@ -64,24 +66,68 @@ public class TLog implements OStrings {
 		return args;
 	}
 
+	public static TLog append(TLog prev, TLog next) {
+		if (prev == null) {
+			return next;
+		}
+		prev.append(next);
+		return prev;
+	}
+
+	public void append(TLog log) {
+		TLog cur = this;
+		for (; cur.next != null; cur = cur.next) {
+			;
+		}
+		cur.next = log;
+	}
+
+	public TLog find(OFormat fmt) {
+		String m2 = fmt.toString();
+		for (TLog cur = this; cur != null; cur = cur.next) {
+			if (cur.format == fmt) {
+				return cur;
+			}
+			String m = cur.format.toString();
+
+			if (m.startsWith(m2)) {
+				return cur;
+			}
+		}
+		return null;
+	}
+
 	public void setSource(SourcePosition s) {
 		if (this.s == SourcePosition.UnknownPosition && s != null) {
 			this.s = s;
 		}
-		if (this.prev != null) {
-			this.prev.setSource(s);
+		if (this.next != null) {
+			this.next.setSource(s);
 		}
 	}
 
-	public TLog next() {
-		return this.prev;
-	}
+	// public TLog next() {
+	// return this.next;
+	// }
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		String mtype = (this.level == Error ? this.format.error() : this.format.warning());
-		if (this.level == Notice) {
+		String mtype = "";
+		switch (this.level) {
+		case Error:
+			mtype = this.format.error();
+			break;
+		case Warning:
+			mtype = this.format.warning();
+			break;
+		case Notice:
 			mtype = this.format.notice();
+			break;
+		case Info:
+			mtype = this.format.notice();
+			break;
+		default:
+			return;
 		}
 		SourcePosition.appendFormatMessage(sb, this.s, mtype, this.format, this.args);
 	}
@@ -91,13 +137,17 @@ public class TLog implements OStrings {
 		return OStrings.stringfy(this);
 	}
 
-	public void dump() {
-		for (TLog cur = this; cur != null; cur = cur.prev) {
-			report(cur.level, cur.toString());
+	public void emit(int level, Consumer<TLog> f) {
+		for (TLog cur = this; cur != null; cur = cur.next) {
+			if (cur.level <= level) {
+				f.accept(cur);
+			}
 		}
 	}
 
-	static void report(int level, String msg) {
+	public static void report(TLog log) {
+		int level = log.level;
+		String msg = log.toString();
 		if ((level & Error) == Error) {
 			OConsole.beginColor(OConsole.Red);
 			msg = OConsole.bold(msg);

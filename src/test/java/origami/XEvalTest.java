@@ -118,6 +118,11 @@ public class XEvalTest {
 		check("Some(1) >>= (\\n Some(n+1))", "2");
 	}
 
+	public void testData() throws Throwable {
+		check("assume Point : {x, y}\nlet p: Point = {x: 1, y: 2}\np.x", "1");
+		check("assume Point : {x, y}\nlet p: Point = {x: 1, y: 2, z: 3}\np.x", "1");
+	}
+
 	static Grammar g = null;
 	static Parser p = null;
 
