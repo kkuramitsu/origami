@@ -674,6 +674,8 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		final int ResultSucc = 1;
 		final int ResultUnfound = 2;
 
+		this.defineOriginalSymbol("memoentries", String.valueOf(memoSize * window + 1));
+
 		this.defineLib("MemoEntry", () -> {
 			if (this.isDefined("Int64")) {
 				pg.declStruct("MemoEntry", "key", "result", "mpos", "mtree", "mstate");

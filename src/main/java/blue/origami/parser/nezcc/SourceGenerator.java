@@ -65,6 +65,10 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 					if (value == null) {
 						continue;
 					}
+					if (name.equals("memoentries")) {
+						this.useMemoentries = true;
+						this.defineOriginalSymbol(name, value);
+					}
 					if (value.equals("'''") || value.equals("\"\"\"")) {
 						delim = value;
 						text = new StringBuilder();

@@ -187,6 +187,8 @@ private static  bool endT<T>(NezParserContext<T> px,int shift,int ntag0) where T
 
 '''
 
+memoentries        = $|memoentries|
+
 def parse = '''
 
 private static List<MemoEntry<T>> rMemo<T>(List<MemoEntry<T>> memos, T tree, int cnt, int length) where T : SimpleTree
@@ -208,7 +210,7 @@ private static List<MemoEntry<T>> newMemos<T>(T tree,int length) where T : Simpl
 public static T parse<T>(byte[] inputs, int length, TreeFunc newFunc, TreeSetFunc setFunc) where T : SimpleTree
 	{
 		T tree = (T)newFunc(gettag<T>(0), inputs, 0, length, 0);
-		NezParserContext<T> px = new NezParserContext<T>(inputs, length, 0, 0, tree, new TreeLog<T>(0, 0, tree, null, null), newFunc, setFunc, null, newMemos<T>(tree, 257));// FIXME 257
+		NezParserContext<T> px = new NezParserContext<T>(inputs, length, 0, 0, tree, new TreeLog<T>(0, 0, tree, null, null), newFunc, setFunc, null, newMemos<T>(tree, $|memoentries|));
 		tree = (T)((e0(px)) ? (px.tree) : (newFunc(gettag<T>(nezerror), inputs, px.headpos, length, 0)));
 		return tree;
 	}
@@ -280,12 +282,6 @@ main = '''
 
 
 man = '''
-=============
-   NOTICE
-=============
-
-Please correct a parameter '257' in parse function
-to accurate memoentries value.
 
 =============
  QUICK START
