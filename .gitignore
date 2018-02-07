@@ -1,5 +1,28 @@
 /target/
-.settings/
-.idea
 *.class
 
+# IntelliJ
+.idea
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+/classes
+/out
+
+# Eclipse
+*.pydevproject
+.project
+.metadata
+/bin
+/*/bin
+/tmp
+/*/tmp
+*.tmp
+*.bak
+*.swp
+*~.nib
+.classpath
+.settings
+.loadpath
