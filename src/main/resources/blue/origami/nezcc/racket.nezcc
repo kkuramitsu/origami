@@ -181,6 +181,8 @@ def logT = '''
 )
 '''
 
+memoentries        = $|memoentries|
+
 def parse = '''
 (define (rMemo memos tree cnt length)
   (if (< cnt length)
@@ -198,7 +200,7 @@ def parse = '''
 
 (define (parse inputs length)
   (define tree (newtree (gettag 0) inputs 0 length null))
-  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [lop 0] [lpos 0] [ltree tree] [lprev null])] [state null] [memos (newMemos tree 257)]))
+  (define px (new NezParserContext% [inputs inputs] [length length] [pos 0] [headpos 0] [tree tree] [treeLog (new TreeLog% [lop 0] [lpos 0] [ltree tree] [lprev null])] [state null] [memos (newMemos tree $|memoentries|)]));
   (set! tree (if (e0 px) (begin (get-field _tree px)) (begin (newtree (gettag nezerror) inputs (get-field _headpos px) length null))))
   tree
 )
@@ -273,6 +275,7 @@ main = '''
 # Match the number of parentheses
 
 man = '''
+
 =============
  QUICK START
 =============

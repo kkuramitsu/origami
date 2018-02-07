@@ -142,6 +142,14 @@ abstract class CodeSection<C> {
 		}
 	}
 
+	protected void defineOriginalSymbol(String key, String symbol) {
+		this.symbolMap.put(key, symbol);
+	}
+
+	protected void removeSymbol(String key) {
+		this.symbolMap.remove(key);
+	}
+
 	protected void defineVariable(String name, String type) {
 		String key = "T" + name;
 		if (!this.isDefined(key)) {

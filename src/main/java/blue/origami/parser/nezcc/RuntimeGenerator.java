@@ -674,6 +674,8 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		final int ResultSucc = 1;
 		final int ResultUnfound = 2;
 
+		this.defineOriginalSymbol("memoentries", String.valueOf(memoSize * window + 1));
+
 		this.defineLib("MemoEntry", () -> {
 			if (this.isDefined("Int64")) {
 				pg.declStruct("MemoEntry", "key", "result", "mpos", "mtree", "mstate");
@@ -733,7 +735,7 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 		});
 
 		this.defineLib("longkey", () -> {
-			this.defFunc(pg, 0, this.T("key"), "longkey", "key", "mpoint", () -> {
+			this.defFunc(pg, 2, this.T("key"), "longkey", "key", "mpoint", () -> {
 				C key = pg.emitOp(pg.V("key"), "*", pg.emitConv("Int->Int64", pg.vInt(window)));
 				key = pg.emitOp(key, "+", pg.emitConv("Int->Int64", pg.V("mpoint")));
 				return (key);
@@ -1069,35 +1071,43 @@ public abstract class RuntimeGenerator<B, C> extends CodeSection<C> {
 				return (pg.endBlock(block));
 			});
 
-			final C length = pg.emitArrayLength(pg.V("inputs"));
-			if (this.isDefined("TreeList")) {
-				this.defFunc(pg, Apublic, this.T("tree"), "parseText", "text", () -> {
-					B block = pg.beginBlock();
-					pg.emitVarDecl(block, false, "inputs",
-							pg.emitConv("String->Byte[]", pg.emitConv("String+0", pg.V("text"))));
-					if (this.isDefined("String+0")) {
-						pg.emitVarDecl(block, false, "length", length);
-					} else {
-						pg.emitVarDecl(block, false, "length", pg.emitOp(length, "-", pg.vInt(1)));
-					}
-					pg.Return(block, pg.emitFunc("parse", pg.V("inputs"), pg.V("length")));
-					return (pg.endBlock(block));
-				});
-			} else {
-				this.defFunc(pg, Apublic, this.T("tree"), "parseText", "text", "newFunc", "setFunc", () -> {
-					B block = pg.beginBlock();
-					pg.emitVarDecl(block, false, "inputs",
-							pg.emitConv("String->Byte[]", pg.emitConv("String+0", pg.V("text"))));
-					if (this.isDefined("String+0")) {
-						pg.emitVarDecl(block, false, "length", length);
-					} else {
-						pg.emitVarDecl(block, false, "length", pg.emitOp(length, "-", pg.vInt(1)));
-					}
-					pg.Return(block,
-							pg.emitFunc("parse", pg.V("inputs"), pg.V("length"), pg.V("newFunc"), pg.V("setFunc")));
-					return (pg.endBlock(block));
-				});
-			}
+			// final C length = pg.emitArrayLength(pg.V("inputs"));
+			// if (this.isDefined("TreeList")) {
+			// this.defFunc(pg, Apublic, this.T("tree"), "parseText", "text", ()
+			// -> {
+			// B block = pg.beginBlock();
+			// pg.emitVarDecl(block, false, "inputs",
+			// pg.emitConv("String->Byte[]", pg.emitConv("String+0",
+			// pg.V("text"))));
+			// if (this.isDefined("String+0")) {
+			// pg.emitVarDecl(block, false, "length", length);
+			// } else {
+			// pg.emitVarDecl(block, false, "length", pg.emitOp(length, "-",
+			// pg.vInt(1)));
+			// }
+			// pg.Return(block, pg.emitFunc("parse", pg.V("inputs"),
+			// pg.V("length")));
+			// return (pg.endBlock(block));
+			// });
+			// } else {
+			// this.defFunc(pg, Apublic, this.T("tree"), "parseText", "text",
+			// "newFunc", "setFunc", () -> {
+			// B block = pg.beginBlock();
+			// pg.emitVarDecl(block, false, "inputs",
+			// pg.emitConv("String->Byte[]", pg.emitConv("String+0",
+			// pg.V("text"))));
+			// if (this.isDefined("String+0")) {
+			// pg.emitVarDecl(block, false, "length", length);
+			// } else {
+			// pg.emitVarDecl(block, false, "length", pg.emitOp(length, "-",
+			// pg.vInt(1)));
+			// }
+			// pg.Return(block,
+			// pg.emitFunc("parse", pg.V("inputs"), pg.V("length"),
+			// pg.V("newFunc"), pg.V("setFunc")));
+			// return (pg.endBlock(block));
+			// });
+			// }
 		});
 	}
 
