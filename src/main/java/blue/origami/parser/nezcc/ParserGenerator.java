@@ -35,8 +35,7 @@ import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Stateful;
 import blue.origami.parser.peg.Typestate;
 
-public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
-		implements OFactory<ParserGenerator<B, C>> {
+public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C> implements OFactory<ParserGenerator<B, C>> {
 
 	protected abstract void setupSymbols();
 
@@ -746,6 +745,12 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 
 	protected ParserGrammar grammar;
 
+	protected boolean useMemoentries = false;
+
+	public boolean isUseMemoentries() {
+		return this.useMemoentries;
+	}
+
 	public final void generate1(ParserGrammar g) throws IOException {
 		ParserGeneratorVisitor<B, C> pgv = new ParserGeneratorVisitor<>();
 		this.grammar = g;
@@ -762,6 +767,11 @@ public abstract class ParserGenerator<B, C> extends RuntimeGenerator<B, C>
 		this.loadTreeLog(this);
 		this.loadState(this);
 		this.loadMemo(this, g);
+		if (this.isUseMemoentries()) {
+			String pvalue = this.getSymbol("def parse");
+			this.removeSymbol("def parse");
+			this.defineSymbol("def parse", pvalue);
+		}
 		pgv.loadCombinator(this);
 		this.loadMain(this);
 		this.makeLib("NezParserContext");

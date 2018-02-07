@@ -771,6 +771,7 @@ POSTOP =
 	"." $name(Identifier) ( ARGU #MethodExpr / #GetExpr )
 	/ ARGU #ApplyExpr
 	/ "[" $param(Arguments) "]" #IndexExpr
+  / "[" $left(Expression) '..' _ $right(Expression) "]" #SliceExpr
 	/ TO $type(Type) ('!!' _ #UnsafeCastExpr / #CastExpr )
 
 TO = 'to' EOT / 'as' EOT / '=>' _
@@ -848,8 +849,8 @@ DEntry = {
 	$value(Expression)
 }
 
-DataExpr = MUT? 
-	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr	
+DataExpr = MUT?
+	{ "{" (DICT #DictExpr / DATA #RecordExpr ) "}" } / BlockExpr
 
 ListExpr = RangeExpr / { MUT? "[" LIST  #ListExpr "]" }
 
@@ -952,17 +953,17 @@ Quantity = {
 } _
 
 OPNAME =
-	/ '++'  / '+' 
-	/ '-->' / '->' / '--' / '-'  
+	/ '++'  / '+'
+	/ '-->' / '->' / '--' / '-'
 	/ '**'  / '*'
 	/ '^^'  / '^'
-	/ '/' 
-	/ '%' 
-	/ '&&&' / '&&' / '&' 
-	/ '|||' / '||' / '|' 
+	/ '/'
+	/ '%'
+	/ '&&&' / '&&' / '&'
+	/ '|||' / '||' / '|'
 	/ '===' / '==>' / '==' / '=>'
 	/ '!='  / '!'
-	/ '>='  / '>' 
+	/ '>='  / '>'
 	/ '<='  / '<'
 	/ '::'  / ':'
 	/ '~'
@@ -992,8 +993,8 @@ codemap Python
 CodeFile = { $( (_ / EOL)* CodeMap EOL (_ EOL)* )* #CodeFile } (_ EOL)* EOF
 
 CodeMapDecl = {
-	'codemap' _ 
-	$name(Identifier) EOL 
+	'codemap' _
+	$name(Identifier) EOL
 	$list(CodeMapBody)
 	#CodeMapDecl
 }
@@ -1012,7 +1013,7 @@ CodeMap = CodeRequire / {
 
 CodeRequire = {
 	'#require' _
-	$(CodePath _)	
+	$(CodePath _)
 	$(',' _ CodePath _)
 	#Require
 } / CodeInclude

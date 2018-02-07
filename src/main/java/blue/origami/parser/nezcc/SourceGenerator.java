@@ -65,6 +65,10 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 					if (value == null) {
 						continue;
 					}
+					if (name.equals("memoentries")) {
+						this.useMemoentries = true;
+						this.defineOriginalSymbol(name, value);
+					}
 					if (value.equals("'''") || value.equals("\"\"\"")) {
 						delim = value;
 						text = new StringBuilder();
@@ -954,8 +958,11 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			}
 			return this.endBlock(block);
 		} else if (this.useLambda() && this.isNotIncludeMemo(cases)) {
-			String funcMap = this.vFuncMap(cases);
-			return this.emitApply(this.emitGroup(this.emitArrayIndex(funcMap, index)), this.V("px"));
+			StringBuilder block = this.beginBlock();
+			this.emitLine(block, this.format("const", this.s("Bool"), "funcMap", this.vFuncMap(cases)));
+			this.emitStmt(block, this.emitReturn(
+					this.emitApply(this.emitGroup(this.emitArrayIndex(this.V("funcMap"), index)), this.V("px"))));
+			return this.endBlock(block);
 		} else {
 			StringBuilder block = this.beginBlock();
 			this.emitVarDecl(block, false, "result", index);
@@ -981,8 +988,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 	}
 
 	protected String vFuncMap(List<String> cases) {
-		this.makeLib("ftrue");
-		this.makeLib("ffalse");
+		// this.makeLib("ftrue");
+		// this.makeLib("ffalse");
 		StringBuilder sb = new StringBuilder();
 		String delim = this.s("arrays");
 		if (delim.length() == 0) {
@@ -1004,7 +1011,9 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 			c++;
 		}
 		sb.append(this.s("end array"));
-		return this.getConstName(this.T("f"), "funcmap", cases.size(), sb.toString());
+		return sb.toString();
+		// return this.getConstName(this.T("f"), "funcmap", cases.size(),
+		// sb.toString());
 	}
 
 	@Override

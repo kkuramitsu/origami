@@ -6,7 +6,7 @@ extension          = kt
 
 Bool               = Boolean
 Byte               = Byte
-Byte[]             = ByteArray
+Byte[]             = Array<Byte>
 Int                = Int
 Int32              = Int
 Int64              = Long
@@ -21,7 +21,7 @@ Int64->Int         = (%s).toInt()
 Int->Int64         = (%s).toLong()
 
 TsetFunc           = (SimpleTree, Int, String, SimpleTree) -> SimpleTree
-TnewFunc           = (String, ByteArray, Int, Int, Int) -> SimpleTree
+TnewFunc           = (String, Array<Byte>, Int, Int, Int) -> SimpleTree
 
 Tf                 = (NezParserContext) -> Boolean
 #Tstate             = State?
@@ -99,13 +99,13 @@ private fun newMemos (tree:SimpleTree,length:Int):Array<MemoEntry> {
 }
 '''
 
-def parseText = '''
-private fun parseText (text:String,newFunc:(String, ByteArray, Int, Int, Int) -> SimpleTree,setFunc:(SimpleTree, Int, String, SimpleTree) -> SimpleTree):SimpleTree {
-    val inputs:ByteArray = text.toByteArray(Charsets.UTF_8)
-    val length:Int = inputs.count()
-    return parse(inputs,length,newFunc,setFunc)
-}
-'''
+#def parseText = '''
+#private fun parseText (text:String,newFunc:(String, Array<Byte>, Int, Int, Int) -> SimpleTree,setFunc:(SimpleTree, Int, String, SimpleTree) -> SimpleTree):SimpleTree {
+#  val inputs:Array<Byte> = text.toArray<Byte>(Charsets.UTF_8)
+#  val length:Int = inputs.count()
+#  return parse(inputs,length,newFunc,setFunc)
+#}
+#'''
 
 def AST = '''
   class SimpleTree {
@@ -124,6 +124,7 @@ def AST = '''
       return sb.toString()
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun strOut(sb:StringBuilder) {
       sb.append("[#")
       sb.append(this.key)
@@ -131,9 +132,7 @@ def AST = '''
         var sub:Array<SimpleTree> = this.value as Array<SimpleTree>
         for (child:SimpleTree in sub) {
           sb.append(" ")
-          if (child.key != null) {
-            sb.append("$" + child.key + "=")
-          }
+          sb.append("$" + child.key + "=")
           if(child.value is SimpleTree){
               (child.value as SimpleTree).strOut(sb)
           }
@@ -148,12 +147,13 @@ def AST = '''
   }
 '''
 def newAST = '''
-    var newast = fun(tag:String, inputs:ByteArray, pos:Int, epos:Int, size:Int):SimpleTree {
+    var newast = fun(tag:String, inputs:Array<Byte>, pos:Int, epos:Int, size:Int):SimpleTree {
         var aaaa:Array<SimpleTree> = Array<SimpleTree>(size, { SimpleTree("",1) })
-        return SimpleTree(tag, if(size == 0) String(inputs, pos, epos - pos) else aaaa)
+        return SimpleTree(tag, if(size == 0) String(inputs.toByteArray(), pos, epos - pos) else aaaa)
     }
 '''
 def subAST = '''
+    @Suppress("UNCHECKED_CAST")
     var subast = fun(parent:SimpleTree, n:Int, label:String, child:SimpleTree):SimpleTree {
         var childs:Array<SimpleTree?> = (parent).value as (Array<SimpleTree?>)
         childs[n] = SimpleTree(label, child)
@@ -164,23 +164,23 @@ def subAST = '''
 
 main = '''
   @Throws(IOException::class)
-  fun readInputs(a:String):ByteArray {
+  fun readInputs(a:String):Array<Byte> {
     var file:File = File(a)
     if(file.exists()) {
-      var buf:ByteArray = byteArrayOf(((file.length())+1).toInt())  // adding '\0' termination
+      var buf:ByteArray = ByteArray(((file.length())+1).toInt())  // adding '\0' termination
       var fin:FileInputStream = FileInputStream(file)
       fin.read(buf, 0, file.length().toInt())
-      return buf
+      return buf.toTypedArray()
     }
     else {
-      return (a + "\u0000").toByteArray(Charsets.UTF_8)
+      return (a + "\u0000").toByteArray(Charsets.UTF_8).toTypedArray()
     }
   }
 
   @Throws(IOException::class)
   fun main(args:Array<String>) {
     for(a:String in args) {
-      var buf:ByteArray = readInputs(a)
+      var buf:Array<Byte> = readInputs(a)
       var st:Long = System.nanoTime()
       var t:SimpleTree = parse(buf, buf.count()-1, newast, subast)
       var et:Long = System.nanoTime()
@@ -216,4 +216,3 @@ Read the main function. You will know how to
 integrate the parser into your programs.
 
 '''
-
