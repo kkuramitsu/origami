@@ -13,7 +13,7 @@ public interface NameHint {
 		int loc = name.length() - 1;
 		for (; loc > 0; loc--) {
 			char c = name.charAt(loc);
-			if (c != '\'' && c != '$' && !Character.isDigit(c) && c != '_') {
+			if (c != '\'' /* && c != '$' */ && !Character.isDigit(c) && c != '_') {
 				break;
 			}
 		}
@@ -58,6 +58,13 @@ public interface NameHint {
 			}
 			return Ty.tBool;
 		}
+		if (isMutable(name)) {
+			Ty ty = findNameHint(env, name.substring(0, name.length() - 1));
+			if (ty != null) {
+				return ty.toMutable();
+			}
+			return null;
+		}
 		NameHint hint = matchSubNames(env, keyName(name));
 		if (hint == null && !isFlatName(name)) {
 			hint = matchSubNames(env, flatName(name));
@@ -87,8 +94,14 @@ public interface NameHint {
 	}
 
 	public static boolean isOneLetterName(String name) {
-		String n = keyName(name);
-		return n.length() == 1 && Character.isLowerCase(n.charAt(0));
+		int cnt = 0;
+		for (int i = 0; i < name.length(); i++) {
+			char c = name.charAt(i);
+			if (Character.isLowerCase(c) || Character.isUpperCase(c)) {
+				cnt++;
+			}
+		}
+		return cnt == 1;
 	}
 
 	public static boolean isOptional(String name) {
@@ -96,7 +109,7 @@ public interface NameHint {
 	}
 
 	public static boolean isMutable(String name) {
-		return name.endsWith("$");
+		return name.endsWith("@") || name.endsWith("$");
 	}
 
 }

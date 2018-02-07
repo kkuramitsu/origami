@@ -8,10 +8,30 @@ import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.Language;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 
-public class EnvTest {
+public class NameTest {
+
+	public void testSingleName() throws Throwable {
+		assert NameHint.isOneLetterName("a") : "a";
+		assert NameHint.isOneLetterName("a2") : "a";
+		assert NameHint.isOneLetterName("a123") : "a";
+		assert NameHint.isOneLetterName("a'") : "a";
+		assert NameHint.isOneLetterName("a''") : "a";
+		assert NameHint.isOneLetterName("a$") : "a";
+		assert NameHint.isOneLetterName("a?") : "a";
+		assert NameHint.isOneLetterName("a$?") : "a";
+		assert NameHint.isOneLetterName("a*") : "a";
+		//
+		assert NameHint.isOneLetterName("A");
+		assert NameHint.isOneLetterName("α") : "α";
+		assert !NameHint.isOneLetterName("aa");
+		assert !NameHint.isOneLetterName("里");
+		assert !NameHint.isOneLetterName("あ") : "あ";
+	}
+
 	public void testNameTest() throws Throwable {
 		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		env.addNameHint("hoge", Ty.tList(Ty.tInt));
@@ -27,11 +47,28 @@ public class EnvTest {
 		this.check("rightHoges", env.findNameHint("rightHoges"), "List[List[Int]]");
 	}
 
+	public void testListNameTest() throws Throwable {
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
+		env.addNameHint("num", Ty.tInt);
+		this.check("num", env.findNameHint("num"), "Int");
+		this.check("nums", env.findNameHint("nums"), "List[Int]");
+		this.check("num*", env.findNameHint("num*"), "List[Int]");
+	}
+
+	public void testMutNameTest() throws Throwable {
+		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
+		env.addNameHint("num", Ty.tInt);
+		this.check("nums", env.findNameHint("nums"), "List[Int]");
+		this.check("nums$", env.findNameHint("nums$"), "List[Int]$");
+	}
+
 	public void testOptionalNameTest() throws Throwable {
 		Transpiler env = new Transpiler().initMe(g(), p(), new Language());
 		env.addNameHint("linenum", Ty.tInt);
 		this.check("linenum", env.findNameHint("linenum"), "Int");
-		this.check("linenum?", env.findNameHint("linenum"), "Option[Int]");
+		this.check("linenum?", env.findNameHint("linenum?"), "Option[Int]");
+		this.check("linenums?", env.findNameHint("linenums?"), "Option[List[Int]]");
+		this.check("linenums$?", env.findNameHint("linenums$?"), "Option[List[Int]$]");
 	}
 
 	//

@@ -10,7 +10,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 
-public class TypeTest {
+public class XTypingTest {
 
 	public void testLiteral() throws Throwable {
 		runScript("()", "()");
@@ -101,12 +101,17 @@ public class TypeTest {
 		runScript("f(a,b)=(a,b);f", "(a,b)->a*b");
 	}
 
+	public void testData() throws Throwable {
+		runScript("{x:1, y:2}", "{x,y}$");
+		runScript("a={x:1, y:2};a", "{x,y}");
+	}
+
 	public void testAssume() throws Throwable {
 		runScript("assume age : Int", "()");
 		// runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
 	}
 
-	public void testData() throws Throwable {
+	public void testData2() throws Throwable {
 		runScript("f(p) = p.m; f", "{m}->Int");
 		runScript("f(p) = p.m + p.n; f", "{m,n}->Int");
 	}
