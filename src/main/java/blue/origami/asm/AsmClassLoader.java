@@ -64,8 +64,8 @@ public class AsmClassLoader extends ClassLoader {
 			throw new ClassNotFoundException("not found '" + cname + "'");
 		}
 		// this.dump(cname, byteCode);
-		Class<?> c = this.defineClass(cname, byteCode, 0, byteCode.length);
-		return c;
+		// System.err.println("@@@@@ binary name: " + cname);
+		return this.defineClass(cname, byteCode, 0, byteCode.length);
 	}
 
 	private String dumpDirectory = null;
@@ -85,10 +85,9 @@ public class AsmClassLoader extends ClassLoader {
 				}
 				// OConsole.println("[Generated] " + classFileName + " size=" +
 				// byteCode.length);
-				ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-l", "-p", "-s",
-						/*
-						 * "-v" ,
-						 */classFileName);
+				ProcessBuilder pb = new ProcessBuilder("javap", "-c", "-l", "-p", "-s", /*
+																						 * "-v" ,
+																						 */classFileName);
 				pb.redirectOutput(Redirect.INHERIT);
 				Process p = pb.start();
 				p.waitFor();

@@ -430,4 +430,43 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 		return t.eq(Ty.tFloat) || t.eq(Ty.tInt64);
 	}
 
+	// ClassWriter
+	// FIX: https://stackoverflow.com/questions/11292701
+
+	class AsmClassWriter extends ClassWriter {
+		public AsmClassWriter(int flags) {
+			super(flags);
+		}
+
+		@Override
+		protected String getCommonSuperClass(final String type1, final String type2) {
+			Class<?> c, d;
+			try {
+				c = Class.forName(type1.replace('/', '.'), false, classLoader);
+				d = Class.forName(type2.replace('/', '.'), false, classLoader);
+			} catch (Exception e) {
+				throw new RuntimeException(e.toString());
+			}
+			if (c.isAssignableFrom(d)) {
+				return type1;
+			}
+			if (d.isAssignableFrom(c)) {
+				return type2;
+			}
+			if (c.isInterface() || d.isInterface()) {
+				return "java/lang/Object";
+			} else {
+				do {
+					c = c.getSuperclass();
+				} while (!c.isAssignableFrom(d));
+				return c.getName().replace('.', '/');
+			}
+		}
+	}
+
+	//
+	ClassWriter newClassWriter(int flags) {
+		return new AsmClassWriter(flags);
+	}
+
 }

@@ -55,7 +55,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 
 	ClassWriter cw() {
 		if (this.cw0 == null) {
-			this.cw0 = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+			this.cw0 = this.ts.newClassWriter(ClassWriter.COMPUTE_FRAMES);
 			this.cw0.visit(V1_8, ACC_PUBLIC, this.cname(), null/* signatrue */, "java/lang/Object", null);
 			// this.cw.visitSource("<input>", null);
 		}
@@ -171,6 +171,7 @@ public class AsmMapper extends CodeMapper implements Opcodes {
 		try {
 			code.emitCode(sec);
 		} catch (Exception e) {
+			e.printStackTrace();
 			ODebug.traceException(e);
 		}
 		mw.returnValue();
