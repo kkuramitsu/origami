@@ -8,7 +8,7 @@ import blue.origami.transpiler.type.Ty;
 
 abstract class SourceBuilder implements CodeSection {
 	protected final SyntaxMapper syntax;
-	protected final SourceTypeMapper ts;;
+	protected final SourceTypeMapper ts;
 	StringBuilder sb = new StringBuilder();
 	int indent = 0;
 
