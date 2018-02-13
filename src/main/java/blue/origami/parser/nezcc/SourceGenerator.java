@@ -29,7 +29,8 @@ public class SourceGenerator extends ParserGenerator<StringBuilder, String> {
 		super.init(options);
 		this.defineSymbol("base", this.getFileBaseName());
 		String[] files = options.stringList(MainOption.InputFiles);
-		this.initDefaultSymbols();
+		this.defineSymbol("nezcc", "nezcc/1.0.1");
+		this.defineSymbol("space", " ");
 		for (String file : files) {
 			if (!file.endsWith(".nezcc")) {
 				continue;

@@ -58,7 +58,7 @@ import blue.origami.parser.peg.Production;
 import blue.origami.parser.peg.Stateful;
 import blue.origami.parser.peg.Typestate;
 
-class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
+class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 	final static int POS = 1;
 	final static int TREE = 1 << 1;
 	final static int STATE = 1 << 2;
@@ -190,7 +190,7 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 	private NezCC2.Expression eMatchByte(int uchar, NezCC2 pg) {
 		NezCC2.Expression expr = pg.p("px.inputs[px.pos] == $0", (char) (uchar & 0xff));
 		if (uchar == 0) {
-			expr = pg.p("neof(px) && $0", expr);
+			expr = pg.p("neof(px)").and(expr);
 		}
 		return expr;
 	}
@@ -201,33 +201,24 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 
 	@Override
 	public NezCC2.Expression visitAny(PAny e, NezCC2 pg) {
-		return pg.p("neof(px) && mnext1(px)");
+		return pg.p("neof(px)").and(this.eNext(pg));
 	}
 
 	@Override
 	public NezCC2.Expression visitByteSet(PByteSet e, NezCC2 pg) {
-		// ByteSet bs = e.byteSet();
-		// int uchar = bs.getUnsignedByte();
-		// if (uchar != -1) {
-		// if (param == null) {
-		// param = this.emitChar(uchar);
-		// }
-		// if (proceed) {
-		// expr = this.apply("next1", this.V("px"), param);
-		// } else {
-		// expr = this.emitOp(this.apply("getbyte", this.V("px")), "==", param);
-		// }
-		// if (param == null) {
-		// param = this.vByteSet(bs);
-		// }
-		// expr = this.apply(proceed ? "nextbyte" : "getbyte", this.V("px"));
+		return this.eMatchByteSet(e.byteSet(), pg).and(this.eNext(pg));
 	}
 
 	private NezCC2.Expression eMatchByteSet(ByteSet bs, NezCC2 pg) {
+		int uchar = bs.getUnsignedByte();
+		if (uchar != -1) {
+			return this.eMatchByte(uchar, pg);
+		}
+		NezCC2.Expression index = pg.p("px.inputs[px.pos]");
 		if (pg.isDefined("Int32")) {
-			return this.apply("bits32", param, expr);
+			return pg.apply("bits32", bs, index);
 		} else {
-			return this.emitArrayIndex(param, expr);
+			return pg.p("$0[$1]", bs, index);
 		}
 	}
 
@@ -294,13 +285,36 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 					exprs.add(this.eSucc(pg));
 				}
 			}
-			return pg.emitDispatch(pg.emitJumpIndex(e.indexMap, true), exprs);
+			return this.emitDispatch(this.emitJumpIndex(e.indexMap, true, pg), exprs, pg);
 		} else {
 			for (int i = 0; i < e.size(); i++) {
 				exprs.add(this.patch(e.get(i), pg));
 			}
-			return pg.emitDispatch(pg.emitJumpIndex(e.indexMap, false), exprs);
+			return this.emitDispatch(this.emitJumpIndex(e.indexMap, false, pg), exprs, pg);
 		}
+	}
+
+	protected NezCC2.Expression emitJumpIndex(byte[] indexMap, boolean inc, NezCC2 pg) {
+		// this.makeLib(inc ? "nextbyte" : "getbyte");
+		// C a = this.vIndexMap(indexMap);
+		// C index = this.emitFunc(inc ? "nextbyte" : "getbyte", this.V("px"));
+		// boolean hasMinusIndex = false;
+		// for (byte b : indexMap) {
+		// if (b < 0) {
+		// hasMinusIndex = true;
+		// break;
+		// }
+		// }
+		// if (hasMinusIndex) {
+		// return this.emitUnsigned(this.emitArrayIndex(a, index));
+		// }
+		// return this.emitArrayIndex(a, index);
+		return null;
+	}
+
+	private NezCC2.Expression emitDispatch(NezCC2.Expression index, List<NezCC2.Expression> exprs, NezCC2 pg) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private boolean isAllConsumed(PDispatch e) {
@@ -486,13 +500,19 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 
 	@Override
 	public NezCC2.Expression visitTree(PTree e, NezCC2 pg) {
-		NezCC2.Expression pe = pg.emitAnd(this.match(e.get(0), pg), pg.endTree(e.endShift, e.tag, e.value));
-		if (e.folding) {
-			return pg.emitAnd(pg.foldTree(e.beginShift, e.label), pe);
-		} else {
-
-			return pg.emitAnd(pg.beginTree(e.beginShift), pe);
-		}
+		NezCC2.Expression inner = this.getInFunc(e.get(0), pg);
+		return pg.apply("newtree", e.beginShift, inner, e.endShift, e.tag, e.value);
+		// if(e.folding) {
+		//
+		// }
+		// NezCC2.Expression pe = pg.emitAnd(this.match(e.get(0), pg),
+		// pg.endTree(e.endShift, e.tag, e.value));
+		// if (e.folding) {
+		// return pg.emitAnd(pg.foldTree(e.beginShift, e.label), pe);
+		// } else {
+		//
+		// return pg.emitAnd(pg.beginTree(e.beginShift), pe);
+		// }
 	}
 
 	@Override
@@ -800,6 +820,10 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 		this.funcMap.put(funcName, funcBody.toString());
 	}
 
+	String getParseFunc(String funcName) {
+		return this.funcMap.get(funcName);
+	}
+
 	private String currentFuncName = null;
 
 	void setCurrentFuncName(String funcName) {
@@ -855,7 +879,7 @@ class ParserGeneratorVisitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC
 							if (!key.equals(nextNode)) {
 								// System.out.println("Cyclic " + key + " => " +
 								// nextNode);
-								ParserGeneratorVisitor2.this.crossRefNames.add(nextNode);
+								NezCC2Visitor2.this.crossRefNames.add(nextNode);
 							}
 						}
 					}
