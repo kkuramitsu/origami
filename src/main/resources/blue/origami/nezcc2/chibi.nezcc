@@ -1,0 +1,18 @@
+
+Dhead3 = '''
+assume pos, spos, epos: Int
+assume inputs : Array[ch]
+assume px : { inputs, pos, len, tree, memos}
+
+'''
+
+Tmatched   = Bool
+Vpx        = px$
+
+param      = %2$s
+delim      = ,
+
+switch     = '''
+match(%s)
+
+'''

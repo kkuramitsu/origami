@@ -59,11 +59,15 @@ import blue.origami.parser.peg.Stateful;
 import blue.origami.parser.peg.Typestate;
 
 class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
-	final static int POS = 1;
-	final static int TREE = 1 << 1;
-	final static int STATE = 1 << 2;
-	final static int CNT = 1 << 3;
-	final static int EMPTY = 1 << 4;
+	final int mask;
+	private final static int POS = NezCC2.POS;
+	private final static int TREE = NezCC2.TREE;
+	private final static int STATE = NezCC2.STATE;
+	private final static int EMPTY = NezCC2.EMPTY;
+
+	NezCC2Visitor2(int mask) {
+		this.mask = mask;
+	}
 
 	final static boolean Function = true;
 	final static boolean Inline = false;
@@ -72,6 +76,10 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 
 	public void start(ParserGrammar g, NezCC2 pg) {
 		Production p = g.getStartProduction();
+		this.g = g;
+		if (pg.isDefined("comment")) {
+			this.comment = pg.s("comment");
+		}
 		// pg.declConst(pg.T("length"), "memosize", -1, "" + g.getMemoPointSize());
 		// pg.declConst(pg.T("length"), "memoentries", -1, "" + (g.getMemoPointSize() *
 		// 64 + 1));
@@ -87,11 +95,9 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 				e0 = ((PNonTerminal) e0).getExpression();
 			}
 			if (!this.isDefinedSection(funcName)) {
-				final Expression target = e0;
-				final MemoPoint memo = memoPoint;
 				this.setCurrentFuncName(funcName);
 				// pg.writeSection(pg.emitAsm(pg.format("comment", target)));
-				this.define(funcName, pg.define(funcName, "px").is(this.match(target, pg, memo)));
+				this.define(funcName, pg.define(funcName, "px").add(this.eMemo(e0, memoPoint, pg)));
 			}
 			c++;
 		}
@@ -99,61 +105,42 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		// this.declSymbolTables();
 	}
 
-	private NezCC2.Expression match(Expression e, NezCC2 pg, MemoPoint m) {
+	private NezCC2.Expression eMemo(Expression e, MemoPoint m, NezCC2 pg) {
 		if (m == null) {
-			return this.match(e, pg, false);
+			return this.eMatch(e, false, pg);
 		}
-		String funcName = this.funcAcc("memo", Typestate.compute(e) == Typestate.Tree ? TREE : POS);
-		return pg.apply(funcName, "px", m.id + 1, this.getInFunc(e, pg));
+		int acc = (Typestate.compute(e) == Typestate.Tree ? POS | TREE : POS) | this.mask;
+		String funcName = this.funcAcc("memo", acc);
+		pg.used("getkey");
+		pg.used("getmemo");
+		pg.used("mconsume" + acc);
+		pg.used("mstore" + acc);
+		return pg.apply(funcName, "px", m.id + 1, this.getLambdaExpression(e, pg));
 	}
 
-	private NezCC2.Expression match(Expression e, NezCC2 pg, boolean asFunction) {
+	private NezCC2.Expression eMatch(Expression e, boolean asFunction, NezCC2 pg) {
 		if (asFunction) {
 			String funcName = this.getFuncName(e);
 			this.waitingList.add(e);
 			this.addFunctionDependency(this.getCurrentFuncName(), funcName);
-			return pg.p(funcName + "(px)");
+			return pg.apply(funcName, "px");
 		} else {
 			return e.visit(this, pg);
 		}
 	}
 
-	private NezCC2.Expression match(Expression e, NezCC2 pg) {
-		NezCC2.Expression inline = null;
-		if (e instanceof PMany) {
-			int acc = this.varStacks(POS, e.get(0));
-			inline = this.emitCombiMany(acc, e, pg);
-		} else if (e instanceof PNot) {
-			int acc = this.varStacks(POS, e.get(0));
-			inline = this.emitCombiNot(acc, e, pg);
-		} else if (e instanceof PLinkTree) {
-			inline = this.emitCombiLink((PLinkTree) e, pg);
-		} else if (e instanceof POption) {
-			int acc = this.varStacks(POS, e.get(0));
-			inline = this.emitCombiOption(acc, e, pg);
+	boolean alwaysFunc(Expression e) {
+		if (e instanceof PChoice) {
+			return e.size() > 2;
 		}
-		// if (e instanceof PChoice) {
-		// int acc = this.varStacks (POS, e);
-		// inline = this.emitInlineChoice(acc, e, pg);
-		// }
-		else if (e instanceof PAnd) {
-			inline = this.emitCombiAnd(POS, e, pg);
-		}
-		if (inline != null && pg.isDefined("Oinline")) {
-			return inline;
-		}
-		return this.match(e, pg, !this.isInline(e, pg));
-	}
-
-	private boolean isInline(Expression e, NezCC2 pg) {
-		if (e instanceof PByte || e instanceof PByteSet || e instanceof PAny || e instanceof PTree
-				|| e instanceof PPair) {
-			return true;
-		}
-		if (e instanceof PTag || e instanceof PValue || e instanceof PEmpty || e instanceof PFail) {
+		if (e instanceof PDispatch || e instanceof PNonTerminal) {
 			return true;
 		}
 		return false;
+	}
+
+	private NezCC2.Expression eMatch(Expression e, NezCC2 pg) {
+		return this.eMatch(e, this.alwaysFunc(e), pg);
 	}
 
 	@Override
@@ -182,31 +169,46 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		return pg.p("false");
 	}
 
+	private NezCC2.Expression eNext(NezCC2 pg) {
+		return pg.apply("mnext1", "px");
+	}
+
+	private NezCC2.Expression eNotEOF(NezCC2 pg) {
+		return pg.apply("neof", "px");
+	}
+
 	@Override
 	public NezCC2.Expression visitByte(PByte e, NezCC2 pg) {
-		return this.eMatchByte(e.byteChar(), pg).and(this.eNext(pg));
+		return this.eMatchByteNext(e.byteChar(), pg);
 	}
 
 	private NezCC2.Expression eMatchByte(int uchar, NezCC2 pg) {
 		NezCC2.Expression expr = pg.p("px.inputs[px.pos] == $0", (char) (uchar & 0xff));
 		if (uchar == 0) {
-			expr = pg.p("neof(px)").and(expr);
+			expr = this.eNotEOF(pg).and(expr);
 		}
 		return expr;
 	}
 
-	private NezCC2.Expression eNext(NezCC2 pg) {
-		return pg.apply("mnext1", "px");
+	private NezCC2.Expression eMatchByteNext(int uchar, NezCC2 pg) {
+		if (pg.isDefined("inc")) {
+			NezCC2.Expression expr = pg.p("px.inputs[inc!(px.pos)] == $0", (char) (uchar & 0xff));
+			if (uchar == 0) {
+				expr = this.eNotEOF(pg).and(expr);
+			}
+			return expr;
+		}
+		return this.eMatchByte(uchar, pg).and(this.eNext(pg));
 	}
 
 	@Override
 	public NezCC2.Expression visitAny(PAny e, NezCC2 pg) {
-		return pg.p("neof(px)").and(this.eNext(pg));
+		return this.eNotEOF(pg).and(this.eNext(pg));
 	}
 
 	@Override
 	public NezCC2.Expression visitByteSet(PByteSet e, NezCC2 pg) {
-		return this.eMatchByteSet(e.byteSet(), pg).and(this.eNext(pg));
+		return this.eMatchByteSetNext(e.byteSet(), pg);
 	}
 
 	private NezCC2.Expression eMatchByteSet(ByteSet bs, NezCC2 pg) {
@@ -215,106 +217,110 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 			return this.eMatchByte(uchar, pg);
 		}
 		NezCC2.Expression index = pg.p("px.inputs[px.pos]");
-		if (pg.isDefined("Int32")) {
+		if (pg.isDefined("bits32")) {
 			return pg.apply("bits32", bs, index);
 		} else {
 			return pg.p("$0[$1]", bs, index);
 		}
 	}
 
+	private NezCC2.Expression eMatchByteSetNext(ByteSet bs, NezCC2 pg) {
+		int uchar = bs.getUnsignedByte();
+		if (uchar != -1) {
+			return this.eMatchByteNext(uchar, pg);
+		}
+		if (pg.isDefined("Dinc")) {
+			NezCC2.Expression index = pg.p("px.inputs[inc!(px.pos)]");
+			if (pg.isDefined("bits32")) {
+				return pg.apply("bits32", bs, index);
+			} else {
+				return pg.p("$0[$1]", bs, index);
+			}
+		}
+		return this.eMatchByteSet(bs, pg).and(this.eNext(pg));
+	}
+
 	@Override
 	public NezCC2.Expression visitPair(PPair e, NezCC2 pg) {
-		// FIXME
-		// if (pg.useMultiBytes()) {
-		// ArrayList<Integer> l = new ArrayList<>();
-		// Expression remain = Expression.extractMultiBytes(e, l);
-		// if (l.size() > 2) {
-		// byte[] text = Expression.toMultiBytes(l);
-		// NezCC2.Expression match = pg.matchBytes(text, true);
-		// if (!(remain instanceof PEmpty)) {
-		// match = pg.emitAnd(match, this.match(remain, pg));
-		// }
-		// return match;
-		// }
-		// }
-		NezCC2.Expression pe1 = this.match(e.get(0), pg);
-		NezCC2.Expression pe2 = this.match(e.get(1), pg);
+		if (pg.isDefined("Ostring")) {
+			ArrayList<Integer> l = new ArrayList<>();
+			Expression remain = Expression.extractMultiBytes(e, l);
+			if (l.size() > 2) {
+				byte[] text = Expression.toMultiBytes(l);
+				NezCC2.Expression first = this.eMatchByteNext(text[0] & 0xff, pg);
+				for (int i = 1; i < text.length; i++) {
+					first = first.and(this.eMatchByteNext(text[i] & 0xff, pg));
+				}
+				if (!(remain instanceof PEmpty)) {
+					first = first.and(this.eMatch(remain, pg));
+				}
+				return first;
+			}
+		}
+		NezCC2.Expression pe1 = this.eMatch(e.get(0), pg);
+		NezCC2.Expression pe2 = this.eMatch(e.get(1), pg);
 		return pe1.and(pe2);
 	}
 
 	@Override
 	public NezCC2.Expression visitChoice(PChoice e, NezCC2 pg) {
-		int acc = this.varStacks(POS, e);
-		NezCC2.Expression main = this.match(e.get(0), pg);
-		for (int i = 1; i < e.size(); i++) {
-			main = pg.p("($0 || $1 && $2)", main, this.mback(pg, acc), this.match(e.get(i), pg));
+		if (e.size() == 2) {
+			return this.eChoice(e.get(0), e.get(1), pg);
+		} else {
+			int acc = this.varStacks(POS, e);
+			NezCC2.Expression main = this.eMatch(e.get(0), pg);
+			for (int i = 1; i < e.size(); i++) {
+				main = pg.p("($0 || $1 && $2)", main, this.eBack(pg, acc), this.eMatch(e.get(i), pg));
+			}
+			return this.eLetAccIn(acc, main, pg);
 		}
-		return this.eLetAccIn(acc, main, pg);
 	}
 
-	// private static boolean UseInlineChoice = false;
-	//
-	// private NezCC2.Expression emitCombiChoice(int acc, Expression e, NezCC2
-	// pg) {
-	// if (UseInlineChoice && pg.useLambda()) {
-	// NezCC2.Expression innerFunc = this.getInFunc(e.get(e.size() - 1), pg);
-	// if (innerFunc != null) {
-	// NezCC2.Expression second = innerFunc;
-	// for (int i = e.size() - 2; i >= 0; i--) {
-	// NezCC2.Expression first = this.getInFunc(e.get(i), pg);
-	// innerFunc = this.emitChoiceFunc2(pg, acc, first, second);
-	// second = pg.emitParserLambda(innerFunc);
-	// }
-	// return innerFunc;
-	// }
-	// }
-	// return null;
-	// }
+	NezCC2.Expression eChoice(Expression inner, Expression inner2, NezCC2 pg) {
+		int acc = this.varStacks(POS, inner);
+		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		int acc2 = this.varStacks(POS, inner2);
+		NezCC2.Expression lambda2 = this.getLambdaExpression(inner2, pg);
+		String func = this.funcAcc("choice", acc | acc2);
+		return pg.apply(func, "px", lambda, lambda2);
+	}
 
 	@Override
 	public NezCC2.Expression visitDispatch(PDispatch e, NezCC2 pg) {
 		List<NezCC2.Expression> exprs = new ArrayList<>(e.size() + 1);
 		exprs.add(this.eFail(pg));
-		if (this.isAllConsumed(e)) {
+		if (this.isAllConsumed(e) && pg.isDefined("inc")) {
 			for (int i = 0; i < e.size(); i++) {
 				Expression sub = e.get(i);
 				if (sub instanceof PPair) {
 					assert (!(sub.get(0) instanceof PPair));
-					exprs.add(this.match(sub.get(1), pg));
+					exprs.add(this.eMatch(sub.get(1), pg));
 				} else {
 					exprs.add(this.eSucc(pg));
 				}
 			}
-			return this.emitDispatch(this.emitJumpIndex(e.indexMap, true, pg), exprs, pg);
+			return pg.dispatch(this.eJumpIndex(e.indexMap, true, pg), exprs);
 		} else {
 			for (int i = 0; i < e.size(); i++) {
 				exprs.add(this.patch(e.get(i), pg));
 			}
-			return this.emitDispatch(this.emitJumpIndex(e.indexMap, false, pg), exprs, pg);
+			return pg.dispatch(this.eJumpIndex(e.indexMap, false, pg), exprs);
 		}
 	}
 
-	protected NezCC2.Expression emitJumpIndex(byte[] indexMap, boolean inc, NezCC2 pg) {
-		// this.makeLib(inc ? "nextbyte" : "getbyte");
-		// C a = this.vIndexMap(indexMap);
-		// C index = this.emitFunc(inc ? "nextbyte" : "getbyte", this.V("px"));
-		// boolean hasMinusIndex = false;
-		// for (byte b : indexMap) {
-		// if (b < 0) {
-		// hasMinusIndex = true;
-		// break;
-		// }
-		// }
-		// if (hasMinusIndex) {
-		// return this.emitUnsigned(this.emitArrayIndex(a, index));
-		// }
-		// return this.emitArrayIndex(a, index);
-		return null;
-	}
-
-	private NezCC2.Expression emitDispatch(NezCC2.Expression index, List<NezCC2.Expression> exprs, NezCC2 pg) {
-		// TODO Auto-generated method stub
-		return null;
+	protected NezCC2.Expression eJumpIndex(byte[] indexMap, boolean inc, NezCC2 pg) {
+		NezCC2.Expression index = inc ? pg.p("inc!(px.pos)") : pg.p("px.pos");
+		boolean hasMinusIndex = false;
+		for (byte b : indexMap) {
+			if (b < 0) {
+				hasMinusIndex = true;
+				break;
+			}
+		}
+		if (hasMinusIndex) {
+			return pg.p("$0[toindex!(px.inputs[$1])]", indexMap, index);
+		}
+		return pg.p("$0[px.inputs[$1]]", indexMap, index);
 	}
 
 	private boolean isAllConsumed(PDispatch e) {
@@ -340,97 +346,47 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		if (e instanceof PPair) {
 			Expression first = e.get(0);
 			if (first instanceof PAny || first instanceof PByte || first instanceof PByteSet) {
-				return pg.p("mnext(px) && $0", this.match(e.get(1), pg));
+				return pg.p("mnext(px) && $0", this.eMatch(e.get(1), pg));
 			}
 		}
-		return this.match(e, pg);
+		return this.eMatch(e, pg);
 	}
 
 	@Override
 	public NezCC2.Expression visitOption(POption e, NezCC2 pg) {
-		int acc = this.varStacks(POS, e.get(0));
-		NezCC2.Expression inline = this.emitCombiOption(acc, e, pg);
-		if (inline == null) {
-			return this.emitOption(pg, acc, this.match(e.get(0), pg));
-		}
-		return inline;
+		return this.eOption(e.get(0), pg);
 	}
 
-	private NezCC2.Expression emitOption(NezCC2 pg, int acc, NezCC2.Expression first) {
-		NezCC2.Expression second = this.mback(pg, acc);
-		return this.eLetAccIn(acc, pg.p("$0 || $1", first, second), pg);
-	}
-
-	NezCC2.Expression emitCombiOption(int acc, Expression e, NezCC2 pg) {
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			String func = this.funcAcc("option", acc);
-			return pg.apply(func, "px", lambda);
-		}
-		return null;
+	NezCC2.Expression eOption(Expression inner, NezCC2 pg) {
+		int acc = this.varStacks(POS, inner);
+		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		String func = this.funcAcc("choice", acc);
+		return pg.apply(func, "px", lambda, pg.unary("^succ"));
 	}
 
 	@Override
 	public NezCC2.Expression visitMany(PMany e, NezCC2 pg) {
-		int acc = this.varStacks(POS, e.get(0));
-		if (e.isOneMore()) {
-			acc |= CNT;
-		}
-		NezCC2.Expression inline = this.emitCombiMany(acc, e, pg);
-		if (inline == null) {
-			NezCC2.Expression cond = this.match(e.get(0), pg);
-			return this.emitMany(pg, acc, cond);
-		}
-		return inline;
+		return this.eMany(e.isOneMore(), e.get(0), pg);
 	}
 
-	private NezCC2.Expression emitMany(NezCC2 pg, int acc, NezCC2.Expression cond) {
-		if ((acc & EMPTY) == EMPTY) {
-			cond = pg.p("$0 && pos < px.pos", cond);
+	private NezCC2.Expression eMany(boolean isOneMore, Expression inner, NezCC2 pg) {
+		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		int acc = this.varStacks(POS, inner);
+		if (!NonEmpty.isAlwaysConsumed(inner)) {
+			acc |= EMPTY;
 		}
-		// if (!pg.isDefined("while")) {
-		NezCC2.Expression main = pg.ifexpr(cond, pg.apply(this.getCurrentFuncName(), "px"), this.mback(pg, acc));
-		return this.eLetAccIn(acc, main, pg);
-		// } else {
-		// B block = pg.beginBlock();
-		// pg.emitWhileStmt(block, cond, () -> this.emitUpdate(pg, acc));
-		// pg.emitStmt(block, pg.emitReturn(back));
-		// return this.emitVarDecl(pg, acc, true, pg.endBlock(block));
-		// }
-	}
-
-	private NezCC2.Expression emitCombiMany(int acc, Expression e, NezCC2 pg) {
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			if (!NonEmpty.isAlwaysConsumed(e.get(0))) {
-				acc |= EMPTY;
-			}
-			String func = this.funcAcc("many", acc);
-			if (!pg.isDefined("while") && (acc & CNT) == CNT) {
-				return pg.apply(func, "px", lambda, 0);
-			} else {
-				return pg.apply(func, "px", lambda);
-			}
-		}
-		return null;
+		String func = this.funcAcc("many", acc);
+		NezCC2.Expression e = pg.apply(func, "px", lambda);
+		return (isOneMore) ? this.eMatch(inner, pg).and(e) : e;
 	}
 
 	@Override
 	public NezCC2.Expression visitAnd(PAnd e, NezCC2 pg) {
-		NezCC2.Expression inline = this.emitCombiAnd(POS, e, pg);
-		if (inline == null) {
-			return this.emitAnd(pg, POS, this.match(e.get(0), pg));
-		}
-		return inline;
+		return this.eAnd(e.get(0), pg);
 	}
 
-	private NezCC2.Expression emitAnd(NezCC2 pg, int acc, NezCC2.Expression inner) {
-		NezCC2.Expression main = pg.p("$0 && $1", inner, this.mback(pg, POS));
-		return this.eLetAccIn(POS, main, pg);
-	}
-
-	private NezCC2.Expression emitCombiAnd(int acc, Expression e, NezCC2 pg) {
-		Expression p = Expression.deref(e.get(0));
+	private NezCC2.Expression eAnd(Expression inner, NezCC2 pg) {
+		Expression p = Expression.deref(inner);
 		if (p instanceof PAny) {
 			return pg.apply("neof", "px");
 		}
@@ -439,33 +395,18 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		// this.funcAcc("getbyte");
 		// return pg.emitMatchByteSet(bs, null, false);
 		// }
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			String func = this.funcAcc("and", POS);
-			return pg.apply(func, "px", lambda);
-		}
-		return null;
+		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		return pg.apply("and1", "px", lambda);
 	}
 
 	@Override
 	public NezCC2.Expression visitNot(PNot e, NezCC2 pg) {
-		int acc = this.varStacks(POS, e.get(0));
-		NezCC2.Expression inline = this.emitCombiNot(acc, e, pg);
-		if (inline == null) {
-			return this.emitNot(pg, acc, this.match(e.get(0), pg));
-		}
-		return inline;
+		return this.eNot(e.get(0), pg);
 	}
 
-	private NezCC2.Expression emitNot(NezCC2 pg, int acc, NezCC2.Expression inner) {
-		// NezCC2.Expression main = pg.emitIfB(inner, pg.emitFail(), this.mback(pg,
-		// acc));
-		NezCC2.Expression main = pg.p("!$0 && $1", inner, this.mback(pg, acc));
-		return this.eLetAccIn(acc, main, pg);
-	}
-
-	private NezCC2.Expression emitCombiNot(int acc, Expression e, NezCC2 pg) {
-		Expression p = Expression.deref(e.get(0));
+	private NezCC2.Expression eNot(Expression inner, NezCC2 pg) {
+		int acc = this.varStacks(POS, inner);
+		Expression p = Expression.deref(inner);
 		if (p instanceof PAny) {
 			return pg.p("!neof(px)");
 		}
@@ -476,87 +417,72 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		// NezCC2.Expression expr = pg.emitMatchByteSet(bs, null, false);
 		// return expr;
 		// }
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			String func = this.funcAcc("not", acc);
-			return pg.apply(func, "px", lambda);
-		}
-		return null;
+		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		String func = this.funcAcc("not", acc);
+		return pg.apply(func, "px", lambda);
 	}
 
-	private NezCC2.Expression getInFunc(Expression inner, NezCC2 pg) {
-		if (pg.isDefined("lambda") && this.isInline(inner, pg)) {
-			NezCC2.Expression e = this.match(inner, pg, false);
+	private NezCC2.Expression getLambdaExpression(Expression inner, NezCC2 pg) {
+		if (pg.isDefined("lambda")) {
+			if (this.alwaysFunc(inner) && pg.isDefined("funcref")) {
+				this.eMatch(inner, true, pg);
+				return pg.p("^" + this.getFuncName(inner));
+			}
+			NezCC2.Expression e = this.eMatch(inner, false, pg);
 			return pg.apply(null, "px", e);
-			// String px = this.V("px");
-			// String lambda = String.format(this.s("lambda"), px, inner);
-			// String p = "p" + this.varSuffix();
-			// return lambda.replace("px", p);
 		} else {
-			this.match(inner, pg, true);
+			this.eMatch(inner, true, pg);
 			return pg.p("^" + this.getFuncName(inner));
 		}
 	}
 
 	@Override
 	public NezCC2.Expression visitTree(PTree e, NezCC2 pg) {
-		NezCC2.Expression inner = this.getInFunc(e.get(0), pg);
-		return pg.apply("newtree", e.beginShift, inner, e.endShift, e.tag, e.value);
-		// if(e.folding) {
-		//
-		// }
-		// NezCC2.Expression pe = pg.emitAnd(this.match(e.get(0), pg),
-		// pg.endTree(e.endShift, e.tag, e.value));
-		// if (e.folding) {
-		// return pg.emitAnd(pg.foldTree(e.beginShift, e.label), pe);
-		// } else {
-		//
-		// return pg.emitAnd(pg.beginTree(e.beginShift), pe);
-		// }
+		NezCC2.Expression inner = this.getLambdaExpression(e.get(0), pg);
+		if (e.folding) {
+			return pg.apply("foldtree", e.beginShift, inner, e.tag, e.endShift);
+		}
+		return pg.apply("newtree", e.beginShift, inner, e.tag, e.endShift);
 	}
 
 	@Override
 	public NezCC2.Expression visitDetree(PDetree e, NezCC2 pg) {
-		NezCC2.Expression inline = this.emitCombiDetree(e, pg);
-		if (inline == null) {
-			NezCC2.Expression main = pg.p("$0 && $1", this.match(e.get(0), pg), this.mback(pg, TREE));
-			return this.eLetAccIn(TREE, main, pg);
-		}
-		return inline;
+		return this.eDetree(e, pg);
+		// NezCC2.Expression inline = this.eDetree(e, pg);
+		// if (inline == null) {
+		// NezCC2.Expression main = pg.p("$0 && $1", this.match(e.get(0), pg),
+		// this.mback(pg, TREE));
+		// return this.eLetAccIn(TREE, main, pg);
+		// }
+		// return inline;
 	}
 
-	private NezCC2.Expression emitCombiDetree(PDetree e, NezCC2 pg) {
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			String funcName = this.funcAcc("detree", TREE);
-			return pg.apply(funcName, "px", lambda);
-		}
-		return null;
+	private NezCC2.Expression eDetree(PDetree e, NezCC2 pg) {
+		NezCC2.Expression lambda = this.getLambdaExpression(e.get(0), pg);
+		String funcName = this.funcAcc("detree", TREE);
+		return pg.apply("detree", "px", lambda);
 	}
 
 	@Override
 	public NezCC2.Expression visitLinkTree(PLinkTree e, NezCC2 pg) {
-		NezCC2.Expression inline = this.emitCombiLink(e, pg);
-		if (inline == null) {
-			NezCC2.Expression main = pg.p("$0 && backLink(px, $1)", this.match(e.get(0), pg), e.label);
-			return this.eLetAccIn(TREE, main, pg);
-		}
-		return inline;
+		return this.eLink(e, pg);
+		// NezCC2.Expression inline = this.eLink(e, pg);
+		// if (inline == null) {
+		// NezCC2.Expression main = pg.p("$0 && backLink(px, $1)", this.match(e.get(0),
+		// pg), e.label);
+		// return this.eLetAccIn(TREE, main, pg);
+		// }
+		// return inline;
 	}
 
-	private NezCC2.Expression emitCombiLink(PLinkTree e, NezCC2 pg) {
-		NezCC2.Expression lambda = this.getInFunc(e.get(0), pg);
-		if (lambda != null) {
-			String funcName = this.funcAcc("link", TREE);
-			return pg.apply(funcName, "px", e.label, lambda);
-		}
-		return null;
+	private NezCC2.Expression eLink(PLinkTree e, NezCC2 pg) {
+		NezCC2.Expression lambda = this.getLambdaExpression(e.get(0), pg);
+		return pg.apply("linktree", "px", e.label, lambda);
 	}
 
 	@Override
 	public NezCC2.Expression visitTag(PTag e, NezCC2 pg) {
-		// FIXME
-		return pg.apply("tagtree", e.tag);
+		return pg.apply("tagtree", "px", e.tag);
 	}
 
 	@Override
@@ -722,7 +648,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 			acc |= TREE;
 		}
 		if (Stateful.isStateful(e)) {
-			acc |= STATE;
+			acc |= (STATE | TREE);
 		}
 		return acc;
 	}
@@ -732,9 +658,6 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 	}
 
 	private NezCC2.Expression eLetAccIn(int acc, NezCC2.Expression e, NezCC2 pg) {
-		if ((acc & CNT) == CNT) {
-			e = pg.p("let state = 0; $0", e);
-		}
 		if ((acc & STATE) == STATE) {
 			e = pg.p("let state = px.state; $0", e);
 		}
@@ -773,34 +696,47 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		if ((acc & STATE) == STATE) {
 			l.add("state");
 		}
-		if ((acc & CNT) == CNT) {
-			l.add("cnt");
-		}
 		return l.toArray(new String[l.size()]);
 	}
 
-	private NezCC2.Expression mback(NezCC2 pg, int acc) {
-		String funcName = "back" + (acc & ~(CNT | EMPTY));
-		String[] args = this.accNames(acc & ~(CNT | EMPTY), "px");
+	private NezCC2.Expression eBack(NezCC2 pg, int acc) {
+		String funcName = "back" + (acc & ~(EMPTY));
+		String[] args = this.accNames(acc & ~(EMPTY), "px");
 		return pg.apply(funcName, args);
 	}
 
 	// function
+	ParserGrammar g;
+	String comment = "/*%s*/";
 	HashMap<String, String> exprFuncMap = new HashMap<>();
+	HashMap<String, String> termMap = new HashMap<>();
 
 	private String getFuncName(Expression e) {
+		String suffix = "";
 		if (e instanceof PNonTerminal) {
 			String uname = ((PNonTerminal) e).getUniqueName();
-			// if (uname.indexOf('"') > 0) {
-			// String funcName = this.symbolMap.get(uname);
-			// if (funcName == null) {
-			// funcName = "t" + this.symbolMap.size();
-			// this.symbolMap.put(uname, funcName);
-			// }
-			// return funcName;
-			// }
-			return uname.replace(':', '_').replace('.', '_').replace('&', '_');
+			MemoPoint memoPoint = this.g.getMemoPoint(((PNonTerminal) e).getUniqueName());
+			suffix = String.format(this.comment, uname);
+			if (memoPoint != null) {
+				String fname = this.exprFuncMap.get(uname);
+				if (fname == null) {
+					fname = "e" + this.exprFuncMap.size() + suffix;
+					this.exprFuncMap.put(uname, fname);
+				}
+				return fname;
+			}
+			e = ((PNonTerminal) e).getExpression();
 		}
+		String key = e.toString();
+		String name = this.exprFuncMap.get(key);
+		if (name == null) {
+			name = "e" + this.exprFuncMap.size() + suffix;
+			this.exprFuncMap.put(key, name);
+		}
+		return name;
+	}
+
+	private String getFuncName(MemoPoint mp, Expression e) {
 		String key = e.toString();
 		String name = this.exprFuncMap.get(key);
 		if (name == null) {

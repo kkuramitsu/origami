@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import blue.origami.Version;
 import blue.origami.common.OConsole;
@@ -22,10 +23,14 @@ import blue.origami.main.MainOption;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.peg.ByteSet;
 import blue.origami.parser.peg.Production;
-import blue.origami.parser.peg.Typestate;
+import blue.origami.parser.peg.Stateful;
 
 public class NezCC2 implements OFactory<NezCC2> {
-	private boolean treeConstruction = true;
+	final static int POS = 1;
+	final static int TREE = 1 << 1;
+	final static int STATE = 1 << 2;
+	final static int EMPTY = 1 << 3;
+	private int mask = POS;
 
 	@Override
 	public Class<?> keyClass() {
@@ -39,23 +44,28 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 	@Override
 	public void init(OOption options) {
-		this.treeConstruction = options.is(MainOption.TreeConstruction, true);
 		String file0 = options.stringValue(MainOption.GrammarFile, "parser.opeg");
 		String base = SourcePosition.extractFileBaseName(file0);
 		this.defineSymbol("base", base);
 		this.defineSymbol("nezcc", "nezcc/2.0");
 		this.defineSymbol("space", " ");
-
+		if (options.is(MainOption.TreeConstruction, true)) {
+			this.mask |= TREE;
+		}
 		String[] files = options.stringList(MainOption.InputFiles);
+		if (files.length == 0) {
+			files = new String[] { "chibi.nezcc" };
+		}
 		for (String file : files) {
 			if (!file.endsWith(".nezcc")) {
 				continue;
 			}
 			if (!new File(file).isFile()) {
-				file = Version.ResourcePath + "/nezcc/" + file;
+				file = Version.ResourcePath + "/nezcc2/" + file;
 			}
 			this.importNezccFile(file);
 		}
+
 	}
 
 	HashMap<String, String> formatMap = new HashMap<>();
@@ -78,8 +88,8 @@ public class NezCC2 implements OFactory<NezCC2> {
 					if (loc <= 0) {
 						continue;
 					}
-					name = line.substring(0, loc - 1).trim();
-					String value = line.substring(loc + 1).trim();
+					name = line.substring(0, loc).trim();
+					String value = line.substring(loc + 2).trim();
 					// System.out.printf("%2$s : %1$s\n", value, name);
 					if (value == null) {
 						continue;
@@ -133,6 +143,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 					// System.out.printf("'%s': %s\n", key, symbol);
 				}
 			}
+			// System.err.println(key + " = " + symbol);
 			this.formatMap.put(key, symbol);
 		}
 	}
@@ -151,147 +162,14 @@ public class NezCC2 implements OFactory<NezCC2> {
 		// }
 		// this.importNezccFile(Version.ResourcePath + "/nezcc/default.nezcc");
 		//
-		// this.defineSymbol("tab", " ");
-		// if (this.isDefined("eq")) {
-		// this.defineSymbol("==", this.s("eq"));
-		// }
-		// if (this.isDefined("ne")) {
-		// this.defineSymbol("!=", this.s("ne"));
-		// }
-		// if (this.isDefined("options")) {
-		// for (String opt : this.s("options").split(",")) {
-		// this.defineSymbol("O" + opt, opt);
-		// }
-		// }
-		//
-		// if (this.isDefined("Array")) {
-		// this.defineSymbol("Byte[]", this.format("Array", this.s("Byte")));
-		// }
-		// this.defineSymbol("Int8", this.s("Byte"));
-		// this.defineSymbol("Symbol", this.s("String"));
-		//
-		// if (!this.isDefined("Tpx")) {
-		// String t = this.format("structname", "NezParserContext");
-		// this.defineVariable("px", t);
-		// }
-		// if (!this.isDefined("TtreeLog")) {
-		// String t = this.format("structname", "TreeLog");
-		// if (this.isDefined("Option")) {
-		// this.defineVariable("tcur", t);
-		// t = this.format("Option", t);
-		// }
-		// this.defineVariable("treeLog", t);
-		// }
-		// if (!this.isDefined("Tstate")) {
-		// String t = this.format("structname", "State");
-		// if (this.isDefined("Option")) {
-		// this.defineVariable("scur", t);
-		// t = this.format("Option", t);
-		// }
-		// this.defineVariable("state", t);
-		// }
-		// this.defineVariable("tcur", this.T("treeLog"));
-		// this.defineVariable("scur", this.T("state"));
-		// if (this.isDefined("functype")) {
-		// if (this.isAliasFuncType()) { // alias version
-		// this.defineVariable("newFunc", this.format("structname", "TreeFunc"));
-		// this.defineVariable("setFunc", this.format("structname", "TreeSetFunc"));
-		// this.defineVariable("f", this.format("structname", "ParserFunc"));
-		// }
-		// } else {
-		// this.defineVariable("newFunc", this.s("TreeFunc"));
-		// this.defineVariable("setFunc", this.s("TreeSetFunc"));
-		// this.defineVariable("f", this.s("ParserFunc"));
-		// }
-		//
-		// this.defineVariable("matched", this.s("Bool"));
-		// this.defineVariable("inputs", this.s("Byte[]"));
-		// this.defineVariable("pos", this.s("Int"));
-		// this.defineVariable("headpos", this.T("pos"));
-		// this.defineSymbol("backpos", "backpos");
-		// this.defineVariable("length", this.s("Int"));
-		// this.defineVariable("tree", this.s("Tree"));
-		// this.defineVariable("c", this.s("Int"));
-		// this.defineVariable("n", this.s("Int"));
-		// this.defineVariable("cnt", this.s("Int"));
-		// this.defineVariable("shift", this.s("Int"));
-		//
-		// if (this.isDefined("Int32")) {
-		// this.defineVariable("bits", this.format("Array", this.s("Int32")));
-		// } else {
-		// this.defineVariable("bits", this.format("Array", this.s("Bool")));
-		// }
-		//
-		// this.defineVariable("label", this.s("Symbol"));
-		// this.defineVariable("tag", this.s("Symbol"));
-		// this.defineVariable("value", this.T("inputs"));
-		//
-		// this.defineVariable("lop", this.s("Int"));
-		// this.defineVariable("lpos", this.T("length"));
-		// this.defineVariable("ltree", this.T("tree")); // haskell
-		//
-		// if (!this.isDefined("m")) {
-		// String t = this.format("structname", "MemoEntry");
-		// this.defineVariable("m", t);
-		// }
-		//
-		// if (this.isDefined("MemoList")) {
-		// this.defineVariable("memos", this.format("MemoList", this.T("m")));
-		// } else {
-		// this.defineVariable("memos", this.format("Array", this.T("m")));
-		// }
-		//
-		// this.defineVariable("subtrees", this.s("TreeList"));
-		// // this.defineSymbol("TreeList.empty", this.s("null"));
-		// // this.defineSymbol("TreeList.cons", "%3$s");
-		//
-		// if (this.isDefined("Int64")) {
-		// this.defineVariable("key", this.s("Int64"));
-		// } else {
-		// this.defineVariable("key", this.s("Int"));
-		// }
-		// this.defineVariable("mpoint", this.s("Int"));
-		// this.defineVariable("result", this.s("Int"));
-		// this.defineVariable("text", this.s("String"));
-		//
-		// this.defineVariable("label", this.s("Symbol"));
-		// this.defineVariable("tag", this.s("Symbol"));
-		// this.defineVariable("ntag", this.T("cnt"));
-		// this.defineVariable("ntag0", this.T("cnt"));
-		// this.defineVariable("nlabel", this.T("cnt"));
-		// this.defineVariable("value", this.T("inputs"));
-		// this.defineVariable("nvalue", this.T("cnt"));
-		// this.defineVariable("spos", this.T("cnt"));
-		// this.defineVariable("epos", this.T("cnt"));
-		// this.defineVariable("shift", this.T("cnt"));
-		// this.defineVariable("length", this.T("cnt"));
-		//
-		// this.defineVariable("memoPoint", this.T("cnt"));
-		// this.defineVariable("result", this.T("cnt"));
-		//
-		// this.defineVariable("mpos", this.T("pos")); // haskell
-		// this.defineVariable("mtree", this.T("tree")); // haskell
-		// this.defineVariable("mstate", this.T("state")); // haskell
-		//
-		// this.defineVariable("lprev", this.T("treeLog"));
-		// this.defineVariable("lnext", this.T("treeLog"));
-		// this.defineVariable("sprev", this.T("state"));
-		//
-		// this.defineVariable("epos", this.T("pos"));
-		// this.defineVariable("child", this.T("tree"));
-		// this.defineVariable("f2", this.T("f"));
-		// this.defineSymbol("Intag", "0");
-		// this.defineSymbol("Ikey", "-1");
-		// this.defineSymbol("Icnt", "0");
-		// this.defineSymbol("Ipos", "0");
-		// this.defineSymbol("Ilop", "0");
-		// this.defineSymbol("Ilpos", "0");
-		// this.defineSymbol("Iheadpos", "0");
-		// this.defineSymbol("Iresult", "0");
-		// if (this.isDefined("paraminit")) {
-		// this.defineSymbol("PInewFunc", this.emitFuncRef("newAST"));
-		// this.defineSymbol("PIsetFunc", this.emitFuncRef("subAST"));
-		// }
+		this.defineSymbol("tab", " ");
+		this.defineSymbol("Tspos", this.s("Tpos"));
+		this.defineSymbol("Tepos", this.s("Tpos"));
+		this.defineSymbol("Tchild", this.s("Ttree"));
+		this.defineSymbol("Tprev", this.s("Ttree"));
+		this.defineSymbol("Tee", this.s("Te"));
+		this.defineSymbol("Ostring", "1");
+		this.defineSymbol("Oinline", "1");
 	}
 
 	/* */
@@ -311,14 +189,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 			assert (this.indent > 0);
 			this.indent--;
 		}
-
-		// void pushLine(String line) {
-		// this.sb.append(line + "\n");
-		// }
-		//
-		// void pushIndentLine(String line) {
-		// this.sb.append(this.Indent(" ", line) + "\n");
-		// }
 
 		void format(String format, Object... args) {
 			int start = 0;
@@ -342,7 +212,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 					} else if ('1' <= c && c <= '9') { // %1$s
 						int n = c - '1';
 						if (!(n < args.length)) {
-							System.out.printf("n=%s  %d,%s\n", format, n, args.length);
+							System.err.printf("FIXME: n=%s  %d,%s\n", format, n, args.length);
 						}
 						this.push(args[n]);
 						i += 3;
@@ -420,7 +290,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 		}
 
 		String typeOf(String key) {
-			return NezCC2.this.formatMap.get("T" + key);
+			return NezCC2.this.formatMap.getOrDefault("T" + key, "T" + key);
 		}
 
 		String fieldOf(String base, String field) {
@@ -434,8 +304,20 @@ public class NezCC2 implements OFactory<NezCC2> {
 			return w.toString();
 		}
 
+		public Expression ret() {
+			return new Return(this);
+		}
+
+		public Expression deret() {
+			return this;
+		}
+
 		public Expression and(Expression next) {
 			return new Infix(this, "&&", next);
+		}
+
+		public Expression add(Expression next) {
+			return new Block(this, next);
 		}
 
 	}
@@ -475,7 +357,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			w.push(this.formatOf(this.name, this.name));
+			w.push(this.formatOf("V" + this.name, this.name));
 		}
 	}
 
@@ -506,9 +388,14 @@ public class NezCC2 implements OFactory<NezCC2> {
 			this.body = null;
 		}
 
-		public DefFunc is(Expression e) {
-			this.body = e;
+		@Override
+		public DefFunc add(Expression e) {
+			this.body = e.ret();
 			return this;
+		}
+
+		public DefFunc is(String code, Object... a) {
+			return this.add(NezCC2.this.p(code, a));
 		}
 
 		public DefFunc asType(String t) {
@@ -518,27 +405,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			// w.push("" + this.value);
-			// String funcType = "";
-			// if (this.isDefined("functype") && !this.isAliasFuncType()) {
-			// ArrayList<String> l = new ArrayList<>();
-			// for (String p : this.params) {
-			// l.add(this.format("functypeparam", this.T(p), p));
-			// }
-			// funcType = this.format("functype", ret, funcName,
-			// this.emitList("functypeparams", l));
-			// }
-			// String f = "function" + acc;
-			// if (!this.isDefined(f)) {
-			// f = "function";
-			// }
-			// this.writeSection(this.format(f, ret, this.funcName(funcName),
-			// this.emitParams(this.params), funcType));
-			w.format(this.formatOf("function", "%s %s(%s) = "), this.ret, this.name, new Params(this.params));
+			w.format(this.formatOf("function", "%2$s(%3$s) :%1$s = "), this.ret, this.name, new Params(this.params));
 			w.incIndent();
 			w.format(this.formatOf("body function", "\n\t%s"), this.body);
 			w.decIndent();
-			w.push(this.formatOf("end function", "end", ""));
+			w.push(this.formatOf("end function", "end", "\n"));
 		}
 
 		class Params extends Expression {
@@ -571,13 +442,26 @@ public class NezCC2 implements OFactory<NezCC2> {
 			void emit(Writer w) {
 				w.format(this.formatOf("param", "%s %s"), new Type(this.name), new Var(this.name));
 			}
-
 		}
 
 	}
 
 	class Return extends Expression {
 		Expression e;
+
+		public Return(Expression e) {
+			this.e = e;
+		}
+
+		@Override
+		public Expression ret() {
+			return this;
+		}
+
+		@Override
+		public Expression deret() {
+			return this.e;
+		}
 
 		@Override
 		void emit(Writer w) {
@@ -594,6 +478,24 @@ public class NezCC2 implements OFactory<NezCC2> {
 			this.cnd = cnd;
 			this.thn = thn;
 			this.els = els;
+		}
+
+		@Override
+		public Expression ret() {
+			if (!this.isDefined("ifexpr")) {
+				this.thn = this.thn.ret();
+				this.els = this.els.ret();
+			}
+			return super.ret();
+		}
+
+		@Override
+		public Expression deret() {
+			if (!this.isDefined("ifexpr")) {
+				this.thn = this.thn.deret();
+				this.els = this.els.deret();
+			}
+			return this;
 		}
 
 		@Override
@@ -614,7 +516,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			w.format(this.formatOf("int", "%d"), this.value);
+			w.format(this.formatOf("int", "%s"), this.value);
 		}
 	}
 
@@ -627,7 +529,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			w.format(this.formatOf("char", "%d"), this.uchar & 0xff);
+			w.format(this.formatOf("char", "%s"), this.uchar & 0xff);
 		}
 
 	}
@@ -648,7 +550,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	class IndexValue extends Expression {
 		byte[] indexMap;
 
-		public IndexValue(byte[] data) {
+		IndexValue(byte[] data) {
 			this.indexMap = data;
 		}
 
@@ -699,6 +601,10 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 	HashSet<String> usedNames = new HashSet<>();
 
+	void used(String name) {
+		this.usedNames.add(name);
+	}
+
 	class FuncRef extends Expression {
 		String name;
 
@@ -709,7 +615,29 @@ public class NezCC2 implements OFactory<NezCC2> {
 		@Override
 		void emit(Writer w) {
 			NezCC2.this.usedNames.add(this.name);
-			w.format(this.formatOf("funcref", "%s"), this.name);
+			if (this.isDefined("funcref")) {
+				w.format(this.formatOf("funcref", "%s"), this.name);
+			}
+			if (this.isDefined("lambda")) {
+				w.format(this.formatOf("lambda", "%s -> %s"), this.name, NezCC2.this.apply(this.name, "px"));
+			}
+			w.push(this.name);
+		}
+	}
+
+	class Lambda extends Expression {
+		String name;
+		Expression body;
+
+		public Lambda(String name, Expression body) {
+			this.name = name;
+			this.body = body;
+		}
+
+		@Override
+		void emit(Writer w) {
+
+			w.format(this.formatOf("lambda", "\\%s %s"), this.name, this.body);
 		}
 	}
 
@@ -725,9 +653,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 	private HashMap<String, String> constNameMap = new HashMap<>();
 
 	private String constName(String typeName, String prefix, int arraySize, String value) {
-		// if (typeName == null) {
-		// return typeLiteral;
-		// }
 		String key = typeName + value;
 		String constName = this.constNameMap.get(key);
 		if (constName == null) {
@@ -735,7 +660,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 			this.constNameMap.put(key, constName);
 			NezCC2.Expression c = new Const(typeName, constName, arraySize, value);
 			this.constList.add(c.toString());
-			// this.declConst(typeName, constName, arraySize, typeLiteral);
 		}
 		return constName;
 	}
@@ -778,20 +702,37 @@ public class NezCC2 implements OFactory<NezCC2> {
 		Expression right;
 		Expression next;
 
-		LetIn(String name, Expression right, Expression next) {
+		LetIn(String name, Expression right) {
 			this.name = name;
 			this.right = right;
-			this.next = next;
 		}
 
-		public LetIn(Expression e, Expression e2) {
-			// TODO Auto-generated constructor stub
+		@Override
+		public Expression ret() {
+			this.next = this.next.ret();
+			return this;
+		}
+
+		@Override
+		public Expression deret() {
+			this.next = this.next.deret();
+			return this;
 		}
 
 		@Override
 		void emit(Writer w) {
 			w.format(this.formatOf("let", "val", "var", "%s %s = %s\n\t%s"), new Type(this.name), new Var(this.name),
 					this.right, this.next);
+		}
+
+		@Override
+		public Expression add(Expression next) {
+			if (this.next == null) {
+				this.next = next;
+			} else {
+				this.next = this.next.add(next);
+			}
+			return this;
 		}
 
 	}
@@ -811,43 +752,94 @@ public class NezCC2 implements OFactory<NezCC2> {
 		}
 	}
 
-	class Mutate extends Expression {
-		String base;
-		String[] fields;
-		Expression[] values;
+	// class Mutate extends Expression {
+	// String base;
+	// String[] fields;
+	// Expression[] values;
+	//
+	// Mutate(String base, Object... args) {
+	// this.base = base;
+	// this.fields = new String[args.length / 2];
+	// this.values = new Expression[args.length / 2];
+	// for (int i = 0; i < args.length / 2; i++) {
+	// this.fields[i] = (String) args[i * 2];
+	// this.values[i] = (Expression) args[i * 2 + 1];
+	// }
+	// }
+	//
+	// @Override
+	// void emit(Writer w) {
+	// if (this.isDefined("mut")) {
+	// // Haskell
+	// }
+	// if (this.base == null) {
+	// for (int i = 0; i < this.fields.length; i++) {
+	// if (i > 0) {
+	// w.format(this.formatOf(";", "\n\t"));
+	// }
+	// w.format(this.formatOf("=", "%s = %s"), new Var(this.fields[i]),
+	// this.values[i]);
+	// }
+	// } else {
+	// for (int i = 0; i < this.fields.length; i++) {
+	// if (i > 0) {
+	// w.format(this.formatOf(";", "\n\t"));
+	// }
+	// w.format(this.formatOf("setter", "%s.%s = %s"), new Var(this.base),
+	// this.fieldOf(this.base, this.fields[i]), this.values[i]);
+	// }
+	// }
+	// }
+	// }
 
-		Mutate(String base, Object... args) {
-			this.base = base;
-			this.fields = new String[args.length / 2];
-			this.values = new Expression[args.length / 2];
-			for (int i = 0; i < args.length / 2; i++) {
-				this.fields[i] = (String) args[i * 2];
-				this.values[i] = (Expression) args[i * 2 + 1];
-			}
+	class Block extends Expression {
+		Expression[] sub;
+
+		Block(Expression... sub) {
+			this.sub = sub;
+		}
+
+		@Override
+		public Expression ret() {
+			this.sub[this.sub.length - 1] = this.sub[this.sub.length - 1].ret();
+			return this;
+		}
+
+		@Override
+		public Expression deret() {
+			this.sub[this.sub.length - 1] = this.sub[this.sub.length - 1].deret();
+			return this;
 		}
 
 		@Override
 		void emit(Writer w) {
-			if (this.isDefined("mut")) {
-				// Haskell
-			}
-			if (this.base == null) {
-				for (int i = 0; i < this.fields.length; i++) {
-					if (i > 0) {
-						w.format(this.formatOf(";", "\n\t"));
-					}
-					w.format(this.formatOf("assign", "%s = %s"), new Var(this.fields[i]), this.values[i]);
+			// w.incIndent();
+			int c = 0;
+			for (Expression e : this.sub) {
+				if (c > 0) {
+					w.wIndent("");
 				}
-			} else {
-				for (int i = 0; i < this.fields.length; i++) {
-					if (i > 0) {
-						w.format(this.formatOf(";", "\n\t"));
-					}
-					w.format(this.formatOf("setter", "%s.%s = %s"), new Var(this.base),
-							this.fieldOf(this.base, this.fields[i]), this.values[i]);
-				}
+				w.format(this.formatOf("stmt", "%s\n"), e);
+				c++;
 			}
+			// w.decIndent();
 		}
+
+		@Override
+		public Expression add(Expression next) {
+			Expression[] sub2 = new Expression[this.sub.length + 1];
+			System.arraycopy(this.sub, 0, sub2, 0, this.sub.length);
+			sub2[this.sub.length] = next;
+			return new Block(sub2);
+		}
+	}
+
+	Expression block(Expression... sub) {
+		Expression first = sub[0];
+		for (int i = 1; i < sub.length; i++) {
+			first = first.add(sub[i]);
+		}
+		return first;
 	}
 
 	class Apply extends Expression {
@@ -859,7 +851,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 			this.right = right.length == 1 ? right[0] : new Args(right);
 		}
 
-		Apply(String left, Expression... right) {
+		Apply(String left, Expression[] right) {
 			this(new FuncName(left), right);
 			NezCC2.this.usedNames.add(left);
 		}
@@ -889,6 +881,37 @@ public class NezCC2 implements OFactory<NezCC2> {
 			}
 		}
 
+	}
+
+	class Macro extends Expression {
+		String name;
+		Expression e;
+
+		Macro(String name, Expression e) {
+			this.name = name;
+			this.e = e;
+		}
+
+		@Override
+		void emit(Writer w) {
+			NezCC2.this.used(this.name);
+			w.format(this.formatOf(this.name, "%s"), this.e);
+		}
+	}
+
+	class GetIndex extends Expression {
+		Expression left;
+		Expression right;
+
+		GetIndex(Expression left, Expression right) {
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		void emit(Writer w) {
+			w.format(this.formatOf("index", "%s[%s]"), this.left, this.right);
+		}
 	}
 
 	class Infix extends Expression {
@@ -926,9 +949,64 @@ public class NezCC2 implements OFactory<NezCC2> {
 		}
 	}
 
-	Expression unary(String expr, Expression... args) {
+	private int flatIndexOf(String expr, char c) {
+		int level = 0;
+		for (int i = 0; i < expr.length(); i++) {
+			char c0 = expr.charAt(i);
+			if (c0 == c && level == 0) {
+				return i;
+			}
+			if (c0 == '(' || c0 == '[') {
+				level++;
+			}
+			if (c0 == ')' || c0 == ']') {
+				level--;
+			}
+		}
+		return -1;
+	}
+
+	private int flatIndexOf(String expr, char c, char c2) {
+		int level = 0;
+		for (int i = 0; i < expr.length() - 1; i++) {
+			char c0 = expr.charAt(i);
+			if (c0 == c && expr.charAt(i + 1) == c2 && level == 0) {
+				return i;
+			}
+			if (c0 == '(' || c0 == '[') {
+				level++;
+			}
+			if (c0 == ')' || c0 == ']') {
+				level--;
+			}
+		}
+		return -1;
+	}
+
+	Expression unary(String expr, final Expression... args) {
 		expr = expr.trim();
-		int pos = expr.indexOf('.');
+		this.dump(expr, args);
+		if (expr.endsWith("]")) {
+			int pos = this.flatIndexOf(expr, '[');
+			Expression b = this.unary(expr.substring(0, pos), args);
+			Expression e = this.p_(expr.substring(pos + 1, expr.length() - 1), args);
+			return new GetIndex(b, e);
+		}
+		if (expr.endsWith(")")) {
+			int pos = this.flatIndexOf(expr, '(');
+			if (pos > 0) {
+				String[] tokens = expr.substring(pos + 1, expr.length() - 1).split(",");
+				Expression[] a = Arrays.stream(tokens).map(s -> this.p_(s, args)).toArray(Expression[]::new);
+				String fname = expr.substring(0, pos).trim();
+				if (fname.endsWith("!")) {
+					assert a.length == 1;
+					return new Macro(fname.substring(0, fname.length() - 1), a[0]);
+				}
+				return new Apply(fname, a);
+			}
+			return new Unary("group", this.p_(expr.substring(1, expr.length() - 1), args));
+		}
+		int pos = this.flatIndexOf(expr, '.');
 		if (pos > 0) {
 			return new Getter(expr.substring(0, pos), expr.substring(pos + 1));
 		}
@@ -944,15 +1022,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 		if (expr.startsWith("!")) {
 			return new Unary("!", this.p_(expr.substring(1, expr.length() - 1), args));
 		}
-		if (expr.endsWith(")")) {
-			pos = expr.indexOf('(');
-			if (pos > 0) {
-				String[] tokens = expr.substring(pos + 1, expr.length() - 1).split(",");
-				Expression[] a = Arrays.stream(tokens).map(s -> this.p_(s, args)).toArray(Expression[]::new);
-				return new Apply(expr.substring(0, pos), a);
-			}
-			return new Unary("group", this.p_(expr.substring(1, expr.length() - 1), args));
-		}
 		if (expr.length() > 0 && Character.isDigit(expr.charAt(0))) {
 			return new IntValue(Integer.parseInt(expr));
 		}
@@ -965,22 +1034,72 @@ public class NezCC2 implements OFactory<NezCC2> {
 	}
 
 	Expression bin(String expr, String op, Expression[] args, Bin f) {
-		int pos = expr.indexOf(op);
+		assert (op.length() < 3);
+		int pos = op.length() == 2 ? this.flatIndexOf(expr, op.charAt(0), op.charAt(1))
+				: this.flatIndexOf(expr, op.charAt(0));
 		if (pos > 0) {
-			return f.apply(this.p_(expr.substring(0, pos).trim(), args), this.p_(expr.substring(pos + 1).trim(), args));
+			return f.apply(this.p_(expr.substring(0, pos).trim(), args),
+					this.p_(expr.substring(pos + op.length()).trim(), args));
 		}
 		return null;
 	}
 
-	Expression p_(String expr, Expression[] args) {
+	void dump(String expr, final Expression[] args) {
+		switch (args.length) {
+		case 0:
+			// System.err.printf("@0'%s'\n", expr);
+			break;
+		case 1:
+			System.err.printf("@1'%s' %s :%s\n", expr, args[0], args[0].getClass().getSimpleName());
+			break;
+		case 2:
+			System.err.printf("@2'%s' %s :%s   %s :%s\n", expr, args[0], args[0].getClass().getSimpleName(), args[1],
+					args[1].getClass().getSimpleName());
+			break;
+		case 3:
+			System.err.printf("@3'%s' %s :%s   %s :%s   %s :%s\n", expr, args[0], args[0].getClass().getSimpleName(),
+					args[1], args[1].getClass().getSimpleName(), args[2], args[2].getClass().getSimpleName());
+			break;
+		case 4:
+			System.err.printf("@4'%s' %s :%s   %s :%s   %s :%s   %s :%s\n", expr, args[0],
+					args[0].getClass().getSimpleName(), args[1], args[1].getClass().getSimpleName(), args[2],
+					args[2].getClass().getSimpleName(), args[3], args[3].getClass().getSimpleName());
+			break;
+		default:
+			System.err.printf("@%d'%s' ...\n", expr, args.length);
+			break;
+
+		}
+	}
+
+	Expression p_(String expr, final Expression[] args) {
+		expr = expr.trim();
+		// this.dump(expr, args);
 		Expression p = null;
 		// let n = expr ; ...
+		int pos = expr.indexOf(';');
+		if (pos > 0) {
+			String[] tokens = expr.split(";");
+			Expression[] a = Arrays.stream(tokens).map(s -> this.p_(s.trim(), args)).toArray(Expression[]::new);
+			return this.block(a);
+		}
 		if (expr.startsWith("let ")) {
-			return this.bin(expr, ";", args, (e, e2) -> new LetIn(e, e2));
+			String[] t = expr.substring(4).split("=");
+			return new LetIn(t[0].trim(), this.p_(t[1].trim(), args));
+		}
+		p = this.bin(expr, "==", args, (e, e2) -> new Infix(e, "==", e2));
+		if (p != null) {
+			return p;
 		}
 		p = this.bin(expr, "= ", args, (e, e2) -> new Infix(e, "=", e2));
 		if (p != null) {
 			return p;
+		}
+		pos = expr.indexOf("?");
+		if (pos > 0) {
+			String[] tokens = expr.split("\\?");
+			Expression[] a = Arrays.stream(tokens).map(s -> this.p_(s.trim(), args)).toArray(Expression[]::new);
+			return new IfExpr(a[0], a[1], a[2]);
 		}
 		p = this.bin(expr, "||", args, (e, e2) -> new Infix(e, "||", e2));
 		if (p != null) {
@@ -998,16 +1117,23 @@ public class NezCC2 implements OFactory<NezCC2> {
 		if (p != null) {
 			return p;
 		}
+		// p = this.bin(expr, "*", args, (e, e2) -> new Infix(e, "*", e2));
+		// if (p != null) {
+		// return p;
+		// }
 		return this.unary(expr, args);
 	}
 
 	private Expression[] filter(Object... args) {
-		if (args instanceof Object[]) {
+		if (args instanceof Expression[]) {
 			return (Expression[]) args;
 		}
 		return Arrays.stream(args).map(o -> {
 			if (o instanceof Expression) {
 				return (Expression) o;
+			}
+			if (o instanceof String) {
+				return new Var(o.toString());
 			}
 			if (o instanceof Character) {
 				return new CharValue(((Character) o).charValue());
@@ -1015,13 +1141,19 @@ public class NezCC2 implements OFactory<NezCC2> {
 			if (o instanceof Integer) {
 				return new IntValue(((Integer) o).intValue());
 			}
-			if (o instanceof Symbol) {
+			if (o instanceof blue.origami.common.Symbol) {
 				return new SymbolValue(o.toString());
+			}
+			if (o instanceof ByteSet) {
+				return new ByteSetValue((ByteSet) o);
 			}
 			if (o instanceof byte[]) {
 				return new IndexValue((byte[]) o);
 			}
-			return new Var(o.toString());
+			if (o == null) {
+				return new SymbolValue("");
+			}
+			return new Var(o.toString() + ":" + o.getClass().getSimpleName());
 		}).toArray(Expression[]::new);
 	}
 
@@ -1030,6 +1162,9 @@ public class NezCC2 implements OFactory<NezCC2> {
 	}
 
 	public Expression apply(String func, Object... args) {
+		if (func == null) {
+			return new Lambda((String) args[0], (Expression) args[1]);
+		}
 		return new Apply(func, this.filter(args));
 	}
 
@@ -1044,28 +1179,36 @@ public class NezCC2 implements OFactory<NezCC2> {
 	/* */
 
 	public void emit(ParserGrammar g, OWriter out) throws IOException {
-		NezCC2Visitor2 pgv = new NezCC2Visitor2();
 		// this.grammar = g;
 		Production start = g.getStartProduction();
-		if (this.treeConstruction) {
-			this.treeConstruction = Typestate.compute(start) == Typestate.Tree;
+		// if (!Typestate.compute(start) == Typestate.Tree) {
+		// this.mask = this
+		// }
+		if (Stateful.isStateful(start)) {
+			this.mask |= (TREE | STATE);
 		}
 		// this.isBinary = g.isBinaryGrammar();
 		// this.isStateful = Stateful.isStateful(start);
-		// this.log("tree: %s", this.treeConstruction);
-		// this.log("stateful: %s", this.isStateful);
 		this.setupSymbols();
+		NezCC2Visitor2 pgv = new NezCC2Visitor2(this.mask);
 		pgv.start(g, this);
 		ArrayList<String> funcList = pgv.sortFuncList("start");
-
-		if (this.isDefined("Dhead")) {
-			out.println(this.formatMap.get("Dhead"));
+		if (this.isDefined("Dhead" + this.mask)) {
+			out.println(this.formatMap.get("Dhead" + this.mask));
+		} else {
+			if (this.isDefined("Dhead")) {
+				out.println(this.formatMap.get("Dhead"));
+			}
 		}
 		for (String cs : this.constList) {
 			out.println(cs);
 		}
-		for (String fn : this.usedNames) {
-			out.println(this.getDefined(fn));
+		out.println("");
+		out.println("");
+		for (String fn : runtimeFuncs1) {
+			if (this.usedNames.contains(fn)) {
+				out.println(this.getDefined(fn));
+			}
 		}
 		if (this.isDefined("prototype")) {
 			for (String funcName : pgv.crossRefNames) {
@@ -1078,8 +1221,12 @@ public class NezCC2 implements OFactory<NezCC2> {
 				out.println(code);
 			}
 		}
-		if (this.isDefined("Dmain")) {
-			out.println(this.formatMap.get("Dmain"));
+		if (this.isDefined("Dmain" + this.mask)) {
+			out.println(this.formatMap.get("Dmain" + this.mask));
+		} else {
+			if (this.isDefined("Dmain")) {
+				out.println(this.formatMap.get("Dmain"));
+			}
 		}
 	}
 
@@ -1102,7 +1249,269 @@ public class NezCC2 implements OFactory<NezCC2> {
 	}
 
 	public Lib neof = () -> {
-		return new DefFunc("neof", "px").is(this.p("px.pos < px.length"));
+		return new DefFunc("neof", "px").is("px.pos < px.length");
 	};
+
+	public Lib mnext1 = () -> {
+		return new DefFunc("mnext1", "px").is("px.pos = px.pos + 1; true");
+	};
+
+	public Lib mback1 = () -> {
+		return new DefFunc("mback1", "px", "pos").is("px.pos = pos; true");
+	};
+
+	public Lib mback3 = () -> {
+		return new DefFunc("mback3", "px", "pos", "tree").is("px.pos = pos; px.tree = tree; true");
+	};
+
+	public Lib mback7 = () -> {
+		return new DefFunc("mback7", "px", "pos", "tree", "state")
+				.is("px.pos = pos; px.tree = tree; px.state = state; true");
+	};
+
+	public Lib choice1 = () -> {
+		return new DefFunc("choice1", "px", "e", "ee").is("let pos = px.pos; e(px) || mback1(px, pos) && ee(px)");
+	};
+
+	public Lib choice3 = () -> {
+		return new DefFunc("many3", "px", "e", "ee")
+				.is("let pos = px.pos; let tree = px.tree; e(px) ? e(px) || mback3(px, pos, tree) && ee(px)");
+	};
+
+	public Lib choice7 = () -> {
+		return new DefFunc("choice7", "px", "e", "ee").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) || mback7(px, pos, tree, state) && ee(px)");
+	};
+
+	public Lib many1 = () -> {
+		return new DefFunc("many1", "px", "e").is("let pos = px.pos; e(px) ? many1(px, e) ? mback1(px, pos)");
+	};
+
+	public Lib many3 = () -> {
+		return new DefFunc("many3", "px", "e")
+				.is("let pos = px.pos; let tree = px.tree; e(px) ? many3(px, e) ? mback3(px, pos, tree)");
+	};
+
+	public Lib many7 = () -> {
+		return new DefFunc("many7", "px", "e").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) ? many7(px, e) ? mback7(px, pos, tree, state)");
+	};
+
+	public Lib many9 = () -> {
+		return new DefFunc("many9", "px", "e")
+				.is("let pos = px.pos; e(px) && px.pos < pos ? many9(px, e) ? mback1(px, pos)");
+	};
+
+	public Lib many12 = () -> {
+		return new DefFunc("many12", "px", "e").is(
+				"let pos = px.pos; let tree = px.tree; e(px) && px.pos < pos ? many12(px, e) ? mback3(px, pos, tree)");
+	};
+
+	public Lib many16 = () -> {
+		return new DefFunc("many16", "px", "e").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) && px.pos < pos ? many16(px, e) ? mback7(px, pos, tree, state)");
+	};
+
+	public Lib and1 = () -> {
+		return new DefFunc("and1", "px", "e").is("let pos = px.pos; e(px) && mback1(px, pos)");
+	};
+
+	public Lib not1 = () -> {
+		return new DefFunc("and1", "px", "e").is("let pos = px.pos; !e(px) && mback1(px, pos)");
+	};
+
+	public Lib not3 = () -> {
+		return new DefFunc("not3", "px", "e")
+				.is("let pos = px.pos; let tree = px.tree; !e(px) && mback3(px, pos, tree)");
+	};
+
+	public Lib not7 = () -> {
+		return new DefFunc("not7", "px", "e").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; !e(px) && mback7(px, pos, tree, state)");
+	};
+
+	public Lib inc = () -> {
+		return new DefFunc("inc", "px").is("let pos = px.pos; px.pos = px.pos + 1; pos");
+	};
+
+	/* Tree Construction */
+
+	public Lib mtree = () -> {
+		return new DefFunc("mtree", "px", "tag", "psos", "epos")
+				.is("px.tree = ctree(tag, px.inputs, spos, epos, px.tree); true");
+	};
+
+	public Lib mlink = () -> {
+		return new DefFunc("mlink", "px", "tag", "child", "prev").is("px.tree = clink(tag, child, prev); true");
+	};
+
+	public Lib newtree = () -> {
+		return new DefFunc("newtree", "px", "spos", "e", "tag", "epos")
+				.is("let pos = px.pos; px.tree = EmptyTree; e(px) && mtree(px, tag, pos+spos, px.pos+epos)");
+	};
+
+	public Lib linktree = () -> {
+		return new DefFunc("linktree", "px", "tag", "e")
+				.is("let tree = px.tree; e(px) && mlink(px, tag, px.tree, tree)");
+	};
+
+	public Lib tagtree = () -> {
+		return new DefFunc("tagtree", "px", "tag").is("mlink(px, tag, EmptyTree, px.tree)");
+	};
+
+	public Lib mconsume1 = () -> {
+		return new DefFunc("mconsume3", "px", "memo").is("px.pos = memo.mpos; memo.matched");
+	};
+
+	public Lib mconsume3 = () -> {
+		return new DefFunc("mconsume3", "px", "memo").is("px.pos = memo.mpos; px.tree = memo.mtree; memo.matched");
+	};
+
+	public Lib mconsume7 = () -> {
+		return new DefFunc("mconsume7", "px", "memo")
+				.is("px.pos = memo.mpos; px.tree = memo.mtree; px.state = memo.mstate; memo.matched");
+	};
+
+	public Lib mstore1 = () -> {
+		return new DefFunc("mstore3", "px", "memo", "key", "pos", "matched")
+				.is("memo.key = key; memo.mpos = pos; memo.matched = matched; matched");
+	};
+
+	public Lib mstore3 = () -> {
+		return new DefFunc("mstore3", "px", "memo", "key", "pos", "matched")
+				.is("memo.key = key; memo.mpos = pos; memo.mtree = px.tree; memo.matched = matched; matched");
+	};
+
+	public Lib mstore7 = () -> {
+		return new DefFunc("mstore7", "px", "memo", "key", "pos", "res").is(
+				"memo.key = key; memo.mpos = pos; memo.mtree = px.tree; memo.mstate = px.store; memo.matched = matched; matched");
+	};
+
+	public Lib getkey = () -> {
+		return new DefFunc("getkey", "pos", "mp").asType("key").is("pos * memosize + mp");
+	};
+
+	public Lib getmemo = () -> {
+		return new DefFunc("getmemo", "px", "key").asType("memo").is("px.memos[key % memolength]");
+	};
+
+	public Lib memo1 = () -> {
+		return new DefFunc("memo1", "px", "mp", "e").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume1(px, memo) ? mstore1(px, memo, key, pos, e(px))");
+	};
+
+	public Lib memo3 = () -> {
+		return new DefFunc("memo3", "px", "mp", "e").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume3(px, memo) ? mstore3(px, memo, key, pos, e(px))");
+	};
+
+	public Lib memo7 = () -> {
+		return new DefFunc("memo7", "px", "mp", "e").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume7(px, memo) ? mstore7(px, memo, key, pos, e(px))");
+	};
+
+	// foldtree(px, label, l, e, tag, r) =
+	// pos = px.pos
+	// mlink(px, label, px.tree, EmptyTree) && e(px) && mtree(px, tag, pos + l ,
+	// px.pos + r)
+
+	private static String[] runtimeFuncs1 = { //
+			"mnext1", "neof", "inc", //
+			"mback1", "mback3", "mback7", //
+			"choice1", "choice3", "choice7", //
+			"many1", "many3", "many7", //
+			"many9", "many12", "many16", //
+			"and1", "not1", "not3", "not7", //
+			"mtree", "mlink", "newtree", "linktree", "tagtree", //
+			"getkey", "getmemo", //
+			"mconsume1", "mconsume3", "mconsume7", //
+			"mstore1", "mstore3", "mstore7", //
+			"memo1", "memo3", "memo7", //
+	};
+
+	public Expression dispatch(Expression eJumpIndex, List<Expression> exprs) {
+		return new Dispatch(eJumpIndex, exprs);
+	}
+
+	class Dispatch extends Expression {
+		Expression eJumpIndex;
+		Expression[] exprs;
+
+		public Dispatch(Expression eJumpIndex, List<Expression> exprs) {
+			this.eJumpIndex = eJumpIndex;
+			this.exprs = exprs.toArray(new Expression[exprs.size()]);
+		}
+
+		@Override
+		public Expression ret() {
+			for (int i = 0; i < this.exprs.length; i++) {
+				this.exprs[i] = this.exprs[i].ret();
+			}
+			return this;
+		}
+
+		@Override
+		public Expression deret() {
+			for (int i = 0; i < this.exprs.length; i++) {
+				this.exprs[i] = this.exprs[i].deret();
+			}
+			return this;
+		}
+
+		@Override
+		void emit(Writer w) {
+			if (this.isDefined("switch")) {
+				w.format(this.formatOf("switch"), this.eJumpIndex);
+				w.incIndent();
+				for (int i = 0; i < this.exprs.length; i++) {
+					w.format(this.formatOf("case", "\t| %s => %s\n"), i, this.exprs[i]);
+				}
+				if (this.isDefined("default")) {
+					w.format(this.formatOf("default", "\t| _ => %s\n"), this.exprs[0]);
+				}
+				w.decIndent();
+				w.wIndent(this.formatOf("end switch", "end", ""));
+				return;
+			} else if (this.isDefined("Tfuncs")) {
+				this.deret();
+				new Apply(new GetIndex(new FuncValue(this.exprs), this.eJumpIndex), new Var("px")).ret().emit(w);
+			} else {
+				this.deret();
+				Expression tail = this.exprs[0];
+				for (int i = this.exprs.length - 1; i > 0; i--) {
+					tail = new IfExpr(NezCC2.this.p("pos == $0", i), this.exprs[i], tail);
+					if (i > 0) {
+						tail = new Unary("group", tail);
+					}
+				}
+				tail = new LetIn("pos", this.eJumpIndex).add(tail);
+				tail.ret().emit(w);
+			}
+		}
+
+		class FuncValue extends Expression {
+			Expression[] exprs;
+
+			FuncValue(Expression[] data) {
+				this.exprs = data;
+			}
+
+			@Override
+			void emit(Writer w0) {
+				Writer w = new Writer();
+				w.push(this.formatOf("array", "["));
+				for (int i = 0; i < this.exprs.length; i++) {
+					if (i > 0) {
+						w.push(this.formatOf("delim array", "delim", " "));
+					}
+					w.push(new Lambda("px", this.exprs[i]));
+				}
+				w.push(this.formatOf("end array", "]"));
+				w0.format(this.formatOf("constname", "%s",
+						NezCC2.this.constName(this.typeOf("funcs"), "funcs", this.exprs.length, w.toString())));
+			}
+		}
+
+	}
 
 }

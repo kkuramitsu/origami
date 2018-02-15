@@ -1,0 +1,224 @@
+
+
+Tmatched   = int
+Tpx        = struct ParserContext *
+Tinputs    = unsigned char *
+Tpos       = long
+Ttree      = void *
+Ttag       = unsigned const char *
+Tstate     = struct State *
+Tmemo      = struct MemoEntry *
+Tkey       = unsigned long long
+Tmp        = long
+Te         = ParseFunc
+Talt       = unsigned char
+Tbs        = long
+
+
+comment            = /*%s*/
+begin              = {
+end                = '''
+/* */
+}
+
+'''
+delim            = ,
+
+prototype        = static $|Tmatched| %s($|Tpx|);
+
+const            = static const %1$s %2$s = %3$s;
+const_array      = static const %1$s %2$s[%4$s] = %3$s;
+array            = {
+end array        = }
+
+function         = static %s %s(%s) {
+let              = '''
+%s %s = %s;
+	%s
+'''
+
+stmt             = %s
+ifexpr           = %1$s ? %2$s : %3$s
+getter           = %s->%s
+inc              = %s++
+
+switch     = '''
+switch(%s) {
+
+'''
+
+case       = '''
+	case %s : %s
+
+'''
+default    = '''
+	default : %s
+
+'''
+
+=          = '''
+%s = %s;
+
+'''
+return     = return %s;
+
+true             = 1
+false            = 0
+
+
+Dhead = '''
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<assert.h>
+#ifndef _WIN32
+#include<sys/time.h> // for using gettimeofday
+#endif
+
+struct ParserContext;
+
+struct TreeLink {
+  $|Ttag| tag;
+  $|Ttree| child;
+  $|Ttree| prev;
+};
+
+struct Tree {
+  $|Ttag| tag;
+  $|Ttree| child;
+  void *prev;
+  long spos;
+  long epos;
+};
+
+struct MemoEntry {
+  $|Tkey| key;
+  $|Tmatched| matched;
+  long mpos;
+  $|Ttree| mtree;
+  $|Tstate| mstate;
+};
+
+struct State {
+  long ntag;
+  long cnt;
+  unsigned char * value;
+  struct State * sprev;
+};
+
+static struct State * cState(long ntag, long cnt, unsigned char * value, struct State * sprev) {
+  struct State * state = (struct State *)_malloc(sizeof (struct State));
+  state->ntag = ntag;
+  state->cnt = cnt;
+  state->value = value;
+  state->sprev = sprev;
+  return state;
+}
+
+struct ParserContext {
+  $|Tinputs| inputs;
+  long length;
+  long pos;
+  long headpos;
+  $|Ttree| tree;
+  $|Tstate| state;
+  $|Tmemo| memos;
+};
+
+static struct ParserContext * cParserContext(unsigned char * inputs, long length, struct MemoEntry * memos) {
+  struct ParserContext * px = (struct ParserContext *)_malloc(sizeof (struct ParserContext));
+  px->inputs = inputs;
+  px->length = length;
+  px->pos = 0;
+  px->headpos = 0;
+  px->tree = EmptyTree;
+  px->state = NULL;
+  px->memos = memos;
+  return px;
+}
+
+typedef int (*ParserFunc)($|Tpx|);
+
+static long backpos($|Tpx| px, $|Tpos| pos) {
+  if(px->headpos < pos) {
+    px->headpos = pos;
+  }
+  return pos;
+}
+
+
+'''
+
+
+Dmain2 = '''
+
+static void * parse(unsigned char * inputs,long length,TreeFunc newFunc,TreeSetF
+unc setFunc) {
+  void * tree = newFunc(gettag(0),inputs,0,length,0);
+  struct NezParserContext * px = NezParserContext(inputs,length,0,0,tree,TreeLog
+(0,0,tree,NULL,NULL),((newFunc == NULL) ? (newAST) : (newFunc)),((setFunc == NUL
+L) ? (subAST) : (setFunc)),NULL,newMemos(tree,257));
+  tree = ((e0(px)) ? (px->tree) : (newFunc(gettag(nezerror),inputs,px->headpos,l
+ength,0)));
+  freeContext(px);
+  return tree;
+}
+
+static const char *Nez_readInput(const char *path)
+{
+    FILE *fp = fopen(path, "rb");
+    if(fp != NULL) {
+        size_t len;
+        fseek(fp, 0, SEEK_END);
+        len = (size_t) ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        char *buf = (char *) _calloc(1, len + 1);
+        size_t readed = fread(buf, 1, len, fp);
+        if(readed != len) {
+            fprintf(stderr, "read error: %s\n", path);
+            exit(1);
+        }
+        fclose(fp);
+        return (const char*)buf;
+    }
+    return path;
+}
+
+static double timediff(struct timeval *s, struct timeval *e)
+{
+	double t1 = (e->tv_sec - s->tv_sec) * 1000.0;
+	double t2 = (e->tv_usec - s->tv_usec) / 1000.0;
+	return t1 + t2; /* ms */
+}
+
+int main(int ac, const char **av)
+{
+  int j;
+  size_t len;
+  if(ac == 1) {
+    fprintf(stdout, "Usage: %s file [or 'input-text']\n", av[0]);
+    return 1;
+  }
+  for(j = 1; j < ac; j++) {
+    const char *inputs = Nez_readInput(av[j]);
+#ifndef _WIN32
+    struct timeval s, e;
+	gettimeofday(&s, NULL);
+    Tree *data = Nez_parseTree(inputs);
+	gettimeofday(&e, NULL);
+    fprintf(stderr, "%s %s %f[ms]: ", av[j], data != NULL ? "OK" : "NG", timediff(&s, &e));
+#else
+    Tree *data = Nez_parseTree(inputs);
+    fprintf(stdout, "%s: ", av[j]);
+#endif
+    Tree_dump(data, stdout);
+    fflush(stdout);
+    fprintf(stderr, "\n");
+    Tree_free(data);
+    if(av[j] != inputs) {
+      _free((void*)inputs);
+    }
+  }
+  return 0;
+}
+'''
