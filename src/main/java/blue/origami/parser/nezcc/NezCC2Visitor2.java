@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import blue.origami.common.OConsole;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.ParserGrammar.MemoPoint;
 import blue.origami.parser.peg.ByteSet;
@@ -80,6 +79,8 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		if (pg.isDefined("comment")) {
 			this.comment = pg.s("comment");
 		}
+		pg.declConst(pg.T("pos"), "memosize", "" + g.getMemoPointSize());
+		pg.declConst(pg.T("pos"), "memolen", "" + g.getMemoPointSize() * 64 + 1);
 		// pg.declConst(pg.T("length"), "memosize", -1, "" + g.getMemoPointSize());
 		// pg.declConst(pg.T("length"), "memoentries", -1, "" + (g.getMemoPointSize() *
 		// 64 + 1));
@@ -217,10 +218,10 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 			return this.eMatchByte(uchar, pg);
 		}
 		NezCC2.Expression index = pg.p("px.inputs[px.pos]");
-		if (pg.isDefined("bits32")) {
+		if (pg.isDefined("Obits32")) {
 			return pg.apply("bits32", bs, index);
 		} else {
-			return pg.p("$0[$1]", bs, index);
+			return pg.p("$0[unsigned!($1)]", bs, index);
 		}
 	}
 
@@ -229,12 +230,12 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		if (uchar != -1) {
 			return this.eMatchByteNext(uchar, pg);
 		}
-		if (pg.isDefined("Dinc")) {
+		if (pg.isDefined("inc")) {
 			NezCC2.Expression index = pg.p("px.inputs[inc!(px.pos)]");
-			if (pg.isDefined("bits32")) {
+			if (pg.isDefined("Obits32")) {
 				return pg.apply("bits32", bs, index);
 			} else {
-				return pg.p("$0[$1]", bs, index);
+				return pg.p("$0[unsigned!($1)]", bs, index);
 			}
 		}
 		return this.eMatchByteSet(bs, pg).and(this.eNext(pg));
@@ -376,6 +377,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 			acc |= EMPTY;
 		}
 		String func = this.funcAcc("many", acc);
+		pg.used("mback" + acc);
 		NezCC2.Expression e = pg.apply(func, "px", lambda);
 		return (isOneMore) ? this.eMatch(inner, pg).and(e) : e;
 	}
@@ -396,6 +398,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		// return pg.emitMatchByteSet(bs, null, false);
 		// }
 		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
+		pg.used("mback1");
 		return pg.apply("and1", "px", lambda);
 	}
 
@@ -419,6 +422,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		// }
 		NezCC2.Expression lambda = this.getLambdaExpression(inner, pg);
 		String func = this.funcAcc("not", acc);
+		pg.used("mback" + acc);
 		return pg.apply(func, "px", lambda);
 	}
 
@@ -439,49 +443,39 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 	@Override
 	public NezCC2.Expression visitTree(PTree e, NezCC2 pg) {
 		NezCC2.Expression inner = this.getLambdaExpression(e.get(0), pg);
+		pg.used("mtree");
 		if (e.folding) {
-			return pg.apply("foldtree", e.beginShift, inner, e.tag, e.endShift);
+			pg.used("mlink");
+			return pg.apply("foldtree", "px", e.beginShift, e.label, inner, e.tag, e.endShift);
 		}
-		return pg.apply("newtree", e.beginShift, inner, e.tag, e.endShift);
+		return pg.apply("newtree", "px", e.beginShift, inner, e.tag, e.endShift);
 	}
 
 	@Override
 	public NezCC2.Expression visitDetree(PDetree e, NezCC2 pg) {
 		return this.eDetree(e, pg);
-		// NezCC2.Expression inline = this.eDetree(e, pg);
-		// if (inline == null) {
-		// NezCC2.Expression main = pg.p("$0 && $1", this.match(e.get(0), pg),
-		// this.mback(pg, TREE));
-		// return this.eLetAccIn(TREE, main, pg);
-		// }
-		// return inline;
 	}
 
 	private NezCC2.Expression eDetree(PDetree e, NezCC2 pg) {
 		NezCC2.Expression lambda = this.getLambdaExpression(e.get(0), pg);
-		String funcName = this.funcAcc("detree", TREE);
+		pg.used("mback3");
 		return pg.apply("detree", "px", lambda);
 	}
 
 	@Override
 	public NezCC2.Expression visitLinkTree(PLinkTree e, NezCC2 pg) {
 		return this.eLink(e, pg);
-		// NezCC2.Expression inline = this.eLink(e, pg);
-		// if (inline == null) {
-		// NezCC2.Expression main = pg.p("$0 && backLink(px, $1)", this.match(e.get(0),
-		// pg), e.label);
-		// return this.eLetAccIn(TREE, main, pg);
-		// }
-		// return inline;
 	}
 
 	private NezCC2.Expression eLink(PLinkTree e, NezCC2 pg) {
 		NezCC2.Expression lambda = this.getLambdaExpression(e.get(0), pg);
+		pg.used("mlink");
 		return pg.apply("linktree", "px", e.label, lambda);
 	}
 
 	@Override
 	public NezCC2.Expression visitTag(PTag e, NezCC2 pg) {
+		pg.used("mlink");
 		return pg.apply("tagtree", "px", e.tag);
 	}
 
@@ -520,128 +514,9 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 		return this.eSucc(pg);
 	}
 
-	// // ---
-	// private final static String RuntimeLibrary = null;
-
-	// protected void loadCombinator(NezCC2 pg) {
-	// pg.defineLib2("back", (Object thunk) -> {
-	// if (pg.isDefined("backpos")) {
-	// this.funcAcc( "backpos");
-	// }
-	// int acc = (Integer) thunk;
-	// String funcName = "back" + acc;
-	// pg.defineLib(funcName, () -> {
-	// String[] args = pg.getStackNames(acc);
-	// pg.declFunc(0, pg.T("matched"), funcName, pg.joins("px", args), () -> {
-	// B block = pg.beginBlock();
-	// pg.emitBack2(block, args);
-	// pg.emitStmt(block, pg.emitReturn(pg.emitSucc()));
-	// return pg.endBlock(block);
-	// });
-	// });
-	// });
-	//
-	// pg.defineLib2("choice", (Object thunk) -> {
-	// int acc = (Integer) thunk;
-	// String funcName = "choice" + acc;
-	// pg.defineLib(funcName, () -> {
-	// this.funcAcc( "back", acc & ~(CNT | EMPTY));
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), funcName, "px", "f", "f2", () -> {
-	// NezCC2.Expression first = pg.emitApply(pg.V("f"), "px");
-	// NezCC2.Expression second = pg.emitAnd(this.mback(pg, acc),
-	// pg.emitApply(pg.V("f2"), "px"));
-	// NezCC2.Expression result = this.emitVarDecl(pg, acc, false,
-	// pg.emitReturn(pg.emitOr(first,
-	// second)));
-	// return result;
-	// });
-	// });
-	// });
-	//
-	// pg.defineLib2("many", (Object thunk) -> {
-	// int acc = (Integer) thunk;
-	// String funcName = "many" + acc;
-	// pg.defineLib(funcName, () -> {
-	// this.funcAcc( "back", acc & ~(CNT | EMPTY));
-	// this.funcAcc( "ParserFunc");
-	// if (!pg.isDefined("while") && (acc & CNT) == CNT) {
-	// pg.declFunc(pg.T("matched"), funcName, "px", "f", "cnt", () -> {
-	// return (this.emitMany(pg, funcName, acc, pg.emitApply(pg.V("f"),
-	// "px")));
-	// });
-	// } else {
-	// pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-	// return (this.emitMany(pg, funcName, acc, pg.emitApply(pg.V("f"),
-	// "px")));
-	// });
-	// }
-	// });
-	// });
-	//
-	// pg.defineLib2("option", (Object thunk) -> {
-	// int acc = (Integer) thunk;
-	// String funcName = "option" + acc;
-	// pg.defineLib(funcName, () -> {
-	// this.funcAcc( "back", acc & ~(CNT | EMPTY));
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-	// return (this.emitOption(pg, acc, pg.emitApply(pg.V("f"), "px")));
-	// });
-	// });
-	// });
-	//
-	// pg.defineLib("and" + POS, () -> {
-	// this.funcAcc( "back", POS);
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), "and" + POS, "px", "f", () -> {
-	// return (this.emitAnd(pg, POS, pg.emitApply(pg.V("f"), "px")));
-	// });
-	// });
-	//
-	// pg.defineLib2("not", (Object thunk) -> {
-	// int acc = (Integer) thunk;
-	// String funcName = "not" + acc;
-	// pg.defineLib(funcName, () -> {
-	// this.funcAcc( "back", acc & ~(CNT | EMPTY));
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), funcName, "px", "f", () -> {
-	// return (this.emitNot(pg, acc, pg.emitApply(pg.V("f"), "px")));
-	// });
-	// });
-	// });
-	//
-	// pg.defineLib("detree" + TREE, () -> {
-	// this.funcAcc( "back", TREE);
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), "detree" + TREE, "px", "f", () -> {
-	// NezCC2.Expression main = pg.emitAnd(pg.emitApply(pg.V("f"), "px"),
-	// this.mback(pg, TREE));
-	// return this.emitVarDecl(pg, TREE, false, main);
-	// });
-	// });
-	//
-	// pg.defineLib("link" + TREE, () -> {
-	// this.funcAcc( "backLink");
-	// this.funcAcc( "ParserFunc");
-	// pg.declFunc(pg.T("matched"), "link" + TREE, "px", "nlabel", "f", () -> {
-	// NezCC2.Expression main = pg.emitAnd(pg.emitApply(pg.V("f"), "px"),
-	// pg.backLink(pg.V("nlabel")));
-	// return this.emitVarDecl(pg, TREE, false, main);
-	// });
-	// });
-	//
-	// }
-
 	//
 
 	private int u = 0;
-
-	// final static int POS = 1;
-	// final static int TREE = 1 << 1;
-	// final static int STATE = 1 << 2;
-	// final static int CNT = 1 << 3;
-	// final static int EMPTY = 1 << 4;
 
 	private int varStacks(int acc, Expression e) {
 		if (Typestate.compute(e) != Typestate.Unit) {
@@ -838,7 +713,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.Expression, NezCC2> {
 	}
 
 	protected void log(String line, Object... args) {
-		OConsole.println(line, args);
+		System.err.printf(line + "%n", args);
 	}
 
 }

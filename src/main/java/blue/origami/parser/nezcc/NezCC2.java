@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -165,6 +166,8 @@ public class NezCC2 implements OFactory<NezCC2> {
 		this.defineSymbol("tab", " ");
 		this.defineSymbol("Tspos", this.s("Tpos"));
 		this.defineSymbol("Tepos", this.s("Tpos"));
+		this.defineSymbol("Tmp", this.s("Tpos"));
+		this.defineSymbol("Tlabel", this.s("Ttag"));
 		this.defineSymbol("Tchild", this.s("Ttree"));
 		this.defineSymbol("Tprev", this.s("Ttree"));
 		this.defineSymbol("Tee", this.s("Te"));
@@ -534,6 +537,19 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 	}
 
+	class StringValue extends Expression {
+		String value;
+
+		public StringValue(String sym) {
+			this.value = sym;
+		}
+
+		@Override
+		void emit(Writer w) {
+			w.format(this.formatOf("string", "str", "\"%s\""), this.value);
+		}
+	}
+
 	class SymbolValue extends Expression {
 		String sym;
 
@@ -556,22 +572,24 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w0) {
-			// if (this.isDefined("base64")) {
-			// byte[] encoded = Base64.getEncoder().encode(this.indexMap);
-			// return this.getConstName(this.s("Int8"), "choice", encoded.length,
-			// this.format("base64", new String(encoded)));
-			// }
-			Writer w = new Writer();
-			w.push(this.formatOf("array", "["));
-			for (int i = 0; i < this.indexMap.length; i++) {
-				if (i > 0) {
-					w.push(this.formatOf("delim array", "delim", " "));
+			if (this.isDefined("Obase64")) {
+				byte[] encoded = Base64.getEncoder().encode(this.indexMap);
+				Expression index = NezCC2.this.apply("b64", new StringValue(new String(encoded)));
+				w0.format(this.formatOf("constname", "%s",
+						NezCC2.this.constName(this.typeOf("alt"), "alt", this.indexMap.length, index.toString())));
+			} else {
+				Writer w = new Writer();
+				w.push(this.formatOf("array", "["));
+				for (int i = 0; i < this.indexMap.length; i++) {
+					if (i > 0) {
+						w.push(this.formatOf("delim array", "delim", " "));
+					}
+					w.push(new IntValue(this.indexMap[i] & 0xff));
 				}
-				w.push(new IntValue(this.indexMap[i] & 0xff));
+				w.push(this.formatOf("end array", "]"));
+				w0.format(this.formatOf("constname", "%s",
+						NezCC2.this.constName(this.typeOf("alt"), "alt", this.indexMap.length, w.toString())));
 			}
-			w.push(this.formatOf("end array", "]"));
-			w0.format(this.formatOf("constname", "%s",
-					NezCC2.this.constName(this.typeOf("alt"), "alt", this.indexMap.length, w.toString())));
 		}
 	}
 
@@ -584,19 +602,36 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w0) {
-			Writer w = new Writer();
-			w.push(this.formatOf("array", "["));
-			for (int i = 0; i < 8; i++) {
-				if (i > 0) {
-					w.push(this.formatOf("delim array", "delim", " "));
+			if (this.isDefined("Obits32")) {
+				Writer w = new Writer();
+				w.push(this.formatOf("array", "["));
+				for (int i = 0; i < 8; i++) {
+					if (i > 0) {
+						w.push(this.formatOf("delim array", "delim", " "));
+					}
+					w.push(new IntValue(this.bs.bits()[i]));
 				}
-				w.push(new IntValue(this.bs.bits()[i]));
+				w.push(this.formatOf("end array", "]"));
+				w0.format(this.formatOf("constname", "%s",
+						NezCC2.this.constName(this.typeOf("bs"), "bs", 8, w.toString())));
+			} else {
+				Writer w = new Writer();
+				w.push(this.formatOf("array", "["));
+				for (int i = 0; i < 256; i++) {
+					if (i > 0) {
+						w.push(this.formatOf("delim array", "delim", " "));
+					}
+					if (this.bs.is(i)) {
+						w.push(this.formatOf("true", "true"));
+					} else {
+						w.push(this.formatOf("false", "false"));
+					}
+				}
+				w.push(this.formatOf("end array", "]"));
+				w0.format(this.formatOf("constname", "%s",
+						NezCC2.this.constName(this.typeOf("bs"), "bs", 256, w.toString())));
 			}
-			w.push(this.formatOf("end array", "]"));
-			w0.format(
-					this.formatOf("constname", "%s", NezCC2.this.constName(this.typeOf("bs"), "bs", 8, w.toString())));
 		}
-
 	}
 
 	HashSet<String> usedNames = new HashSet<>();
@@ -617,9 +652,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 			NezCC2.this.usedNames.add(this.name);
 			if (this.isDefined("funcref")) {
 				w.format(this.formatOf("funcref", "%s"), this.name);
+				return;
 			}
 			if (this.isDefined("lambda")) {
-				w.format(this.formatOf("lambda", "%s -> %s"), this.name, NezCC2.this.apply(this.name, "px"));
+				w.format(this.formatOf("lambda", "\\%s %s"), this.name, NezCC2.this.apply(this.name, "px"));
+				return;
 			}
 			w.push(this.name);
 		}
@@ -636,7 +673,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-
 			w.format(this.formatOf("lambda", "\\%s %s"), this.name, this.body);
 		}
 	}
@@ -858,7 +894,12 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			w.format(this.formatOf("apply", "%s(%s)"), this.left, this.right);
+			String key = this.left + "apply";
+			if (this.isDefined(key)) {
+				w.format(this.formatOf(key), this.left, this.right);
+			} else {
+				w.format(this.formatOf("apply", "%s(%s)"), this.left, this.right);
+			}
 		}
 
 		class Args extends Expression {
@@ -985,7 +1026,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 	Expression unary(String expr, final Expression... args) {
 		expr = expr.trim();
-		this.dump(expr, args);
+		// this.dump(expr, args);
 		if (expr.endsWith("]")) {
 			int pos = this.flatIndexOf(expr, '[');
 			Expression b = this.unary(expr.substring(0, pos), args);
@@ -1151,7 +1192,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 				return new IndexValue((byte[]) o);
 			}
 			if (o == null) {
-				return new SymbolValue("");
+				return new Var("EmptyTag");
 			}
 			return new Var(o.toString() + ":" + o.getClass().getSimpleName());
 		}).toArray(Expression[]::new);
@@ -1337,7 +1378,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	/* Tree Construction */
 
 	public Lib mtree = () -> {
-		return new DefFunc("mtree", "px", "tag", "psos", "epos")
+		return new DefFunc("mtree", "px", "tag", "spos", "epos")
 				.is("px.tree = ctree(tag, px.inputs, spos, epos, px.tree); true");
 	};
 
@@ -1350,6 +1391,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 				.is("let pos = px.pos; px.tree = EmptyTree; e(px) && mtree(px, tag, pos+spos, px.pos+epos)");
 	};
 
+	public Lib foldtree = () -> {
+		return new DefFunc("foldtree", "px", "spos", "label", "e", "tag", "epos").is(
+				"let pos = px.pos; mlink(px, label, px.tree, EmptyTree) && e(px) && mtree(px, tag, pos+spos, px.pos+epos)");
+	};
+
 	public Lib linktree = () -> {
 		return new DefFunc("linktree", "px", "tag", "e")
 				.is("let tree = px.tree; e(px) && mlink(px, tag, px.tree, tree)");
@@ -1359,8 +1405,12 @@ public class NezCC2 implements OFactory<NezCC2> {
 		return new DefFunc("tagtree", "px", "tag").is("mlink(px, tag, EmptyTree, px.tree)");
 	};
 
+	public Lib detree = () -> {
+		return new DefFunc("detree", "px", "e").is("let tree = px.tree; e(px) && mback3(px, px.pos, tree)");
+	};
+
 	public Lib mconsume1 = () -> {
-		return new DefFunc("mconsume3", "px", "memo").is("px.pos = memo.mpos; memo.matched");
+		return new DefFunc("mconsume1", "px", "memo").is("px.pos = memo.mpos; memo.matched");
 	};
 
 	public Lib mconsume3 = () -> {
@@ -1392,7 +1442,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib getmemo = () -> {
-		return new DefFunc("getmemo", "px", "key").asType("memo").is("px.memos[key % memolength]");
+		return new DefFunc("getmemo", "px", "key").asType("memo").is("px.memos[key!(key % memolen)]");
 	};
 
 	public Lib memo1 = () -> {
@@ -1410,19 +1460,14 @@ public class NezCC2 implements OFactory<NezCC2> {
 				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume7(px, memo) ? mstore7(px, memo, key, pos, e(px))");
 	};
 
-	// foldtree(px, label, l, e, tag, r) =
-	// pos = px.pos
-	// mlink(px, label, px.tree, EmptyTree) && e(px) && mtree(px, tag, pos + l ,
-	// px.pos + r)
-
 	private static String[] runtimeFuncs1 = { //
-			"mnext1", "neof", "inc", //
+			"mnext1", "neof", //
 			"mback1", "mback3", "mback7", //
 			"choice1", "choice3", "choice7", //
 			"many1", "many3", "many7", //
 			"many9", "many12", "many16", //
 			"and1", "not1", "not3", "not7", //
-			"mtree", "mlink", "newtree", "linktree", "tagtree", //
+			"mtree", "mlink", "newtree", "foldtree", "linktree", "tagtree", //
 			"getkey", "getmemo", //
 			"mconsume1", "mconsume3", "mconsume7", //
 			"mstore1", "mstore3", "mstore7", //
