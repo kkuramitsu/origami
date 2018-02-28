@@ -109,6 +109,11 @@ public class ByteSet implements OStrings {
 	}
 
 	@Override
+	public String toString() {
+		return OStrings.stringfy(this);
+	}
+
+	@Override
 	public void strOut(StringBuilder sb) {
 		int unsignedByte = this.getUnsignedByte();
 		if (unsignedByte != -1) {
@@ -169,16 +174,6 @@ public class ByteSet implements OStrings {
 		}
 		sb.append((char) ubyte);
 	}
-
-	// //
-	// public final static ByteSet AnyChar = new AnyCharSet();
-	//
-	// static class AnyCharSet extends ByteSet {
-	// @Override
-	// public void strOut(StringBuilder sb) {
-	// sb.append(".");
-	// }
-	// }
 
 	private final static CharSet[] CharSet = new CharSet[256];
 

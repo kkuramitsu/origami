@@ -411,6 +411,25 @@ public abstract class Expression extends AbstractList<Expression> implements OSt
 		return null;
 	}
 
+	public final static ByteSet getByteSet(Expression e) {
+		if (e instanceof PByte) {
+			return ((PByte) e).byteSet();
+		}
+		if (e instanceof PByteSet) {
+			return ((PByteSet) e).byteSet();
+		}
+		return null;
+	}
+
+	public final static byte[] getBytes(Expression e) {
+		ArrayList<Integer> l = new ArrayList<>();
+		Expression remain = Expression.extractMultiBytes(e, l);
+		if (l.size() > 1 && remain instanceof PEmpty) {
+			return Expression.toMultiBytes(l);
+		}
+		return null;
+	}
+
 	// Visitor
 
 }

@@ -85,6 +85,8 @@ public abstract class Main extends OConsole {
 		optMap.put("--expression", MainOption.InlineGrammar);
 		optMap.put("-s", MainOption.Start);
 		optMap.put("--start", MainOption.Start);
+		optMap.put("-f", MainOption.FromFile);
+
 	}
 
 	private void parseCommandOption(String[] args, OOption options) {
