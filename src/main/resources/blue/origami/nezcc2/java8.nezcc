@@ -1,6 +1,7 @@
 // NezCC2 for Java8
 
 Omutable   = 1
+Omemo      = 1
 Obase64    = 1
 Obits32    = 1
 Ojumptable = 1
@@ -32,26 +33,22 @@ array            = {
 end array        = }
 
 function         = private final static %s %s(%s) {
-let              = '''
-%s %s = %s;
-	%s
-'''
+let              = %s %s = %s;$|\n|$|\t|%s
 
-while            = '''
-while(%s) {
-
-'''
+while            = while(%s) {$|\n|
 
 stmt             = %s
-ifexpr           = %1$s ? %2$s : %3$s
+ifexpr           = (%1$s) ? %2$s : %3$s
 getter           = %s.%s
-inc              = %s++
 !                = !(%s)
+funcref          = $|base|::%s
+lambda           = (%s) -> %s
+
+errpos           = mbackpos(px, %s)
+posinc           = %s.pos++
 unsigned         = (%s & 0xff)
 key              = (int)(%s)
 char             = ((byte)%s)
-funcref          = $|base|::%s
-lambda           = (%s) -> %s
 
 peapply          = %s.apply(%s)
 jumptblapply     = %s.apply(%s)
@@ -206,7 +203,7 @@ public class $|base| {
       int n = b & 0xff;
       return (bits[n / 32] & (1 << (n % 32))) != 0;
    }
-   //
+   // errpos
    final static int mbackpos(ParserContext px, int pos) {
       if(px.headpos < px.pos) {
          px.headpos = px.pos;
@@ -237,7 +234,7 @@ Dmain = '''
       px.memos = Arrays.stream(new MemoEntry[memolen]).map(m -> {
          return new MemoEntry();
       }).toArray(MemoEntry[]::new);
-      return e0(px) ? (Tree) px.tree : new Tree("[error]", inputs, px.headpos, px.headpos, null);
+      return e0(px) ? ((px.tree == null) ? new Tree(EmptyTag, inputs, 0, px.pos, null) : (Tree) px.tree) : new Tree("[error]", inputs, px.headpos, px.headpos, null);
    }
 
    static byte[] readInputs(String a) throws IOException {

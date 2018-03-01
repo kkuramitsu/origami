@@ -64,7 +64,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 			p = (p != -1 && p2 != -1) ? Math.min(p, p2) : Math.max(p, p2);
 			String s = file.substring(p).replace(".nezcc", "");
 			file = file.substring(0, p) + ".nezcc";
-			s = s.replace("+", ",").replace("-", ",-").substring(1);
+			s = s.replace("+", ",").replace("-", ",!").substring(1);
 			this.defineSymbol("localoptions", s);
 		}
 		if (!new File(file).isFile()) {

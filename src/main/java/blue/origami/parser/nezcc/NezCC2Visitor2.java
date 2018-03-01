@@ -106,14 +106,13 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 			c++;
 		}
 		this.log("funcsize: %d", c);
-		// this.declSymbolTables();
 	}
 
 	private NezCC2.ENode eMemo(Expression e, MemoPoint m, NezCC2 pg) {
-		if (m == null) {
+		if (m == null || !pg.isDefined("Omemo")) {
 			return this.eMatch(e, false, pg);
 		}
-		int acc = (Typestate.compute(e) == Typestate.Tree ? POS | TREE : POS) | this.mask;
+		int acc = this.mask;
 		String funcName = this.funcAcc("memo", acc);
 		pg.used("getkey");
 		pg.used("getmemo");
@@ -182,8 +181,8 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	}
 
 	private NezCC2.ENode eNotEOFNext(NezCC2 pg) {
-		if (pg.isDefined("inc")) {
-			return pg.p("px.length < inc!(px.pos)");
+		if (pg.isDefined("posinc")) {
+			return pg.p("px.length < posinc!(px)");
 		}
 		return this.eNotEOF(pg).and(this.eNext(pg));
 	}
@@ -202,8 +201,8 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	}
 
 	private NezCC2.ENode eMatchByteNext(int uchar, NezCC2 pg) {
-		if (pg.isDefined("inc")) {
-			NezCC2.ENode expr = pg.p("px.inputs[inc!(px.pos)] == $0", (char) (uchar & 0xff));
+		if (pg.isDefined("posinc")) {
+			NezCC2.ENode expr = pg.p("px.inputs[posinc!(px)] == $0", (char) (uchar & 0xff));
 			if (uchar == 0) {
 				expr = this.eNotEOF(pg).and(expr);
 			}
@@ -240,8 +239,8 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		if (uchar != -1) {
 			return this.eMatchByteNext(uchar, pg);
 		}
-		if (pg.isDefined("inc")) {
-			NezCC2.ENode index = pg.p("px.inputs[inc!(px.pos)]");
+		if (pg.isDefined("posinc")) {
+			NezCC2.ENode index = pg.p("px.inputs[posinc!(px)]");
 			if (pg.isDefined("Obits32")) {
 				return pg.apply("bits32", bs, index);
 			} else {
@@ -340,7 +339,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		List<NezCC2.ENode> exprs = new ArrayList<>(e.size() + 1);
 		ENode index = null;
 		exprs.add(hasJumpTable ? pg.p("^fail") : this.eFail(pg));
-		if (this.isAllConsumed(e) && pg.isDefined("inc")) {
+		if (this.isAllConsumed(e) && pg.isDefined("posinc")) {
 			for (int i = 0; i < e.size(); i++) {
 				Expression sub = e.get(i);
 				if (sub instanceof PPair) {
@@ -361,7 +360,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	}
 
 	protected NezCC2.ENode eJumpIndex(byte[] indexMap, boolean inc, NezCC2 pg) {
-		NezCC2.ENode index = inc ? pg.p("inc!(px.pos)") : pg.p("px.pos");
+		NezCC2.ENode index = inc ? pg.p("posinc!(px)") : pg.p("px.pos");
 		boolean hasMinusIndex = false;
 		for (byte b : indexMap) {
 			if (b < 0) {
@@ -395,7 +394,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	}
 
 	private NezCC2.ENode eSkipFirst(Expression e, boolean hasJumpTable, NezCC2 pg) {
-		if (e instanceof PPair) {
+		if (e instanceof PPair && (hasJumpTable && pg.isDefined("lambda"))) {
 			Expression first = e.get(0);
 			if (first instanceof PAny || first instanceof PByte || first instanceof PByteSet) {
 				ENode skiped = this.eNext(pg).and(this.eMatch(e.get(1), pg));
@@ -533,20 +532,30 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		}
 	}
 
+	private boolean isTreeConstruction() {
+		return (this.mask & TREE) == TREE;
+	}
+
 	@Override
 	public NezCC2.ENode visitTree(PTree e, NezCC2 pg) {
-		NezCC2.ENode inner = this.eLambda(e.get(0), pg);
-		pg.used("mtree");
-		if (e.folding) {
-			pg.used("mlink");
-			return pg.apply("foldtree", "px", e.beginShift, e.label, inner, e.tag, e.endShift);
+		if (this.isTreeConstruction()) {
+			NezCC2.ENode inner = this.eLambda(e.get(0), pg);
+			pg.used("mtree");
+			if (e.folding) {
+				pg.used("mlink");
+				return pg.apply("foldtree", "px", e.beginShift, e.label, inner, e.tag, e.endShift);
+			}
+			return pg.apply("newtree", "px", e.beginShift, inner, e.tag, e.endShift);
 		}
-		return pg.apply("newtree", "px", e.beginShift, inner, e.tag, e.endShift);
+		return this.eMatch(e.get(0), pg);
 	}
 
 	@Override
 	public NezCC2.ENode visitDetree(PDetree e, NezCC2 pg) {
-		return this.eDetree(e, pg);
+		if (this.isTreeConstruction()) {
+			return this.eDetree(e, pg);
+		}
+		return this.eMatch(e.get(0), pg);
 	}
 
 	private NezCC2.ENode eDetree(PDetree e, NezCC2 pg) {
@@ -561,15 +570,22 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	}
 
 	private NezCC2.ENode eLink(PLinkTree e, NezCC2 pg) {
-		NezCC2.ENode lambda = this.eLambda(e.get(0), pg);
-		pg.used("mlink");
-		return pg.apply("linktree", "px", e.label, lambda);
+		if (this.isTreeConstruction()) {
+			NezCC2.ENode lambda = this.eLambda(e.get(0), pg);
+			pg.used("mlink");
+			return pg.apply("linktree", "px", e.label, lambda);
+		}
+		return this.eMatch(e.get(0), pg);
 	}
 
 	@Override
 	public NezCC2.ENode visitTag(PTag e, NezCC2 pg) {
-		pg.used("mlink");
-		return pg.apply("tagtree", "px", e.tag);
+		if (this.isTreeConstruction()) {
+			pg.used("mlink");
+			return pg.apply("tagtree", "px", e.tag);
+		} else {
+			return this.eSucc(pg);
+		}
 	}
 
 	@Override
