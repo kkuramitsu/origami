@@ -1,10 +1,17 @@
-// NezCC2 for Java8
+# NezCC2 for Java8
 
 Omutable   = 1
 Omemo      = 1
 Obase64    = 1
 Obits32    = 1
 Ojumptable = 1
+
+# error position
+errpos           = mbackpos(px, %s)
+
+# inline incremental operator
+posinc           = %s.pos++
+
 
 Tmatched   = boolean
 Tpx        = ParserContext
@@ -21,7 +28,6 @@ Talt       = byte[]
 Tbs        = int[]
 Tjumptbl   = ParseFunc[]
 
-
 comment            = /*%s*/
 begin              = {
 end                = $|\t|}$|\n|
@@ -35,19 +41,16 @@ end array        = }
 function         = private final static %s %s(%s) {
 let              = %s %s = %s;$|\n|$|\t|%s
 
-while            = while(%s) {$|\n|
-
 stmt             = %s
 ifexpr           = (%1$s) ? %2$s : %3$s
 getter           = %s.%s
 !                = !(%s)
+
 funcref          = $|base|::%s
 lambda           = (%s) -> %s
 
-errpos           = mbackpos(px, %s)
-posinc           = %s.pos++
 unsigned         = (%s & 0xff)
-key              = (int)(%s)
+keyindex         = (int)(%s)
 char             = ((byte)%s)
 
 peapply          = %s.apply(%s)
@@ -60,10 +63,10 @@ switch     = switch(%s) {$|\n|
 case       = $|\t|case %s : %s
 default    = $|\t|default : %s
 
+while            = while(%s) {$|\n|
 =          = %s = %s;$|\n|
 return     = return %s;$|\n|
 
-EmptyTree        = null
 true             = true
 false            = false
 
@@ -257,8 +260,10 @@ Dmain = '''
          Tree t = parse(buf);
          long et = System.nanoTime();
          System.err.printf("%s %f[ms]: ", a, (et - st) / 1000000.0);
-         System.out.print(t);
-         System.out.flush();
+         if(args.length == 1) {
+           System.out.print(t);
+           System.out.flush();
+         }
          System.err.printf("\n");
       }
    }

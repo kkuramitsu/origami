@@ -1,0 +1,178 @@
+# NezCC2 for Python2
+
+Omutable   = 1
+Omemo      = 1
+#Obase64    = 1
+#Obits32    = 1
+Ojumptable = 1
+
+# error position
+errpos           = mbackpos(px, %s)
+
+# inline incremental operator
+posinc           = posinc(%s)
+
+Tmatched   = boolean
+Tpx        = ParserContext
+Tinputs    = byte[]
+Tch        = byte
+Tpos       = int
+Ttree      = T
+Ttag       = String
+Tstate     = State
+Tmemo      = MemoEntry
+Tkey       = long
+Tpe        = ParseFunc
+Talt       = byte[]
+Tbs        = int[]
+Tjumptbl   = ParseFunc[]
+
+#comment            = /*%s*/
+begin              = :
+end                = $|\n|
+
+delim              = ,
+
+const            = %2$s = %3$s
+array            = [
+end array        = ]
+
+function         = def %2$s(%3$s):
+param            = %2$s
+let              = %2$s = %3$s$|\n|$|\t|%4$s
+
+stmt             = %s
+ifexpr           = (%2$s if (%1$s) else (%3$s))
+getter           = %s.%s
+||               = %s or %s
+&&               = %s and %s
+!                = not (%s)
+group            = (%s)
+
+funcref          = %s
+lambda           = (lambda %s : %s)
+
+#unsigned         = (%s & 0xff)
+keyindex          = int(%s)
+#char             = ((byte)%s)
+
+while            = while(%s) :$|\n|
+=                = %s = %s$|\n|
+return           = return %s$|\n|
+
+true             = True
+false            = False
+
+if     = if (%s) :$|\n|
+else   = $|\t|else :$|\n|
+
+Dhead = '''
+import sys, time
+
+EmptyTag = ""
+EmptyTree = None
+EmptyState = None
+
+class clink :
+  __slots__ = ['tag', 'child', 'prev']
+  def __init__(self,tag,child,prev):
+    self.tag = tag
+    self.child = child
+    self.prev = prev
+  def __str__(self):
+    if self.child != None and self.tag != None:
+      return '$' + self.tag + '=' + str(self.child)
+    return ''
+
+class ctree :
+  __slots__ = ['tag', 'inputs', 'spos', 'epos', 'child']
+  def __init__(self,tag,inputs,spos,epos,child):
+    self.tag = tag
+    self.inputs = inputs
+    self.spos = spos
+    self.epos = epos
+    self.child = child
+  def __str__(self) :
+    s = "[#" + self.tag
+    cur = self.child
+    while cur != None :
+      s = s + " " + str(cur)
+      cur = cur.prev
+    if self.child == None:
+      s = s + " '" + str(self.inputs[self.spos : self.epos]) + "'"
+    return s + "]"
+
+class cmemo :
+  __slots__ = ['key', 'matched', 'mpos', 'mtree', 'mstate']
+  def __init__(self):
+    self.key = 0
+    self.matched = False
+    self.mpos = 0
+    self.mtree = None
+    self.mstate = None
+
+class cstate :
+  __slots__ = ['ns', 'spos', 'slen', 'sprev']
+  def __init__(self, ns, spos, epos, sprev) :
+    self.ns = ns
+    self.spos = spos
+    self.slen = epos - spos
+    self.sprev = sprev
+
+class ParserContext :
+  def __init__(self, inputs, length, memolen) :
+    self.inputs = inputs
+    self.length = length
+    self.pos = 0
+    self.headpos = 0
+    self.tree = None
+    self.state = None
+    self.memos = [cmemo() for i in range(0, memolen)]
+    
+def bits32(bits, b): 
+  n = b & 0xff
+  return (bits[n // 32] & (1 << (n % 32))) != 0
+
+def posinc(px):
+  p = px.pos
+  px.pos = px.pos + 1
+  return p
+
+def mbackpos(px, pos) :
+  if(px.headpos < px.pos) : px.headpos = px.pos
+  return pos
+
+'''
+
+Dmain = '''
+
+def parse(inputs,length):
+  px = ParserContext(inputs,length,memolen)
+  if e0(px) :
+    if px.tree == None : 
+      return ctree(EmptyTag, inputs, 0, px.pos, None) 
+    return px.tree
+  return ctree("[error]", inputs, 0, px.headpos, None)
+  
+def read_inputs(a):
+  try:
+    f = open(a, 'rb')
+    data = f.read() + b'\0'  # Zero Termination
+    f.close()
+    return bytearray(data)
+  except:
+    return bytearray(a.encode() + b'\0') # Zero Termination
+
+if __name__ == "__main__":
+  for a in sys.argv[1:]:
+    s = read_inputs(a)
+    st = time.time()
+    t = parse(s, len(s)-1)
+    et = time.time()
+    sys.stderr.write(a + " " + str((et-st) * 1000.0) + "[ms]: ")
+    sys.stderr.flush()
+    if len(a) == 1: sys.stdout.write(str(t))
+    sys.stdout.flush()
+    sys.stderr.write('\n')
+    
+'''

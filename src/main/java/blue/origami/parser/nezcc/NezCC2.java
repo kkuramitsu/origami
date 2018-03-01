@@ -394,7 +394,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			w.push(this.formatOf("V" + this.name, this.name));
+			w.push(this.formatOf(this.name, this.name));
 		}
 	}
 
@@ -1736,7 +1736,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib getmemo = () -> {
-		return new FuncDef("getmemo", "px", "key").asType("memo").is("px.memos[key!(key % memolen)]");
+		return new FuncDef("getmemo", "px", "key").asType("memo").is("px.memos[keyindex!(key % memolen)]");
 	};
 
 	public Lib memo1 = () -> {

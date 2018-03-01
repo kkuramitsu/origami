@@ -713,7 +713,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 
 	// function
 	ParserGrammar g;
-	String comment = "/*%s*/";
+	String comment = "";
 	HashMap<String, String> exprFuncMap = new HashMap<>();
 	HashMap<String, String> termMap = new HashMap<>();
 
