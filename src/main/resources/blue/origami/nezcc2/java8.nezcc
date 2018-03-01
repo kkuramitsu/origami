@@ -3,6 +3,7 @@
 Omutable   = 1
 Obase64    = 1
 Obits32    = 1
+Ojumptable = 1
 
 Tmatched   = boolean
 Tpx        = ParserContext
@@ -14,19 +15,17 @@ Ttag       = String
 Tstate     = State
 Tmemo      = MemoEntry
 Tkey       = long
-Te         = ParseFunc
+Tpe        = ParseFunc
 Talt       = byte[]
 Tbs        = int[]
+Tjumptbl   = ParseFunc[]
 
 
 comment            = /*%s*/
 begin              = {
-end                = '''
-/* */
-	}
+end                = $|\t|}$|\n|
 
-'''
-delim            = ,
+delim              = ,
 
 const            = private final static %1$s %2$s = %3$s;
 array            = {
@@ -54,38 +53,25 @@ char             = ((byte)%s)
 funcref          = $|base|::%s
 lambda           = (%s) -> %s
 
-eapply           = %s.apply(%s)
-eeapply          = %s.apply(%s)
-ee2apply         = %s.apply(%s)
-ee3apply         = %s.apply(%s)
+peapply          = %s.apply(%s)
+jumptblapply     = %s.apply(%s)
 ctreeapply       = new Tree(%2$s)
 clinkapply       = new TreeLink(%2$s)
 cstateapply       = new State(%2$s)
 
-switch     = '''
-switch(%s) {
+switch     = switch(%s) {$|\n|
+case       = $|\t|case %s : %s
+default    = $|\t|default : %s
 
-'''
-
-case       = '''
-	case %s : %s
-
-'''
-default    = '''
-	default : %s
-
-'''
-
-=          = '''
-%s = %s;
-
-'''
-return     = return %s;
+=          = %s = %s;$|\n|
+return     = return %s;$|\n|
 
 EmptyTree        = null
 true             = true
 false            = false
 
+if     = if(%s) {$|\n|
+else   = $|\t|}$|\n|$|\t|else {$|\n|
 
 Dhead = '''
 import java.io.File;
@@ -230,9 +216,9 @@ public class $|base| {
 
 '''
 
-Dmatchmany1 = '''
+Dmatchmany = '''
    // match
-   final static boolean match(byte[] inputs, int pos, byte[] inputs2, int pos2, int len) {
+   final static boolean matchmany(byte[] inputs, int pos, byte[] inputs2, int pos2, int len) {
       for(int i = 0; i < len; i++) {
          if(inputs[pos+i] != inputs2[pos2+i]) return false;
       }

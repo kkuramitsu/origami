@@ -50,6 +50,10 @@ public class NezCC2 implements OFactory<NezCC2> {
 		this.defineSymbol("base", base);
 		this.defineSymbol("nezcc", "nezcc/2.0");
 		this.defineSymbol("space", " ");
+		this.defineSymbol(" ", " ");
+		this.defineSymbol("\\n", "\n");
+		this.defineSymbol("\\t", "\t");
+
 		if (options.is(MainOption.TreeConstruction, true)) {
 			this.mask |= TREE;
 		}
@@ -57,7 +61,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 		int p = file.indexOf("+");
 		int p2 = file.indexOf("-");
 		if (p > 0 || p2 > 0) {
-			p = (p2 < p && p2 != -1) ? p2 : p;
+			p = (p != -1 && p2 != -1) ? Math.min(p, p2) : Math.max(p, p2);
 			String s = file.substring(p).replace(".nezcc", "");
 			file = file.substring(0, p) + ".nezcc";
 			s = s.replace("+", ",").replace("-", ",-").substring(1);
@@ -174,9 +178,9 @@ public class NezCC2 implements OFactory<NezCC2> {
 		this.defineSymbol("Tlabel", this.s("Ttag"));
 		this.defineSymbol("Tchild", this.s("Ttree"));
 		this.defineSymbol("Tprev", this.s("Ttree"));
-		this.defineSymbol("Tee", this.s("Te"));
-		this.defineSymbol("Tee2", this.s("Te"));
-		this.defineSymbol("Tee3", this.s("Te"));
+		this.defineSymbol("Tpe4", this.s("Tpe"));
+		this.defineSymbol("Tpe2", this.s("Tpe"));
+		this.defineSymbol("Tpe3", this.s("Tpe"));
 		this.defineSymbol("Tbm", this.s("Tbs")); // bitmap
 		this.defineSymbol("Tch", this.s("Tpos")); // ch
 		this.defineSymbol("Tch2", this.s("Tch")); // ch
@@ -533,16 +537,17 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		public ENode ret() {
-			if (!this.isDefined("ifexpr")) {
+			if (this.isDefined("if")) {
 				this.thn = this.thn.ret();
 				this.els = this.els.ret();
+				return this;
 			}
 			return super.ret();
 		}
 
 		@Override
 		public ENode deret() {
-			if (!this.isDefined("ifexpr")) {
+			if (this.isDefined("if")) {
 				this.thn = this.thn.deret();
 				this.els = this.els.deret();
 			}
@@ -551,9 +556,21 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			// if (this.isDefined("ifexpr")) {
-			w.format(this.formatOf("ifexpr", "%s ? %s : %s"), this.cnd, this.thn, this.els);
-			// }
+			if (this.isDefined("if")) {
+				w.format(this.formatOf("if"), this.cnd);
+				w.incIndent();
+				w.wIndent("");
+				w.push(this.thn);
+				w.decIndent();
+				w.format(this.formatOf("else", "else"));
+				w.incIndent();
+				w.wIndent("");
+				w.push(this.els);
+				w.decIndent();
+				w.format(this.formatOf("end if", "end", "}"));
+			} else {
+				w.format(this.formatOf("ifexpr", "%s ? %s : %s"), this.cnd, this.thn, this.els);
+			}
 		}
 
 	}
@@ -812,15 +829,8 @@ public class NezCC2 implements OFactory<NezCC2> {
 		}
 	}
 
-	// @Override
-	// protected String emitParserLambda(String match) {
-	// String px = this.V("px");
-	// String lambda = String.format(this.s("lambda"), px, match);
-	// String p = "p" + this.varSuffix();
-	// return lambda.replace("px", p);
-	// }
-
 	ArrayList<String> constList = new ArrayList<>();
+	ArrayList<String> constList2 = new ArrayList<>();
 	private HashMap<String, String> constNameMap = new HashMap<>();
 
 	private String constName(String typeName, String prefix, int arraySize, String value, String comment) {
@@ -830,7 +840,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 			constName = prefix + this.constNameMap.size();
 			this.constNameMap.put(key, constName);
 			NezCC2.ENode c = new Const(typeName, constName, arraySize, value, comment);
-			this.constList.add(c.toString());
+			if (prefix.equals("jumptbl")) {
+				this.constList2.add(c.toString());
+			} else {
+				this.constList.add(c.toString());
+			}
 		}
 		return constName;
 	}
@@ -994,12 +1008,23 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
-			String key = this.left + "apply";
+			String key = this.prefix(this.left) + "apply";
 			if (this.isDefined(key)) {
 				w.format(this.formatOf(key), this.left, this.right);
 			} else {
 				w.format(this.formatOf("apply", "%s(%s)"), this.left, this.right);
 			}
+		}
+
+		String prefix(Object o) {
+			String s = o.toString();
+			for (int i = 1; i < s.length(); i++) {
+				char c = s.charAt(i);
+				if (Character.isDigit(c)) {
+					return s.substring(0, i);
+				}
+			}
+			return s;
 		}
 
 		class Args extends ENode {
@@ -1341,10 +1366,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 		return new Apply(func, this.filter(args));
 	}
 
-	// public ENode ifexpr(ENode cnd, ENode thn, ENode els) {
-	// return new IfExpr(cnd, thn, els);
-	// }
-
 	public FuncDef define(String name, String... params) {
 		return new FuncDef(name, params);
 	}
@@ -1393,6 +1414,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 				out.println(code);
 			}
 		}
+		for (String cs : this.constList2) {
+			out.println(cs);
+		}
+		out.println("");
+		out.println("");
 		if (this.isDefined("Dmain" + this.mask)) {
 			out.println(this.formatMap.get("Dmain" + this.mask));
 		} else {
@@ -1482,120 +1508,119 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib maybe1 = () -> {
-		return new FuncDef("maybe1", "px", "e").is("let pos = px.pos; e(px) || mback1(px, pos)");
+		return new FuncDef("maybe1", "px", "pe").is("let pos = px.pos; pe(px) || mback1(px, pos)");
 	};
 
 	public Lib maybe3 = () -> {
-		return new FuncDef("maybe3", "px", "e")
-				.is("let pos = px.pos; let tree = px.tree; e(px) || mback3(px, pos, tree)");
+		return new FuncDef("maybe3", "px", "pe")
+				.is("let pos = px.pos; let tree = px.tree; pe(px) || mback3(px, pos, tree)");
 	};
 
 	public Lib maybe7 = () -> {
-		return new FuncDef("maybe7", "px", "e").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) || mback7(px, pos, tree, state)");
+		return new FuncDef("maybe7", "px", "pe").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) || mback7(px, pos, tree, state)");
 	};
 
 	public Lib or1 = () -> {
-		return new FuncDef("or1", "px", "e", "ee").is("let pos = px.pos; e(px) || mback1(px, pos) && ee(px)");
+		return new FuncDef("or1", "px", "pe", "pe2").is("let pos = px.pos; pe(px) || mback1(px, pos) && pe2(px)");
 	};
 
 	public Lib or3 = () -> {
-		return new FuncDef("or3", "px", "e", "ee")
-				.is("let pos = px.pos; let tree = px.tree; e(px) || mback3(px, pos, tree) && ee(px)");
+		return new FuncDef("or3", "px", "pe", "pe2")
+				.is("let pos = px.pos; let tree = px.tree; pe(px) || mback3(px, pos, tree) && pe2(px)");
 	};
 
 	public Lib or7 = () -> {
-		return new FuncDef("or7", "px", "e", "ee").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) || mback7(px, pos, tree, state) && ee(px)");
+		return new FuncDef("or7", "px", "pe", "pe2").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) || mback7(px, pos, tree, state) && pe2(px)");
 	};
 
 	public Lib oror1 = () -> {
-		return new FuncDef("oror1", "px", "e", "ee", "ee2")
-				.is("let pos = px.pos; e(px) || mback1(px, pos) && ee(px) || mback1(px, pos) && ee2(px)");
+		return new FuncDef("oror1", "px", "pe", "pe2", "pe3")
+				.is("let pos = px.pos; pe(px) || mback1(px, pos) && pe2(px) || mback1(px, pos) && pe3(px)");
 	};
 
 	public Lib oror3 = () -> {
-		return new FuncDef("oror3", "px", "e", "ee", "ee2").is(
-				"let pos = px.pos; let tree = px.tree; e(px) || mback3(px, pos, tree) && ee(px) || mback3(px, pos, tree) && ee2(px)");
+		return new FuncDef("oror3", "px", "pe", "pe2", "pe2").is(
+				"let pos = px.pos; let tree = px.tree; pe(px) || mback3(px, pos, tree) && pe2(px) || mback3(px, pos, tree) && pe3(px)");
 	};
 
 	public Lib oror7 = () -> {
-		return new FuncDef("oror7", "px", "e", "ee", "ee2").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) || mback7(px, pos, tree, state) && ee(px) || mback7(px, pos, tree, state) && ee2(px)");
+		return new FuncDef("oror7", "px", "pe", "pe2", "pe3").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) || mback7(px, pos, tree, state) && epe(px) || mback7(px, pos, tree, state) && ee2(px)");
 	};
 
 	public Lib ororor1 = () -> {
-		return new FuncDef("ororor1", "px", "e", "ee", "ee2", "ee3").is(
-				"let pos = px.pos; e(px) || mback1(px, pos) && ee(px) || mback1(px, pos) && ee2(px) || mback1(px, pos) && ee3(px)");
+		return new FuncDef("ororor1", "px", "pe", "pe2", "pe3", "pe4").is(
+				"let pos = px.pos; pe(px) || mback1(px, pos) && pe2(px) || mback1(px, pos) && pe3(px) || mback1(px, pos) && pe4(px)");
 	};
 
 	public Lib ororor3 = () -> {
-		return new FuncDef("ororor3", "px", "e", "ee", "ee2", "ee3").is(
-				"let pos = px.pos; let tree = px.tree; e(px) || mback3(px, pos, tree) && ee(px) || mback3(px, pos, tree) && ee2(px) || mback3(px, pos, tree) && ee3(px)");
+		return new FuncDef("ororor3", "px", "pe", "pe2", "pe3", "pe4").is(
+				"let pos = px.pos; let tree = px.tree; pe(px) || mback3(px, pos, tree) && pe2(px) || mback3(px, pos, tree) && pe3(px) || mback3(px, pos, tree) && pe4(px)");
 	};
 
 	public Lib ororor7 = () -> {
-		return new FuncDef("ororor7", "px", "e", "ee", "ee2", "ee3").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) || mback7(px, pos, tree, state) && ee(px) || mback7(px, pos, tree, state) && ee2(px) || || mback7(px, pos, tree, state) && ee3(px)");
+		return new FuncDef("ororor7", "px", "pe", "pe2", "pe3", "pe4").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) || mback7(px, pos, tree, state) && pe2(px) || mback7(px, pos, tree, state) && pe3(px) || mback7(px, pos, tree, state) && pe4(px)");
 	};
 
 	public Lib many1 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many1", "px", "e")
-					.is("let pos = px.pos; while(e(px), {pos = px.pos}, mback1(px, pos))");
+			return new FuncDef("many1", "px", "pe")
+					.is("let pos = px.pos; while(pe(px), {pos = px.pos}, mback1(px, pos))");
 		}
-		return new RecFuncDef("many1", "px", "e").is("let pos = px.pos; e(px) ? many1(px, e) ? mback1(px, pos)");
+		return new RecFuncDef("many1", "px", "pe").is("let pos = px.pos; pe(px) ? many1(px, pe) ? mback1(px, pos)");
 	};
 
 	public Lib many3 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many3", "px", "e").is(
-					"let pos = px.pos; let tree = px.tree; while(e(px), {pos = px.pos; tree = px.tree}, mback3(px, pos, tree))");
+			return new FuncDef("many3", "px", "pe").is(
+					"let pos = px.pos; let tree = px.tree; while(pe(px), {pos = px.pos; tree = px.tree}, mback3(px, pos, tree))");
 		}
-		return new RecFuncDef("many3", "px", "e")
-				.is("let pos = px.pos; let tree = px.tree; e(px) ? many3(px, e) ? mback3(px, pos, tree)");
+		return new RecFuncDef("many3", "px", "pe")
+				.is("let pos = px.pos; let tree = px.tree; pe(px) ? many3(px, pe) ? mback3(px, pos, tree)");
 	};
 
 	public Lib many7 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many7", "px", "e").is(
-					"let pos = px.pos; let tree = px.tree; let state = px.state; while(e(px), {pos = px.pos; tree = px.tree; state = px.state}, mback7(px, pos, tree, state))");
+			return new FuncDef("many7", "px", "pe").is(
+					"let pos = px.pos; let tree = px.tree; let state = px.state; while(pe(px), {pos = px.pos; tree = px.tree; state = px.state}, mback7(px, pos, tree, state))");
 		}
-		return new RecFuncDef("many7", "px", "e").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) ? many7(px, e) ? mback7(px, pos, tree, state)");
+		return new RecFuncDef("many7", "px", "pe").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) ? many7(px, pe) ? mback7(px, pos, tree, state)");
 	};
 
 	public Lib many9 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many9", "px", "e")
-					.is("let pos = px.pos; while(e(px) && px.pos < pos, {pos = px.pos}, mback1(px, pos))");
+			return new FuncDef("many9", "px", "pe")
+					.is("let pos = px.pos; while(pe(px) && pos < px.pos, {pos = px.pos}, mback1(px, pos))");
 		}
-		return new RecFuncDef("many9", "px", "e")
-				.is("let pos = px.pos; e(px) && px.pos < pos ? many9(px, e) ? mback1(px, pos)");
+		return new RecFuncDef("many9", "px", "pe")
+				.is("let pos = px.pos; pe(px) && pos < px.pos ? many9(px, pe) ? mback1(px, pos)");
 	};
 
 	public Lib many12 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many12", "px", "e").is(
-					"let pos = px.pos; let tree = px.tree; while(e(px) && px.pos < pos, {pos = px.pos; tree = px.tree}, mback3(px, pos, tree))");
+			return new FuncDef("many12", "px", "pe").is(
+					"let pos = px.pos; let tree = px.tree; while(pe(px) && pos < px.pos, {pos = px.pos; tree = px.tree}, mback3(px, pos, tree))");
 		}
-		return new RecFuncDef("many12", "px", "e").is(
-				"let pos = px.pos; let tree = px.tree; e(px) && px.pos < pos ? many12(px, e) ? mback3(px, pos, tree)");
+		return new RecFuncDef("many12", "px", "pe").is(
+				"let pos = px.pos; let tree = px.tree; pe(px) && pos < px.pos ? many12(px, pe) ? mback3(px, pos, tree)");
 	};
 
 	public Lib many16 = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("many16", "px", "e").is(
-					"let pos = px.pos; let tree = px.tree; let state = px.state; while(e(px) && px.pos < pos, {pos = px.pos; tree = px.tree; state = px.state}, mback7(px, pos, tree, state))");
+			return new FuncDef("many16", "px", "pe").is(
+					"let pos = px.pos; let tree = px.tree; let state = px.state; while(pe(px) && pos < px.pos, {pos = px.pos; tree = px.tree; state = px.state}, mback7(px, pos, tree, state))");
 		}
-		return new RecFuncDef("many16", "px", "e").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; e(px) && px.pos < pos ? many16(px, e) ? mback7(px, pos, tree, state)");
+		return new RecFuncDef("many16", "px", "pe").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; pe(px) && pos < px.pos ? many16(px, pe) ? mback7(px, pos, tree, state)");
 	};
 
 	public Lib manyany = () -> {
 		if (this.isDefined("while")) {
-			return new FuncDef("manyany", "px")
-					.is("while(px.pos < px.length, {px.pos = px.pos + 1; px.pos = px.pos + 1}, true)");
+			return new FuncDef("manyany", "px").is("while(px.pos < px.length, {px.pos = px.pos + 1}, true)");
 		}
 		return new RecFuncDef("manyany", "px").is("px.pos < px.length && mnext1(px) && manyany(px, e)");
 	};
@@ -1623,21 +1648,21 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib and1 = () -> {
-		return new FuncDef("and1", "px", "e").is("let pos = px.pos; e(px) && mback1(px, pos)");
+		return new FuncDef("and1", "px", "pe").is("let pos = px.pos; pe(px) && mback1(px, pos)");
 	};
 
 	public Lib not1 = () -> {
-		return new FuncDef("not1", "px", "e").is("let pos = px.pos; !e(px) && mback1(px, pos)");
+		return new FuncDef("not1", "px", "pe").is("let pos = px.pos; !pe(px) && mback1(px, pos)");
 	};
 
 	public Lib not3 = () -> {
-		return new FuncDef("not3", "px", "e")
-				.is("let pos = px.pos; let tree = px.tree; !e(px) && mback3(px, pos, tree)");
+		return new FuncDef("not3", "px", "pe")
+				.is("let pos = px.pos; let tree = px.tree; !pe(px) && mback3(px, pos, tree)");
 	};
 
 	public Lib not7 = () -> {
-		return new FuncDef("not7", "px", "e").is(
-				"let pos = px.pos; let tree = px.tree; let state = px.state; !e(px) && mback7(px, pos, tree, state)");
+		return new FuncDef("not7", "px", "pe").is(
+				"let pos = px.pos; let tree = px.tree; let state = px.state; !pe(px) && mback7(px, pos, tree, state)");
 	};
 
 	public Lib minc = () -> {
@@ -1656,18 +1681,18 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib newtree = () -> {
-		return new FuncDef("newtree", "px", "spos", "e", "tag", "epos")
-				.is("let pos = px.pos; px.tree = EmptyTree; e(px) && mtree(px, tag, pos+spos, px.pos+epos)");
+		return new FuncDef("newtree", "px", "spos", "pe", "tag", "epos")
+				.is("let pos = px.pos; px.tree = EmptyTree; pe(px) && mtree(px, tag, pos+spos, px.pos+epos)");
 	};
 
 	public Lib foldtree = () -> {
-		return new FuncDef("foldtree", "px", "spos", "label", "e", "tag", "epos").is(
-				"let pos = px.pos; mlink(px, label, px.tree, EmptyTree) && e(px) && mtree(px, tag, pos+spos, px.pos+epos)");
+		return new FuncDef("foldtree", "px", "spos", "label", "pe", "tag", "epos").is(
+				"let pos = px.pos; mlink(px, label, px.tree, EmptyTree) && pe(px) && mtree(px, tag, pos+spos, px.pos+epos)");
 	};
 
 	public Lib linktree = () -> {
-		return new FuncDef("linktree", "px", "tag", "e")
-				.is("let tree = px.tree; e(px) && mlink(px, tag, px.tree, tree)");
+		return new FuncDef("linktree", "px", "tag", "pe")
+				.is("let tree = px.tree; pe(px) && mlink(px, tag, px.tree, tree)");
 	};
 
 	public Lib tagtree = () -> {
@@ -1675,7 +1700,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib detree = () -> {
-		return new FuncDef("detree", "px", "e").is("let tree = px.tree; e(px) && mback3(px, px.pos, tree)");
+		return new FuncDef("detree", "px", "pe").is("let tree = px.tree; pe(px) && mback3(px, px.pos, tree)");
 	};
 
 	public Lib mconsume1 = () -> {
@@ -1715,22 +1740,22 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib memo1 = () -> {
-		return new FuncDef("memo1", "px", "mp", "e").is(
-				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume1(px, memo) ? mstore1(px, memo, key, pos, e(px))");
+		return new FuncDef("memo1", "px", "mp", "pe").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); (memo.key == key) ? mconsume1(px, memo) ? mstore1(px, memo, key, pos, pe(px))");
 	};
 
 	public Lib memo3 = () -> {
-		return new FuncDef("memo3", "px", "mp", "e").is(
-				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume3(px, memo) ? mstore3(px, memo, key, pos, e(px))");
+		return new FuncDef("memo3", "px", "mp", "pe").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); (memo.key == key) ? mconsume3(px, memo) ? mstore3(px, memo, key, pos, pe(px))");
 	};
 
 	public Lib memo7 = () -> {
-		return new FuncDef("memo7", "px", "mp", "e").is(
-				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); memo.key == key ? mconsume7(px, memo) ? mstore7(px, memo, key, pos, e(px))");
+		return new FuncDef("memo7", "px", "mp", "pe").is(
+				"let pos = px.pos; let key = getkey(pos,mp); let memo = getmemo(px, key); (memo.key == key) ? mconsume7(px, memo) ? mstore7(px, memo, key, pos, pe(px))");
 	};
 
 	public Lib scope4 = () -> {
-		return new FuncDef("scope4", "px", "e").is("let state = px.state; e(px) && mback4(px, state)");
+		return new FuncDef("scope4", "px", "pe").is("let state = px.state; pe(px) && mback4(px, state)");
 	};
 
 	public Lib mstate = () -> {
@@ -1743,7 +1768,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib symbol4 = () -> {
-		return new FuncDef("symbol4", "px", "ns", "e").is("let pos = px.pos; e(px) && mstate(px, ns, pos)");
+		return new FuncDef("symbol4", "px", "ns", "pe").is("let pos = px.pos; pe(px) && mstate(px, ns, pos)");
 	};
 
 	public Lib smatch4 = () -> {
@@ -1761,8 +1786,8 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib sequals4 = () -> {
-		return new FuncDef("sequals", "px", "ns", "e").is(
-				"let pos = px.pos; let state = getstate(px.state, ns); state != EmptyState && e(px) && state.slen == px.pos - pos && matchmany(px.inputs, pos, px.inputs, state.spos, px.pos - pos)");
+		return new FuncDef("sequals", "px", "ns", "pe").is(
+				"let pos = px.pos; let state = getstate(px.state, ns); state != EmptyState && pe(px) && state.slen == px.pos - pos && matchmany(px.inputs, pos, px.inputs, state.spos, px.pos - pos)");
 	};
 
 	public Lib smany = () -> {
@@ -1771,8 +1796,8 @@ public class NezCC2 implements OFactory<NezCC2> {
 	};
 
 	public Lib scontains4 = () -> {
-		return new FuncDef("scontains", "px", "ns", "e")
-				.is("let pos = px.pos; e(px) && smany(px, getstate(px.state, ns), pos, px.pos - pos)");
+		return new FuncDef("scontains", "px", "ns", "pe")
+				.is("let pos = px.pos; pe(px) && smany(px, getstate(px.state, ns), pos, px.pos - pos)");
 	};
 
 	private static String[] runtimeFuncs1 = { //
@@ -1810,10 +1835,13 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		public ENode ret() {
-			for (int i = 0; i < this.exprs.length; i++) {
-				this.exprs[i] = this.exprs[i].ret();
+			if (!this.isDefined("Ojumptable")) {
+				for (int i = 0; i < this.exprs.length; i++) {
+					this.exprs[i] = this.exprs[i].ret();
+				}
+				return this;
 			}
-			return this;
+			return super.ret();
 		}
 
 		@Override
@@ -1826,6 +1854,10 @@ public class NezCC2 implements OFactory<NezCC2> {
 
 		@Override
 		void emit(Writer w) {
+			if (this.isDefined("Ojumptable")) {
+				new Apply(new GetIndex(new FuncValue(this.exprs), this.eJumpIndex), new Var("px")).emit(w);
+				return;
+			}
 			if (this.isDefined("switch")) {
 				w.format(this.formatOf("switch"), this.eJumpIndex);
 				w.incIndent();
@@ -1838,9 +1870,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 				w.decIndent();
 				w.format(this.formatOf("end switch", "end", ""));
 				return;
-			} else if (this.isDefined("Tfuncs")) {
-				this.deret();
-				new Apply(new GetIndex(new FuncValue(this.exprs), this.eJumpIndex), new Var("px")).ret().emit(w);
 			} else {
 				this.deret();
 				ENode tail = this.exprs[0];
@@ -1870,11 +1899,11 @@ public class NezCC2 implements OFactory<NezCC2> {
 					if (i > 0) {
 						w.push(this.formatOf("delim array", "delim", " "));
 					}
-					w.push(new Lambda("px", this.exprs[i]));
+					w.push(this.exprs[i]);
 				}
 				w.push(this.formatOf("end array", "]"));
-				w0.format(this.formatOf("constname", "%s",
-						NezCC2.this.constName(this.typeOf("funcs"), "funcs", this.exprs.length, w.toString(), null)));
+				w0.format(this.formatOf("constname", "%s", NezCC2.this.constName(this.typeOf("jumptbl"), "jumptbl",
+						this.exprs.length, w.toString(), null)));
 			}
 		}
 

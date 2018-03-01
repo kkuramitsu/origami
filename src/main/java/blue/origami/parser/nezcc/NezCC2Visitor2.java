@@ -26,6 +26,7 @@ import java.util.Map;
 import blue.origami.common.Symbol;
 import blue.origami.parser.ParserGrammar;
 import blue.origami.parser.ParserGrammar.MemoPoint;
+import blue.origami.parser.nezcc.NezCC2.ENode;
 import blue.origami.parser.peg.ByteSet;
 import blue.origami.parser.peg.Expression;
 import blue.origami.parser.peg.ExpressionVisitor;
@@ -335,25 +336,28 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 
 	@Override
 	public NezCC2.ENode visitDispatch(PDispatch e, NezCC2 pg) {
+		boolean hasJumpTable = pg.isDefined("Ojumptable");
 		List<NezCC2.ENode> exprs = new ArrayList<>(e.size() + 1);
-		exprs.add(this.eFail(pg));
+		ENode index = null;
+		exprs.add(hasJumpTable ? pg.p("^fail") : this.eFail(pg));
 		if (this.isAllConsumed(e) && pg.isDefined("inc")) {
 			for (int i = 0; i < e.size(); i++) {
 				Expression sub = e.get(i);
 				if (sub instanceof PPair) {
 					assert (!(sub.get(0) instanceof PPair));
-					exprs.add(this.eMatch(sub.get(1), pg));
+					exprs.add(hasJumpTable ? this.eLambda(sub.get(1), pg) : this.eMatch(sub.get(1), pg));
 				} else {
-					exprs.add(this.eSucc(pg));
+					exprs.add(hasJumpTable ? pg.p("^succ") : this.eSucc(pg));
 				}
 			}
-			return pg.dispatch(this.eJumpIndex(e.indexMap, true, pg), exprs);
+			index = this.eJumpIndex(e.indexMap, true, pg);
 		} else {
 			for (int i = 0; i < e.size(); i++) {
-				exprs.add(this.patch(e.get(i), pg));
+				exprs.add(this.eSkipFirst(e.get(i), hasJumpTable, pg));
 			}
-			return pg.dispatch(this.eJumpIndex(e.indexMap, false, pg), exprs);
+			index = this.eJumpIndex(e.indexMap, false, pg);
 		}
+		return pg.dispatch(index, exprs);
 	}
 
 	protected NezCC2.ENode eJumpIndex(byte[] indexMap, boolean inc, NezCC2 pg) {
@@ -390,14 +394,15 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		return false;
 	}
 
-	private NezCC2.ENode patch(Expression e, NezCC2 pg) {
+	private NezCC2.ENode eSkipFirst(Expression e, boolean hasJumpTable, NezCC2 pg) {
 		if (e instanceof PPair) {
 			Expression first = e.get(0);
 			if (first instanceof PAny || first instanceof PByte || first instanceof PByteSet) {
-				return this.eNext(pg).and(this.eMatch(e.get(1), pg));
+				ENode skiped = this.eNext(pg).and(this.eMatch(e.get(1), pg));
+				return hasJumpTable ? pg.apply(null, "px", skiped) : skiped;
 			}
 		}
-		return this.eMatch(e, pg);
+		return hasJumpTable ? this.eLambda(e, pg) : this.eMatch(e, pg);
 	}
 
 	@Override
@@ -647,7 +652,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		if (Stateful.isStateful(e)) {
 			acc |= (STATE | TREE);
 		}
-		return acc;
+		return acc & this.mask;
 	}
 
 	private String funcAcc(String f, int acc) {
@@ -666,18 +671,6 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 		}
 		return e;
 	}
-
-	// NezCC2.Expression emitUpdate(NezCC2 pg, int acc) {
-	// B block = pg.beginBlock();
-	// for (String n : pg.getStackNames(acc & ~(CNT | EMPTY))) {
-	// pg.emitStmt(block, pg.emitAssign(n, pg.emitGetter(n)));
-	// }
-	// if ((acc & CNT) == CNT) {
-	// pg.emitStmt(block, pg.emitAssign("cnt", pg.emitOp(pg.V("cnt"), "+",
-	// pg.vInt(1))));
-	// }
-	// return pg.endBlock(block);
-	// }
 
 	private Object[] accNames(int acc, String... prefixes) {
 		ArrayList<String> l = new ArrayList<>();
