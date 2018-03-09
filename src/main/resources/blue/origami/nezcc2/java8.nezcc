@@ -15,8 +15,8 @@ posinc           = %s.pos++
 
 Tmatched   = boolean
 Tpx        = ParserContext
-Tinputs    = byte[]
 Tch        = byte
+Tinputs    = byte[]
 Tpos       = int
 Ttree      = T
 Ttag       = String
@@ -242,8 +242,9 @@ Dmain = '''
 
    static byte[] readInputs(String a) throws IOException {
       File file = new File(a);
+      // Input data must be '\0' terminated.
       if (file.exists()) {
-         byte[] buf = new byte[((int) file.length()) + 1]; // adding '\0' termination
+         byte[] buf = new byte[((int) file.length()) + 1]; 
          FileInputStream fin = new FileInputStream(file);
          fin.read(buf, 0, (int) file.length());
          fin.close();
@@ -268,4 +269,14 @@ Dmain = '''
       }
    }
 } /* class $|base| */
+'''
+
+Dman = '''
+QUICK START
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+Read the main function in $|base|.java. Thank you!!
+
 '''

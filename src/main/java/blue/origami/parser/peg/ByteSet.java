@@ -32,10 +32,11 @@ public class ByteSet implements OStrings {
 		}
 	}
 
-	public final void set(int s, int e, boolean b) {
+	public final ByteSet set(int s, int e, boolean b) {
 		for (int i = s; i <= e; i++) {
 			this.set(i, b);
 		}
+		return this;
 	}
 
 	public ByteSet not(boolean binary) {

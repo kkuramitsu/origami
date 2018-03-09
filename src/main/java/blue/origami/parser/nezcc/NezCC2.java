@@ -1800,6 +1800,49 @@ public class NezCC2 implements OFactory<NezCC2> {
 				.is("let pos = px.pos; pe(px) && smany(px, getstate(px.state, ns), pos, px.pos - pos)");
 	};
 
+	// curry function
+
+	public Lib cadd = () -> {
+		return new FuncDef("cadd", "pe", "pe2").is("\\px Let(pe(px), pe2(px') ?? Fail)");
+	};
+
+	public Lib cc1 = () -> {
+		return new FuncDef("cc1", "ch").is("\\px px.inputs[px.pos] == ch ? Succ(pos, pos+1) ? Fail");
+	};
+
+	public Lib cc2 = () -> {
+		return new FuncDef("cc2", "ch", "ch2")
+				.is("\\px px.inputs[px.pos] == ch && px.inputs[px.pos+1] == ch2 ? Succ(pos, pos+2) ? Fail");
+	};
+
+	public Lib cor1 = () -> {
+		return new FuncDef("cor1", "pe", "pe2").is("\\px Let(pos, pe(px), pxn ?? Back(pos, pos, pe2(px))");
+	};
+
+	public Lib cmany1 = () -> {
+		return new FuncDef("cmany1", "pe").is("\\px Let(pos, pe(px), Rep(pos, pos) ?? Succ(pos, pos))");
+	};
+
+	public Lib cand1 = () -> {
+		return new FuncDef("cand1", "pe").is("\\px Let(pos, pe(px), Succ(pos, pos) ?? Fail)");
+	};
+
+	public Lib cnot1 = () -> {
+		return new FuncDef("cnot1", "pe").is("\\px Let(pos, pe(px), Fail ?? Succ(pos, pos))");
+	};
+
+	public Lib ctree1 = () -> {
+		return new FuncDef("ctree1", "pe", "tag").is("\\px Let(pos, pe(px), Succ(tree, ctree) ?? Fail)");
+	};
+
+	public Lib clink1 = () -> {
+		return new FuncDef("clink1", "pe", "tag").is("\\px Let(tree, pe(px), Succ(tree, clink) ?? Fail)");
+	};
+
+	public Lib ctag1 = () -> {
+		return new FuncDef("ctag1", "tag").is("\\px Succ(tree, clink)");
+	};
+
 	private static String[] runtimeFuncs1 = { //
 			"mnext1", "mmov", "neof", "succ", "fail", //
 			"match2", "match3", "match4", "matchmany", //

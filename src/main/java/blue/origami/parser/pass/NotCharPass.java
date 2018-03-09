@@ -102,9 +102,4 @@ public class NotCharPass extends CommonPass {
 		return bs;
 	}
 
-	// @Override
-	// protected Expression optimized(Expression oldOne, Expression newOne) {
-	// return this.debug(oldOne, newOne);
-	// }
-
 }

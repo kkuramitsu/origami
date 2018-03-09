@@ -1,11 +1,9 @@
-/**
- * Basic mathematical operator 
- * author: Kimio Kuramitsu
- */
+// Basic mathematical operator 
+//  author: Kimio Kuramitsu
 
 File	= Expression .*
 
-/* Code Layout */
+// Code Layout 
 _	= S*
 S	= [ \t]
 
@@ -17,7 +15,7 @@ S	= [ \t]
 "(" = '(' _
 ")" = ')' _
 
-/* Expression */
+// Expression
 
 public Expression = Sum
 

@@ -61,17 +61,14 @@ import blue.origami.parser.peg.Typestate;
 
 class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	final int mask;
-	private final static int POS = NezCC2.POS;
-	private final static int TREE = NezCC2.TREE;
-	private final static int STATE = NezCC2.STATE;
-	private final static int EMPTY = NezCC2.EMPTY;
+	final static int POS = NezCC2.POS;
+	final static int TREE = NezCC2.TREE;
+	final static int STATE = NezCC2.STATE;
+	final static int EMPTY = NezCC2.EMPTY;
 
 	NezCC2Visitor2(int mask) {
 		this.mask = mask;
 	}
-
-	final static boolean Function = true;
-	final static boolean Inline = false;
 
 	private ArrayList<Expression> waitingList = new ArrayList<>();
 
@@ -661,7 +658,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 
 	// private int u = 0;
 
-	private int varStacks(int acc, Expression e) {
+	protected int varStacks(int acc, Expression e) {
 		if (Typestate.compute(e) != Typestate.Unit) {
 			acc |= TREE;
 		}
@@ -717,7 +714,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	HashMap<String, String> exprFuncMap = new HashMap<>();
 	HashMap<String, String> termMap = new HashMap<>();
 
-	private String getFuncName(Expression e) {
+	protected String getFuncName(Expression e) {
 		String suffix = "";
 		if (e instanceof PNonTerminal) {
 			String uname = ((PNonTerminal) e).getUniqueName();
@@ -779,7 +776,7 @@ class NezCC2Visitor2 extends ExpressionVisitor<NezCC2.ENode, NezCC2> {
 	HashSet<String> crossRefNames = new HashSet<>();
 	HashMap<String, HashSet<String>> depsMap = new HashMap<>();
 
-	private final void addFunctionDependency(String sour, String dest) {
+	protected final void addFunctionDependency(String sour, String dest) {
 		if (sour != null) {
 			HashSet<String> set = this.depsMap.get(sour);
 			if (set == null) {
