@@ -67,9 +67,9 @@ class Var extends ExprP {
 		this.index = index;
 	}
 
-	static ParserFunc c() {
+	static ParserFunc c(int index) {
 		return (px) -> {
-			return px.get().apply(px);
+			return px.get(index).apply(px);
 		};
 	}
 
@@ -120,14 +120,14 @@ class App extends Expr {
 		return Arrays.stream(this.args).map(e -> f.apply(e)).toArray(Expr[]::new);
 	}
 
-	static ParserFunc curry(ParserFunc f, ParserFunc a) {
+	static ParserFunc curry(ParserFunc f, ParserFunc[] a) {
 		return (px) -> {
-			ParserFunc stacked = px.push(a);
+			ParserFunc[] stacked = px.push(a);
 			return px.pop(stacked, f.apply(px));
 		};
 	}
 
-	static ParserFunc c(ParserFunc f, ParserFunc a) {
+	static ParserFunc c(ParserFunc f, ParserFunc[] a) {
 		return (px) -> {
 			return curry(f, a).apply(px);
 		};
@@ -145,11 +145,22 @@ class App extends Expr {
 			Expr f = expand(pe.get(0), args);
 			Expr[] p = ((App) pe).applyArgs((e) -> expand(e, args));
 			if (f.isNonTerm()) {
+				uname(f.p(0), p);
 				return expand(f.get(0), p);
 			}
 			return new App(f, p);
 		default:
 			return PEG.dup(pe, (e) -> expand(e, args));
 		}
+	}
+
+	static String uname(String name, Expr[] es) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(name);
+		for (Expr e : es) {
+			sb.append(e);
+			e.strOut(sb);
+		}
+		return sb.toString();
 	}
 }

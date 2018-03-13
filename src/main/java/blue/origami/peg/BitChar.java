@@ -22,7 +22,7 @@ class BitChar implements OStrings {
 		return (this.bits[n / 32] & (1 << (n % 32))) != 0;
 	}
 
-	private void set2(int n, boolean b) {
+	void set2(int n, boolean b) {
 		if (b) {
 			int mask = 1 << (n % 32);
 			this.bits[n / 32] |= mask;

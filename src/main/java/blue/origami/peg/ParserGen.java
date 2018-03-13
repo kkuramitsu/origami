@@ -47,9 +47,9 @@ class ParserGen {
 			nt.inner = trace("ast", name, nt.get(0), (p) -> Trees.checkAST(p));
 		});
 		// 1. optimizing ..
-		// nameMap.forEach((name, nt) -> {
-		// nt.inner = optimize(nt.get(0));
-		// });
+		nameMap.forEach((name, nt) -> {
+			nt.inner = trace("dfa", name, nt.get(0), (p) -> DFA.optimizeChoice(p));
+		});
 		nameMap.forEach((name, nt) -> {
 			nt.inner = trace("inline", name, nt.get(0), (p) -> inline(p));
 		});
@@ -69,12 +69,12 @@ class ParserGen {
 		System.out.println("crossrefs: " + crossRefs);
 		GeneratorContext gx = new GeneratorContext(this.isBinary, list.size());
 		for (String n : list) {
-			System.out.println("generating ... " + n + " " + nameMap2.get(n).get(0));
+			// System.out.println("generating ... " + n + " " + nameMap2.get(n).get(0));
 			gx.funcMap.put(n, this.gen(nameMap2.get(n).get(0), gx));
 		}
 		gx.recurMap.forEach((n, x) -> {
 			gx.base[x] = gx.funcMap.get(n);
-			// System.out.println("recur ... " + n + ", index=" + x + ", f=" + gx.base[x]);
+			System.out.println("recur ... " + n + ", index=" + x + ", f=" + gx.base[x]);
 		});
 		return new Parser(gx.funcMap.get(start), gx.funcMap, 0);
 	}
@@ -137,14 +137,6 @@ class ParserGen {
 			}
 			return new Var(pe.p(0), ((NonTerm) pe).index);
 		}
-		case App: {
-			Expr f = this.rename(pe.get(0), prodMap, nameMap, flags);
-			if (!f.isApp()) {
-				return f;
-			}
-
-		}
-
 		case If:
 			if (flags.is(pe.p(0))) {
 				return PEG.Empty_;
@@ -198,7 +190,6 @@ class ParserGen {
 		public int psize() {
 			return 2;
 		}
-
 	}
 
 	@SuppressWarnings("serial")
@@ -292,52 +283,45 @@ class ParserGen {
 
 	// Optimized
 
-	// Expr opt(Expr pe) {
-	// if (pe instanceof Seq) {
-	// Expr[] seq = pe.flatten();
-	// }
-	// }
-	//
-	// static Expr expand(Expr pe) {
+	static class Optimized {
+		int spos = 0;
+		int epos = 0;
+		String tag = null;
+		String val = null;
+	}
+
+	// static Expr optTree(Expr pe) {
 	// switch (pe.ctag) {
-	// case Seq:
-	// return this.expand(pe.get(0)).andThen(this.expand(pe.get(1)));
 	// case Tree:
-	// case Fold:
-	// return expandTree(pe);
-	// /* $(a/b) => $(a)/$(b) */
-	// case Link:
 	//
 	// }
+	// Expr[] es = flattenSeq(optTree(pe.get(0)));
+	// for (int i = es.length - 1; i >= 0; i--) {
+	// if (es[i].ctag == CTag.Tag) {
+	// es[i] = PEG.Empty_;
+	// ((Tree)pe).opt
+	// break;
 	// }
-	//
-	// static class Optimized {
-	// int spos = 0;
-	// int epos = 0;
-	// String tag = null;
-	// String val = null;
+	// if (!Trees.isUnit(es[i])) {
+	// break;
 	// }
-	//
-	// static Expr expandTree(Expr pe) {
-	// Optimized opt = new Optimized();
-	// int c = countTag(pe.get(0));
-	// if (c == 1) {
-	// opt.tag = eliminateTag(pe.get(0));
 	// }
-	// Expr[] list = pe.flattenSeq();
-	// int start = list.length;
+	// int start = es.length;
 	// int len = 0;
-	// for (int i = 0; i < list.length; i++) {
-	// int l = First.fixlen(list[i]);
-	// if (l == -1 || !First.unit(list[i])) {
+	// for (int i = 0; i < es.length; i++) {
+	// int l = First.fixlen(es[i]);
+	// if (l == -1 || !Trees.isUnit(es[i])) {
 	// start = i;
 	// break;
 	// }
 	// len = len + l;
 	// }
-	// pe.inner = this.seq(start, list);
-	// }
+	// ((Expr1) pe).inner = PEG.seq(start, es.length, es);
+	// if(start > 0) {
 	//
+	// }
+	// }
+
 	// static int countTag(Expr pe, HashSet tag) {
 	// switch (pe.ctag) {
 	// case Tag:
@@ -362,15 +346,15 @@ class ParserGen {
 				return inline(deref);
 			}
 			if (deref.isChar()) {
-				System.err.printf("inline %s refc %s\n", pe.param(0), deref);
+				// System.err.printf("inline %s refc %s\n", pe.param(0), deref);
 				return deref;
 			}
 			if (deref.isStr()) {
-				System.err.printf("inline %s refc %s\n", pe.param(0), deref);
+				// System.err.printf("inline %s refc %s\n", pe.param(0), deref);
 				return deref;
 			}
 			if (deref.get() instanceof Integer) {
-				System.out.printf("%s refc %s", deref.param(0), deref.get());
+				// System.out.printf("%s refc %s", deref.param(0), deref.get());
 				// return deref;
 			}
 			return pe;
@@ -379,17 +363,16 @@ class ParserGen {
 	}
 
 	void makeDict2(String curName, Expr pe, HashMap<String, NonTerm2> nameMap) {
-		if (pe != null) {
-			if (pe instanceof NonTerm2) {
-				String key = this.uname(pe);
-				if (!nameMap.containsKey(key)) {
-					nameMap.put(key, (NonTerm2) pe);
-					this.makeDict2(key, pe.get(0), nameMap);
-				}
-				return;
+		if (pe instanceof NonTerm2) {
+			String key = this.uname(pe);
+			if (!nameMap.containsKey(key)) {
+				nameMap.put(key, (NonTerm2) pe);
+				this.makeDict2(key, pe.get(0), nameMap);
 			}
-			this.makeDict2(curName, pe.get(0), nameMap);
-			this.makeDict2(curName, pe.get(1), nameMap);
+			return;
+		}
+		for (int i = 0; i < pe.size(); i++) {
+			this.makeDict2(curName, pe.get(i), nameMap);
 		}
 	}
 
@@ -406,9 +389,8 @@ class ParserGen {
 			set.add(key);
 			return;
 		}
-		if (pe != null) {
-			this.deps(curName, pe.get(0), depsMap);
-			this.deps(curName, pe.get(1), depsMap);
+		for (int i = 0; i < pe.size(); i++) {
+			this.deps(curName, pe.get(i), depsMap);
 		}
 	}
 
@@ -510,6 +492,21 @@ class ParserGen {
 		return this.memo(pe, this.gen2(pe, gx));
 	}
 
+	HashMap<String, ParserFunc> cacheMap = new HashMap<>();
+
+	ParserFunc memo(Expr pe, ParserFunc f) {
+		if (!pe.isNonTerm()) {
+			String key = pe.toString();
+			ParserFunc f2 = this.cacheMap.get(key);
+			if (f2 == null) {
+				this.cacheMap.put(key, f);
+				f2 = f;
+			}
+			return f2;
+		}
+		return f;
+	}
+
 	ParserFunc gen2(Expr pe, GeneratorContext gx) {
 		switch (pe.ctag) {
 		case Empty:
@@ -556,11 +553,47 @@ class ParserGen {
 		case Equals:
 		case Eval:
 			/* */
+		case DFA:
+			return this.cDFA((DFA) pe, gx);
+		/* */
 		case If: /* @if(flag, e) */
 		case On: /* @on(flag, e) */
 		case Off: /* @off(flag, e) */
 		default:
+			System.err.printf("TODO(gen, %s)\n", pe);
 			return ParserGen::succ;
+		}
+	}
+
+	private ParserFunc cDFA(DFA pe, GeneratorContext gx) {
+		boolean isDFA = true;
+		for (Expr e : pe.indexed) {
+			if (!DFA.car(e).isAny()) {
+				isDFA = false;
+			}
+		}
+		final ParserFunc[] f = new ParserFunc[pe.indexed.length + 1];
+		f[0] = ParserGen::fail;
+		if (isDFA) {
+			final byte[] indexMap = pe.charMap;
+			for (int i = 0; i < pe.indexed.length; i++) {
+				f[i + 1] = this.gen(DFA.cdr(pe.indexed[i]), gx);
+			}
+			if (f.length > 127) {
+				return (px) -> f[indexMap[px.inputs[px.pos++] & 0xff] & 0xff].apply(px);
+			} else {
+				return (px) -> f[indexMap[px.inputs[px.pos++] & 0xff]].apply(px);
+			}
+		} else {
+			final byte[] indexMap = pe.charMap;
+			for (int i = 0; i < pe.indexed.length; i++) {
+				f[i + 1] = this.gen(pe.indexed[i], gx);
+			}
+			if (f.length > 127) {
+				return (px) -> f[indexMap[px.inputs[px.pos] & 0xff] & 0xff].apply(px);
+			} else {
+				return (px) -> f[indexMap[px.inputs[px.pos] & 0xff]].apply(px);
+			}
 		}
 	}
 
@@ -843,21 +876,6 @@ class ParserGen {
 		return false;
 	}
 
-	HashMap<String, ParserFunc> cacheMap = new HashMap<>();
-
-	ParserFunc memo(Expr pe, ParserFunc f) {
-		if (!pe.isNonTerm()) {
-			String key = pe.toString();
-			ParserFunc f2 = this.cacheMap.get(key);
-			if (f2 == null) {
-				this.cacheMap.put(key, f);
-				f2 = f;
-			}
-			return f2;
-		}
-		return f;
-	}
-
 	private int[] bits(BitChar bc) {
 		return this.isBinary ? bc.bits() : bc.textVersion().bits();
 	}
@@ -1078,7 +1096,7 @@ class ParserGen {
 		if (pe.isNullable()) {
 			return cManyX(this.acc(pe), this.gen(pe, gx));
 		}
-		return cMany(this.acc(pe), this.gen(pe, gx));
+		return this.cMany(this.acc(pe), this.gen(pe, gx));
 	}
 
 	static ParserFunc cAnd(ParserFunc f) {
@@ -1206,7 +1224,7 @@ class ParserGen {
 				return cNot(gx.checkEOF, b);
 			}
 		}
-		return cNot(this.acc(pe), this.gen(pe, gx));
+		return this.cNot(this.acc(pe), this.gen(pe, gx));
 	}
 
 	/* TreeConstruction */

@@ -89,20 +89,20 @@ class ParserContext {
 	T tree;
 	State state;
 	MemoEntry[] memos;
-	ParserFunc a;
+	ParserFunc[] args;
 
-	ParserFunc get() {
-		return this.a;
+	ParserFunc get(int index) {
+		return this.args[index];
 	}
 
-	ParserFunc push(ParserFunc a) {
-		ParserFunc a0 = this.a;
-		this.a = a;
+	ParserFunc[] push(ParserFunc[] a) {
+		ParserFunc[] a0 = this.args;
+		this.args = a;
 		return a0;
 	}
 
-	boolean pop(ParserFunc a, boolean r) {
-		this.a = a;
+	boolean pop(ParserFunc[] a, boolean r) {
+		this.args = a;
 		return r;
 	}
 

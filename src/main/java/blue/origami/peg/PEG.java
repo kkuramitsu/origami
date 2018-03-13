@@ -31,7 +31,7 @@ public class PEG {
 		Scope, Symbol, Exists, Equals, Contains, Match, // state
 		If, On, Off, // conditional parsing
 		Var, App, // Higher ordered
-		Dispatch, Bugs, Eval;
+		DFA, Bugs, Eval;
 	}
 
 	public static class Empty extends Expr {
@@ -215,10 +215,46 @@ public class PEG {
 
 	/* Tree Construction */
 
+	static class TreeOpt {
+		int spos = 0;
+		int epos = 0;
+		String tag = TreeNode.EmptyTag;
+		byte[] value = null;
+	}
+
+	static TreeOpt RawTree = new TreeOpt();
+
 	public static class Tree extends Expr1 {
+		TreeOpt opt;
+
 		public Tree(Expr inner) {
 			this.ctag = CTag.Tree;
 			this.inner = inner;
+			this.opt = RawTree;
+		}
+
+		public Tree(Expr inner, TreeOpt opt) {
+			this.ctag = CTag.Tree;
+			this.inner = inner;
+			this.opt = opt;
+		}
+	}
+
+	public static class Fold extends ExprP1 {
+		TreeOpt opt;
+
+		public Fold(String label, Expr inner) {
+			this.ctag = CTag.Fold;
+			this.label = label;
+			this.inner = inner;
+			this.opt = RawTree;
+		}
+
+		public Fold(String label, Expr inner, TreeOpt opt) {
+			this.ctag = CTag.Fold;
+			this.label = label;
+			this.inner = inner;
+			this.opt = opt;
 		}
 	}
 
@@ -226,14 +262,6 @@ public class PEG {
 		public Link(String label, Expr inner) {
 			this.ctag = CTag.Link;
 			this.label = label == null || label.length() == 0 ? blue.origami.peg.TreeNode.EmptyTag : label;
-			this.inner = inner;
-		}
-	}
-
-	public static class Fold extends ExprP1 {
-		public Fold(String label, Expr inner) {
-			this.ctag = CTag.Fold;
-			this.label = label;
 			this.inner = inner;
 		}
 	}
@@ -354,126 +382,19 @@ public class PEG {
 		}
 	}
 
-	// public static class Dispatch extends Expr {
-	// Expr optimizeChoice(Or pe) {
-	// List<Expr> choice = new ArrayList<>(256);
-	// this.flattenChoice(pe, choice);
-	// choice = this.filterChoice(choice);
-	// if (choice.size() == 1) {
-	// return choice.get(0);
-	// }
-	//
-	// }
-	//
-	// private void flattenChoice(Or pe, List<Expr> choice) {
-	// for (Expr e : pe.flatten()) {
-	// e = e.deref();
-	// if (e instanceof Or) {
-	// this.flattenChoice((Or) e, choice);
-	// } else {
-	// choice.add(e);
-	// }
-	// }
-	// }
-	//
-	// List<Expr> filterChoice(List<Expr> choice) {
-	// List<Expr> l = new ArrayList<>(choice.size());
-	// Term prev = null;
-	// for (Expr e : choice) {
-	// if (e.isFail()) {
-	// continue;
-	// }
-	// if (e.isChar()) {
-	// prev = ((Term) e.param(0)).union(prev);
-	// continue;
-	// }
-	// if (e.isEmpty()) {
-	// if (prev != null) {
-	// l.add(new Char(prev));
-	// }
-	// l.add(e);
-	// return l;
-	// }
-	// if (prev != null) {
-	// l.add(new Char(prev));
-	// prev = null;
-	// }
-	// l.add(e);
-	// }
-	// if (prev != null) {
-	// l.add(new Char(prev));
-	// }
-	// return l;
-	// }
-	//
-	// Expr predictChoice(List<Expr> choice) {
-	// byte[] charMap = new byte[256];
-	// HashMap<String, Byte> indexMap = new HashMap<>();
-	// List<Expr> unified = new ArrayList<>();
-	// for (int ch = 0; ch < 256; ch++) {
-	// ArrayList<Expr> selected = new ArrayList<>(choice.size());
-	// Term bits = new Term();
-	// for (int i = 0; i < choice.size(); i++) {
-	// Expr e = choice.get(i);
-	// ByteAcceptance acc = ByteAcceptance.acc(e, ch);
-	// if (acc != ByteAcceptance.Reject) {
-	// selected.add(e);
-	// bits.set(i, true);
-	// }
-	// }
-	// String bitKey = bits.toString();
-	// Byte index = indexMap.get(bitKey);
-	// if (index == null) {
-	// Expr newe = this.merge(selected);
-	// String eqKey = newe.toString();
-	// if (indexMap.containsKey(eqKey)) {
-	// charMap[ch] = indexMap.get(eqKey);
-	// } else {
-	// unified.add(newe);
-	// charMap[ch] = (byte) unified.size();
-	// indexMap.put(bitKey, charMap[ch]);
-	// indexMap.put(eqKey, charMap[ch]);
-	// }
-	// } else {
-	// charMap[ch] = index;
-	// }
-	// }
-	// Expr[] indexed = unified.toArray(new Expr[unified.size()]);
-	// return Dispatch(charMap, indexed);
-	// }
-	//
-	// Expr merge(List<Expr> choice) {
-	// choice = this.filterChoice(choice);
-	// if (choice.size() == 1) {
-	// return choice.get(0);
-	// }
-	// Expr[][] matrix = choice.stream().map(e ->
-	// e.flatten()).toArray(Expr[][]::new);
-	// assert (matrix.length == choice.size());
-	// int charCounts = 0;
-	// int maxSize = 0;
-	// for (int i = 0; i < matrix.length; i++) {
-	// if (matrix[i].length > maxSize) {
-	// maxSize = matrix[i].length;
-	// }
-	// if (matrix[i][0].isChar()) {
-	// matrix[i][0] = Any_;
-	// charCounts += 1;
-	// continue;
-	// }
-	// }
-	// choice.clear();
-	// if (matrix.length == charCounts) {
-	// choice.add(this.seq(1, matrix[i]));
-	// }
-	// }
-	// }
-
 	/* Misc */
 
 	public static class Expr implements OStrings {
 		CTag ctag;
 		Object value;
+
+		public boolean eq(Expr pe) {
+			return this.ctag == pe.ctag && this.toString().equals(pe.toString());
+		}
+
+		public int size() {
+			return 0;
+		}
 
 		public Expr get(int index) {
 			return null;
@@ -558,6 +479,9 @@ public class PEG {
 		}
 
 		public Expr orElse(Expr pe) {
+			if (this.isEmpty() || this.isOption()) {
+				return this;
+			}
 			return new Or(this, pe);
 		}
 
@@ -598,6 +522,11 @@ public class PEG {
 		Expr inner;
 
 		@Override
+		public int size() {
+			return 1;
+		}
+
+		@Override
 		public Expr get(int index) {
 			return (index == 0) ? this.inner : null;
 		}
@@ -621,6 +550,11 @@ public class PEG {
 	static class Expr2 extends Expr {
 		Expr left;
 		Expr right;
+
+		@Override
+		public int size() {
+			return 2;
+		}
 
 		@Override
 		public Expr get(int index) {
@@ -758,6 +692,9 @@ public class PEG {
 		case Off: /* @on(!f, e) */
 			showingAsFunc("@on", "!" + pe.param(0), pe.get(0), sb);
 			break;
+		case DFA:
+			pe.strOut(sb);
+			break;
 		default:
 			sb.append("@TODO(" + pe.ctag + ")");
 			break;
@@ -808,18 +745,18 @@ public class PEG {
 		return b;
 	}
 
-	static Expr seq(int offset, Expr... es) {
-		assert (offset <= es.length);
-		if (es.length == offset) {
+	static Expr seq(int offset, int endindex, Expr... es) {
+		assert (offset <= endindex);
+		if (endindex == offset) {
 			return Empty_;
 		}
-		if (offset + 1 == es.length) {
+		if (offset + 1 == endindex) {
 			return es[offset];
 		}
-		return es[offset].andThen(seq(offset + 1, es));
+		return es[offset].andThen(seq(offset + 1, endindex, es));
 	}
 
-	static Expr dup(Expr pe, Function<Expr, Expr> dup) {
+	static Expr dup(Expr pe, Function<Expr, Expr> f) {
 		switch (pe.ctag) {
 		case Empty:
 		case Char:
@@ -830,49 +767,63 @@ public class PEG {
 		case If:
 			return pe;
 		case Seq:
-			return dup.apply(pe.get(0)).andThen(dup.apply(pe.get(1)));
+			return f.apply(pe.get(0)).andThen(f.apply(pe.get(1)));
 		case Or:
-			return dup.apply(pe.get(0)).orElse(dup.apply(pe.get(1)));
+			return f.apply(pe.get(0)).orElse(f.apply(pe.get(1)));
 		case Alt:
-			return new Alt(dup.apply(pe.get(0)), dup.apply(pe.get(1)));
+			return new Alt(f.apply(pe.get(0)), f.apply(pe.get(1)));
 		case And:
-			return new And(dup.apply(pe.get(0)));
+			return new And(f.apply(pe.get(0)));
 		case Not:
-			return new Not(dup.apply(pe.get(0)));
+			return new Not(f.apply(pe.get(0)));
 		case Many:
-			return new Many(dup.apply(pe.get(0)));
+			return new Many(f.apply(pe.get(0)));
 		case OneMore:
-			return new OneMore(dup.apply(pe.get(0)));
+			return new OneMore(f.apply(pe.get(0)));
 		/* */
 		case Tree:
-			return new Tree(dup.apply(pe.get(0)));
+			return new Tree(f.apply(pe.get(0)), ((Tree) pe).opt);
 		case Link:
-			return new Link((String) pe.param(0), dup.apply(pe.get(0)));
+			return new Link(pe.p(0), f.apply(pe.get(0)));
 		case Fold:
-			return new Fold((String) pe.param(0), dup.apply(pe.get(0)));
+			return new Fold(pe.p(0), f.apply(pe.get(0)), ((Fold) pe).opt);
 		/* */
 		case Scope:
-			return new Scope(dup.apply(pe.get(0)));
+			return new Scope(f.apply(pe.get(0)));
 		case Symbol:
-			return new Symbol(dup.apply(pe.get(0)));
+			return new Symbol(f.apply(pe.get(0)));
 		case Contains:
-			return new Contains(dup.apply(pe.get(0)));
+			return new Contains(f.apply(pe.get(0)));
 		case Equals:
-			return new Equals(dup.apply(pe.get(0)));
+			return new Equals(f.apply(pe.get(0)));
 		case Exists:
-			return new Exists(dup.apply(pe.get(0)));
+			return new Exists(f.apply(pe.get(0)));
 		case Match:
-			return new Match(dup.apply(pe.get(0)));
+			return new Match(f.apply(pe.get(0)));
 		/* */
 		case On:
-			return new On((String) pe.param(0), dup.apply(pe.get(0)));
+			return new On((String) pe.param(0), f.apply(pe.get(0)));
 		case Off:
-			return new On((String) pe.param(0), dup.apply(pe.get(0)));
+			return new On((String) pe.param(0), f.apply(pe.get(0)));
+		case DFA:
+			return new DFA(((DFA) pe).charMap, dup(((DFA) pe).indexed, f));
 		default:
-			System.err.println("@TODO(" + pe + ")");
+			System.err.println("@TODO(dup, " + pe + ")");
 			break;
 		}
 		return pe;
+	}
+
+	static Expr[] dup(Expr[] es, Function<Expr, Expr> f) {
+		return Arrays.stream(es).map(p -> f.apply(p)).toArray(Expr[]::new);
+	}
+
+	static Expr dup2(Expr pe, Function<Expr, Expr> f) {
+		Expr pe2 = dup(pe, f);
+		if (pe2.value != pe.value) {
+			pe2.value = pe.value;
+		}
+		return pe2;
 	}
 
 	/* Parser Interface */
@@ -986,11 +937,11 @@ public class PEG {
 		if (start == '{' && end == '}') {
 			if (expr.startsWith("{$")) {
 				String[] t = split2(expr.substring(2, expr.length() - 1), (s) -> s.indexOf(' '));
-				return new Fold(t[0], p(peg, ns, t[1]));
+				return new Fold(t[0], p(peg, ns, t[1]), RawTree);
 			}
 			String s = expr.substring(1, expr.length() - 1);
 			// System.err.println("@@@@ '" + s + "' @@@@ " + e);
-			return new Tree(p(peg, ns, s));
+			return new Tree(p(peg, ns, s), RawTree);
 		}
 		if (start == '[' && end == ']') {
 			return c(expr.substring(1, expr.length() - 1), 0);
@@ -1292,7 +1243,8 @@ public class PEG {
 			return s;
 		}).toArray(String[]::new);
 		if (names.length == 2) {
-			this.add(ns[0], ns.length == 1 ? null : ns, new Tree(p(this, ns, expr).andThen(new Tag(names[1]))));
+			this.add(ns[0], ns.length == 1 ? null : ns,
+					new Tree(p(this, ns, expr).andThen(new Tag(names[1])), RawTree));
 		} else {
 			this.add(ns[0], ns.length == 1 ? null : ns, p(this, ns, expr));
 		}
@@ -1363,7 +1315,7 @@ public class PEG {
 		PEG peg = new PEG();
 		T r = f.apply(p(peg, new String[0], expr));
 		if (result == null) {
-			System.err.printf("%s <- %s\n", expr, r);
+			System.out.printf("%s <- %s\n", expr, r);
 		} else if (!r.equals(result)) {
 			System.err.printf("%s <- %s != %s\n", expr, r, result);
 		}

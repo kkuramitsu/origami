@@ -37,6 +37,13 @@ public class First {
 		case Alt:
 		case Or:
 			return nonnull(pe.get(0)) && nonnull(pe.get(1));
+		case DFA:
+			for (Expr e : ((DFA) pe).indexed) {
+				if (!nonnull(e)) {
+					return false;
+				}
+			}
+			return true;
 		case NonTerm:
 			Boolean r = (Boolean) pe.lookup("n$");
 			if (r == null) {
@@ -123,6 +130,7 @@ public class First {
 			if (pe.get(0).isChar()) {
 				return ((BitChar) pe.get(0).param(0)).not();
 			}
+			return BitChar.AnySet;
 		case Many:
 			if (pe.get(0).isChar()) {
 				return (BitChar) pe.get(0).param(0);
