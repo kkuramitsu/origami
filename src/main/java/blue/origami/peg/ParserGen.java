@@ -12,8 +12,10 @@ import java.util.function.Function;
 
 import blue.origami.peg.PEG.CTag;
 import blue.origami.peg.PEG.Expr;
+import blue.origami.peg.PEG.ExprP1;
 import blue.origami.peg.PEG.Memoed;
 import blue.origami.peg.PEG.NonTerm;
+import blue.origami.peg.PEG.Val;
 
 class ParserGen {
 
@@ -57,8 +59,12 @@ class ParserGen {
 		// 2. generating ..
 		HashMap<String, NonTerm2> nameMap2 = new HashMap<>();
 		nameMap2.put(start, snt);
-		this.makeDict2(start, snt.get(0), nameMap2);
+		HashMap<String, Integer> countMap = new HashMap<>();
+		this.makeDict2(start, snt.get(0), nameMap2, countMap);
 		System.out.println("size: " + nameMap.size() + " => " + nameMap2.size());
+		countMap.forEach((name, n) -> {
+			System.out.println("refc ... " + name + " = " + n);
+		});
 
 		HashSet<String> crossRefs = new HashSet<>();
 		List<String> list = this.sortList(nameMap2, crossRefs);
@@ -68,15 +74,18 @@ class ParserGen {
 		System.out.println("list: " + list);
 		System.out.println("crossrefs: " + crossRefs);
 		GeneratorContext gx = new GeneratorContext(this.isBinary, list.size());
+		int mp = 0;
 		for (String n : list) {
-			// System.out.println("generating ... " + n + " " + nameMap2.get(n).get(0));
-			gx.funcMap.put(n, this.gen(nameMap2.get(n).get(0), gx));
+			Expr pe2 = nameMap2.get(n).get(0);
+			System.out.println("generating ... " + n + " = " + pe2);
+			ParserFunc f = this.gen(pe2, gx);
+			gx.funcMap.put(n, new MemoPoint(n, mp++, f));
 		}
 		gx.recurMap.forEach((n, x) -> {
 			gx.base[x] = gx.funcMap.get(n);
 			System.out.println("recur ... " + n + ", index=" + x + ", f=" + gx.base[x]);
 		});
-		return new Parser(gx.funcMap.get(start), gx.funcMap, 0);
+		return new Parser(gx.funcMap.get(start), gx.funcMap, mp);
 	}
 
 	static Expr trace(String p, String name, Expr pe, Function<Expr, Expr> f) {
@@ -155,6 +164,19 @@ class ParserGen {
 			Expr inner = this.rename(pe.get(0), prodMap, nameMap, flags);
 			flags.set(pe.p(0), stacked);
 			return inner;
+		}
+		case OneMore: {
+			return pe.get(0).andThen(new PEG.Many(pe.get(0)));
+		}
+		case Tree: {
+			Tree2 t = new Tree2(PEG.Empty_);
+			Expr[] es = this.rename(pe.get(0), prodMap, nameMap, flags).flatten();
+			return t.optimize(es, t);
+		}
+		case Fold: {
+			Fold2 t = new Fold2(pe.p(0), PEG.Empty_);
+			Expr[] es = this.rename(pe.get(0), prodMap, nameMap, flags).flatten();
+			return t.optimize(es, t);
 		}
 		default:
 			return PEG.dup(pe, (p) -> this.rename(p, prodMap, nameMap, flags));
@@ -276,51 +298,140 @@ class ParserGen {
 			System.err.println("ERR left " + pe);
 			return true;
 		}
-
 	}
 
 	// Elimination
 
-	// Optimized
+	// Tree
 
-	static class Optimized {
+	static class OptTree extends ExprP1 {
 		int spos = 0;
 		int epos = 0;
 		String tag = null;
-		String val = null;
+		byte[] val = null;
+
+		Expr dupi(OptTree t) {
+			t.spos = this.spos;
+			t.epos = this.epos;
+			t.tag = this.tag;
+			t.val = this.val;
+			return t;
+		}
+
+		Expr optimize(Expr[] es, OptTree t) {
+			for (int i = es.length - 1; i >= 0; i--) {
+				if (!Trees.isUnit(es[i])) {
+					break;
+				}
+				if (es[i].ctag == CTag.Tag) {
+					t.tag = es[i].p(0);
+					es[i] = PEG.Empty_;
+					break;
+				}
+			}
+			for (int i = es.length - 1; i >= 0; i--) {
+				if (!Trees.isUnit(es[i])) {
+					break;
+				}
+				if (es[i].ctag == CTag.Val) {
+					t.val = (byte[]) es[i].param(0);
+					es[i] = PEG.Empty_;
+					break;
+				}
+			}
+			int start = es.length;
+			for (int i = 0; i < es.length; i++) {
+				int len = First.fixlen(es[i]);
+				if (len == -1 || !Trees.isUnit(es[i])) {
+					start = i;
+					break;
+				}
+				t.spos -= len;
+			}
+			t.inner = PEG.seq(start, es.length, es);
+			if (start > 0) {
+				Expr head = PEG.seq(0, start, es);
+				return head.andThen(t);
+			}
+			return t;
+		}
+
+		@Override
+		public Expr andThen(Expr next) {
+			int len = First.fixlen(next);
+			if (len != -1) {
+				this.epos = -len;
+				this.inner = this.inner.andThen(next);
+				return this;
+			}
+			return super.andThen(next);
+		}
+
+		@Override
+		public void strOut(StringBuilder sb) {
+			PEG.showing(false, this, sb);
+			sb.append("[");
+			sb.append(this.epos);
+			sb.append(",");
+			sb.append(this.spos);
+			if (this.tag != null) {
+				sb.append(",#");
+				sb.append(this.tag);
+			}
+			if (this.val != null) {
+				sb.append(",");
+				sb.append(new Val(this.val));
+			}
+			sb.append("]");
+		}
+
 	}
 
-	// static Expr optTree(Expr pe) {
-	// switch (pe.ctag) {
-	// case Tree:
-	//
-	// }
-	// Expr[] es = flattenSeq(optTree(pe.get(0)));
-	// for (int i = es.length - 1; i >= 0; i--) {
-	// if (es[i].ctag == CTag.Tag) {
-	// es[i] = PEG.Empty_;
-	// ((Tree)pe).opt
-	// break;
-	// }
-	// if (!Trees.isUnit(es[i])) {
-	// break;
-	// }
-	// }
-	// int start = es.length;
-	// int len = 0;
-	// for (int i = 0; i < es.length; i++) {
-	// int l = First.fixlen(es[i]);
-	// if (l == -1 || !Trees.isUnit(es[i])) {
-	// start = i;
-	// break;
-	// }
-	// len = len + l;
-	// }
-	// ((Expr1) pe).inner = PEG.seq(start, es.length, es);
-	// if(start > 0) {
-	//
-	// }
-	// }
+	static class Tree2 extends OptTree {
+
+		Tree2(Expr inner) {
+			this.ctag = CTag.Tree;
+			this.inner = inner;
+		}
+
+		@Override
+		Expr dup(Object p, Expr... es) {
+			return this.dupi(new Tree2(es[0]));
+		}
+
+	}
+
+	static class Fold2 extends OptTree {
+
+		Fold2(String label, Expr inner) {
+			this.ctag = CTag.Fold;
+			this.label = label;
+			this.inner = inner;
+		}
+
+		@Override
+		Expr dup(Object p, Expr... es) {
+			return this.dupi(new Fold2(this.label, es[0]));
+		}
+
+	}
+
+	static Expr optTree(Expr pe) {
+		switch (pe.ctag) {
+		case Tree: {
+			Tree2 t = new Tree2(PEG.Empty_);
+			Expr[] es = pe.get(0).flatten();
+			return t.optimize(es, t);
+		}
+		case Fold: {
+			Fold2 t = new Fold2(pe.p(0), PEG.Empty_);
+			Expr[] es = pe.get(0).flatten();
+			return t.optimize(es, t);
+		}
+		default:
+			return PEG.dup(pe, ParserGen::optTree);
+		}
+	}
 
 	// static int countTag(Expr pe, HashSet tag) {
 	// switch (pe.ctag) {
@@ -362,17 +473,20 @@ class ParserGen {
 		return PEG.dup(pe, ParserGen::inline);
 	}
 
-	void makeDict2(String curName, Expr pe, HashMap<String, NonTerm2> nameMap) {
+	void makeDict2(String curName, Expr pe, HashMap<String, NonTerm2> nameMap, HashMap<String, Integer> countMap) {
 		if (pe instanceof NonTerm2) {
 			String key = this.uname(pe);
 			if (!nameMap.containsKey(key)) {
 				nameMap.put(key, (NonTerm2) pe);
-				this.makeDict2(key, pe.get(0), nameMap);
+				this.makeDict2(key, pe.get(0), nameMap, countMap);
 			}
+			Integer n = countMap.get(key);
+			n = n == null ? 1 : n + 1;
+			countMap.put(key, n);
 			return;
 		}
 		for (int i = 0; i < pe.size(); i++) {
-			this.makeDict2(curName, pe.get(i), nameMap);
+			this.makeDict2(curName, pe.get(i), nameMap, countMap);
 		}
 	}
 
@@ -474,7 +588,7 @@ class ParserGen {
 		}
 	}
 
-	private ParserFunc cRef(String name, GeneratorContext gx) {
+	private ParserFunc cNonTerm(String name, GeneratorContext gx) {
 		ParserFunc f = gx.funcMap.get(name);
 		if (f != null) {
 			return f;
@@ -514,7 +628,7 @@ class ParserGen {
 		case Char:
 			return this.cChar((BitChar) pe.param(0));
 		case NonTerm:
-			return this.cRef((String) pe.param(0), gx);
+			return this.cNonTerm((String) pe.param(0), gx);
 		case Seq:
 			return this.sequence(pe.flatten(), gx);
 		case Or:
@@ -613,7 +727,11 @@ class ParserGen {
 	}
 
 	private ParserFunc cTree(Expr pe, GeneratorContext gx) {
-		return cTree(this.gen(pe.get(0), gx), 0, TreeNode.EmptyTag, 0);
+		if (pe instanceof Tree2) {
+			Tree2 t = (Tree2) pe;
+			return cTree(this.gen(pe.get(0), gx), t.spos, t.tag == null ? TreeNode.EmptyTag : t.tag, t.epos);
+		}
+		return cTree(this.gen(pe.get(0), gx));
 	}
 
 	private ParserFunc cLink(Expr pe, GeneratorContext gx) {
@@ -621,7 +739,11 @@ class ParserGen {
 	}
 
 	private ParserFunc cFold(Expr pe, GeneratorContext gx) {
-		return cFold(this.gen(pe.get(0), gx), (String) pe.param(0), 0, TreeNode.EmptyTag, 0);
+		if (pe instanceof Fold2) {
+			Fold2 t = (Fold2) pe;
+			return cFold(this.gen(pe.get(0), gx), pe.p(0), t.spos, t.tag == null ? TreeNode.EmptyTag : t.tag, t.epos);
+		}
+		return cFold(this.gen(pe.get(0), gx), pe.p(0), 0, TreeNode.EmptyTag, 0);
 	}
 
 	private ParserFunc cAnd(Expr pe, GeneratorContext gx) {
@@ -1239,6 +1361,14 @@ class ParserGen {
 		return true;
 	}
 
+	static ParserFunc cTree(final ParserFunc f) {
+		return (px) -> {
+			int pos = px.pos;
+			px.tree = null;
+			return f.apply(px) && mtree(px, TreeNode.EmptyTag, pos, px.pos);
+		};
+	}
+
 	static ParserFunc cTree(final ParserFunc f, final int spos, final String tag, final int epos) {
 		return (px) -> {
 			int pos = px.pos;
@@ -1251,6 +1381,13 @@ class ParserGen {
 		return (px) -> {
 			T tree = px.tree;
 			return f.apply(px) && mlink(px, tag, px.tree, tree);
+		};
+	}
+
+	static ParserFunc cFold(final ParserFunc f, final String label) {
+		return (px) -> {
+			int pos = px.pos;
+			return mlink(px, label, px.tree, null) && f.apply(px) && mtree(px, TreeNode.EmptyTag, pos, px.pos);
 		};
 	}
 
@@ -1300,6 +1437,55 @@ class ParserGen {
 			MemoEntry memo = getmemo(px, key);
 			return (memo.key == key) ? mconsume7(px, memo) : mstore7(px, memo, key, pos, f.apply(px));
 		};
+	}
+
+	static class MemoPoint implements ParserFunc {
+		String name;
+		final int mp;
+		final ParserFunc f;
+		boolean unused;
+		int hit;
+		int memoed;
+
+		MemoPoint(String name, int mp, ParserFunc f) {
+			this.name = name;
+			this.mp = mp;
+			this.f = f;
+		}
+
+		void reset() {
+			this.unused = false;
+			this.hit = 0;
+			this.memoed = 0;
+		}
+
+		@Override
+		public boolean apply(ParserContext px) {
+			if (this.unused) {
+				return this.f.apply(px);
+			} else {
+				int pos = px.pos;
+				long key = getkey(pos, this.mp);
+				MemoEntry memo = getmemo(px, key);
+				if (memo.key == key) {
+					this.hit++;
+					return mconsume7(px, memo);
+				}
+				this.memoed++;
+				if (this.memoed == 101) {
+					if (this.hit < 10) {
+						this.unused = true;
+					}
+				}
+				return mstore7(px, memo, key, pos, this.f.apply(px));
+			}
+		}
+
+		@Override
+		public String toString() {
+			return String.format("%s#%d %d/%d %f%%", this.name, this.mp, this.hit, this.memoed,
+					this.hit * 100.0 / this.memoed);
+		}
 	}
 
 	private final static boolean mstate(ParserContext px, int ns, int pos) {

@@ -188,7 +188,7 @@ public class Trees {
 	static Expr checkTree(Expr pe) {
 		switch (pe.ctag) {
 		case Tree:
-			return new PEG.Tree(checkMut(pe.get(0)));
+			return pe.dup(null, checkMut(pe.get(0)));
 		case NonTerm:
 			if (isTree(pe)) {
 				return pe;
@@ -225,7 +225,7 @@ public class Trees {
 	static Expr checkFold(Expr pe) {
 		switch (pe.ctag) {
 		case Fold:
-			return new PEG.Fold((String) pe.param(0), checkMut(pe.get(0)));
+			return pe.dup(pe.p(0), checkMut(pe.get(0)));
 		case Tree:
 			return new PEG.Fold("", checkMut(pe.get(0)));
 		case NonTerm:

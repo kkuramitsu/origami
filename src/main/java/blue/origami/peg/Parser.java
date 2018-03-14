@@ -35,6 +35,11 @@ public class Parser {
 			if (px.tree == null) {
 				return new TreeNode(TreeNode.EmptyTag, px.inputs, 0, px.pos, null);
 			}
+			// this.funcMap.forEach((n, f) -> {
+			// if (f instanceof MemoPoint) {
+			// System.err.println("MemoPoint " + f);
+			// }
+			// });
 			return (TreeNode) px.tree;
 		}
 		return new TreeNode("err*", px.inputs, 0, px.headpos, null);

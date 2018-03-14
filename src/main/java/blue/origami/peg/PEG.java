@@ -215,46 +215,29 @@ public class PEG {
 
 	/* Tree Construction */
 
-	static class TreeOpt {
-		int spos = 0;
-		int epos = 0;
-		String tag = TreeNode.EmptyTag;
-		byte[] value = null;
-	}
-
-	static TreeOpt RawTree = new TreeOpt();
-
 	public static class Tree extends Expr1 {
-		TreeOpt opt;
 
 		public Tree(Expr inner) {
 			this.ctag = CTag.Tree;
 			this.inner = inner;
-			this.opt = RawTree;
 		}
 
-		public Tree(Expr inner, TreeOpt opt) {
-			this.ctag = CTag.Tree;
-			this.inner = inner;
-			this.opt = opt;
+		@Override
+		Expr dup(Object label, Expr... es) {
+			return new Tree(es[0]);
 		}
 	}
 
 	public static class Fold extends ExprP1 {
-		TreeOpt opt;
-
 		public Fold(String label, Expr inner) {
 			this.ctag = CTag.Fold;
 			this.label = label;
 			this.inner = inner;
-			this.opt = RawTree;
 		}
 
-		public Fold(String label, Expr inner, TreeOpt opt) {
-			this.ctag = CTag.Fold;
-			this.label = label;
-			this.inner = inner;
-			this.opt = opt;
+		@Override
+		Expr dup(Object label, Expr... es) {
+			return new Fold((String) label, es[0]);
 		}
 	}
 
@@ -273,10 +256,12 @@ public class PEG {
 		}
 	}
 
-	public static class Val extends ExprP {
-		public Val(String label) {
+	public static class Val extends Expr {
+		byte[] val;
+
+		public Val(byte[] val) {
 			this.ctag = CTag.Val;
-			this.label = label;
+			this.val = val;
 		}
 	}
 
@@ -390,6 +375,10 @@ public class PEG {
 
 		public boolean eq(Expr pe) {
 			return this.ctag == pe.ctag && this.toString().equals(pe.toString());
+		}
+
+		Expr dup(Object p, Expr... inners) {
+			return this;
 		}
 
 		public int size() {
@@ -650,7 +639,7 @@ public class PEG {
 			sb.append("`" + pe.param(0) + "`");
 			break;
 		case Untree:
-			sb.append("@peg(" + pe.get(0) + ")");
+			sb.append("@untree(" + pe.get(0) + ")");
 			break;
 		/* */
 		case Var:
@@ -782,11 +771,11 @@ public class PEG {
 			return new OneMore(f.apply(pe.get(0)));
 		/* */
 		case Tree:
-			return new Tree(f.apply(pe.get(0)), ((Tree) pe).opt);
+			return pe.dup(null, f.apply(pe.get(0)));
 		case Link:
 			return new Link(pe.p(0), f.apply(pe.get(0)));
 		case Fold:
-			return new Fold(pe.p(0), f.apply(pe.get(0)), ((Fold) pe).opt);
+			return pe.dup(pe.p(0), f.apply(pe.get(0)));
 		/* */
 		case Scope:
 			return new Scope(f.apply(pe.get(0)));
@@ -937,11 +926,11 @@ public class PEG {
 		if (start == '{' && end == '}') {
 			if (expr.startsWith("{$")) {
 				String[] t = split2(expr.substring(2, expr.length() - 1), (s) -> s.indexOf(' '));
-				return new Fold(t[0], p(peg, ns, t[1]), RawTree);
+				return new Fold(t[0], p(peg, ns, t[1]));
 			}
 			String s = expr.substring(1, expr.length() - 1);
 			// System.err.println("@@@@ '" + s + "' @@@@ " + e);
-			return new Tree(p(peg, ns, s), RawTree);
+			return new Tree(p(peg, ns, s));
 		}
 		if (start == '[' && end == ']') {
 			return c(expr.substring(1, expr.length() - 1), 0);
@@ -950,7 +939,7 @@ public class PEG {
 			return s(u(expr.substring(1, expr.length() - 1)));
 		}
 		if (start == '`' && start == end) {
-			return new Val(u(expr.substring(1, expr.length() - 1)));
+			return new Val(encode(u(expr.substring(1, expr.length() - 1))));
 		}
 		if (start == '#') {
 			return new Tag(expr.substring(1));
@@ -1243,8 +1232,7 @@ public class PEG {
 			return s;
 		}).toArray(String[]::new);
 		if (names.length == 2) {
-			this.add(ns[0], ns.length == 1 ? null : ns,
-					new Tree(p(this, ns, expr).andThen(new Tag(names[1])), RawTree));
+			this.add(ns[0], ns.length == 1 ? null : ns, new Tree(p(this, ns, expr).andThen(new Tag(names[1]))));
 		} else {
 			this.add(ns[0], ns.length == 1 ? null : ns, p(this, ns, expr));
 		}

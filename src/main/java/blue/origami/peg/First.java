@@ -105,6 +105,18 @@ public class First {
 			len = fixlen(pe.get(0));
 			len2 = fixlen(pe.get(1));
 			return len == len2 ? len : -1;
+		case DFA: {
+			len = fixlen(pe.get(0));
+			if (len == -1) {
+				return -1;
+			}
+			for (int i = 1; i < pe.size(); i++) {
+				if (len != fixlen(pe.get(i))) {
+					return -1;
+				}
+			}
+			return len;
+		}
 		default:
 			return -1;
 		}
@@ -170,7 +182,7 @@ public class First {
 			}
 			return r;
 		default:
-			System.err.println("TODO: first " + pe);
+			System.err.println("TODO(first, " + pe + ")");
 			break;
 		}
 		return null;
