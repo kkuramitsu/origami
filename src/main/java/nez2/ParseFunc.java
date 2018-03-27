@@ -1,14 +1,14 @@
-package blue.origami.peg;
+package nez2;
 
 import java.util.Arrays;
 import java.util.function.Function;
 
-import blue.origami.peg.PEG.CTag;
-import blue.origami.peg.PEG.Expr;
-import blue.origami.peg.PEG.ExprP;
+import nez2.PEG.Expr;
+import nez2.PEG.ExprP;
+import nez2.PEG.PTag;
 
 @FunctionalInterface
-public interface ParserFunc {
+public interface ParseFunc {
 	boolean apply(ParserContext px);
 }
 
@@ -62,12 +62,12 @@ class Var extends ExprP {
 	int index;
 
 	Var(String name, int index) {
-		this.ctag = CTag.Var;
+		this.ptag = PTag.Var;
 		this.label = name;
 		this.index = index;
 	}
 
-	static ParserFunc c(int index) {
+	static ParseFunc c(int index) {
 		return (px) -> {
 			return px.get(index).apply(px);
 		};
@@ -96,7 +96,7 @@ class App extends Expr {
 	Expr[] args;
 
 	App(Expr f, Expr[] a) {
-		this.ctag = CTag.App;
+		this.ptag = PTag.App;
 		this.func = f;
 		this.args = a;
 	}
@@ -120,21 +120,21 @@ class App extends Expr {
 		return Arrays.stream(this.args).map(e -> f.apply(e)).toArray(Expr[]::new);
 	}
 
-	static ParserFunc curry(ParserFunc f, ParserFunc[] a) {
+	static ParseFunc curry(ParseFunc f, ParseFunc[] a) {
 		return (px) -> {
-			ParserFunc[] stacked = px.push(a);
+			ParseFunc[] stacked = px.push(a);
 			return px.pop(stacked, f.apply(px));
 		};
 	}
 
-	static ParserFunc c(ParserFunc f, ParserFunc[] a) {
+	static ParseFunc c(ParseFunc f, ParseFunc[] a) {
 		return (px) -> {
 			return curry(f, a).apply(px);
 		};
 	}
 
 	static Expr expand(Expr pe, final Expr[] args) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Var:
 			int index = (Integer) pe.param(1);
 			if (index < args.length) {

@@ -1,12 +1,12 @@
-package blue.origami.peg;
+package nez2;
 
-import blue.origami.peg.PEG.Expr;
-import blue.origami.peg.PEG.Link;
+import nez2.PEG.Expr;
+import nez2.PEG.Link;
 
 public class Trees {
 
 	static boolean isTreeMut(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Tree:
 		case Fold:
 		case Link:
@@ -37,6 +37,13 @@ public class Trees {
 		case Alt:
 		case Or:
 			return isTreeMut(pe.get(0)) || isTreeMut(pe.get(1));
+		case DFA:
+			for (int i = 0; i < pe.size(); i++) {
+				if (isTreeMut(pe.get(0))) {
+					return true;
+				}
+			}
+			return false;
 		case NonTerm:
 			Boolean r = (Boolean) pe.lookup("tm$");
 			if (r == null) {
@@ -57,7 +64,7 @@ public class Trees {
 	}
 
 	static boolean isUnit2(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Tree:
 		case Fold:
 		case Link:
@@ -104,7 +111,7 @@ public class Trees {
 	}
 
 	static boolean isTree(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Tree:
 		case Fold:
 			return true;
@@ -135,6 +142,13 @@ public class Trees {
 		case Alt:
 		case Or:
 			return isTree(pe.get(0)) || isTree(pe.get(1));
+		case DFA:
+			for (int i = 0; i < pe.size(); i++) {
+				if (isTree(pe.get(0))) {
+					return true;
+				}
+			}
+			return false;
 		case NonTerm:
 			Boolean r = (Boolean) pe.lookup("t$");
 			if (r == null) {
@@ -161,7 +175,7 @@ public class Trees {
 	}
 
 	static Expr enforceUnit(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case NonTerm:
 			if (isUnit(pe)) {
 				return pe;
@@ -186,7 +200,7 @@ public class Trees {
 	}
 
 	static Expr checkTree(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Tree:
 			return pe.dup(null, checkMut(pe.get(0)));
 		case NonTerm:
@@ -223,7 +237,7 @@ public class Trees {
 	}
 
 	static Expr checkFold(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Fold:
 			return pe.dup(pe.p(0), checkMut(pe.get(0)));
 		case Tree:
@@ -239,7 +253,7 @@ public class Trees {
 	}
 
 	static Expr checkMut(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Tree:
 			return new Link("", enforceTree(pe.get(0)));
 		case Link:

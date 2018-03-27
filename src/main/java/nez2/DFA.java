@@ -1,20 +1,20 @@
-package blue.origami.peg;
+package nez2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import blue.origami.peg.PEG.CTag;
-import blue.origami.peg.PEG.Char;
-import blue.origami.peg.PEG.Expr;
-import blue.origami.peg.PEG.Or;
+import nez2.PEG.Char;
+import nez2.PEG.Expr;
+import nez2.PEG.Or;
+import nez2.PEG.PTag;
 
 public class DFA extends Expr {
 	byte[] charMap;
 	Expr[] indexed;
 
 	public DFA(byte[] charMap, Expr[] indexed) {
-		this.ctag = CTag.DFA;
+		this.ptag = PTag.DFA;
 		this.charMap = charMap;
 		this.indexed = indexed;
 	}
@@ -27,6 +27,15 @@ public class DFA extends Expr {
 	@Override
 	public Expr get(int index) {
 		return this.indexed[index];
+	}
+
+	boolean isDFA() {
+		for (Expr e : this.indexed) {
+			if (!DFA.car(e).isAny()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -53,7 +62,7 @@ public class DFA extends Expr {
 	}
 
 	static Expr optimizeChoice(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Or:
 			if (!pe.isOption()) {
 				List<Expr> choice = new ArrayList<>(256);
@@ -99,14 +108,14 @@ public class DFA extends Expr {
 	}
 
 	static Expr car(Expr pe) {
-		if (pe.ctag == CTag.Seq) {
+		if (pe.ptag == PTag.Seq) {
 			return pe.get(0);
 		}
 		return pe;
 	}
 
 	static Expr cdr(Expr pe) {
-		if (pe.ctag == CTag.Seq) {
+		if (pe.ptag == PTag.Seq) {
 			return pe.get(1);
 		}
 		return PEG.Empty_;
@@ -158,7 +167,7 @@ public class DFA extends Expr {
 			Expr pe = indexed.get(i);
 			if (car(pe).isAny()) {
 				Expr pe2 = cdr(pe);
-				if (pe2.ctag == CTag.Or) {
+				if (pe2.ptag == PTag.Or) {
 					Expr pe3 = optimizeChoice(pe2);
 					System.err.println("rec* =>\t" + pe2 + "\n\t" + pe3);
 					indexed.set(i, PEG.Any_.andThen(pe3));
@@ -215,7 +224,7 @@ public class DFA extends Expr {
 	}
 
 	static Expr dc(Expr pe, int depth) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Char:
 			return PEG.Empty_;
 		case Empty:

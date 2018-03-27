@@ -1,7 +1,10 @@
-package blue.origami.peg;
+package nez2;
 
-class TreeNode implements T {
+import blue.origami.common.OStrings;
+
+public class TreeNode implements T, OStrings {
 	static final String EmptyTag = "";
+	static final String EmptyLabel = EmptyTag;
 
 	String tag;
 	byte[] inputs;
@@ -19,12 +22,11 @@ class TreeNode implements T {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		this.strOut(sb);
-		return sb.toString();
+		return OStrings.stringfy(this);
 	}
 
-	void strOut(StringBuilder sb) {
+	@Override
+	public void strOut(StringBuilder sb) {
 		sb.append("[#");
 		sb.append(this.tag);
 		int c = sb.length();
@@ -38,6 +40,40 @@ class TreeNode implements T {
 		}
 		sb.append("]");
 	}
+
+	public final boolean is(String tag) {
+		return tag.equals(this.tag);
+	}
+
+	public final String gettag() {
+		return this.tag;
+	}
+
+	public final TreeNode get(String label) {
+		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
+			if (cur.tag != null && label.equals(cur.tag)) {
+				return cur.child;
+			}
+		}
+		return null;
+	}
+
+	public final TreeNode[] list(String label) {
+		int c = 0;
+		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
+			if (cur.child != null) {
+				c++;
+			}
+		}
+		TreeNode[] ts = new TreeNode[c];
+		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
+			if (cur.child != null) {
+				ts[--c] = cur.child;
+			}
+		}
+		return ts;
+	}
+
 }
 
 interface T {

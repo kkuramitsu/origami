@@ -1,0 +1,282 @@
+# NezCC for F#
+
+Omutable   = 1
+Omemo      = 1
+Obase64    = 1
+Obits32    = 1
+Ojumptable = 1
+
+# error position
+errpos           = mbackpos(px, %s)
+
+# inline incremental operator
+posinc           = %s.pos++
+
+
+Tmatched   = boolean
+Tpx        = ParserContext
+Tch        = byte
+Tinputs    = byte[]
+Tpos       = int
+Ttree      = T
+Ttag       = String
+Tstate     = State
+Tmemo      = MemoEntry
+Tkey       = long
+Tpe        = ParseFunc
+Talt       = byte[]
+Tbs        = int[]
+Tjumptbl   = ParseFunc[]
+
+comment            = /*%s*/
+begin              = {
+end                = $|\t|}$|\n|
+
+delim              = ,
+
+const            = private final static %1$s %2$s = %3$s;
+array            = {
+end array        = }
+
+function         = private final static %s %s(%s) {
+let              = %s %s = %s;$|\n|$|\t|%s
+
+stmt             = %s
+ifexpr           = (%1$s) ? %2$s : %3$s
+getter           = %s.%s
+!                = !(%s)
+
+funcref          = $|base|::%s
+lambda           = (%s) -> %s
+
+unsigned         = (%s & 0xff)
+keyindex         = (int)(%s)
+char             = ((byte)%s)
+
+peapply          = %s.apply(%s)
+jumptblapply     = %s.apply(%s)
+ctreeapply       = new Tree(%2$s)
+clinkapply       = new TreeLink(%2$s)
+cstateapply       = new State(%2$s)
+
+switch     = switch(%s) {$|\n|
+case       = $|\t|case %s : %s
+default    = $|\t|default : %s
+
+while            = while(%s) {$|\n|
+=          = %s = %s;$|\n|
+return     = return %s;$|\n|
+
+true             = true
+false            = false
+
+if     = if(%s) {$|\n|
+else   = $|\t|}$|\n|$|\t|else {$|\n|
+
+Dhead = '''
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Base64;
+
+public class $|base| {
+
+   interface T {
+   }
+
+   static final String EmptyTag = "";
+   static final T EmptyTree = null;
+   static final State EmptyState = null;
+
+   public static class TreeLink implements T {
+      String tag;
+      Tree child;
+      TreeLink prev;
+
+      TreeLink (String tag, T child, T prev) {
+         this.tag = tag;
+         this.child = (Tree) child;
+         this.prev = (TreeLink) prev;
+      }
+
+      void strOut(StringBuilder sb) {
+         if (this.child != null) {
+            if (this.tag != null) {
+               sb.append("$" + this.tag + "=");
+            }
+            this.child.strOut(sb);
+         }
+      }
+
+      String tag() {
+         for (TreeLink cur = this; cur != null; cur = cur.prev) {
+            if (cur.child == null) {
+               return cur.tag;
+            }
+         }
+         return EmptyTag;
+      }
+   }
+
+   public static class Tree implements T {
+      String tag;
+      byte[] inputs;
+      int spos;
+      int epos;
+      TreeLink child;
+
+      Tree (String tag, byte[] inputs, int spos, int epos, T child) {
+         this.inputs = inputs;
+         this.spos = spos;
+         this.epos = epos;
+         this.child = (TreeLink) child;
+         this.tag = (tag == EmptyTag && this.child != null) ? this.child.tag() : tag;
+      }
+
+      @Override
+      public String toString() {
+         StringBuilder sb = new StringBuilder();
+         this.strOut(sb);
+         return sb.toString();
+      }
+
+      void strOut(StringBuilder sb) {
+         sb.append("[#");
+         sb.append(this.tag);
+         int cnt = 0;
+         for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
+            sb.append(" ");
+            cur.strOut(sb);
+            cnt++;
+         }
+         if (cnt == 0) {
+            sb.append(" '");
+            sb.append(new String(this.inputs, this.spos, this.epos - this.spos));
+            sb.append("'");
+         }
+         sb.append("]");
+      }
+   }
+
+   static class MemoEntry {
+      long key;
+      boolean matched;
+      int mpos;
+      T mtree;
+      State mstate;
+   }
+
+   static class State {
+      int ns;
+      int spos;
+      int slen;
+      State sprev;
+      State (int ns, int spos, int epos, State sprev) {
+         this.ns = ns;
+         this.spos = spos;
+         this.slen = epos - spos;
+         this.sprev = sprev;
+      }
+   }
+
+   static class ParserContext {
+      byte[] inputs;
+      int length;
+      int pos;
+      int headpos;
+      MemoEntry[] memos;
+      T tree;
+      State state;
+   }
+
+   @FunctionalInterface
+   interface ParseFunc {
+      boolean apply(ParserContext px);
+   }
+
+   // Obase64
+   static byte[] b64(String s) {
+      return Base64.getDecoder().decode(s.getBytes());
+   }
+
+   // Obits32
+   private final static boolean bits32(int[] bits, byte b) {
+      int n = b & 0xff;
+      return (bits[n / 32] & (1 << (n % 32))) != 0;
+   }
+   // errpos
+   final static int mbackpos(ParserContext px, int pos) {
+      if(px.headpos < px.pos) {
+         px.headpos = px.pos;
+      }
+      return pos;
+   }
+
+'''
+
+Dmatchmany = '''
+   // match
+   final static boolean matchmany(byte[] inputs, int pos, byte[] inputs2, int pos2, int len) {
+      for(int i = 0; i < len; i++) {
+         if(inputs[pos+i] != inputs2[pos2+i]) return false;
+      }
+      return true;
+   }
+
+'''
+
+Dmain = '''
+   public static final Tree parse(byte[] inputs) {
+      ParserContext px = new ParserContext();
+      px.inputs = inputs;
+      px.length = inputs.length - 1;
+      px.tree = null;
+      px.state = null;
+      px.memos = Arrays.stream(new MemoEntry[memolen]).map(m -> {
+         return new MemoEntry();
+      }).toArray(MemoEntry[]::new);
+      return e0(px) ? ((px.tree == null) ? new Tree(EmptyTag, inputs, 0, px.pos, null) : (Tree) px.tree) : new Tree("[error]", inputs, px.headpos, px.headpos, null);
+   }
+
+   static byte[] readInputs(String a) throws IOException {
+      File file = new File(a);
+      // Input data must be '\0' terminated.
+      if (file.exists()) {
+         byte[] buf = new byte[((int) file.length()) + 1]; 
+         FileInputStream fin = new FileInputStream(file);
+         fin.read(buf, 0, (int) file.length());
+         fin.close();
+         return buf;
+      } else {
+         return (a + "\0").getBytes(Charset.forName("UTF-8"));
+      }
+   }
+
+   public final static void main(String[] args) throws IOException {
+      for (String a : args) {
+         byte[] buf = readInputs(a);
+         long st = System.nanoTime();
+         Tree t = parse(buf);
+         long et = System.nanoTime();
+         System.err.printf("%s %f[ms]: ", a, (et - st) / 1000000.0);
+         if(args.length == 1) {
+           System.out.print(t);
+           System.out.flush();
+         }
+         System.err.printf("\n");
+      }
+   }
+} /* class $|base| */
+'''
+
+Dman = '''
+QUICK START
+ 
+ javac $|base|.java
+ java $|base| <file> or <input-text>
+ 
+Read the main function in $|base|.java. Thank you!!
+
+'''

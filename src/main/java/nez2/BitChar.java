@@ -1,4 +1,4 @@
-package blue.origami.peg;
+package nez2;
 
 import blue.origami.common.OStrings;
 

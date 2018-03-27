@@ -1,12 +1,12 @@
-package blue.origami.peg;
+package nez2;
 
-import blue.origami.peg.PEG.CTag;
-import blue.origami.peg.PEG.Expr;
+import nez2.PEG.Expr;
+import nez2.PEG.PTag;
 
 public class First {
 
 	static boolean nonnull(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Char:
 			return true;
 		case And:
@@ -61,7 +61,7 @@ public class First {
 
 	static int fixlen(Expr pe) {
 		int len = 0, len2 = 0;
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Empty:
 		case And:
 		case Not:
@@ -123,7 +123,7 @@ public class First {
 	}
 
 	static BitChar first(Expr pe) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Char:
 			return (BitChar) pe.param(0);
 		case Empty:
@@ -258,7 +258,7 @@ public class First {
 
 	static boolean reachFlag(Expr pe, final String flag) {
 		return reach(pe, "f$" + flag, (p) -> {
-			if (p.ctag == CTag.If && flag.equals(p.param(0))) {
+			if (p.ptag == PTag.If && flag.equals(p.param(0))) {
 				return True;
 			}
 			return False;
@@ -267,7 +267,7 @@ public class First {
 
 	static boolean reachState(Expr pe) {
 		return reach(pe, "st$", (p) -> {
-			switch (p.ctag) {
+			switch (p.ptag) {
 			case Exists:
 			case Match:
 			case Contains:

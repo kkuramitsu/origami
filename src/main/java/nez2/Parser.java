@@ -1,4 +1,4 @@
-package blue.origami.peg;
+package nez2;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Parser {
-	final ParserFunc start;
-	final HashMap<String, ParserFunc> funcMap;
+	final ParseFunc start;
+	final HashMap<String, ParseFunc> funcMap;
 	final int memoSize;
 
-	Parser(ParserFunc start, HashMap<String, ParserFunc> funcMap, int memoSize) {
+	Parser(ParseFunc start, HashMap<String, ParseFunc> funcMap, int memoSize) {
 		this.start = start;
 		this.funcMap = funcMap;
 		this.memoSize = memoSize;
@@ -46,7 +46,7 @@ public class Parser {
 	}
 
 	public TreeNode parse(String text) {
-		byte[] b = (text + "\0").getBytes();
+		byte[] b = PEG.encode(text + "\0");
 		return this.parse(b, 0, b.length - 1);
 	}
 
@@ -94,19 +94,19 @@ class ParserContext {
 	T tree;
 	State state;
 	MemoEntry[] memos;
-	ParserFunc[] args;
+	ParseFunc[] args;
 
-	ParserFunc get(int index) {
+	ParseFunc get(int index) {
 		return this.args[index];
 	}
 
-	ParserFunc[] push(ParserFunc[] a) {
-		ParserFunc[] a0 = this.args;
+	ParseFunc[] push(ParseFunc[] a) {
+		ParseFunc[] a0 = this.args;
 		this.args = a;
 		return a0;
 	}
 
-	boolean pop(ParserFunc[] a, boolean r) {
+	boolean pop(ParseFunc[] a, boolean r) {
 		this.args = a;
 		return r;
 	}

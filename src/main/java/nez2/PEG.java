@@ -1,4 +1,4 @@
-package blue.origami.peg;
+package nez2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,18 +25,19 @@ public class PEG {
 	HashMap<String, String[]> paramMap = null;
 	HashMap<String, Object> memoed = new HashMap<>();
 
-	public static enum CTag {
+	public static enum PTag {
 		Empty, Char, Seq, Or, Alt, And, Not, Many, OneMore, NonTerm, // pattern
 		Tree, Link, Fold, Tag, Val, Untree, // tree construction
 		Scope, Symbol, Exists, Equals, Contains, Match, // state
 		If, On, Off, // conditional parsing
 		Var, App, // Higher ordered
-		DFA, Bugs, Eval;
+		DFA, // DFA
+		Bugs, Eval;
 	}
 
 	public static class Empty extends Expr {
 		public Empty() {
-			this.ctag = CTag.Empty;
+			this.ptag = PTag.Empty;
 		}
 	}
 
@@ -44,7 +45,7 @@ public class PEG {
 		BitChar bc;
 
 		public Char(BitChar ch) {
-			this.ctag = CTag.Char;
+			this.ptag = PTag.Char;
 			this.bc = ch == null ? BitChar.AnySet : ch;
 		}
 
@@ -83,14 +84,14 @@ public class PEG {
 
 	public static class Seq extends Expr2 {
 		public Seq(Expr left, Expr right) {
-			this.ctag = CTag.Seq;
+			this.ptag = PTag.Seq;
 			this.left = left;
 			this.right = right;
 		}
 
 		@Override
 		public boolean isStr() {
-			Expr[] es = this.flatten();
+			Expr[] es = this.flatten(PTag.Seq);
 			byte[] b = PEG.getstr2(es);
 			return es.length == b.length;
 		}
@@ -98,7 +99,7 @@ public class PEG {
 
 	public static class Or extends Expr2 {
 		public Or(Expr left, Expr right) {
-			this.ctag = CTag.Or;
+			this.ptag = PTag.Or;
 			this.left = left;
 			this.right = right;
 		}
@@ -114,7 +115,7 @@ public class PEG {
 
 	public static class Alt extends Expr2 {
 		public Alt(Expr left, Expr right) {
-			this.ctag = CTag.Alt;
+			this.ptag = PTag.Alt;
 			this.left = left;
 			this.right = right;
 		}
@@ -122,14 +123,14 @@ public class PEG {
 
 	public static class And extends Expr1 {
 		public And(Expr inner) {
-			this.ctag = CTag.And;
+			this.ptag = PTag.And;
 			this.inner = inner;
 		}
 	}
 
 	public static class Not extends Expr1 {
 		public Not(Expr inner) {
-			this.ctag = CTag.Not;
+			this.ptag = PTag.Not;
 			this.inner = inner;
 		}
 
@@ -146,14 +147,14 @@ public class PEG {
 
 	public static class Many extends Expr1 {
 		public Many(Expr inner) {
-			this.ctag = CTag.Many;
+			this.ptag = PTag.Many;
 			this.inner = inner;
 		}
 	}
 
 	public static class OneMore extends Expr1 {
 		public OneMore(Expr inner) {
-			this.ctag = CTag.OneMore;
+			this.ptag = PTag.OneMore;
 			this.inner = inner;
 		}
 	}
@@ -178,7 +179,7 @@ public class PEG {
 		int index;
 
 		public NonTerm(PEG peg, String name, int index) {
-			this.ctag = CTag.NonTerm;
+			this.ptag = PTag.NonTerm;
 			this.peg = peg;
 			this.label = name;
 			this.index = index;
@@ -218,7 +219,7 @@ public class PEG {
 	public static class Tree extends Expr1 {
 
 		public Tree(Expr inner) {
-			this.ctag = CTag.Tree;
+			this.ptag = PTag.Tree;
 			this.inner = inner;
 		}
 
@@ -230,7 +231,7 @@ public class PEG {
 
 	public static class Fold extends ExprP1 {
 		public Fold(String label, Expr inner) {
-			this.ctag = CTag.Fold;
+			this.ptag = PTag.Fold;
 			this.label = label;
 			this.inner = inner;
 		}
@@ -243,15 +244,15 @@ public class PEG {
 
 	public static class Link extends ExprP1 {
 		public Link(String label, Expr inner) {
-			this.ctag = CTag.Link;
-			this.label = label == null || label.length() == 0 ? blue.origami.peg.TreeNode.EmptyTag : label;
+			this.ptag = PTag.Link;
+			this.label = label == null || label.length() == 0 ? nez2.TreeNode.EmptyTag : label;
 			this.inner = inner;
 		}
 	}
 
 	public static class Tag extends ExprP {
 		public Tag(String label) {
-			this.ctag = CTag.Tag;
+			this.ptag = PTag.Tag;
 			this.label = label;
 		}
 	}
@@ -260,14 +261,14 @@ public class PEG {
 		byte[] val;
 
 		public Val(byte[] val) {
-			this.ctag = CTag.Val;
+			this.ptag = PTag.Val;
 			this.val = val;
 		}
 	}
 
 	public static class Untree extends Expr1 {
 		public Untree(Expr inner) {
-			this.ctag = CTag.Untree;
+			this.ptag = PTag.Untree;
 			this.inner = inner;
 		}
 	}
@@ -276,14 +277,14 @@ public class PEG {
 
 	public static class If extends ExprP {
 		public If(String label) {
-			this.ctag = CTag.If;
+			this.ptag = PTag.If;
 			this.label = label;
 		}
 	}
 
 	public static class On extends ExprP1 {
 		public On(String label, Expr inner) {
-			this.ctag = CTag.On;
+			this.ptag = PTag.On;
 			this.label = label;
 			this.inner = inner;
 		}
@@ -291,7 +292,7 @@ public class PEG {
 
 	public static class Off extends ExprP1 {
 		public Off(String label, Expr inner) {
-			this.ctag = CTag.Off;
+			this.ptag = PTag.Off;
 			this.label = label;
 			this.inner = inner;
 		}
@@ -301,14 +302,14 @@ public class PEG {
 
 	public static class Scope extends Expr1 {
 		public Scope(Expr inner) {
-			this.ctag = CTag.Scope;
+			this.ptag = PTag.Scope;
 			this.inner = inner;
 		}
 	}
 
 	public static class Symbol extends ExprP1 {
 		public Symbol(Expr n) {
-			this.ctag = CTag.Symbol;
+			this.ptag = PTag.Symbol;
 			this.inner = n;
 			this.label = n.toString();
 		}
@@ -316,7 +317,7 @@ public class PEG {
 
 	public static class Exists extends ExprP1 {
 		public Exists(Expr n) {
-			this.ctag = CTag.Exists;
+			this.ptag = PTag.Exists;
 			this.inner = n;
 			this.label = n.toString();
 		}
@@ -324,7 +325,7 @@ public class PEG {
 
 	public static class Match extends ExprP1 {
 		public Match(Expr n) {
-			this.ctag = CTag.Match;
+			this.ptag = PTag.Match;
 			this.inner = n;
 			this.label = n.toString();
 		}
@@ -332,7 +333,7 @@ public class PEG {
 
 	public static class Equals extends ExprP1 {
 		public Equals(Expr n) {
-			this.ctag = CTag.Equals;
+			this.ptag = PTag.Equals;
 			this.inner = n;
 			this.label = n.toString();
 		}
@@ -340,17 +341,17 @@ public class PEG {
 
 	public static class Contains extends ExprP1 {
 		public Contains(Expr n) {
-			this.ctag = CTag.Contains;
+			this.ptag = PTag.Contains;
 			this.inner = n;
 			this.label = n.toString();
 		}
 	}
 
 	public static class Eval extends ExprP {
-		ParserFunc func;
+		ParseFunc func;
 
-		public Eval(ParserFunc func) {
-			this.ctag = CTag.Eval;
+		public Eval(ParseFunc func) {
+			this.ptag = PTag.Eval;
 			this.func = func;
 		}
 
@@ -362,7 +363,7 @@ public class PEG {
 
 	public static class Bugs extends ExprP {
 		public Bugs(String fmt, Object... args) {
-			this.ctag = CTag.Bugs;
+			this.ptag = PTag.Bugs;
 			this.label = String.format(fmt, args);
 		}
 	}
@@ -370,11 +371,11 @@ public class PEG {
 	/* Misc */
 
 	public static class Expr implements OStrings {
-		CTag ctag;
+		PTag ptag;
 		Object value;
 
 		public boolean eq(Expr pe) {
-			return this.ctag == pe.ctag && this.toString().equals(pe.toString());
+			return this.ptag == pe.ptag && this.toString().equals(pe.toString());
 		}
 
 		Expr dup(Object p, Expr... inners) {
@@ -401,7 +402,7 @@ public class PEG {
 			return Objects.toString(this.param(index));
 		}
 
-		public Expr[] flatten() {
+		public Expr[] flatten(PTag target) {
 			return new Expr[] { this };
 		}
 
@@ -449,7 +450,7 @@ public class PEG {
 		}
 
 		public boolean isNonTerm() {
-			return this.ctag == CTag.NonTerm;
+			return this.ptag == PTag.NonTerm;
 		}
 
 		public boolean isAny() {
@@ -558,19 +559,22 @@ public class PEG {
 		}
 
 		@Override
-		public Expr[] flatten() {
-			ArrayList<Expr> l = new ArrayList<>();
-			this.listup(l);
-			return l.toArray(new Expr[l.size()]);
+		public Expr[] flatten(PTag target) {
+			if (this.ptag == target) {
+				ArrayList<Expr> l = new ArrayList<>();
+				this.listup(l);
+				return l.toArray(new Expr[l.size()]);
+			}
+			return super.flatten(target);
 		}
 
 		private void listup(ArrayList<Expr> l) {
-			if (this.left instanceof Expr2 && this.left.ctag == this.ctag) {
+			if (this.left instanceof Expr2 && this.left.ptag == this.ptag) {
 				((Expr2) this.left).listup(l);
 			} else {
 				l.add(this.left);
 			}
-			if (this.right instanceof Expr2 && this.right.ctag == this.ctag) {
+			if (this.right instanceof Expr2 && this.right.ptag == this.ptag) {
 				((Expr2) this.right).listup(l);
 			} else {
 				l.add(this.right);
@@ -581,7 +585,7 @@ public class PEG {
 	/* Showing */
 
 	static void showing(boolean alwaysEnclosed, Expr pe, StringBuilder sb) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Empty:
 			sb.append("''");
 			break;
@@ -591,45 +595,61 @@ public class PEG {
 		case NonTerm:
 			sb.append(pe.param(0));
 			break;
-		case Seq:
-			showingGroup(alwaysEnclosed, (Expr2) pe, " ", sb);
+		case Seq: {
+			PTag tag = pe.get(0).ptag;
+			enclosed(tag == PTag.Or || tag == PTag.Alt, pe.get(0), sb);
+			sb.append(" ");
+			tag = pe.get(1).ptag;
+			enclosed(tag == PTag.Or || tag == PTag.Alt, pe.get(1), sb);
 			break;
+		}
 		case Or:
-			showingGroup(alwaysEnclosed, (Expr2) pe, " / ", sb);
+			if (pe.get(1).isEmpty()) {
+				enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+				sb.append("?");
+				break;
+			} else {
+				PTag tag = pe.get(0).ptag;
+				enclosed(tag == PTag.Alt, pe.get(0), sb);
+				sb.append(" / ");
+				tag = pe.get(1).ptag;
+				enclosed(tag == PTag.Alt, pe.get(1), sb);
+				break;
+			}
+		case Alt: {
+			pe.strOut(sb);
+			sb.append(" | ");
+			pe.strOut(sb);
 			break;
-		case Alt:
-			showingGroup(alwaysEnclosed, (Expr2) pe, " | ", sb);
-			break;
+		}
 		case And:
 			sb.append("&");
-			showing(true, pe.get(0), sb);
+			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
 			break;
 		case Not:
 			sb.append("!");
-			showing(true, pe.get(0), sb);
+			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
 			break;
 		case Many:
-			showing(true, pe.get(0), sb);
+			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
 			sb.append("*");
 			break;
 		case OneMore:
-			showing(true, pe.get(0), sb);
+			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
 			sb.append("+");
 			break;
 		/* */
 		case Tree:
 			sb.append("{");
-			showing(false, pe.get(0), sb);
+			pe.get(0).strOut(sb);
 			sb.append("}");
 			break;
 		case Link:
 			showingAsFunc("$" + pe.param(0), null, pe.get(0), sb);
 			break;
 		case Fold:
-			sb.append("{");
-			sb.append("$" + pe.param(0));
-			sb.append(" ");
-			showing(false, pe.get(0), sb);
+			sb.append("{$" + pe.param(0) + " ");
+			pe.get(0).strOut(sb);
 			sb.append("}");
 			break;
 		case Tag:
@@ -685,25 +705,18 @@ public class PEG {
 			pe.strOut(sb);
 			break;
 		default:
-			sb.append("@TODO(" + pe.ctag + ")");
+			sb.append("@TODO(" + pe.ptag + ")");
 			break;
 		}
 	}
 
-	private static void showingGroup(boolean alwaysEnclosed, Expr2 pe, String delim, StringBuilder sb) {
-		int c = 0;
-		if (alwaysEnclosed) {
+	private static void enclosed(boolean enclosed, Expr pe, StringBuilder sb) {
+		if (enclosed) {
 			sb.append("(");
-		}
-		for (Expr sub : pe.flatten()) {
-			if (c > 0) {
-				sb.append(delim);
-			}
-			showing(true, sub, sb);
-			c++;
-		}
-		if (alwaysEnclosed) {
+			pe.strOut(sb);
 			sb.append(")");
+		} else {
+			pe.strOut(sb);
 		}
 	}
 
@@ -714,7 +727,7 @@ public class PEG {
 			sb.append(param);
 			sb.append(", ");
 		}
-		showing(false, pe, sb);
+		pe.strOut(sb);
 		sb.append(")");
 	}
 
@@ -746,7 +759,7 @@ public class PEG {
 	}
 
 	static Expr dup(Expr pe, Function<Expr, Expr> f) {
-		switch (pe.ctag) {
+		switch (pe.ptag) {
 		case Empty:
 		case Char:
 		case NonTerm:
@@ -928,9 +941,7 @@ public class PEG {
 				String[] t = split2(expr.substring(2, expr.length() - 1), (s) -> s.indexOf(' '));
 				return new Fold(t[0], p(peg, ns, t[1]));
 			}
-			String s = expr.substring(1, expr.length() - 1);
-			// System.err.println("@@@@ '" + s + "' @@@@ " + e);
-			return new Tree(p(peg, ns, s));
+			return new Tree(p(peg, ns, expr.substring(1, expr.length() - 1)));
 		}
 		if (start == '[' && end == ']') {
 			return c(expr.substring(1, expr.length() - 1), 0);
@@ -954,6 +965,9 @@ public class PEG {
 			if (ns[i].equals(expr)) {
 				return new NonTerm(peg, expr, i - 0);
 			}
+		}
+		if (isOctet(expr)) {
+			return octet(expr);
 		}
 		return new NonTerm(peg, expr, -1);
 	}
@@ -979,10 +993,10 @@ public class PEG {
 		return sb.toString();
 	}
 
-	private static char charAt(String expr, int p) {
-		char c1 = expr.charAt(p);
+	private static char charAt(String expr, int offset) {
+		char c1 = expr.charAt(offset);
 		if (c1 == '\\') {
-			c1 = expr.charAt(p + 1);
+			c1 = expr.charAt(offset + 1);
 			switch (c1) {
 			case '\\':
 				return '\\';
@@ -996,28 +1010,29 @@ public class PEG {
 				return '\0';
 			case 'x':
 			case 'X':
-				return hex2(expr.charAt(p + 2), expr.charAt(p + 3));
+				return hex2(expr.charAt(offset + 2), expr.charAt(offset + 3));
 			case 'u':
 			case 'U':
-				return hex4(expr.charAt(p + 2), expr.charAt(p + 3), expr.charAt(p + 4), expr.charAt(p + 5));
+				return hex4(expr.charAt(offset + 2), expr.charAt(offset + 3), expr.charAt(offset + 4),
+						expr.charAt(offset + 5));
 			}
 		}
 		return c1;
 	}
 
-	private static int charNext(String expr, int p) {
-		char c1 = expr.charAt(p);
+	private static int charNext(String expr, int offset) {
+		char c1 = expr.charAt(offset);
 		if (c1 == '\\') {
-			c1 = expr.charAt(p + 1);
+			c1 = expr.charAt(offset + 1);
 			if (c1 == 'x' || c1 == 'X') {
-				return p + 4;
+				return offset + 4;
 			}
 			if (c1 == 'u' || c1 == 'U') {
-				return p + 6;
+				return offset + 6;
 			}
-			return p + 2;
+			return offset + 2;
 		}
-		return p + 1;
+		return offset + 1;
 	}
 
 	private static int hex(char c) {
@@ -1047,39 +1062,102 @@ public class PEG {
 		return (char) c;
 	}
 
-	private static Expr c(String expr, int p) {
-		char c1 = charAt(expr, p);
-		p = charNext(expr, p);
+	private static Expr c(String expr, int offset) {
+		char c1 = charAt(expr, offset);
+		offset = charNext(expr, offset);
 		Expr pe;
-		if (p < expr.length() && expr.charAt(p) == '-') {
-			char c2 = charAt(expr, p + 1);
+		if (offset < expr.length() && expr.charAt(offset) == '-') {
+			char c2 = charAt(expr, offset + 1);
 			pe = range(c1, c2);
-			p = charNext(expr, p + 1);
+			offset = charNext(expr, offset + 1);
 		} else {
 			pe = s(String.valueOf(c1));
 		}
-		return p < expr.length() ? pe.orElse(c(expr, p)) : pe;
+		return offset < expr.length() ? pe.orElse(c(expr, offset)) : pe;
 	}
 
 	private static Expr range(char c1, char c2) {
-		if (c1 == c2) {
-			return s(String.valueOf(c1));
+		if (c1 < 256 && c2 < 256) {
+			return new Char((byte) c1, (byte) c2);
 		}
 		byte[] b1 = encode(String.valueOf(c1));
 		byte[] b2 = encode(String.valueOf(c2));
-		assert (b1.length == b2.length);
-		switch (b1.length) {
-		case 1:
-			return new Char(b1[0], b2[0]);
-		case 2:
-			assert (b1[0] == b2[0]);
-			return (new Char(b1[0])).andThen(new Char(b1[1], b2[1]));
-		case 3:
-			assert (b1[0] == b2[0]);
-			assert (b1[1] == b2[1]);
-			return new Char(b1[0]).andThen(new Char(b1[1]).andThen(new Char(b1[2], b2[2])));
+		if (b1.length == b2.length && b1[0] == b2[0]) {
+			if (b1.length == 2) {
+				// System.err.println("@@1 " + c1 + " " + c2);
+				return (new Char(b1[0])).andThen(new Char(b1[1], b2[1]));
+			}
+			if (b1[1] != b2[1]) {
+				// System.err.println("@@2 " + c1 + " " + c2);
+				return new Char(b1[0]).andThen(range(1, c1, c2));
+			}
+			if (b1.length == 3) {
+				// System.err.println("@@3 " + c1 + " " + c2);
+				return new Char(b1[0]).andThen(new Char(b1[1]).andThen(new Char(b1[2], b2[2])));
+			}
+			if (b1[2] != b2[2]) {
+				// System.err.println("@@4 " + c1 + " " + c2);
+				return new Char(b1[0]).andThen(new Char(b1[1]).andThen(range(2, c1, c2)));
+			}
+			if (b1.length == 4) {
+				// System.err.println("@@5 " + c1 + " " + c2);
+				return new Char(b1[0])
+						.andThen(new Char(b1[1]).andThen(new Char(b1[2]).andThen(new Char(b1[3], b2[3]))));
+			}
 		}
-		throw new RuntimeException("UnsupportedException");
+		return range(0, c1, c2);
+	}
+
+	private static Expr range(int offset, char c1, char c2) {
+		if (c2 < c1) {
+			return range(offset, c2, c1);
+		}
+		Expr pe = s(encode(String.valueOf(c2)), offset);
+		for (int c = c2 - 1; c1 <= c; c--) {
+			byte[] b = encode(String.valueOf((char) c));
+			pe = s(b, offset).orElse(pe);
+		}
+		return pe;
+	}
+
+	private static boolean isOctet(String octet) {
+		if (octet.length() == 8) {
+			for (int i = 0; i < 8; i++) {
+				char c = octet.charAt(i);
+				if (c == '0' || c == '1' || c == 'x' || c == 'X') {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	private static Expr octet(String octet) {
+		BitChar bc = new BitChar((byte) 0, (byte) 255);
+		for (int i = 0; i < 8; i++) {
+			int position = 0x80 >> i;
+			switch (octet.charAt(i)) {
+			case '0':
+				for (int j = 0; j < 256; j++) {
+					if ((j & position) == 0) {
+						continue;
+					}
+					bc.set2(j, false);
+				}
+				break;
+			case '1':
+				for (int j = 0; j < 256; j++) {
+					if ((j & position) != 0) {
+						continue;
+					}
+					bc.set2(j, false);
+				}
+				break;
+			}
+		}
+		return new Char(bc);
 	}
 
 	static String[] split(String s, Function<String, Integer> f) {
@@ -1231,10 +1309,11 @@ public class PEG {
 			}
 			return s;
 		}).toArray(String[]::new);
+		Expr pe = p(this, ns, expr);
 		if (names.length == 2) {
-			this.add(ns[0], ns.length == 1 ? null : ns, new Tree(p(this, ns, expr).andThen(new Tag(names[1]))));
+			this.add(ns[0], ns.length == 1 ? null : ns, new Tree(pe.andThen(new Tag(names[1]))));
 		} else {
-			this.add(ns[0], ns.length == 1 ? null : ns, p(this, ns, expr));
+			this.add(ns[0], ns.length == 1 ? null : ns, pe);
 		}
 	}
 
@@ -1290,18 +1369,18 @@ public class PEG {
 	}
 
 	public Parser newParser() {
-		ParserGen gen = new ParserGen();
+		Optimizer gen = new Optimizer();
 		String start = this.prodList.get(0);
-		return gen.generate(start, this.prodMap.get(start));
+		return gen.generate(start, this.prodMap.get(start), new ParserFuncGenerator());
 	}
 
 	public void log(String fmt, Object... args) {
 		System.err.printf(fmt + "%n", args);
 	}
 
-	public static <T> void testExpr(String expr, Function<Expr, T> f, T result) {
+	public static <X> void testExpr(String expr, Function<Expr, X> f, X result) {
 		PEG peg = new PEG();
-		T r = f.apply(p(peg, new String[0], expr));
+		X r = f.apply(p(peg, new String[0], expr));
 		if (result == null) {
 			System.out.printf("%s <- %s\n", expr, r);
 		} else if (!r.equals(result)) {
@@ -1344,13 +1423,18 @@ public class PEG {
 		// testMatch("A=a/aa", "aa", "[# 'a']", "a", "[# 'a']");
 		// testMatch("A=ab/aa", "aa", "[# 'aa']", "ab", "[# 'ab']");
 		// /* Option */
-		testMatch("A=a a?", "aa", "[# 'aa']", "ab", "[# 'a']");
-		testMatch("A=ab ab?", "abab", "[# 'abab']", "ab", "[# 'ab']");
+		// testMatch("A=a a?", "aa", "[# 'aa']", "ab", "[# 'a']");
+		// testMatch("A=ab ab?", "abab", "[# 'abab']", "ab", "[# 'ab']");
 		/* Many */
-		testMatch("A=a*", "aa", "[# 'aa']", "ab", "[# 'a']", "b", "[# '']");
-		testMatch("A=ab*", "abab", "[# 'abab']", "aba", "[# 'ab']");
+		// testMatch("A=a*", "aa", "[# 'aa']", "ab", "[# 'a']", "b", "[# '']");
+		// testMatch("A=ab*", "abab", "[# 'abab']", "aba", "[# 'ab']");
 
 		testMatch("A={a #Hoge}", "aa", "[#Hoge 'a']");
+		testMatch("HIRA = [あ-を]", "ああ", "[# 'あ']", "を", "[# 'を']");
+
+		testMatch(
+				"UTF8 = [\\x00-\\x7F] / [\\xC2-\\xDF] [\\x80-\\xBF] / [\\xE0-\\xEF] [\\x80-\\xBF] [\\x80-\\xBF] / [\\xF0-\\xF7] [\\x80-\\xBF] [\\x80-\\xBF] [\\x80-\\xBF]",
+				"aa", "[# 'a']", "ああ", "[# 'あ']");
 
 		testMatch("/blue/origami/grammar/math.opeg", //
 				"1", "[#IntExpr '1']", //
@@ -1360,6 +1444,7 @@ public class PEG {
 				"[#AddExpr $right=[#IntExpr '3'] $left=[#MulExpr $right=[#IntExpr '2'] $left=[#IntExpr '1']]]");
 		testMatch("/blue/origami/grammar/xml.opeg", //
 				"<a/>", "[#Element $key=[#Name 'a']]", "<a></a>", "[#Element $key=[#Name 'a']]");
+
 	}
 
 }
