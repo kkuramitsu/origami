@@ -1,13 +1,11 @@
-package nez2;
+package origami.libnez;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nez2.PEG.Char;
-import nez2.PEG.Expr;
-import nez2.PEG.Or;
-import nez2.PEG.PTag;
+import origami.libnez.PEG.Char;
+import origami.libnez.PEG.Or;
 
 public class DFA extends Expr {
 	byte[] charMap;
@@ -27,6 +25,11 @@ public class DFA extends Expr {
 	@Override
 	public Expr get(int index) {
 		return this.indexed[index];
+	}
+
+	@Override
+	public Object param(int index) {
+		return this.charMap;
 	}
 
 	boolean isDFA() {
@@ -279,13 +282,23 @@ public class DFA extends Expr {
 			}
 			return null;
 		}
+		case DFA: {
+			Expr[] p = new Expr[pe.size()];
+			for (int i = 0; i < pe.size(); i++) {
+				p[i] = dc(pe.get(i), depth);
+				if (p[i] == null) {
+					return null;
+				}
+			}
+			return new DFA((byte[]) pe.param(0), p);
+		}
 		case NonTerm:
 			if (depth == 0) {
 				return dc(pe.get(0), depth + 1);
 			}
 			return null;
 		default:
-			System.err.println("TODO: dc " + pe);
+			System.err.println("TODO: dc " + pe.getClass().getSimpleName() + " " + pe);
 			break;
 		}
 		return null;

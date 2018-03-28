@@ -1,4 +1,4 @@
-package nez2;
+package origami.libnez;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,38 +29,41 @@ public class Parser {
 		return px;
 	}
 
-	private TreeNode parse(byte[] b, int offset, int len) {
+	public ParseTree parse(byte[] b, int offset, int len) {
 		ParserContext px = this.px(b, 0, b.length - 1);
 		if (this.start.apply(px)) {
 			if (px.tree == null) {
-				return new TreeNode(TreeNode.EmptyTag, px.inputs, 0, px.pos, null);
+				return new ParseTree(ParseTree.EmptyTag, px.inputs, 0, px.pos, null);
 			}
 			// this.funcMap.forEach((n, f) -> {
 			// if (f instanceof MemoPoint) {
 			// System.err.println("MemoPoint " + f);
 			// }
 			// });
-			return (TreeNode) px.tree;
+			return (ParseTree) px.tree;
 		}
-		return new TreeNode("err*", px.inputs, 0, px.headpos, null);
+		return new ParseTree(ParseTree.ErrorTag, px.inputs, 0, px.headpos, null);
 	}
 
-	public TreeNode parse(String text) {
-		byte[] b = PEG.encode(text + "\0");
+	public ParseTree parse(byte[] buf) {
+		return this.parse(buf, 0, buf.length - 1);
+	}
+
+	public ParseTree parse(String text) {
+		byte[] b = Loader.encode(text + "\0");
 		return this.parse(b, 0, b.length - 1);
 	}
 
-	public TreeNode parseFile(String path) throws IOException {
+	public ParseTree parseFile(String path) throws IOException {
 		File file = new File(path);
-		if (file.exists()) {
-			byte[] buf = new byte[((int) file.length()) + 1]; // adding '\0' termination
-			FileInputStream fin = new FileInputStream(file);
+		byte[] buf = new byte[((int) file.length()) + 1]; // adding '\0' termination
+		FileInputStream fin = new FileInputStream(file);
+		try {
 			fin.read(buf, 0, (int) file.length());
+		} finally {
 			fin.close();
-			return this.parse(buf, 0, buf.length - 1);
-		} else {
-			return this.parse(path);
 		}
+		return this.parse(buf, 0, buf.length - 1);
 	}
 }
 

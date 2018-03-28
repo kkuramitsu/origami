@@ -1,10 +1,10 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.type.Ty;
+import origami.libnez.OStrings;
 
 public class TypeCode extends CommonCode {
 	private Ty value;

@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import blue.origami.common.OOption;
-import nez2.PEG;
-import nez2.Parser;
+import origami.libnez.PEG;
+import origami.libnez.Parser;
 
 public class Oparse2 extends Main {
 
@@ -72,7 +72,7 @@ public class Oparse2 extends Main {
 		peg.load(pegfile);
 		String[] files = options.stringList(MainOption.InputFiles);
 		if (files.length > 0) {
-			Parser p = peg.newParser();
+			Parser p = peg.getParser();
 			for (String file : files) {
 				long st = System.nanoTime();
 				Object t = p.parseFile(file);

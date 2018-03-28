@@ -1,11 +1,7 @@
-package nez2;
+package origami.libnez;
 
 import java.util.Arrays;
 import java.util.function.Function;
-
-import nez2.PEG.Expr;
-import nez2.PEG.ExprP;
-import nez2.PEG.PTag;
 
 @FunctionalInterface
 public interface ParseFunc {
@@ -162,5 +158,24 @@ class App extends Expr {
 			e.strOut(sb);
 		}
 		return sb.toString();
+	}
+}
+
+class Param extends Expr1 {
+	String[] args;
+
+	Param(String[] args, Expr pe) {
+		this.inner = pe;
+		this.args = args;
+	}
+
+	@Override
+	public Object param(int index) {
+		return this.args;
+	}
+
+	@Override
+	public int psize() {
+		return 1;
 	}
 }

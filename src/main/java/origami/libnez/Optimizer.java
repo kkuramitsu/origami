@@ -1,4 +1,4 @@
-package nez2;
+package origami.libnez;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,12 +9,10 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import nez2.PEG.Expr;
-import nez2.PEG.ExprP1;
-import nez2.PEG.Memoed;
-import nez2.PEG.NonTerm;
-import nez2.PEG.PTag;
-import nez2.PEG.Val;
+import origami.libnez.Expr.PTag;
+import origami.libnez.PEG.Memoed;
+import origami.libnez.PEG.NonTerm;
+import origami.libnez.TPEG.Val;
 
 class Optimizer {
 
@@ -36,11 +34,12 @@ class Optimizer {
 		snt.inner = this.rename(pe, prodMap, nameMap, new Flags());
 		nameMap.forEach((name, nt) -> {
 			checkLeftRecur(name, nt.get(0));
-			nt.inner = trace("ast", name, nt.get(0), (p) -> Trees.checkAST(p));
+			// System.err.printf("ast %s = %s%n", name, nt.get(0));
+			nt.inner = trace("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
 		});
 		// 1. optimizing ..
 		nameMap.forEach((name, nt) -> {
-			nt.inner = trace("dfa", name, nt.get(0), (p) -> DFA.optimizeChoice(p));
+			// nt.inner = trace("dfa", name, nt.get(0), (p) -> DFA.optimizeChoice(p));
 		});
 		nameMap.forEach((name, nt) -> {
 			nt.inner = trace("inline", name, nt.get(0), (p) -> inline(p));
@@ -307,7 +306,7 @@ class Optimizer {
 					es[i] = PEG.Empty_;
 					break;
 				}
-				if (!Trees.isUnit(es[i])) {
+				if (!TPEG.isUnit(es[i])) {
 					break;
 				}
 			}
@@ -317,14 +316,14 @@ class Optimizer {
 					es[i] = PEG.Empty_;
 					break;
 				}
-				if (!Trees.isUnit(es[i])) {
+				if (!TPEG.isUnit(es[i])) {
 					break;
 				}
 			}
 			int start = es.length;
 			for (int i = 0; i < es.length; i++) {
 				int len = First.fixlen(es[i]);
-				if (len == -1 || !Trees.isUnit(es[i])) {
+				if (len == -1 || !TPEG.isUnit(es[i])) {
 					start = i;
 					break;
 				}

@@ -1,13 +1,13 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.OArrays;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
+import origami.libnez.OStrings;
 
 public class DictCode extends CodeN {
 	protected String[] names;

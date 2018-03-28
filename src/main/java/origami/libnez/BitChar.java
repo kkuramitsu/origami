@@ -1,6 +1,4 @@
-package nez2;
-
-import blue.origami.common.OStrings;
+package origami.libnez;
 
 class BitChar implements OStrings {
 	private final int bits[];

@@ -16,6 +16,8 @@
 
 package blue.origami.common;
 
+import origami.libnez.OStrings;
+
 public class OConsole {
 
 	public static void exit(int status, Throwable e) {

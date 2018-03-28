@@ -1,6 +1,6 @@
 package blue.origami.parser.peg;
 
-import blue.origami.common.OStrings;
+import origami.libnez.OStrings;
 
 public class ByteSet implements OStrings {
 	private final int bits[];

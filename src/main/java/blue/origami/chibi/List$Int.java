@@ -11,7 +11,7 @@ import blue.origami.chibi.Func.FuncIntInt;
 import blue.origami.chibi.Func.FuncIntIntInt;
 import blue.origami.chibi.Func.FuncIntObj;
 import blue.origami.chibi.Func.FuncIntVoid;
-import blue.origami.common.OStrings;
+import origami.libnez.OStrings;
 
 public class List$Int implements OStrings, FuncIntInt {
 	protected int[] arrays = null;

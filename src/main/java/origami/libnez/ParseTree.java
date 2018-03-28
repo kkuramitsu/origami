@@ -1,10 +1,9 @@
-package nez2;
+package origami.libnez;
 
-import blue.origami.common.OStrings;
-
-public class TreeNode implements T, OStrings {
+public class ParseTree implements T, OStrings {
 	static final String EmptyTag = "";
 	static final String EmptyLabel = EmptyTag;
+	static final String ErrorTag = "err*";
 
 	String tag;
 	byte[] inputs;
@@ -12,7 +11,7 @@ public class TreeNode implements T, OStrings {
 	int epos;
 	TreeLink child;
 
-	TreeNode(String tag, byte[] inputs, int spos, int epos, T child) {
+	ParseTree(String tag, byte[] inputs, int spos, int epos, T child) {
 		this.inputs = inputs;
 		this.spos = spos;
 		this.epos = epos;
@@ -35,7 +34,7 @@ public class TreeNode implements T, OStrings {
 		}
 		if (c == sb.length()) {
 			sb.append(" '");
-			sb.append(new String(this.inputs, this.spos, this.epos - this.spos));
+			sb.append(this.asString());
 			sb.append("'");
 		}
 		sb.append("]");
@@ -45,11 +44,11 @@ public class TreeNode implements T, OStrings {
 		return tag.equals(this.tag);
 	}
 
-	public final String gettag() {
+	public final String tag() {
 		return this.tag;
 	}
 
-	public final TreeNode get(String label) {
+	public final ParseTree get(String label) {
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
 			if (cur.tag != null && label.equals(cur.tag)) {
 				return cur.child;
@@ -58,20 +57,24 @@ public class TreeNode implements T, OStrings {
 		return null;
 	}
 
-	public final TreeNode[] list(String label) {
+	public final ParseTree[] list() {
 		int c = 0;
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
 			if (cur.child != null) {
 				c++;
 			}
 		}
-		TreeNode[] ts = new TreeNode[c];
+		ParseTree[] ts = new ParseTree[c];
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
 			if (cur.child != null) {
 				ts[--c] = cur.child;
 			}
 		}
 		return ts;
+	}
+
+	public final String asString() {
+		return new String(this.inputs, this.spos, this.epos - this.spos);
 	}
 
 }
@@ -81,12 +84,12 @@ interface T {
 
 class TreeLink implements T {
 	String tag;
-	TreeNode child;
+	ParseTree child;
 	TreeLink prev;
 
 	TreeLink(String tag, T child, T prev) {
 		this.tag = tag;
-		this.child = (TreeNode) child;
+		this.child = (ParseTree) child;
 		this.prev = (TreeLink) prev;
 	}
 
@@ -105,7 +108,7 @@ class TreeLink implements T {
 				return cur.tag;
 			}
 		}
-		return TreeNode.EmptyTag;
+		return ParseTree.EmptyTag;
 	}
 
 }

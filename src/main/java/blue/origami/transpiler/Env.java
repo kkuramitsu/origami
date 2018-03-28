@@ -9,7 +9,6 @@ import blue.origami.Version;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
-import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.TLog;
 import blue.origami.transpiler.code.Code;
@@ -20,6 +19,7 @@ import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
+import origami.libnez.OStrings;
 
 public class Env implements EnvAPIs, EnvApi {
 	private Env parent;

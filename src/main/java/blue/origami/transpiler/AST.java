@@ -9,12 +9,12 @@ import java.util.function.IntFunction;
 import blue.origami.common.OArrays;
 import blue.origami.common.OSource;
 import blue.origami.common.OStringUtils;
-import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.Symbol;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
+import origami.libnez.OStrings;
 
 public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, TreeFunc, TreeSetFunc {
 	protected Symbol tag;

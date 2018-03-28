@@ -6,11 +6,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
-import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
+import origami.libnez.OStrings;
 
 public class DataTy extends Ty {
 

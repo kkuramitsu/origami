@@ -16,6 +16,8 @@
 
 package blue.origami.common;
 
+import origami.libnez.OStrings;
+
 public class ODebug extends OConsole {
 
 	private static boolean hacked = false;

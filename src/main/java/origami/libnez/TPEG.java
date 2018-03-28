@@ -1,10 +1,67 @@
-package nez2;
+package origami.libnez;
 
-import nez2.PEG.Expr;
-import nez2.PEG.Link;
+public class TPEG extends PEG {
 
-public class Trees {
+	/* Tree Construction */
 
+	public static class Tree extends Expr1 {
+
+		public Tree(Expr inner) {
+			this.ptag = PTag.Tree;
+			this.inner = inner;
+		}
+
+		@Override
+		Expr dup(Object label, Expr... es) {
+			return new Tree(es[0]);
+		}
+	}
+
+	public static class Fold extends ExprP1 {
+		public Fold(String label, Expr inner) {
+			this.ptag = PTag.Fold;
+			this.label = label;
+			this.inner = inner;
+		}
+
+		@Override
+		Expr dup(Object label, Expr... es) {
+			return new Fold((String) label, es[0]);
+		}
+	}
+
+	public static class Link extends ExprP1 {
+		public Link(String label, Expr inner) {
+			this.ptag = PTag.Link;
+			this.label = label == null || label.length() == 0 ? origami.libnez.ParseTree.EmptyTag : label;
+			this.inner = inner;
+		}
+	}
+
+	public static class Tag extends ExprP {
+		public Tag(String label) {
+			this.ptag = PTag.Tag;
+			this.label = label;
+		}
+	}
+
+	public static class Val extends Expr {
+		byte[] val;
+
+		public Val(byte[] val) {
+			this.ptag = PTag.Val;
+			this.val = val;
+		}
+	}
+
+	public static class Untree extends Expr1 {
+		public Untree(Expr inner) {
+			this.ptag = PTag.Untree;
+			this.inner = inner;
+		}
+	}
+
+	// libs
 	static boolean isTreeMut(Expr pe) {
 		switch (pe.ptag) {
 		case Tree:
@@ -166,11 +223,11 @@ public class Trees {
 
 	static Expr checkAST(Expr pe) {
 		if (isTree(pe)) {
-			return checkTree(pe);
+			return enforceTree(pe);
 		}
-		if (!isUnit(pe)) {
-			return checkMut(pe);
-		}
+		// if (!isUnit(pe)) {
+		// return enforceMut(pe);
+		// }
 		return enforceUnit(pe);
 	}
 
@@ -182,10 +239,6 @@ public class Trees {
 			}
 			System.err.printf("enforceUnit %s isUnit=%s isTree=%s\n", pe, isUnit(pe), isTree(pe));
 			throw new RuntimeException();
-			// if (isTree(pe)) {
-			// return new PEG.Untree(pe);
-			// }
-			// return new PEG.Untree(new PEG.Tree(pe));
 		case Tree:
 		case Link:
 		case Fold:
@@ -195,71 +248,61 @@ public class Trees {
 		case Val:
 			return PEG.Empty_;
 		default:
-			return PEG.dup(pe, Trees::enforceUnit);
+			return PEG.dup(pe, TPEG::enforceUnit);
 		}
 	}
 
-	static Expr checkTree(Expr pe) {
+	static Expr enforceTree(Expr pe) {
 		switch (pe.ptag) {
 		case Tree:
-			return pe.dup(null, checkMut(pe.get(0)));
+			return pe.dup(null, enforceMut(pe.get(0)));
 		case NonTerm:
 			if (isTree(pe)) {
 				return pe;
 			}
-			return new PEG.Tree(pe);
+			return new TPEG.Tree(pe);
 		case Fold:
-			return new PEG.Tree(PEG.Empty_).andThen(new PEG.Fold((String) pe.param(0), checkMut(pe.get(0))));
+			return new TPEG.Tree(PEG.Empty_).andThen(pe.dup(pe.p(0), enforceMut(pe.get(0))));
 		case Link:
 			return enforceUnit(pe.get(0));
 		case Seq:
 			if (isTree(pe.get(0))) {
-				return checkTree(pe.get(0)).andThen(checkFold(pe.get(1)));
+				return enforceTree(pe.get(0)).andThen(enforceFold(pe.get(1)));
 			}
-			return enforceUnit(pe.get(0)).andThen(checkTree(pe.get(1)));
+			return enforceUnit(pe.get(0)).andThen(enforceTree(pe.get(1)));
 		case Or:
+			return enforceTree(pe.get(0)).orElse(enforceTree(pe.get(1)));
 		case Alt:
-			if (isTree(pe.get(0))) {
-				return enforceTree(pe.get(0)).orElse(enforceTree(pe.get(1)));
-			}
-			return enforceUnit(pe.get(0)).orElse(enforceUnit(pe.get(1)));
+			return enforceTree(pe.get(0)).orAlso(enforceTree(pe.get(1)));
 		default:
 			return enforceUnit(pe);
 		}
 	}
 
-	static Expr enforceTree(Expr pe) {
-		pe = checkTree(pe);
-		if (!isTree(pe)) {
-			return new PEG.Tree(pe);
-		}
-		return pe;
-	}
-
-	static Expr checkFold(Expr pe) {
+	static Expr enforceFold(Expr pe) {
 		switch (pe.ptag) {
 		case Fold:
-			return pe.dup(pe.p(0), checkMut(pe.get(0)));
+			return pe.dup(pe.p(0), enforceMut(pe.get(0)));
 		case Tree:
-			return new PEG.Fold("", checkMut(pe.get(0)));
+			return new TPEG.Fold("", enforceMut(pe.get(0)));
 		case NonTerm:
 		case Link:
 		case Tag:
 		case Val:
 			return enforceUnit(pe);
 		default:
-			return PEG.dup(pe, Trees::checkFold);
+			return PEG.dup(pe, TPEG::enforceFold);
 		}
 	}
 
-	static Expr checkMut(Expr pe) {
+	static Expr enforceMut(Expr pe) {
 		switch (pe.ptag) {
 		case Tree:
 			return new Link("", enforceTree(pe.get(0)));
 		case Link:
-			return new Link((String) pe.param(0), enforceTree(pe.get(0)));
+			return new Link(pe.p(0), enforceTree(pe.get(0)));
 		case Fold:
-			return new Link((String) pe.param(0), new PEG.Tree(checkMut(pe.get(0))));
+			return new Link(pe.p(0), new TPEG.Tree(enforceMut(pe.get(0))));
 		case Tag:
 		case Val:
 			return pe;
@@ -269,7 +312,7 @@ public class Trees {
 			}
 			return pe;
 		default:
-			return PEG.dup(pe, Trees::checkMut);
+			return PEG.dup(pe, TPEG::enforceMut);
 		}
 	}
 

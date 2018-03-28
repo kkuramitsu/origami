@@ -28,11 +28,11 @@ import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
 import blue.origami.common.OOption;
 import blue.origami.common.OOption.OOptionKey;
-import blue.origami.common.OStrings;
 import blue.origami.common.Tree;
 import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
+import origami.libnez.OStrings;
 
 public abstract class Main extends OConsole {
 

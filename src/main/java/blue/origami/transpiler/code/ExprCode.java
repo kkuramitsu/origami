@@ -2,13 +2,13 @@ package blue.origami.transpiler.code;
 
 import java.util.List;
 
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
+import origami.libnez.OStrings;
 
 public class ExprCode extends CodeN implements MappedCode {
 

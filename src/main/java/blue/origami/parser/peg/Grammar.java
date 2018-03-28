@@ -10,10 +10,10 @@ import java.util.Objects;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OOption;
-import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.main.MainOption;
 import blue.origami.parser.Parser;
+import origami.libnez.OStrings;
 
 public abstract class Grammar extends AbstractList<Production> implements OStrings {
 

@@ -3,9 +3,9 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
+import origami.libnez.OStrings;
 
 public class VarTy extends Ty {
 	private static int seq = 27;

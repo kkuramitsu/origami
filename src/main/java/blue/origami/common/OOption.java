@@ -20,6 +20,7 @@ import java.lang.reflect.Array;
 import java.util.HashMap;
 
 import blue.origami.Version;
+import origami.libnez.OStrings;
 
 public class OOption {
 	private HashMap<String, Object> valueMap = new HashMap<>();

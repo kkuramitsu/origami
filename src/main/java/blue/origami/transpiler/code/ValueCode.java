@@ -1,9 +1,9 @@
 package blue.origami.transpiler.code;
 
-import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
+import origami.libnez.OStrings;
 
 public interface ValueCode extends Code {
 	public Object getValue();

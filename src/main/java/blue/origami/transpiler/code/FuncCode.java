@@ -2,7 +2,6 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
@@ -14,6 +13,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarParamTy;
+import origami.libnez.OStrings;
 
 public class FuncCode extends Code1 {
 

@@ -2,7 +2,6 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
@@ -12,6 +11,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.DataVarTy;
 import blue.origami.transpiler.type.Ty;
+import origami.libnez.OStrings;
 
 public class DataCode extends CodeN {
 	protected AST[] names;

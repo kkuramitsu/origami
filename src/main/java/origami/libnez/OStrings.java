@@ -14,13 +14,16 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.common;
+package origami.libnez;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.BaseStream;
+
+import blue.origami.common.ODebug;
+import blue.origami.common.OFormat;
 
 public interface OStrings {
 

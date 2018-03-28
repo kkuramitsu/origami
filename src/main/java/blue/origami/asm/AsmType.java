@@ -20,7 +20,6 @@ import blue.origami.chibi.Func;
 import blue.origami.chibi.Tuple$;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
@@ -33,6 +32,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
+import origami.libnez.OStrings;
 
 public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();

@@ -3,7 +3,7 @@ package blue.origami.chibi;
 import java.lang.reflect.Field;
 
 import blue.origami.common.OConsole;
-import blue.origami.common.OStrings;
+import origami.libnez.OStrings;
 
 public class Data$ implements OStrings, Cloneable {
 

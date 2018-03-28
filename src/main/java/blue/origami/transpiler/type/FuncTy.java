@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
@@ -19,6 +18,7 @@ import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.VarNameCode;
+import origami.libnez.OStrings;
 
 public class FuncTy extends Ty {
 	protected final Ty[] paramTypes;

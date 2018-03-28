@@ -18,6 +18,8 @@ package blue.origami.common;
 
 import java.util.ArrayList;
 
+import origami.libnez.OStrings;
+
 public interface SourcePosition {
 	public OSource getSource();
 

@@ -1,7 +1,6 @@
-package nez2;
+package origami.libnez;
 
-import nez2.PEG.Expr;
-import nez2.PEG.PTag;
+import origami.libnez.Expr.PTag;
 
 public class First {
 
@@ -173,7 +172,7 @@ public class First {
 		case Alt:
 		case Or:
 			return first(pe.get(0)).union(first(pe.get(1)));
-		case NonTerm:
+		case NonTerm: {
 			BitChar r = (BitChar) pe.lookup("F$");
 			if (r == null) {
 				pe.memo("F$", BitChar.AnySet);
@@ -181,6 +180,16 @@ public class First {
 				pe.memo("F$", r);
 			}
 			return r;
+		}
+		case DFA: {
+			byte[] charMap = (byte[]) pe.param(0);
+			BitChar r = new BitChar();
+			for (int i = 0; i < charMap.length; i++) {
+				r.set2(i, charMap[i] != 0);
+			}
+			return r;
+		}
+
 		default:
 			System.err.println("TODO(first, " + pe + ")");
 			break;

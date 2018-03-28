@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import blue.origami.common.OArrays;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
-import blue.origami.common.OStrings;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
@@ -17,6 +16,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
+import origami.libnez.OStrings;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override

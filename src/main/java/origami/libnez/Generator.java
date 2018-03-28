@@ -1,13 +1,12 @@
-package nez2;
+package origami.libnez;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import nez2.Optimizer.Fold2;
-import nez2.Optimizer.Tree2;
-import nez2.PEG.Expr;
-import nez2.PEG.PTag;
+import origami.libnez.Expr.PTag;
+import origami.libnez.Optimizer.Fold2;
+import origami.libnez.Optimizer.Tree2;
 
 public interface Generator<X> {
 	public X generate(String start, HashMap<String, Expr> nameMap, List<String> list);
@@ -38,7 +37,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 	boolean checkEOF = false;
 	boolean zeroTerm = true;
-	boolean case4 = true;
+	boolean case4 = false;
 
 	/* state */
 
@@ -61,9 +60,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 			Expr pe2 = nameMap.get(n);
 			this.log("generating ... " + n + " = " + pe2);
 			ParseFunc f = this.gen(pe2);
-			if (Trees.isTree(pe2)) {
+			if (TPEG.isTree(pe2)) {
 				this.funcMap.put(n, new MemoPoint(n, mp++, true, f));
-			} else if (Trees.isUnit(pe2)) {
+			} else if (TPEG.isUnit(pe2)) {
 				this.funcMap.put(n, new MemoPoint(n, mp++, false, f));
 			}
 			// this.funcMap.put(n, f);
@@ -125,9 +124,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 				for (int i = 0; i < fs.length - 1; i++) {
 					fs[i + 1] = this.gen(es[b.length + i]);
 				}
-				return this.cAdd(fs);
+				return this.cAdd(pe, fs);
 			}
-			return this.cAdd(this.gen(es));
+			return this.cAdd(pe, this.gen(es));
 		}
 		case Or:
 			if (pe.get(1).isEmpty()) {
@@ -137,18 +136,18 @@ class ParserFuncGenerator implements Generator<Parser> {
 		case Alt:
 			return this.cChoice(this.acc(pe), this.gen(pe.flatten(PTag.Alt))); // FIXME
 		case And:
-			return cAnd(this.gen(pe));
+			return cAnd(this.gen(pe.get(0)));
 		case Not:
 			return this.cNot(pe.get(0));
 		case Many:
 			return this.cMany(pe.get(0));
 		case OneMore:
-			return cAdd2(this.gen(pe.get(0)), this.cMany(pe.get(0)));
+			return cAdd2(pe, this.gen(pe.get(0)), this.cMany(pe.get(0)));
 		/* */
 		case Tree: {
 			if (pe instanceof Tree2) {
 				Tree2 t = (Tree2) pe;
-				return cTree(this.gen(pe.get(0)), t.spos, t.tag == null ? TreeNode.EmptyTag : t.tag, t.epos);
+				return cTree(this.gen(pe.get(0)), t.spos, t.tag == null ? ParseTree.EmptyTag : t.tag, t.epos);
 			}
 			return cTree(this.gen(pe.get(0)));
 		}
@@ -158,9 +157,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 		case Fold: {
 			if (pe instanceof Fold2) {
 				Fold2 t = (Fold2) pe;
-				return cFold(this.gen(pe.get(0)), pe.p(0), t.spos, t.tag == null ? TreeNode.EmptyTag : t.tag, t.epos);
+				return cFold(this.gen(pe.get(0)), pe.p(0), t.spos, t.tag == null ? ParseTree.EmptyTag : t.tag, t.epos);
 			}
-			return cFold(this.gen(pe.get(0)), pe.p(0), 0, TreeNode.EmptyTag, 0);
+			return cFold(this.gen(pe.get(0)), pe.p(0), 0, ParseTree.EmptyTag, 0);
 		}
 		case Tag:
 			return cTag((String) pe.param(0));
@@ -327,7 +326,6 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 	ParseFunc cCharInc(final byte b) {
 		if (this.checkEOF || b == 0) {
-			System.err.println("EOF " + (int) b);
 			return (px) -> {
 				return px.pos < px.length && px.inputs[px.pos++] == b;
 			};
@@ -443,8 +441,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 		};
 	}
 
-	static ParseFunc cAdd2(ParseFunc f, ParseFunc f2) {
+	static ParseFunc cAdd2(Expr s, ParseFunc f, ParseFunc f2) {
 		return (px) -> {
+			System.err.println(px.pos + " " + s);
 			return f.apply(px) && f2.apply(px);
 		};
 	}
@@ -461,7 +460,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 		};
 	}
 
-	ParseFunc cAdd(final ParseFunc... fs) {
+	ParseFunc cAdd(Expr base, final ParseFunc... fs) {
 		if (this.case4) {
 			switch (fs.length) {
 			case 0:
@@ -469,7 +468,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 			case 1:
 				return fs[0];
 			case 2:
-				return cAdd2(fs[0], fs[1]);
+				return cAdd2(base, fs[0], fs[1]);
 			case 3:
 				return cAdd3(fs[0], fs[1], fs[2]);
 			case 4:
@@ -488,7 +487,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 		};
 	}
 
-	ParseFunc cSeq(Expr[] es) {
+	ParseFunc cSeq(Expr base, Expr[] es) {
 		byte[] b = PEG.getstr2(es);
 		if (b.length > 1) {
 			ParseFunc f = this.cCharInc(b);
@@ -500,9 +499,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 			for (int i = 0; i < fs.length - 1; i++) {
 				fs[i + 1] = this.gen(es[b.length + i]);
 			}
-			return this.cAdd(fs);
+			return this.cAdd(base, fs);
 		}
-		return this.cAdd(this.gen(es));
+		return this.cAdd(base, this.gen(es));
 	}
 
 	static ParseFunc cOption(int acc, final ParseFunc f) {
@@ -1001,7 +1000,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 	/* TreeConstruction */
 
 	private final static boolean mtree(ParserContext px, String tag, int spos, int epos) {
-		px.tree = new TreeNode(tag, px.inputs, spos, epos, px.tree);
+		px.tree = new ParseTree(tag, px.inputs, spos, epos, px.tree);
 		return true;
 	}
 
@@ -1014,7 +1013,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 		return (px) -> {
 			int pos = px.pos;
 			px.tree = null;
-			return f.apply(px) && mtree(px, TreeNode.EmptyTag, pos, px.pos);
+			return f.apply(px) && mtree(px, ParseTree.EmptyTag, pos, px.pos);
 		};
 	}
 
@@ -1036,7 +1035,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 	static ParseFunc cFold(final ParseFunc f, final String label) {
 		return (px) -> {
 			int pos = px.pos;
-			return mlink(px, label, px.tree, null) && f.apply(px) && mtree(px, TreeNode.EmptyTag, pos, px.pos);
+			return mlink(px, label, px.tree, null) && f.apply(px) && mtree(px, ParseTree.EmptyTag, pos, px.pos);
 		};
 	}
 
@@ -1118,29 +1117,33 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 		@Override
 		public boolean apply(ParserContext px) {
-			if (this.unused) {
-				return this.f.apply(px);
-			} else {
-				int pos = px.pos;
-				long key = getkey(pos, this.mp);
-				MemoEntry memo = getmemo(px, key);
-				if (memo.key == key && memo.mstate == px.state) {
-					this.hit++;
-					px.pos = memo.mpos;
-					px.state = memo.mstate;
-					if (this.tree) {
-						px.tree = memo.mtree;
-					}
-					return memo.matched;
-				}
-				this.memoed++;
-				if (this.memoed == 101) {
-					if (this.hit < 10) {
-						this.unused = true;
-					}
-				}
-				return mstore3(px, memo, key, this.f.apply(px));
-			}
+			// System.err.println(px.pos + " " + this.name);
+			boolean b = this.f.apply(px);
+			// System.err.println(px.pos + " " + this.name + " " + b);
+			return b;
+			// if (this.unused) {
+			// return this.f.apply(px);
+			// } else {
+			// int pos = px.pos;
+			// long key = getkey(pos, this.mp);
+			// MemoEntry memo = getmemo(px, key);
+			// if (memo.key == key && memo.mstate == px.state) {
+			// this.hit++;
+			// px.pos = memo.mpos;
+			// px.state = memo.mstate;
+			// if (this.tree) {
+			// px.tree = memo.mtree;
+			// }
+			// return memo.matched;
+			// }
+			// this.memoed++;
+			// if (this.memoed == 101) {
+			// if (this.hit < 10) {
+			// this.unused = true;
+			// }
+			// }
+			// return mstore3(px, memo, key, this.f.apply(px));
+			// }
 		}
 
 		@Override

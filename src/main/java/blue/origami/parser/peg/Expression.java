@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Objects;
 
 import blue.origami.common.OStringUtils;
-import blue.origami.common.OStrings;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.Symbol;
+import origami.libnez.OStrings;
 
 public abstract class Expression extends AbstractList<Expression> implements OStrings {
 

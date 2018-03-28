@@ -10,7 +10,6 @@ import blue.origami.common.ODebug;
 import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
 import blue.origami.common.OSource;
-import blue.origami.common.OStrings;
 import blue.origami.main.MainOption;
 import blue.origami.parser.Parser;
 import blue.origami.parser.ParserCode.ParserErrorException;
@@ -24,6 +23,7 @@ import blue.origami.transpiler.target.SourceMapper;
 import blue.origami.transpiler.target.SourceTypeMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import origami.libnez.OStrings;
 
 public class Transpiler extends Env implements OFactory<Transpiler> {
 	private CodeMapper codeMapper;
