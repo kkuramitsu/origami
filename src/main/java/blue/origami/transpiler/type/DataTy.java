@@ -10,7 +10,7 @@ import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class DataTy extends Ty {
 

@@ -3,7 +3,7 @@ package blue.origami.transpiler.code;
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public interface ValueCode extends Code {
 	public Object getValue();

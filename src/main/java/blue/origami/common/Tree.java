@@ -5,7 +5,7 @@ import java.util.AbstractList;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public abstract class Tree<E extends Tree<E>> extends AbstractList<E>
 		implements SourcePosition, OStrings, TreeFunc, TreeSetFunc {

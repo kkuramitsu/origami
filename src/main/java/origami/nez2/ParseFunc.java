@@ -1,4 +1,4 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -70,13 +70,8 @@ class Var extends ExprP {
 	}
 
 	@Override
-	public Object param(int index) {
-		return index == 0 ? this.label : this.index;
-	}
-
-	@Override
-	public int psize() {
-		return 2;
+	public int index() {
+		return this.index;
 	}
 
 }
@@ -102,16 +97,6 @@ class App extends Expr {
 		return index == 0 ? this.func : null;
 	}
 
-	@Override
-	public Object param(int index) {
-		return this.args;
-	}
-
-	@Override
-	public int psize() {
-		return 1;
-	}
-
 	Expr[] applyArgs(Function<Expr, Expr> f) {
 		return Arrays.stream(this.args).map(e -> f.apply(e)).toArray(Expr[]::new);
 	}
@@ -132,7 +117,7 @@ class App extends Expr {
 	static Expr expand(Expr pe, final Expr[] args) {
 		switch (pe.ptag) {
 		case Var:
-			int index = (Integer) pe.param(1);
+			int index = pe.index();
 			if (index < args.length) {
 				return args[index];
 			}
@@ -141,7 +126,7 @@ class App extends Expr {
 			Expr f = expand(pe.get(0), args);
 			Expr[] p = ((App) pe).applyArgs((e) -> expand(e, args));
 			if (f.isNonTerm()) {
-				uname(f.p(0), p);
+				uname(f.label(), p);
 				return expand(f.get(0), p);
 			}
 			return new App(f, p);
@@ -165,17 +150,13 @@ class Param extends Expr1 {
 	String[] args;
 
 	Param(String[] args, Expr pe) {
+		this.ptag = PTag.Param;
 		this.inner = pe;
 		this.args = args;
 	}
 
 	@Override
-	public Object param(int index) {
+	public String[] params() {
 		return this.args;
-	}
-
-	@Override
-	public int psize() {
-		return 1;
 	}
 }

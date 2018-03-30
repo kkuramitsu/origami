@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 
 import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class VarTy extends Ty {
 	private static int seq = 27;

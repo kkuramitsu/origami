@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
 import blue.origami.transpiler.CodeMap;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class VarDomain implements OStrings {
 

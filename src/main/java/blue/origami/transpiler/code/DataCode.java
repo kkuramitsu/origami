@@ -11,7 +11,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.DataVarTy;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class DataCode extends CodeN {
 	protected AST[] names;

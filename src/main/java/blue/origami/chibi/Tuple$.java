@@ -3,7 +3,7 @@ package blue.origami.chibi;
 import java.lang.reflect.Field;
 
 import blue.origami.common.OConsole;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Tuple$ implements OStrings, Cloneable {
 

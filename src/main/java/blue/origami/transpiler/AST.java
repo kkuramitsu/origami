@@ -14,7 +14,7 @@ import blue.origami.common.Symbol;
 import blue.origami.parser.ParserSource;
 import blue.origami.parser.pasm.PAsmAPI.TreeFunc;
 import blue.origami.parser.pasm.PAsmAPI.TreeSetFunc;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public abstract class AST implements SourcePosition, OStrings, Iterable<AST>, TreeFunc, TreeSetFunc {
 	protected Symbol tag;

@@ -2,7 +2,7 @@ package blue.origami.chibi;
 
 import java.util.stream.IntStream;
 
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Range$Int extends List$Int implements OStrings {
 	final int start;

@@ -23,7 +23,7 @@ import blue.origami.transpiler.target.SourceMapper;
 import blue.origami.transpiler.target.SourceTypeMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Transpiler extends Env implements OFactory<Transpiler> {
 	private CodeMapper codeMapper;

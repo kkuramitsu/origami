@@ -4,7 +4,7 @@ import blue.origami.common.SyntaxBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class RangeCode extends CodeN {
 	boolean isMutable = false;

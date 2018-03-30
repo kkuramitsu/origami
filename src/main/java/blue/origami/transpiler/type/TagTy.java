@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class TagTy extends Ty {
 	protected Ty baseTy;

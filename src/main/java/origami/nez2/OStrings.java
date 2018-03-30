@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package origami.libnez;
+package origami.nez2;
 
 import java.util.Iterator;
 import java.util.List;

@@ -32,7 +32,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMapper;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 	static AsmClassLoader classLoader = new AsmClassLoader();

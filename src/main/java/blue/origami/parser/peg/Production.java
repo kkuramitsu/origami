@@ -16,7 +16,7 @@
 
 package blue.origami.parser.peg;
 
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Production implements OStrings {
 	private final Grammar grammar;

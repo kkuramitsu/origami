@@ -1,14 +1,13 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
-import origami.libnez.PEG.Alt;
-import origami.libnez.PEG.Char;
-import origami.libnez.PEG.Empty;
-import origami.libnez.PEG.Not;
-import origami.libnez.PEG.Or;
-import origami.libnez.PEG.Seq;
+import origami.nez2.PEG.Alt;
+import origami.nez2.PEG.Char;
+import origami.nez2.PEG.Empty;
+import origami.nez2.PEG.Not;
+import origami.nez2.PEG.Or;
+import origami.nez2.PEG.Seq;
 
 public class Expr implements OStrings {
 	public static enum PTag {
@@ -18,17 +17,21 @@ public class Expr implements OStrings {
 		If, On, Off, // conditional parsing
 		Var, App, Param, // Higher ordered
 		DFA, // DFA
-		Bugs, Eval;
+		Bugs, Eval, Unary;
 	}
 
 	PTag ptag;
 	Object value;
 
+	public PTag tag() {
+		return this.ptag;
+	}
+
 	public boolean eq(Expr pe) {
 		return this.ptag == pe.ptag && this.toString().equals(pe.toString());
 	}
 
-	Expr dup(Object p, Expr... inners) {
+	Expr dup(Expr... inners) {
 		return this;
 	}
 
@@ -40,17 +43,33 @@ public class Expr implements OStrings {
 		return null;
 	}
 
-	public int psize() {
-		return 0;
-	}
-
-	public Object param(int index) {
+	public String label() {
 		return null;
 	}
 
-	String p(int index) {
-		return Objects.toString(this.param(index));
+	public BitChar bitChar() {
+		return null;
 	}
+
+	public byte[] charMap() {
+		return null;
+	}
+
+	public int index() {
+		return -1;
+	}
+
+	public String[] params() {
+		return null;
+	}
+
+	// public int psize() {
+	// return 0;
+	// }
+	//
+	// public Object param(int index) {
+	// return null;
+	// }
 
 	public Expr[] flatten(PTag target) {
 		return new Expr[] { this };
@@ -75,7 +94,7 @@ public class Expr implements OStrings {
 
 	@Override
 	public void strOut(StringBuilder sb) {
-		PEG.showing(false, this, sb);
+		PEG.showing(sb, this);
 	}
 
 	@Override
@@ -147,13 +166,8 @@ class ExprP extends Expr {
 	String label;
 
 	@Override
-	public Object param(int index) {
+	public String label() {
 		return this.label;
-	}
-
-	@Override
-	public int psize() {
-		return 1;
 	}
 
 }
@@ -177,13 +191,8 @@ class ExprP1 extends Expr1 {
 	String label;
 
 	@Override
-	public String param(int index) {
+	public String label() {
 		return this.label;
-	}
-
-	@Override
-	public int psize() {
-		return 1;
 	}
 }
 

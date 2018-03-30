@@ -16,7 +16,7 @@
 
 package blue.origami.common;
 
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class OConsole {
 

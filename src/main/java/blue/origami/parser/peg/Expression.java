@@ -24,7 +24,7 @@ import java.util.Objects;
 import blue.origami.common.OStringUtils;
 import blue.origami.common.SourcePosition;
 import blue.origami.common.Symbol;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public abstract class Expression extends AbstractList<Expression> implements OStrings {
 

@@ -25,7 +25,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 
 import blue.origami.Version;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class OCommonWriter {
 	protected String fileName = null;

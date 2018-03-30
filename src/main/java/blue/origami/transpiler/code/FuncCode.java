@@ -13,7 +13,7 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarParamTy;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class FuncCode extends Code1 {
 

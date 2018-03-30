@@ -1,6 +1,6 @@
-package origami.libnez;
+package origami.nez2;
 
-class BitChar implements OStrings {
+public class BitChar implements OStrings {
 	private final int bits[];
 
 	BitChar() {
@@ -203,6 +203,7 @@ class BitChar implements OStrings {
 		if (escaped.indexOf(ubyte) != -1) {
 			sb.append("\\");
 			sb.append((char) ubyte);
+			return;
 		}
 		switch (ubyte) {
 		case '\n':

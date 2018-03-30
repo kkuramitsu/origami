@@ -14,7 +14,7 @@
  * limitations under the License.
  ***********************************************************************/
 
-package blue.origami.main;
+package origami.main;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -28,18 +28,15 @@ import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
 import blue.origami.common.OOption;
 import blue.origami.common.OOption.OOptionKey;
-import blue.origami.common.Tree;
-import blue.origami.parser.Parser;
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
-import origami.nez2.OStrings;
 
-public abstract class Main extends OConsole {
+public abstract class Main implements MainConsole {
 
 	public static void main(String[] args) {
 		OOption options = new OOption();
 		try {
-			Main com = newCommand(args, options);
+			Main com = loadCommand(args, options);
 			com.exec(options);
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -47,13 +44,13 @@ public abstract class Main extends OConsole {
 		}
 	}
 
-	public static void start(String... args) throws Throwable {
+	public static void testMain(String... args) throws Throwable {
 		OOption options = new OOption();
-		Main com = newCommand(args, options);
+		Main com = loadCommand(args, options);
 		com.exec(options);
 	}
 
-	private static Main newCommand(String[] args, OOption options) {
+	private static Main loadCommand(String[] args, OOption options) {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
 			if (className.indexOf('.') == -1) {
@@ -132,51 +129,64 @@ public abstract class Main extends OConsole {
 		return SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
 	}
 
-	protected Grammar getGrammar(OOption options) throws IOException {
-		return this.getGrammar(options, null);
+	// protected Grammar getGrammar(OOption options) throws IOException {
+	// return this.getGrammar(options, null);
+	// }
+	//
+	// protected Parser getParser(OOption options) throws IOException {
+	// Grammar g = this.getGrammar(options);
+	// return g.newParser(options);
+	// }
+
+	void displayVersion() {
+		this.c(Bold, () -> {
+			p(this.progName() + "-" + this.version() + " (" + MainFmt.English + ") on Java JVM-"
+					+ System.getProperty("java.version") + "/" + Version.ProgName + "-" + Version.Version);
+		});
+		this.c(Yellow, () -> {
+			p(Version.Copyright);
+		});
 	}
 
-	protected Parser getParser(OOption options) throws IOException {
-		Grammar g = this.getGrammar(options);
-		return g.newParser(options);
-	}
-
-	protected void displayVersion() {
-		p(bold(this.progName()) + "-" + this.version() + " (" + MainFmt.English + ") on Java JVM-"
-				+ System.getProperty("java.version") + "/" + Version.ProgName + "-" + Version.Version);
-		p(Yellow, Version.Copyright);
-	}
-
-	protected String progName() {
+	String progName() {
 		return "Nez";
 	}
 
-	protected String version() {
+	String version() {
 		return Version.Version;
 	}
 
-	protected static void usage(String msg) {
+	static void p(String msg, Object... args) {
+		if (args.length == 0) {
+			System.out.println(msg);
+		} else {
+			System.out.printf(msg, args);
+			System.out.println();
+		}
+	}
+
+	static void usage(String msg) {
 		// this.displayVersion();
-		p(bold("Usage: origami <command> options inputs"));
-		p2("  -g | --grammar <file>      ", MainFmt.specify_a_grammar_file);
-		p2("  -s | --start <NAME>        ", MainFmt.specify_a_starting_rule);
-		p2("  -X                         ", MainFmt.specify_an_extension_class);
-		p2("  -D                         ", MainFmt.specify_an_optional_value);
+		p("Usage: origami <command> options inputs");
+		p("  -g | --grammar <file>      " + MainFmt.specify_a_grammar_file);
+		p("  -s | --start <NAME>        " + MainFmt.specify_a_starting_rule);
+		p("  -X                         " + MainFmt.specify_an_extension_class);
+		p("  -D                         " + MainFmt.specify_an_optional_value);
 		p("Example:");
 		p("  origami nez -g js.nez -X JsonWriter jquery.js");
 		p("  origami parse -g js.nez -X JsonWriter jquery.js");
 		p("  origami chibi sample.chibi");
 		p("");
 
-		p(bold("The most commonly used origami commands are:"));
-		p2(" nez        ", MainFmt.run_an_interactive_parser);
-		p2(" nezcc      ", MainFmt.generate_nez_parser);
-		p2("   parse    ", MainFmt.parse_files);
-		p2("   example  ", MainFmt.display_examples_in_a_grammar);
-		p2("   test     ", MainFmt.test_a_grammar_file);
-		p2(" chibi      ", MainFmt.run_script_files);
-		p2("   hack     ", MainFmt.run_in_a_hacker_mode);
-		p2("   check    ", MainFmt.test_script_files);
+		p("The most commonly used origami commands are:");
+		p(" nez        " + MainFmt.run_an_interactive_parser);
+		p(" nezcc      " + MainFmt.generate_nez_parser);
+		p("   parse    " + MainFmt.parse_files);
+		p("   example  " + MainFmt.display_examples_in_a_grammar);
+		p("   test     " + MainFmt.test_a_grammar_file);
+		p(" chibi      " + MainFmt.run_script_files);
+		p("   hack     " + MainFmt.run_in_a_hacker_mode);
+		p("   check    " + MainFmt.test_script_files);
 		exit(0, msg);
 	}
 
@@ -186,45 +196,7 @@ public abstract class Main extends OConsole {
 		}
 	}
 
-	public final static void p(String fmt, Object... args) {
-		println(OStrings.format(fmt, args));
-	}
-
-	static void p2(String desc, OFormat fmt, Object... args) {
-		print(desc);
-		println(OStrings.format(fmt, args));
-	}
-
-	public final static void p(int color, String fmt, Object... args) {
-		beginColor(color);
-		println(OStrings.format(fmt, args));
-		endColor();
-	}
-
-	public final static void p(int color, OFormat fmt, Object... args) {
-		beginColor(color);
-		println(OStrings.format(fmt, args));
-		endColor();
-	}
-
-	public final static void display(Grammar g) {
-		beginColor(Blue);
-		g.dump();
-		endColor();
-	}
-
-	public final static void display(OTreeWriter w, Tree<?> t) {
-		beginColor(Blue);
-		println("-----------");
-		w.writeln(t);
-		endColor();
-	}
-
-	public final static void exit(int status, String format, Object... args) {
-		p(Red, format, args);
-		System.exit(status);
-	}
-
+	// Console
 	public final static boolean checkEmptyInput(String s) {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
@@ -337,6 +309,24 @@ public abstract class Main extends OConsole {
 		}
 		this.linenum += linecount;
 		return sb.toString();
+	}
+
+	// OConsole
+
+	public static void exit(int status, Throwable e) {
+		System.out.println("EXIT by " + e);
+		e.printStackTrace();
+		System.exit(status);
+	}
+
+	public static void exit(int status, String msg) {
+		System.out.println("EXIT by " + msg);
+		System.exit(status);
+	}
+
+	public static void exit(int status, OFormat message) {
+		OConsole.println("EXIT " + message);
+		System.exit(status);
 	}
 
 }

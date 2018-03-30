@@ -19,7 +19,7 @@ import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Env implements EnvAPIs, EnvApi {
 	private Env parent;

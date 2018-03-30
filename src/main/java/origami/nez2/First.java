@@ -1,10 +1,10 @@
-package origami.libnez;
+package origami.nez2;
 
-import origami.libnez.Expr.PTag;
+import origami.nez2.Expr.PTag;
 
 public class First {
 
-	static boolean nonnull(Expr pe) {
+	public static boolean nonnull(Expr pe) {
 		switch (pe.ptag) {
 		case Char:
 			return true;
@@ -52,7 +52,7 @@ public class First {
 			}
 			return r;
 		default:
-			System.err.println("TODO: nonull " + pe);
+			Hack.TODO("nonull", pe.getClass().getSimpleName(), pe);
 			break;
 		}
 		return false;
@@ -124,7 +124,7 @@ public class First {
 	static BitChar first(Expr pe) {
 		switch (pe.ptag) {
 		case Char:
-			return (BitChar) pe.param(0);
+			return pe.bitChar();
 		case Empty:
 		case Tag:
 		case Val:
@@ -134,17 +134,17 @@ public class First {
 			return BitChar.AnySet;
 		case And:
 			if (pe.get(0).isChar()) {
-				return (BitChar) pe.get(0).param(0);
+				return pe.get(0).bitChar();
 			}
 			return BitChar.AnySet;
 		case Not:
 			if (pe.get(0).isChar()) {
-				return ((BitChar) pe.get(0).param(0)).not();
+				return pe.get(0).bitChar().not();
 			}
 			return BitChar.AnySet;
 		case Many:
 			if (pe.get(0).isChar()) {
-				return (BitChar) pe.get(0).param(0);
+				return pe.get(0).bitChar();
 			}
 			return BitChar.AnySet;
 		case OneMore:
@@ -182,7 +182,7 @@ public class First {
 			return r;
 		}
 		case DFA: {
-			byte[] charMap = (byte[]) pe.param(0);
+			byte[] charMap = pe.charMap();
 			BitChar r = new BitChar();
 			for (int i = 0; i < charMap.length; i++) {
 				r.set2(i, charMap[i] != 0);
@@ -191,7 +191,7 @@ public class First {
 		}
 
 		default:
-			System.err.println("TODO(first, " + pe + ")");
+			Hack.TODO("first", pe.getClass().getSimpleName(), pe);
 			break;
 		}
 		return null;
@@ -267,7 +267,7 @@ public class First {
 
 	static boolean reachFlag(Expr pe, final String flag) {
 		return reach(pe, "f$" + flag, (p) -> {
-			if (p.ptag == PTag.If && flag.equals(p.param(0))) {
+			if (p.ptag == PTag.If && flag.equals(p.label())) {
 				return True;
 			}
 			return False;

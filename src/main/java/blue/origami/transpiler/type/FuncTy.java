@@ -18,7 +18,7 @@ import blue.origami.transpiler.code.CastCode;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.VarNameCode;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class FuncTy extends Ty {
 	protected final Ty[] paramTypes;

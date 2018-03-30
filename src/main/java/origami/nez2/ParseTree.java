@@ -1,4 +1,4 @@
-package origami.libnez;
+package origami.nez2;
 
 public class ParseTree implements T, OStrings {
 	static final String EmptyTag = "";
@@ -75,6 +75,10 @@ public class ParseTree implements T, OStrings {
 
 	public final String asString() {
 		return new String(this.inputs, this.spos, this.epos - this.spos);
+	}
+
+	public final Token asToken(String path) {
+		return new Token(this.asString(), path, this.inputs, this.spos, this.epos);
 	}
 
 }

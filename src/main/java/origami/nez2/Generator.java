@@ -1,18 +1,19 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import origami.libnez.Expr.PTag;
-import origami.libnez.Optimizer.Fold2;
-import origami.libnez.Optimizer.Tree2;
+import origami.nez2.Expr.PTag;
+import origami.nez2.TPEG.OptimizedTree;
 
 public interface Generator<X> {
 	public X generate(String start, HashMap<String, Expr> nameMap, List<String> list);
 
 	default void log(String msg) {
-		System.out.println(msg);
+		if (Optimizer.isVerbose) {
+			System.out.println(msg);
+		}
 	}
 }
 
@@ -43,11 +44,11 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 	HashMap<String, Integer> stateMap = new HashMap<>();
 
-	int stateId(Object label) {
-		Integer n = this.stateMap.get(label.toString());
+	int stateId(String label) {
+		Integer n = this.stateMap.get(label);
 		if (n == null) {
 			n = this.stateMap.size() + 1;
-			this.stateMap.put(label.toString(), n);
+			this.stateMap.put(label, n);
 		}
 		return n;
 	}
@@ -97,9 +98,9 @@ class ParserFuncGenerator implements Generator<Parser> {
 		case Empty:
 			return ParserFuncGenerator::succ;
 		case Char:
-			return this.cChar((BitChar) pe.param(0));
+			return this.cChar(pe.bitChar());
 		case NonTerm: {
-			String name = pe.p(0);
+			String name = pe.label();
 			ParseFunc f = this.funcMap.get(name);
 			if (f != null) {
 				return f;
@@ -145,35 +146,36 @@ class ParserFuncGenerator implements Generator<Parser> {
 			return cAdd2(pe, this.gen(pe.get(0)), this.cMany(pe.get(0)));
 		/* */
 		case Tree: {
-			if (pe instanceof Tree2) {
-				Tree2 t = (Tree2) pe;
+			if (pe instanceof OptimizedTree) {
+				OptimizedTree t = (OptimizedTree) pe;
 				return cTree(this.gen(pe.get(0)), t.spos, t.tag == null ? ParseTree.EmptyTag : t.tag, t.epos);
 			}
 			return cTree(this.gen(pe.get(0)));
 		}
 		case Link: {
-			return cLink(this.gen(pe.get(0)), pe.p(0));
+			return cLink(this.gen(pe.get(0)), pe.label());
 		}
 		case Fold: {
-			if (pe instanceof Fold2) {
-				Fold2 t = (Fold2) pe;
-				return cFold(this.gen(pe.get(0)), pe.p(0), t.spos, t.tag == null ? ParseTree.EmptyTag : t.tag, t.epos);
+			if (pe instanceof OptimizedTree) {
+				OptimizedTree t = (OptimizedTree) pe;
+				return cFold(this.gen(pe.get(0)), pe.label(), t.spos, t.tag == null ? ParseTree.EmptyTag : t.tag,
+						t.epos);
 			}
-			return cFold(this.gen(pe.get(0)), pe.p(0), 0, ParseTree.EmptyTag, 0);
+			return cFold(this.gen(pe.get(0)), pe.label(), 0, ParseTree.EmptyTag, 0);
 		}
 		case Tag:
-			return cTag((String) pe.param(0));
+			return cTag(pe.label());
 		case Val:
 			return ParserFuncGenerator::succ;
 		/* */
 		case Scope: /* @symbol(A) */
 			return cScope(this.gen(pe.get(0)));
 		case Symbol: /* @symbol(A) */
-			return cSymbol(this.gen(pe.get(0)), this.stateId(pe.param(0)));
+			return cSymbol(this.gen(pe.get(0)), this.stateId(pe.label()));
 		case Exists:
-			return cExists(this.stateId(pe.param(0)));
+			return cExists(this.stateId(pe.label()));
 		case Match:
-			return cMatch(this.stateId(pe.param(0)));
+			return cMatch(this.stateId(pe.label()));
 		case Contains:
 		case Equals:
 		case Eval:
@@ -186,7 +188,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 		case On: /* @on(flag, e) */
 		case Off: /* @off(flag, e) */
 		default:
-			System.err.printf("TODO(gen, %s)\n", pe);
+			Hack.TODO("gen", pe.getClass().getSimpleName(), pe);
 			return ParserFuncGenerator::succ;
 		}
 	}
@@ -431,19 +433,18 @@ class ParserFuncGenerator implements Generator<Parser> {
 	}
 
 	ParseFunc cCharSetInc(final int[] bs) {
-		if (this.checkEOF || bits32(bs, (byte) 0)) {
-			return (px) -> {
-				return px.pos < px.length && bits32(bs, px.inputs[px.pos++]);
-			};
-		}
+		// if (this.checkEOF || bits32(bs, (byte) 0)) {
 		return (px) -> {
-			return bits32(bs, px.inputs[px.pos++]);
+			return px.pos < px.length && bits32(bs, px.inputs[px.pos++]);
 		};
+		// }
+		// return (px) -> {
+		// return bits32(bs, px.inputs[px.pos++]);
+		// };
 	}
 
 	static ParseFunc cAdd2(Expr s, ParseFunc f, ParseFunc f2) {
 		return (px) -> {
-			System.err.println(px.pos + " " + s);
 			return f.apply(px) && f2.apply(px);
 		};
 	}
@@ -589,7 +590,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 	private ParseFunc cOption(Expr pe) {
 		Expr inner = pe.deref();
 		if (inner.isChar()) {
-			BitChar bc = (BitChar) pe.param(0);
+			BitChar bc = pe.bitChar();
 			if (bc.isSingle()) {
 				return this.cOption(bc.single());
 			}
@@ -869,7 +870,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 	private ParseFunc cMany(Expr pe) {
 		Expr inner = pe.deref();
 		if (inner.isChar()) {
-			BitChar bc = (BitChar) pe.param(0);
+			BitChar bc = pe.bitChar();
 			if (bc.isSingle()) {
 				return this.cMany(bc.single());
 			}
@@ -905,13 +906,13 @@ class ParserFuncGenerator implements Generator<Parser> {
 		case 1:
 			return (px) -> {
 				int pos = px.pos;
-				return !f.apply(px) || mback1(px, pos);
+				return !f.apply(px) && mback1(px, pos);
 			};
 		case 3:
 			return (px) -> {
 				int pos = px.pos;
 				T tree = px.tree;
-				return !f.apply(px) || mback3(px, pos, tree);
+				return !f.apply(px) && mback3(px, pos, tree);
 			};
 		default:
 			return (px) -> {
@@ -978,7 +979,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 	private ParseFunc cNot(Expr pe) {
 		Expr inner = pe.deref();
 		if (inner.isChar()) {
-			BitChar bc = (BitChar) pe.param(0);
+			BitChar bc = pe.bitChar();
 			if (bc.isSingle()) {
 				return this.cNot(bc.single());
 			}
@@ -1117,33 +1118,29 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 		@Override
 		public boolean apply(ParserContext px) {
-			// System.err.println(px.pos + " " + this.name);
-			boolean b = this.f.apply(px);
-			// System.err.println(px.pos + " " + this.name + " " + b);
-			return b;
-			// if (this.unused) {
-			// return this.f.apply(px);
-			// } else {
-			// int pos = px.pos;
-			// long key = getkey(pos, this.mp);
-			// MemoEntry memo = getmemo(px, key);
-			// if (memo.key == key && memo.mstate == px.state) {
-			// this.hit++;
-			// px.pos = memo.mpos;
-			// px.state = memo.mstate;
-			// if (this.tree) {
-			// px.tree = memo.mtree;
-			// }
-			// return memo.matched;
-			// }
-			// this.memoed++;
-			// if (this.memoed == 101) {
-			// if (this.hit < 10) {
-			// this.unused = true;
-			// }
-			// }
-			// return mstore3(px, memo, key, this.f.apply(px));
-			// }
+			if (this.unused) {
+				return this.f.apply(px);
+			} else {
+				int pos = px.pos;
+				long key = getkey(pos, this.mp);
+				MemoEntry memo = getmemo(px, key);
+				if (memo.key == key && memo.mstate == px.state) {
+					this.hit++;
+					px.pos = memo.mpos;
+					px.state = memo.mstate;
+					if (this.tree) {
+						px.tree = memo.mtree;
+					}
+					return memo.matched;
+				}
+				this.memoed++;
+				if (this.memoed == 101) {
+					if (this.hit < 10) {
+						this.unused = true;
+					}
+				}
+				return mstore3(px, memo, key, this.f.apply(px));
+			}
 		}
 
 		@Override

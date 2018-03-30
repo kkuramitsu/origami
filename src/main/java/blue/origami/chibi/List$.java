@@ -12,7 +12,7 @@ import blue.origami.chibi.Func.FuncObjInt;
 import blue.origami.chibi.Func.FuncObjObj;
 import blue.origami.chibi.Func.FuncObjObjObj;
 import blue.origami.chibi.Func.FuncObjVoid;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class List$ implements OStrings, FuncIntObj {
 	protected Object[] arrays = null;

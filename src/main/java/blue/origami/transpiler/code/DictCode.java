@@ -7,7 +7,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.GenericTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class DictCode extends CodeN {
 	protected String[] names;

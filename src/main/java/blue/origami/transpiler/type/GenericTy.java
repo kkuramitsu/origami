@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class GenericTy extends Ty {
 	protected Ty base;

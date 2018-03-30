@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class TLog implements OStrings {
 	public final static int Error = 0;

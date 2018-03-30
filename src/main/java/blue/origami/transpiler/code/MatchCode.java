@@ -16,7 +16,7 @@ import blue.origami.transpiler.Env;
 import blue.origami.transpiler.FuncEnv;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class MatchCode extends CodeN implements CodeBuilder {
 

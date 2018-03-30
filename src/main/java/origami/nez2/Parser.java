@@ -1,10 +1,12 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import origami.nez2.ParserFuncGenerator.MemoPoint;
 
 public class Parser {
 	final ParseFunc start;
@@ -17,41 +19,47 @@ public class Parser {
 		this.memoSize = memoSize;
 	}
 
-	private ParserContext px(byte[] b, int offset, int len) {
+	private ParserContext px(byte[] b, int spos, int epos) {
 		ParserContext px = new ParserContext();
 		px.inputs = b;
-		px.pos = offset;
-		px.headpos = offset;
-		px.length = len;
+		px.pos = spos;
+		px.headpos = spos;
+		px.length = epos;
 		px.memos = Arrays.stream(new MemoEntry[this.memoSize]).map(m -> {
 			return new MemoEntry();
 		}).toArray(MemoEntry[]::new);
 		return px;
 	}
 
-	public ParseTree parse(byte[] b, int offset, int len) {
-		ParserContext px = this.px(b, 0, b.length - 1);
+	ParseTree parse(byte[] b, int spos, int epos) {
+		ParserContext px = this.px(b, spos, epos);
 		if (this.start.apply(px)) {
 			if (px.tree == null) {
-				return new ParseTree(ParseTree.EmptyTag, px.inputs, 0, px.pos, null);
+				return new ParseTree(ParseTree.EmptyTag, px.inputs, spos, px.pos, null);
 			}
-			// this.funcMap.forEach((n, f) -> {
-			// if (f instanceof MemoPoint) {
-			// System.err.println("MemoPoint " + f);
-			// }
-			// });
 			return (ParseTree) px.tree;
 		}
 		return new ParseTree(ParseTree.ErrorTag, px.inputs, 0, px.headpos, null);
 	}
 
-	public ParseTree parse(byte[] buf) {
-		return this.parse(buf, 0, buf.length - 1);
+	ParseTree parse(String path, byte[] b, int spos, int epos) throws ParseException {
+		ParserContext px = this.px(b, spos, epos);
+		if (this.start.apply(px)) {
+			if (px.tree == null) {
+				return new ParseTree(ParseTree.EmptyTag, px.inputs, spos, px.pos, null);
+			}
+			return (ParseTree) px.tree;
+		}
+		throw new ParseException(new Token("", path, px.inputs, px.headpos, px.headpos));
 	}
 
 	public ParseTree parse(String text) {
 		byte[] b = Loader.encode(text + "\0");
 		return this.parse(b, 0, b.length - 1);
+	}
+
+	public ParseTree parse(Token token) throws ParseException {
+		return this.parse(token.path, token.inputs, token.pos, token.epos);
 	}
 
 	public ParseTree parseFile(String path) throws IOException {
@@ -63,8 +71,28 @@ public class Parser {
 		} finally {
 			fin.close();
 		}
-		return this.parse(buf, 0, buf.length - 1);
+		return this.parse(path, buf, 0, buf.length - 1);
 	}
+
+	public void dump() {
+		this.funcMap.forEach((n, f) -> {
+			if (f instanceof MemoPoint) {
+				System.out.println("MemoPoint " + f);
+			}
+		});
+	}
+}
+
+class ParseException extends IOException {
+
+	private static final long serialVersionUID = 1L;
+	Token token;
+
+	public ParseException(Token token) {
+		super(token.token);
+		this.token = token;
+	}
+
 }
 
 class MemoEntry {

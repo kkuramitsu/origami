@@ -1,4 +1,4 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,24 +10,38 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import origami.libnez.Expr.PTag;
+import origami.nez2.Expr.PTag;
+import origami.nez2.TPEG.OptimizedTree;
+import origami.nez2.TPEG.Val;
 
 public class PEG implements OStrings {
+	static int serialId = 0;
 	PEG parent;
-	String ns = "peg" + Objects.hashCode(this);
+	String ns = "peg" + serialId++;
 	ArrayList<String> pubList = new ArrayList<>();
 	HashMap<String, Expr> prodMap = new HashMap<>();
 	HashMap<String, Object> memoed = new HashMap<>();
 
-	Expr get(String name) {
+	public void forEach(Consumer<String> c) {
+		for (int i = 0; i < this.pubList.size(); i++) {
+			c.accept(this.pubList.get(i));
+		}
+	}
+
+	public Expr get(String name) {
 		Expr pe = this.prodMap.get(name);
 		if (pe == null && this.parent != null) {
 			return this.parent.get(name);
 		}
 		return pe;
+	}
+
+	public void set(String name, Expr pe) {
+		this.prodMap.put(name, pe);
 	}
 
 	void add(boolean export, boolean override, String name, Expr pe) {
@@ -67,8 +81,9 @@ public class PEG implements OStrings {
 	}
 
 	final static Expr Empty_ = new Empty();
+	final static Expr Fail_ = new Not(Empty_);
 	final static Expr Any_ = new Char(null);
-	final static Expr Fail_ = new Not(new Empty());
+	final static Expr EOF_ = new Not(Any_);
 
 	public static class Empty extends Expr {
 		Empty() {
@@ -93,7 +108,7 @@ public class PEG implements OStrings {
 		}
 
 		@Override
-		public Object param(int index) {
+		public BitChar bitChar() {
 			return this.bc;
 		}
 
@@ -110,7 +125,7 @@ public class PEG implements OStrings {
 		@Override
 		public Expr orElse(Expr pe) {
 			if (pe instanceof Char) {
-				BitChar bc = (BitChar) pe.param(0);
+				BitChar bc = pe.bitChar();
 				return new Char(this.bc.union(bc));
 			}
 			return super.orElse(pe);
@@ -141,9 +156,6 @@ public class PEG implements OStrings {
 
 		@Override
 		public boolean isOption() {
-			if (this.right instanceof Or) {
-				return this.right.isOption();
-			}
 			return this.right.isEmpty();
 		}
 	}
@@ -172,8 +184,8 @@ public class PEG implements OStrings {
 		@Override
 		public Expr andThen(Expr pe) {
 			if (this.get(0).isChar() && pe.isChar()) {
-				BitChar bc1 = (BitChar) this.get(0).param(0);
-				BitChar bc2 = (BitChar) pe.param(0);
+				BitChar bc1 = this.get(0).bitChar();
+				BitChar bc2 = pe.bitChar();
 				return new Char(bc1.not().and(bc2));
 			}
 			return super.andThen(pe);
@@ -229,27 +241,34 @@ public class PEG implements OStrings {
 					deref = Loader.s(this.label);
 					this.peg.prodMap.put(this.label, deref);
 				}
-				return deref;
+				return deref instanceof Param ? deref.get(0) : deref;
 			}
 			return null;
 		}
 
 		@Override
-		public Object param(int index) {
-			if (index == 0) {
-				return this.label;
-			}
-			assert (index == 1);
-			Expr inner = this.get(0);
-			if (inner instanceof Param) {
-				return ((Param) inner).args;
-			}
-			return null;
+		public String label() {
+			return this.label;
+		}
+
+		public String uname() {
+			return this.peg.ns + ":" + this.label;
 		}
 
 		@Override
-		public int psize() {
-			return 2;
+		public int index() {
+			return this.index;
+		}
+
+		@Override
+		public String[] params() {
+			if (this.index == -1) {
+				Expr deref = this.peg.prodMap.get(this.label);
+				if (deref instanceof Param) {
+					return deref.params();
+				}
+			}
+			return null;
 		}
 
 	}
@@ -280,6 +299,13 @@ public class PEG implements OStrings {
 	}
 
 	/* State */
+
+	public static class State extends Expr1 {
+		public State(Expr inner) {
+			this.ptag = PTag.State;
+			this.inner = inner;
+		}
+	}
 
 	public static class Scope extends Expr1 {
 		public Scope(Expr inner) {
@@ -331,14 +357,37 @@ public class PEG implements OStrings {
 	public static class Eval extends ExprP {
 		ParseFunc func;
 
-		public Eval(ParseFunc func) {
+		public Eval(String label, ParseFunc func) {
 			this.ptag = PTag.Eval;
+			this.label = label;
+			this.func = func;
+		}
+	}
+
+	@FunctionalInterface
+	public interface UnaryFunc {
+		boolean apply(ParserContext px, ParseFunc f);
+	}
+
+	public static class Unary extends ExprP1 {
+		UnaryFunc func;
+
+		public Unary(String label, Expr pe, UnaryFunc func) {
+			this.ptag = PTag.Unary;
+			this.label = label;
+			this.inner = pe;
 			this.func = func;
 		}
 
-		@Override
-		public Object param(int index) {
-			return this.func;
+		public static UnaryFunc cov(final int[] enterCounts, final int[] exitCounts, final int index) {
+			return (px, f) -> {
+				enterCounts[index]++;
+				boolean b = f.apply(px);
+				if (b) {
+					exitCounts[index]++;
+				}
+				return b;
+			};
 		}
 	}
 
@@ -347,40 +396,38 @@ public class PEG implements OStrings {
 			this.ptag = PTag.Bugs;
 			this.label = String.format(fmt, args);
 		}
+
 	}
 
 	/* Showing */
-
-	static void showing(boolean alwaysEnclosed, Expr pe, StringBuilder sb) {
+	static void showing(StringBuilder sb, Expr pe) {
 		switch (pe.ptag) {
 		case Empty:
 			sb.append("''");
 			break;
 		case Char:
-			sb.append(pe.param(0)); // FIXME
+			sb.append(pe.bitChar()); // FIXME
 			break;
 		case NonTerm:
-			sb.append(pe.param(0));
+			sb.append(pe.label());
+			if (pe instanceof NonTerm) {
+				showingSuffix((NonTerm) pe, sb);
+			}
 			break;
-		case Seq: {
-			PTag tag = pe.get(0).ptag;
-			enclosed(tag == PTag.Or || tag == PTag.Alt, pe.get(0), sb);
+		case Seq:
+			showingInner(isOr(pe.get(0)), pe.get(0), sb);
 			sb.append(" ");
-			tag = pe.get(1).ptag;
-			enclosed(tag == PTag.Or || tag == PTag.Alt, pe.get(1), sb);
+			showingInner(isOr(pe.get(1)), pe.get(1), sb);
 			break;
-		}
 		case Or:
-			if (pe.get(1).isEmpty()) {
-				enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+			if (pe.isOption()) {
+				showingInner(isBinary(pe.get(0)), pe.get(0), sb);
 				sb.append("?");
 				break;
 			} else {
-				PTag tag = pe.get(0).ptag;
-				enclosed(tag == PTag.Alt, pe.get(0), sb);
+				showingInner(isAlt(pe.get(0)), pe.get(0), sb);
 				sb.append(" / ");
-				tag = pe.get(1).ptag;
-				enclosed(tag == PTag.Alt, pe.get(1), sb);
+				showingInner(isAlt(pe.get(1)), pe.get(1), sb);
 				break;
 			}
 		case Alt: {
@@ -391,46 +438,48 @@ public class PEG implements OStrings {
 		}
 		case And:
 			sb.append("&");
-			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+			showingInner(isBinary(pe.get(0)), pe.get(0), sb);
 			break;
 		case Not:
 			sb.append("!");
-			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+			showingInner(isBinary(pe.get(0)), pe.get(0), sb);
 			break;
 		case Many:
-			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+			showingInner(isBinary(pe.get(0)), pe.get(0), sb);
 			sb.append("*");
 			break;
 		case OneMore:
-			enclosed(pe.get(0) instanceof Expr2, pe.get(0), sb);
+			showingInner(isBinary(pe.get(0)), pe.get(0), sb);
 			sb.append("+");
 			break;
 		/* */
 		case Tree:
 			sb.append("{");
 			pe.get(0).strOut(sb);
+			showingTag((OptimizedTree) pe, sb);
 			sb.append("}");
-			break;
-		case Link:
-			showingAsFunc("$" + pe.param(0), null, pe.get(0), sb);
+			showingSuffix((OptimizedTree) pe, sb);
 			break;
 		case Fold:
-			sb.append("{$" + pe.param(0) + " ");
+			sb.append("{$" + pe.label() + " ");
 			pe.get(0).strOut(sb);
 			sb.append("}");
 			break;
+		case Link:
+			showingAsFunc("$" + pe.label(), null, pe.get(0), sb);
+			break;
 		case Tag:
-			sb.append("#" + pe.param(0));
+			sb.append("#" + pe.label());
 			break;
 		case Val:
-			sb.append("`" + pe.param(0) + "`");
+			sb.append("`" + pe.label() + "`");
 			break;
 		case Untree:
 			sb.append("@untree(" + pe.get(0) + ")");
 			break;
 		/* */
 		case Var:
-			sb.append(pe.param(0));
+			sb.append(pe.label());
 			break;
 		case App:
 			showingAsFunc(pe.get(0).toString(), null, pe.get(1), sb);
@@ -438,35 +487,35 @@ public class PEG implements OStrings {
 
 		/* */
 		case Scope: /* @symbol(A) */
-			showingAsFunc("@scope", null, pe.get(0), sb);
+			showingAsFunc("scope", null, pe.get(0), sb);
 			break;
 		case Symbol: /* @symbol(A) */
-			showingAsFunc("@symbol", null, pe.get(0), sb);
+			showingAsFunc("symbol", null, pe.get(0), sb);
 			break;
 		case Contains:
-			showingAsFunc("@contains", null, pe.get(0), sb);
+			showingAsFunc("contains", null, pe.get(0), sb);
 			break;
 		case Equals:
-			showingAsFunc("@equals", null, pe.get(0), sb);
+			showingAsFunc("equals", null, pe.get(0), sb);
 			break;
 		case Exists:
-			showingAsFunc("@exists", null, pe.get(0), sb);
+			showingAsFunc("exists", null, pe.get(0), sb);
 			break;
 		case Match:
-			showingAsFunc("@match", null, pe.get(0), sb);
+			showingAsFunc("match", null, pe.get(0), sb);
 			break;
 		case Eval:
-			sb.append("@eval(" + pe.param(0) + ")");
+			sb.append(pe.label() + "()");
 			break;
 		/* */
 		case If: /* @if(flag) */
-			sb.append("@if(" + pe.param(0) + ")");
+			sb.append("if(" + pe.label() + ")");
 			break;
 		case On: /* @on(f, ) */
-			showingAsFunc("@on", "" + pe.param(0), pe.get(0), sb);
+			showingAsFunc("on", pe.label(), pe.get(0), sb);
 			break;
 		case Off: /* @on(!f, e) */
-			showingAsFunc("@on", "!" + pe.param(0), pe.get(0), sb);
+			showingAsFunc("on", "!" + pe.label(), pe.get(0), sb);
 			break;
 		case DFA:
 			pe.strOut(sb);
@@ -477,13 +526,50 @@ public class PEG implements OStrings {
 		}
 	}
 
-	private static void enclosed(boolean enclosed, Expr pe, StringBuilder sb) {
+	private static void showingInner(boolean enclosed, Expr pe, StringBuilder sb) {
 		if (enclosed) {
 			sb.append("(");
 			pe.strOut(sb);
 			sb.append(")");
 		} else {
 			pe.strOut(sb);
+		}
+	}
+
+	private static boolean isOr(Expr pe) {
+		return (pe.ptag == PTag.Or && !pe.isOption() || pe.ptag == PTag.Alt);
+	}
+
+	private static boolean isAlt(Expr pe) {
+		return (pe.ptag == PTag.Alt);
+	}
+
+	private static boolean isBinary(Expr pe) {
+		return (pe.ptag == PTag.Or && !pe.isOption() || pe.ptag == PTag.Alt || pe.ptag == PTag.Seq);
+	}
+
+	private static void showingSuffix(NonTerm pe, StringBuilder sb) {
+
+	}
+
+	private static void showingTag(OptimizedTree pe, StringBuilder sb) {
+		if (pe.epos != 0 || pe.spos != 0) {
+			sb.append("[");
+			sb.append(pe.spos);
+			sb.append(",");
+			sb.append(pe.epos);
+			sb.append("]");
+		}
+	}
+
+	private static void showingSuffix(OptimizedTree pe, StringBuilder sb) {
+		if (pe.tag != null) {
+			sb.append(" ");
+			sb.append(pe.tag);
+		}
+		if (pe.val != null) {
+			sb.append(" ");
+			sb.append(new Val(pe.val));
 		}
 	}
 
@@ -501,7 +587,7 @@ public class PEG implements OStrings {
 	static byte[] getstr2(Expr[] es) {
 		int len = 0;
 		for (int i = 0; i < es.length; i++) {
-			if (es[i].isChar() && ((BitChar) es[i].param(0)).isSingle()) {
+			if (es[i].isChar() && es[i].bitChar().isSingle()) {
 				len = i + 1;
 				continue;
 			}
@@ -509,7 +595,7 @@ public class PEG implements OStrings {
 		}
 		byte[] b = new byte[len];
 		for (int i = 0; i < len; i++) {
-			b[i] = ((BitChar) es[i].param(0)).single();
+			b[i] = es[i].bitChar().single();
 		}
 		return b;
 	}
@@ -536,72 +622,80 @@ public class PEG implements OStrings {
 		case If:
 			return pe;
 		case Seq:
-			return f.apply(pe.get(0)).andThen(f.apply(pe.get(1)));
+			return dup2(pe, f, (e0, e1) -> e0.andThen(e1));
 		case Or:
-			return f.apply(pe.get(0)).orElse(f.apply(pe.get(1)));
+			return dup2(pe, f, (e0, e1) -> e0.orElse(e1));
 		case Alt:
-			return new Alt(f.apply(pe.get(0)), f.apply(pe.get(1)));
+			return dup2(pe, f, (e0, e1) -> e0.orAlso(e1));
 		case And:
-			return new And(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new And(e0));
 		case Not:
-			return new Not(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Not(e0));
 		case Many:
-			return new Many(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Many(e0));
 		case OneMore:
-			return new OneMore(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new OneMore(e0));
 		/* */
 		case Tree:
-			return pe.dup(null, f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> pe.dup(e0));
 		case Link:
-			return new TPEG.Link(pe.p(0), f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new TPEG.Link(pe.label(), e0));
 		case Fold:
-			return pe.dup(pe.p(0), f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> pe.dup(e0));
 		/* */
+		case State:
+			return dup1(pe, f, (e0) -> new State(e0));
 		case Scope:
-			return new Scope(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Scope(e0));
 		case Symbol:
-			return new Symbol(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Symbol(e0));
 		case Contains:
-			return new Contains(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Contains(e0));
 		case Equals:
-			return new Equals(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Equals(e0));
 		case Exists:
-			return new Exists(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Exists(e0));
 		case Match:
-			return new Match(f.apply(pe.get(0)));
+			return dup1(pe, f, (e0) -> new Match(e0));
+
 		/* */
 		case On:
-			return new On((String) pe.param(0), f.apply(pe.get(0)));
+			return new On(pe.label(), f.apply(pe.get(0)));
 		case Off:
-			return new On((String) pe.param(0), f.apply(pe.get(0)));
+			return new On(pe.label(), f.apply(pe.get(0)));
 		case DFA:
 			return new DFA(((DFA) pe).charMap, dup(((DFA) pe).indexed, f));
 		default:
-			System.err.println("@TODO(dup, " + pe + ")");
+			Hack.TODO("dup", pe);
 			break;
 		}
 		return pe;
+	}
+
+	static Expr dup1(Expr pe, Function<Expr, Expr> f, Function<Expr, Expr> c) {
+		Expr e0 = f.apply(pe.get(0));
+		if (pe.get(0) == e0) {
+			return pe;
+		}
+		return c.apply(e0);
+	}
+
+	static Expr dup2(Expr pe, Function<Expr, Expr> f, BiFunction<Expr, Expr, Expr> c) {
+		Expr e0 = f.apply(pe.get(0));
+		Expr e1 = f.apply(pe.get(1));
+		if (pe.get(0) == e0 && pe.get(1) == e1) {
+			return pe;
+		}
+		return c.apply(e0, e1);
 	}
 
 	static Expr[] dup(Expr[] es, Function<Expr, Expr> f) {
 		return Arrays.stream(es).map(p -> f.apply(p)).toArray(Expr[]::new);
 	}
 
-	static Expr dup2(Expr pe, Function<Expr, Expr> f) {
-		Expr pe2 = dup(pe, f);
-		if (pe2.value != pe.value) {
-			pe2.value = pe.value;
-		}
-		return pe2;
-	}
-
 	/* Grammar Interface */
 
-	PEG newGrammar() {
-		return new PEG();
-	}
-
-	public PEG load(String path) throws IOException {
+	public void load(String path) throws IOException {
 		File f = new File(path);
 		InputStream sin = f.isFile() ? new FileInputStream(path) : PEG.class.getResourceAsStream(path);
 		if (sin == null) {
@@ -618,11 +712,13 @@ public class PEG implements OStrings {
 		} finally {
 			in.close();
 		}
-		PEG peg = this.newGrammar();
-		Loader gl = new Loader(peg);
+		Loader gl = new Loader(this);
 		gl.setBasePath(path);
 		gl.load(sb.toString());
-		return peg;
+	}
+
+	public String getStart() {
+		return this.pubList.size() == 0 ? "EMPTY" : this.pubList.get(0);
 	}
 
 	public Parser getParser() {
@@ -633,45 +729,28 @@ public class PEG implements OStrings {
 		String key = start + "@";
 		Parser p = (Parser) this.memoed.get(key);
 		if (p == null) {
-			Optimizer gen = new Optimizer();
-			p = gen.generate(start, this.prodMap.get(start), new ParserFuncGenerator());
+			p = this.generate(start, new ParserFuncGenerator());
 			this.memoed.put(key, p);
 		}
 		return p;
+	}
+
+	public <X> X generate(String start, Generator<X> gen) {
+		Optimizer optm = new Optimizer();
+		Expr pe = this.prodMap.get(start);
+		if (pe == null) {
+			pe = PEG.Empty_;
+		}
+		return optm.generate(start, pe, gen);
 	}
 
 	public void log(String fmt, Object... args) {
 		System.err.printf(fmt + "%n", args);
 	}
 
-	// public static <X> void testExpr(String expr, Function<Expr, X> f, X result) {
-	// PEG peg = new PEG();
-	// X r = f.apply(p(peg, new String[0], expr));
-	// if (result == null) {
-	// System.out.printf("%s <- %s\n", expr, r);
-	// } else if (!r.equals(result)) {
-	// System.err.printf("%s <- %s != %s\n", expr, r, result);
-	// }
-	// }
-	//
-	// public static void testMatch(String expr, String... args) throws Throwable {
-	// PEG peg = new PEG();
-	// if (expr.startsWith("/") || expr.endsWith(".opeg")) {
-	// peg.load(expr);
-	// } else {
-	// GrammarLoader.def(peg, expr);
-	// }
-	// Parser p = peg.getParser();
-	// for (int i = 0; i < args.length; i += 2) {
-	// String r = p.parse(args[i]).toString();
-	// if (r.equals(args[i + 1])) {
-	// System.out.printf("[succ] %s %s => %s\n", expr, args[i], r);
-	// } else {
-	// System.err.printf("[fail] %s %s => %s != %s\n", expr, args[i], r, args[i +
-	// 1]);
-	// }
-	// }
-	// }
+	public static PEG nez() {
+		return Loader.nez();
+	}
 
 	public void testMatch(String start, String... args) throws Throwable {
 		Parser p = this.getParser(start);
@@ -685,7 +764,7 @@ public class PEG implements OStrings {
 		}
 	}
 
-	public static void main(String[] a) throws Throwable {
+	public static void main2(String[] a) throws Throwable {
 		// testExpr("!'a' .", (e) -> e.toString(), "[\\x00-`b-\\xff]");
 		// testExpr("{ {'a'} }", (e) -> Trees.checkAST(e).toString(), "{$({'a'})}");
 		// testExpr("{ $('a') }", (e) -> Trees.checkAST(e).toString(), "{$({'a'})}");
@@ -717,45 +796,24 @@ public class PEG implements OStrings {
 		// [\\x80-\\xBF]",
 		// "aa", "[# 'a']", "ああ", "[# 'あ']");
 		//
-		// testMatch("/blue/origami/grammar/math.opeg", //
-		// "1", "[#IntExpr '1']", //
-		// "1+2", "[#AddExpr $right=[#IntExpr '2'] $left=[#IntExpr '1']]", //
-		// "1+2*3", "[#AddExpr $right=[#MulExpr $right=[#IntExpr '3'] $left=[#IntExpr
-		// '2']] $left=[#IntExpr '1']]", //
-		// "1*2+3",
-		// "[#AddExpr $right=[#IntExpr '3'] $left=[#MulExpr $right=[#IntExpr '2']
-		// $left=[#IntExpr '1']]]");
 		// testMatch("/blue/origami/grammar/xml.opeg", //
 		// "<a/>", "[#Element $key=[#Name 'a']]", "<a></a>", "[#Element $key=[#Name
 		// 'a']]");
 		PEG peg = Loader.nez();
 		System.out.println(peg);
-		// peg.testMatch2("A = a A / ''", "?");
-		// peg.testMatch2("Production", "A = a", "?");
-		// peg.testMatch2("NonTerminal", "a", "[#Name 'a']");
-		// peg.testMatch2("Term", "a", "[#Name 'a']");
-		peg.testMatch("Expression", "''", "[#Char '']");
-		peg.testMatch("Expression", "'a'", "[#Char 'a']");
-		peg.testMatch("Expression", "\"a\"", "[#Name '\"a\"']");
-		peg.testMatch("Expression", "[a]", "[#Class 'a']");
-		peg.testMatch("Expression", "f(a)", "[#Func $=[#Name 'a'] $=[#Name 'f']]");
-		peg.testMatch("Expression", "f(a,b)", "[#Func $=[#Name 'b'] $=[#Name 'a'] $=[#Name 'f']]");
-		peg.testMatch("Expression", "<f a>", "[#Func $=[#Name 'a'] $=[#Name 'f']]");
-		peg.testMatch("Expression", "<f a b>", "[#Func $=[#Name 'b'] $=[#Name 'a'] $=[#Name 'f']]");
-		peg.testMatch("Expression", "&a", "[#And $=[#Name 'a']]");
-		peg.testMatch("Expression", "!a", "[#Not $=[#Name 'a']]");
-		peg.testMatch("Expression", "a?", "[#Option $=[#Name 'a']]");
-		peg.testMatch("Expression", "a*", "[#Many $=[#Name 'a']]");
-		peg.testMatch("Expression", "a+", "[#OneMore $=[#Name 'a']]");
-		peg.testMatch("Expression", "{a}", "[#Tree $=[#Name 'a']]");
-		peg.testMatch("Expression", "{$ a}", "[#Fold $=[#Name 'a']]");
-		peg.testMatch("Expression", "$a", "[#Let $=[#Name 'a']]");
-		peg.testMatch("Expression", "$(a)", "[#Let $=[#Name 'a']]");
-		peg.testMatch("Expression", "$(name=)a", "[#Let $=[#Name 'a'] $=[#Name 'name']]");
+		peg.testMatch("Production", "A = a", "?");
+		peg.testMatch("COMMENT", "//hoge\nhoge", "[# '//hoge']");
+	}
 
-		peg.testMatch("Expression", "a a", "[#Seq $=[#Name 'a'] $=[#Name 'a']]");
-		peg.testMatch("Expression", "a b c", "[#Seq $=[#Seq $=[#Name 'c'] $=[#Name 'b']] $=[#Name 'a']]");
-		peg.testMatch("Expression", "a/b / c", "[#Or $=[#Or $=[#Name 'c'] $=[#Name 'b']] $=[#Name 'a']]");
+	public static void main(String[] a) throws Throwable {
+		PEG peg = Loader.nez();
+		System.out.println(peg);
+		peg.testMatch("COMMENT", "/*hoge*/hoge", "[# '/*hoge*/']");
+		peg.testMatch("COMMENT", "//hoge\nhoge", "[# '//hoge']");
+
+		PEG peg2 = new PEG();
+		peg2.load("/blue/origami/grammar/js.opeg");
+		System.err.println(peg2);
 	}
 
 	@Override
@@ -772,4 +830,14 @@ public class PEG implements OStrings {
 	public String toString() {
 		return OStrings.stringfy(this);
 	}
+
+	@SuppressWarnings("unchecked")
+	public <X> X getMemo(String key) {
+		return (X) this.memoed.get(key);
+	}
+
+	void setMemo(String key, Object value) {
+		this.memoed.put(key, value);
+	}
+
 }

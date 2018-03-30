@@ -13,7 +13,7 @@ import blue.origami.chibi.Func.FuncFloatObj;
 import blue.origami.chibi.Func.FuncFloatVoid;
 import blue.origami.chibi.Func.FuncIntFloat;
 import blue.origami.chibi.Func.FuncObjVoid;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class List$Float implements OStrings, FuncIntFloat {
 	protected double[] arrays = null;

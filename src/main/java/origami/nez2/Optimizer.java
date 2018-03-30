@@ -1,4 +1,4 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,13 +9,14 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.function.Function;
 
-import origami.libnez.Expr.PTag;
-import origami.libnez.PEG.Memoed;
-import origami.libnez.PEG.NonTerm;
-import origami.libnez.TPEG.Val;
+import origami.nez2.Expr.PTag;
+import origami.nez2.PEG.Memoed;
+import origami.nez2.PEG.NonTerm;
+import origami.nez2.TPEG.OptimizedTree;
 
 class Optimizer {
 
+	static boolean isVerbose = false;
 	boolean isBinary = false;
 	HashMap<String, Object> memoed = new HashMap<>();
 
@@ -51,9 +52,9 @@ class Optimizer {
 		HashMap<String, Integer> countMap = new HashMap<>();
 		this.makeDict2(start, snt.get(0), nameMap2, countMap);
 		gx.log("size: " + nameMap.size() + " => " + nameMap2.size());
-		countMap.forEach((name, n) -> {
-			gx.log("refc ... " + name + " = " + n);
-		});
+		// countMap.forEach((name, n) -> {
+		// gx.log("refc ... " + name + " = " + n);
+		// });
 
 		HashSet<String> crossRefs = new HashSet<>();
 		List<String> list = this.sortList(nameMap2, crossRefs);
@@ -67,8 +68,8 @@ class Optimizer {
 
 	static Expr trace(String p, String name, Expr pe, Function<Expr, Expr> f) {
 		Expr pe2 = f.apply(pe);
-		if (!pe.toString().equals(pe2.toString())) {
-			System.err.printf("modified %s %s\n\t%s\n\t=> %s\n", p, name, pe, pe2);
+		if (isVerbose && !pe.toString().equals(pe2.toString())) {
+			System.out.printf("optimized %s %s\n\t%s\n\t=> %s\n", p, name, pe, pe2);
 		}
 		return pe2;
 	}
@@ -79,7 +80,7 @@ class Optimizer {
 			case NonTerm:
 				Expr deref = pe.get(0);
 				if (deref != null) {
-					String key = this.uname(pe);
+					String key = this.uname((NonTerm) pe);
 					if (!prodMap.containsKey(key)) {
 						prodMap.put(key, deref);
 						this.makeDict(key, deref, prodMap, flagSet);
@@ -87,12 +88,12 @@ class Optimizer {
 				}
 				return;
 			case Char:
-				if (((BitChar) pe.param(0)).isBinary()) {
+				if (pe.bitChar().isBinary()) {
 					this.isBinary = true;
 				}
 				return;
 			case If:
-				flagSet.add((String) pe.param(0));
+				flagSet.add(pe.label());
 				return;
 			default:
 				this.makeDict(curName, pe.get(0), prodMap, flagSet);
@@ -101,8 +102,8 @@ class Optimizer {
 		}
 	}
 
-	private final String uname(Expr pe) {
-		return pe.p(0);
+	private final String uname(NonTerm pe) {
+		return pe.uname();
 	}
 
 	Expr rename(Expr pe, HashMap<String, Expr> prodMap, HashMap<String, NonTerm2> nameMap, Flags flags) {
@@ -111,53 +112,40 @@ class Optimizer {
 			Expr inner = pe.get(0);
 			assert !(pe instanceof NonTerm2);
 			if (inner != null) {
-				String key = this.uname(pe);
+				String key = this.uname((NonTerm) pe);
 				String uname = flags.uname(key, (Memoed) pe);
 				NonTerm2 nt = nameMap.get(uname);
 				if (nt == null) {
-					nt = new NonTerm2(uname, (String[]) pe.param(1), PEG.Empty_);
+					nt = new NonTerm2(uname, pe.params(), PEG.Empty_);
 					nameMap.put(uname, nt);
 					nt.inner = this.rename(inner, prodMap, nameMap, flags);
 				}
 				return nt;
 			}
-			return new Var(pe.p(0), ((NonTerm) pe).index);
+			return new Var(pe.label(), ((NonTerm) pe).index);
 		}
 		case If:
-			if (flags.is(pe.p(0))) {
+			if (flags.is(pe.label())) {
 				return PEG.Empty_;
 			}
 			return PEG.Fail_;
 		case On: {
-			boolean stacked = flags.is(pe.p(0));
-			flags.set(pe.p(0), true);
+			boolean stacked = flags.is(pe.label());
+			flags.set(pe.label(), true);
 			Expr inner = this.rename(pe.get(0), prodMap, nameMap, flags);
-			flags.set(pe.p(0), stacked);
+			flags.set(pe.label(), stacked);
 			return inner;
 		}
 		case Off: {
-			boolean stacked = flags.is(pe.p(0));
-			flags.set(pe.p(0), false);
+			boolean stacked = flags.is(pe.label());
+			flags.set(pe.label(), false);
 			Expr inner = this.rename(pe.get(0), prodMap, nameMap, flags);
-			flags.set(pe.p(0), stacked);
+			flags.set(pe.label(), stacked);
 			return inner;
 		}
 		case OneMore: {
-			return pe.get(0).andThen(new PEG.Many(pe.get(0)));
-		}
-		case Tree: {
-			Tree2 t = new Tree2(PEG.Empty_);
-			Expr[] es = this.rename(pe.get(0), prodMap, nameMap, flags).flatten(PTag.Seq);
-			Expr pe2 = t.optimize(es, t);
-			// System.err.println("@@@ " + pe + " ==> " + pe2);
-			return pe2;
-		}
-		case Fold: {
-			Fold2 t = new Fold2(pe.p(0), PEG.Empty_);
-			Expr[] es = this.rename(pe.get(0), prodMap, nameMap, flags).flatten(PTag.Seq);
-			Expr pe2 = t.optimize(es, t);
-			// System.err.println("@@@ " + pe + " ==> " + pe2);
-			return pe2;
+			Expr inner = this.rename(pe.get(0), prodMap, nameMap, flags);
+			return inner.andThen(new PEG.Many(inner));
 		}
 		default:
 			return PEG.dup(pe, (p) -> this.rename(p, prodMap, nameMap, flags));
@@ -181,18 +169,6 @@ class Optimizer {
 			return index == 0 ? this.inner : null;
 		}
 
-		@Override
-		public Object param(int index) {
-			if (index == 0) {
-				return this.label;
-			}
-			return this.params;
-		}
-
-		@Override
-		public int psize() {
-			return 2;
-		}
 	}
 
 	@SuppressWarnings("serial")
@@ -229,7 +205,7 @@ class Optimizer {
 
 	static void checkLeftRecur(NonTerm nt) {
 		try {
-			checkLeftRecur(nt.p(0), nt.get(0));
+			checkLeftRecur(nt.label(), nt.get(0));
 		} catch (Exception e) {
 			nt.peg.log("left recursion %s", nt);
 		}
@@ -238,7 +214,7 @@ class Optimizer {
 	static boolean checkLeftRecur(String name, Expr pe) {
 		switch (pe.ptag) {
 		case NonTerm:
-			if (name.equals(pe.param(0))) {
+			if (name.equals(pe.label())) {
 				((NonTerm) pe).peg.log("left recursion %s", name);
 				((NonTerm) pe).label = name + '\'';
 				return true;
@@ -276,7 +252,7 @@ class Optimizer {
 		case Off:
 			return checkLeftRecur(name, pe.get(0));
 		default:
-			System.err.println("ERR left " + pe);
+			Hack.TODO(pe);
 			return true;
 		}
 	}
@@ -285,151 +261,18 @@ class Optimizer {
 
 	// Tree
 
-	static class OptTree extends ExprP1 {
-		int spos = 0;
-		int epos = 0;
-		String tag = null;
-		byte[] val = null;
-
-		Expr dupi(OptTree t) {
-			t.spos = this.spos;
-			t.epos = this.epos;
-			t.tag = this.tag;
-			t.val = this.val;
-			return t;
-		}
-
-		Expr optimize(Expr[] es, OptTree t) {
-			for (int i = es.length - 1; i >= 0; i--) {
-				if (es[i].ptag == PTag.Tag) {
-					t.tag = es[i].p(0);
-					es[i] = PEG.Empty_;
-					break;
-				}
-				if (!TPEG.isUnit(es[i])) {
-					break;
-				}
-			}
-			for (int i = es.length - 1; i >= 0; i--) {
-				if (es[i].ptag == PTag.Val) {
-					t.val = (byte[]) es[i].param(0);
-					es[i] = PEG.Empty_;
-					break;
-				}
-				if (!TPEG.isUnit(es[i])) {
-					break;
-				}
-			}
-			int start = es.length;
-			for (int i = 0; i < es.length; i++) {
-				int len = First.fixlen(es[i]);
-				if (len == -1 || !TPEG.isUnit(es[i])) {
-					start = i;
-					break;
-				}
-				t.spos -= len;
-			}
-			t.inner = PEG.seq(start, es.length, es);
-			if (start > 0) {
-				Expr head = PEG.seq(0, start, es);
-				return head.andThen(t);
-			}
-			return t;
-		}
-
-		@Override
-		public Expr andThen(Expr next) {
-			int len = First.fixlen(next);
-			if (len != -1) {
-				this.epos = -len;
-				this.inner = this.inner.andThen(next);
-				return this;
-			}
-			return super.andThen(next);
-		}
-
-		@Override
-		public void strOut(StringBuilder sb) {
-			PEG.showing(false, this, sb);
-			sb.append("[");
-			sb.append(this.spos);
-			sb.append(",");
-			sb.append(this.epos);
-			if (this.tag != null) {
-				sb.append(",#");
-				sb.append(this.tag);
-			}
-			if (this.val != null) {
-				sb.append(",");
-				sb.append(new Val(this.val));
-			}
-			sb.append("]");
-		}
-
-	}
-
-	static class Tree2 extends OptTree {
-
-		Tree2(Expr inner) {
-			this.ptag = PTag.Tree;
-			this.inner = inner;
-		}
-
-		@Override
-		Expr dup(Object p, Expr... es) {
-			return this.dupi(new Tree2(es[0]));
-		}
-
-	}
-
-	static class Fold2 extends OptTree {
-
-		Fold2(String label, Expr inner) {
-			this.ptag = PTag.Fold;
-			this.label = label;
-			this.inner = inner;
-		}
-
-		@Override
-		Expr dup(Object p, Expr... es) {
-			return this.dupi(new Fold2(this.label, es[0]));
-		}
-
-	}
-
 	static Expr optTree(Expr pe) {
 		switch (pe.ptag) {
-		case Tree: {
-			Tree2 t = new Tree2(PEG.Empty_);
-			Expr[] es = pe.get(0).flatten(PTag.Seq);
-			return t.optimize(es, t);
-		}
+		case Tree:
 		case Fold: {
-			Fold2 t = new Fold2(pe.p(0), PEG.Empty_);
-			Expr[] es = pe.get(0).flatten(PTag.Seq);
-			return t.optimize(es, t);
+			OptimizedTree t = (OptimizedTree) pe;
+			return t.optimize();
 		}
 		default:
 			return PEG.dup(pe, Optimizer::optTree);
 		}
-	}
 
-	// static int countTag(Expr pe, HashSet tag) {
-	// switch (pe.ctag) {
-	// case Tag:
-	// tag[0] = (String) pe.param(0);
-	// return found + 1;
-	// case Seq:
-	// }
-	// }
-	//
-	// static Expr expandOr(Expr pe, Function<Expr, Expr> newf) {
-	// Expr in = pe.get(0);
-	// if (in.ctag == CTag.Or) {
-	// return newf.apply(in.get(0)).orElse(expand(newf.apply(in.get(1))));
-	// }
-	// return pe;
-	// }
+	}
 
 	static Expr inline(Expr pe) {
 		if (pe.ptag == PTag.NonTerm) {
@@ -456,7 +299,7 @@ class Optimizer {
 
 	void makeDict2(String curName, Expr pe, HashMap<String, Expr> nameMap, HashMap<String, Integer> countMap) {
 		if (pe instanceof NonTerm2) {
-			String key = this.uname(pe);
+			String key = pe.label();
 			if (!nameMap.containsKey(key)) {
 				nameMap.put(key, pe.get(0));
 				this.makeDict2(key, pe.get(0), nameMap, countMap);
@@ -475,7 +318,7 @@ class Optimizer {
 
 	void deps(String curName, Expr pe, HashMap<String, HashSet<String>> depsMap) {
 		if (pe instanceof NonTerm2) {
-			String key = this.uname(pe);
+			String key = pe.label();
 			HashSet<String> set = depsMap.get(curName);
 			if (set == null) {
 				set = new HashSet<>();

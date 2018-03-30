@@ -16,7 +16,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override

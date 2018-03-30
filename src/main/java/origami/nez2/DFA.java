@@ -1,11 +1,11 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import origami.libnez.PEG.Char;
-import origami.libnez.PEG.Or;
+import origami.nez2.PEG.Char;
+import origami.nez2.PEG.Or;
 
 public class DFA extends Expr {
 	byte[] charMap;
@@ -28,11 +28,11 @@ public class DFA extends Expr {
 	}
 
 	@Override
-	public Object param(int index) {
+	public byte[] charMap() {
 		return this.charMap;
 	}
 
-	boolean isDFA() {
+	public boolean isDFA() {
 		for (Expr e : this.indexed) {
 			if (!DFA.car(e).isAny()) {
 				return false;
@@ -92,7 +92,7 @@ public class DFA extends Expr {
 				return;
 			}
 			if (p.isChar() && pe.isChar()) {
-				choice.set(choice.size() - 1, new Char(((BitChar) p.param(0)).union((BitChar) pe.param(0))));
+				choice.set(choice.size() - 1, new Char(p.bitChar().union(pe.bitChar())));
 				return;
 			}
 			if (leftFactoring) {
@@ -117,7 +117,7 @@ public class DFA extends Expr {
 		return pe;
 	}
 
-	static Expr cdr(Expr pe) {
+	public static Expr cdr(Expr pe) {
 		if (pe.ptag == PTag.Seq) {
 			return pe.get(1);
 		}
@@ -290,7 +290,7 @@ public class DFA extends Expr {
 					return null;
 				}
 			}
-			return new DFA((byte[]) pe.param(0), p);
+			return new DFA(pe.charMap(), p);
 		}
 		case NonTerm:
 			if (depth == 0) {
@@ -298,7 +298,7 @@ public class DFA extends Expr {
 			}
 			return null;
 		default:
-			System.err.println("TODO: dc " + pe.getClass().getSimpleName() + " " + pe);
+			Hack.TODO("dc", pe.getClass().getSimpleName(), pe);
 			break;
 		}
 		return null;

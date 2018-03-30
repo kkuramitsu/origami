@@ -13,7 +13,7 @@ import blue.origami.common.OOption;
 import blue.origami.common.SourcePosition;
 import blue.origami.main.MainOption;
 import blue.origami.parser.Parser;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public abstract class Grammar extends AbstractList<Production> implements OStrings {
 

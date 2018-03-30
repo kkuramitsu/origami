@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import blue.origami.chibi.Func.FuncStrObjVoid;
-import origami.libnez.OStrings;
+import origami.nez2.OStrings;
 
 public class Dict$ extends TreeMap<String, Object> implements OStrings {
 	private static final long serialVersionUID = -827646422601520488L;

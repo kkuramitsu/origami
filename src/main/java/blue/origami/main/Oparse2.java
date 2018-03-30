@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.InputStream;
 
 import blue.origami.common.OOption;
-import origami.libnez.PEG;
-import origami.libnez.Parser;
+import origami.nez2.PEG;
+import origami.nez2.Parser;
 
 public class Oparse2 extends Main {
 

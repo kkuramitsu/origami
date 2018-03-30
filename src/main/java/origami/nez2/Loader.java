@@ -1,40 +1,43 @@
-package origami.libnez;
+package origami.nez2;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import origami.libnez.PEG.And;
-import origami.libnez.PEG.Char;
-import origami.libnez.PEG.Contains;
-import origami.libnez.PEG.Equals;
-import origami.libnez.PEG.Exists;
-import origami.libnez.PEG.If;
-import origami.libnez.PEG.Many;
-import origami.libnez.PEG.Match;
-import origami.libnez.PEG.NonTerm;
-import origami.libnez.PEG.Not;
-import origami.libnez.PEG.Off;
-import origami.libnez.PEG.On;
-import origami.libnez.PEG.OneMore;
-import origami.libnez.PEG.Or;
-import origami.libnez.PEG.Symbol;
-import origami.libnez.TPEG.Fold;
-import origami.libnez.TPEG.Link;
-import origami.libnez.TPEG.Tag;
-import origami.libnez.TPEG.Tree;
-import origami.libnez.TPEG.Val;
+import origami.nez2.PEG.And;
+import origami.nez2.PEG.Char;
+import origami.nez2.PEG.Contains;
+import origami.nez2.PEG.Equals;
+import origami.nez2.PEG.Exists;
+import origami.nez2.PEG.If;
+import origami.nez2.PEG.Many;
+import origami.nez2.PEG.Match;
+import origami.nez2.PEG.NonTerm;
+import origami.nez2.PEG.Not;
+import origami.nez2.PEG.Off;
+import origami.nez2.PEG.On;
+import origami.nez2.PEG.OneMore;
+import origami.nez2.PEG.Or;
+import origami.nez2.PEG.Symbol;
+import origami.nez2.TPEG.Fold;
+import origami.nez2.TPEG.Link;
+import origami.nez2.TPEG.Tag;
+import origami.nez2.TPEG.Tree;
+import origami.nez2.TPEG.Val;
 
 class Loader {
 
 	String basePath = "";
 	PEG peg;
+	private ArrayList<ParseTree> exampleList;
 
 	Loader(PEG peg) {
 		this.peg = peg;
+		this.exampleList = new ArrayList<>();
 	}
 
 	void setBasePath(String filename) {
@@ -53,6 +56,8 @@ class Loader {
 			return s(t.asString());
 		case "Class":
 			return c(t.asString(), 0);
+		case "Any":
+			return PEG.Any_;
 		case "Name":
 			return n(this.peg, ns, t.asString());
 		case "Many":
@@ -82,13 +87,21 @@ class Loader {
 				return new TPEG.Fold(ts[0].asString(), this.conv(ns, ts[1]));
 			}
 			return new TPEG.Fold(null, this.conv(ns, ts[0]));
-		case "Link":
+		case "Let":
 			ts = t.list();
 			if (ts.length == 2) {
 				return new TPEG.Link(ts[0].asString(), this.conv(ns, ts[1]));
 			}
 			return new TPEG.Link(null, this.conv(ns, ts[0]));
+		case "Tag":
+			return new TPEG.Tag(t.asString());
+		case "Func": {
+			ts = t.list();
+			Expr[] es = Arrays.stream(ts).map(x -> this.conv(ns, x)).toArray(Expr[]::new);
+			return app(es);
+		}
 		default:
+			Hack.TODO(key, t);
 			return PEG.Fail_;
 		}
 	}
@@ -101,14 +114,21 @@ class Loader {
 	void load(String source) throws IOException {
 		Parser p = nez().getParser();
 		ParseTree t = p.parse(source);
-		for (ParseTree sub : t.list()) {
-			this.loadEach(sub);
-		}
+		// System.err.println("*** " + source + "\n" + t + "\n" + t.spos + ", " +
+		// t.epos);
+		this.loadEach(t);
+		this.peg.setMemo("examples", this.exampleList);
 	}
 
 	void loadEach(ParseTree t) throws IOException {
 		String key = t.tag();
 		switch (key) {
+		case "Source": {
+			for (ParseTree sub : t.list()) {
+				this.loadEach(sub);
+			}
+			break;
+		}
 		case "Production": {
 			ParseTree[] ts = t.list();
 			if (ts.length == 2) {
@@ -137,7 +157,8 @@ class Loader {
 		}
 		case "Import": { // import name, name, name from 'hoge.oxml'
 			ParseTree[] ts = t.list();
-			PEG lpeg = this.peg.load(this.basePath + ts[1].asString());
+			PEG lpeg = new PEG();
+			lpeg.load(this.basePath + ts[1].asString());
 			String[] ns = Arrays.stream(ts[0].list()).map(x -> t.asString()).toArray(String[]::new);
 			boolean override = true;
 			if (ns.length == 1 && ns[0].equals("*")) {
@@ -148,64 +169,80 @@ class Loader {
 				Expr pe = lpeg.get(n);
 				this.peg.add(Public, override, n, pe);
 			}
+			break;
 		}
 		case "Section": // section hoge
 			this.peg = this.peg.endSection();
 			this.peg = this.peg.beginSection(t.get(ParseTree.EmptyLabel).asString());
 			break;
 		case "Example":
+			this.exampleList.add(t);
+			break;
 		default:
+			Hack.TODO("loadEach", key, t);
 			break;
 		}
 	}
 
 	// static lib
+	// A = a
+	// a
 
 	final static String[] rules = { //
-			"Start = _ Source EOF", //
-			"_ = (S / COMMENT)*", //
-			"S = [ \t\r\n]", //
-			"COMMENT = '/*' (!'*/' .)* '*/' /  '//' (!EOL .)* EOL", //
-			"EOL = '\n' / '\r\n' / EOF", //
-			"EOS = ([ \t] / COMMENT)* (';' / EOL)", // _
+			"Start = __ Source EOF", //
+			"_ = ([ \t\r] / COMMENT)*", //
+			"__ = ([ \t\r\n] / COMMENT)*", //
+			"S = [ \t]", //
+			"COMMENT = '/*' (!'*/' .)* '*/' /  '//' (!EOL .)*", //
+			"EOL = '\\n' / '\\r\\n' / EOF", //
+			"NEOL = !EOL", //
+
+			"EOS = _ (';' _ / EOL (S/COMMENT) _ / EOL )*", //
 			"EOF = !.", //
 			// "list x = { $x (',' _ $x)* }", //
 			// "text x = this.x EOL { (!(EOL x) .)* } EOL x", //
 
 			"Source = { ($Statement)* #Source } ", //
-			"Statement = Import/Section/Production", //
+			"Statement = Import/Section/Example/Production/Macro", //
 
-			"Import = { 'import' S  $Name #Import } EOS", //
-			"Section = { 'section' S $Name #Section } EOS", //
-			// Example = 'example' S $(name=)list(Name) $(body=)(text('\'\'\'') / text(""")
-			// / text(```)) EOS
-			"Production = { $Name _ '=' _ ([/|] _)? $Expression #Production }", //
+			"Import = { 'import' S _ $Names 'from' S _ $(Char/Name) #Import } EOS", //
+			"Section = { 'section' S _ $Name #Section } EOS", //
+			"Example = { 'example' S _ $Names $Doc #Example } __", //
+			"Macro = { $Public? $Name $Params __ '=' __ ([/|] __)? $Expression #Macro } EOS", //
+			"Production = { $Public? $Name __ ('=' / '<-') __ ([/|] __)? $Expression #Production } EOS", //
+			"Error = { . #Err } EOS", //
 
-			"NAME = (![ \t\r\n(,){};<>[|/*+?='`] .)+", //
 			"Name = { NAME #Name }", //
-
+			"NAME = '\"' (![\"\\n] .)* '\"' / (![ \t\r\n(,){};<>[|/*+?='`] .)+", //
+			"Names = { $Name _ ([,&] _ Name _)* }", //
+			"Doc = DELIM S* { (!DELIM .)* } DELIM _ / { (![\r\n] .)* } EOL", //
+			"DELIM = ['] ['] [']", //
+			"Public = { 'public' / 'private' } S _", //
+			"Params = { S _ $Name (S _ Name)* }", //
+			//
 			"Expression = UChoice", //
-			"UChoice    = Choice {$ _ '|' _ $UChoice #Alt }?", //
-			"Choice     = Sequence {$ _ '/' _ $Choice #Or }?", //
-			"Sequence   = Predicate {$ (S / COMMENT)+ $Sequence #Seq }?", //
+			"UChoice    = Choice {$ __ '|' _ $UChoice #Alt }?", //
+			"Choice     = Sequence {$ __ '/' _ $Choice #Or }?", //
+			"Sequence   = Predicate {$ SS $Sequence #Seq }?", //
+			"SS         = S _ !EOL / (_ EOL)+ S _", //
 			"Predicate  = { ('!' #Not / '&' #And ) $Predicate } / Suffix", //
 			"Suffix     = Term {$ ('*' #Many / '+' #OneMore / '?' #Option) }?", //
 
-			"Term       = Char / Class / Val / Tag / Cons / '(' _ Expression _ ')' / Let / Func / NonTerminal", //
+			"Term       = Char / Class / Val / Tag / Cons / '(' __ Expression __ ')' / Let / Func / NonTerminal", //
 
 			"Char  = ['] { (!['\n] .)* #Char } [']", //
-			"Class = '[' { (![\\]\n] .)* #Class } ']'", //
+			"Class = '[' { (![\\]\n] .)* #Class } ']' / { '.' #Any }", //
 			"Val   = '`' { (![`\n] .)* #Val } '`'", //
 			"Tag   = '#' { NAME #Tag }", //
 
-			"Cons = '{' { ('$' $(Name)? S #Fold / #Tree) _ $(Expression) } _ '}'", //
+			"Cons = '{' { ('$' $(Name)? S #Fold / #Tree) __ $(Expression) } __ '}'", //
 
-			"Let = '$' { ('(' $Name '=)')? $Expression #Let } / '$' { $Name '(' _ $Expression _ ')' #Let } / '$' { $Expression #Let }", //
+			"Let = '$' { $Name '(' _ $Expression _ ')' #Let } / '$' { ('(' $Name '=)')? $Expression #Let } ", //
 
 			// if(flag) on(flag, e) on(!flag, e)
 			// symbol(A) <symbol A>
 
-			"Func = { $Name '(' ($Expression _ ',' _ )* $Expression _ ')' #Func } / { '<' $Name S ($Predicate S _ )* $Predicate #Func '>' }", //
+			"Func = { $Name '(' ($Expression _ ',' __ )* $Expression _ ')' #Func } / { '<' $Name S ($Predicate S _ )* $Predicate #Func '>' }", //
 			"NonTerminal = Name",//
 	};
 
@@ -215,14 +252,14 @@ class Loader {
 		if (nez == null) {
 			PEG peg = new PEG();
 			for (String s : rules) {
-				def(peg, s);
+				quickDef(peg, s);
 			}
 			nez = peg;
 		}
 		return nez;
 	}
 
-	static void def(PEG peg, String prod) {
+	static void quickDef(PEG peg, String prod) {
 		String[] ts = split2(prod, (s) -> flatIndexOf(s, '='));
 		if (ts.length == 2) {
 			Expr pe = p(peg, emptyStrings, ts[1]);
@@ -400,52 +437,53 @@ class Loader {
 		return new Char(bc);
 	}
 
-	static Expr app(PEG peg, String[] ns, String name, Expr[] es) {
+	static Expr app(Expr[] es) {
+		String name = es[0].toString();
 		switch (name) {
 		case "if":
-			return new If(es[0].toString());
+			return new If(es[1].toString());
 		case "on":
-			String flag = es[0].toString();
+			String flag = es[1].toString();
 			if (flag.startsWith("!")) {
-				return new Off(flag.substring(1), es[1]);
+				return new Off(flag.substring(1), es[2]);
 			}
-			return new On(flag, es[1]);
+			return new On(flag, es[2]);
 		case "off":
-			return new Off(es[0].toString(), es[1]);
+			return new Off(es[1].toString(), es[2]);
 		case "scope":
-			return new PEG.Scope(es[0]);
+			return new PEG.Scope(es[1]);
 		case "symbol":
-			return new Symbol(es[0]);
+			return new Symbol(es[1]);
 		case "match":
-			return new Match(es[0]);
+			return new Match(es[1]);
 		case "exists":
-			return new Exists(es[0]);
+			return new Exists(es[1]);
 		case "equals":
-			return new Equals(es[0]);
+			return new Equals(es[1]);
 		case "contains":
-			return new Contains(es[0]);
+			return new Contains(es[1]);
 		case "many":
-			return new Many(es[0]);
+			return new Many(es[1]);
 		case "onemore":
-			return new OneMore(es[0]);
+			return new OneMore(es[1]);
 		case "option":
-			return es[0].orElse(PEG.Empty_);
+			return es[1].orElse(PEG.Empty_);
 		case "and":
-			return new And(es[0]);
+			return new And(es[1]);
 		case "not":
-			return new Not(es[0]);
+			return new Not(es[1]);
 		case "new":
-			return new TPEG.Tree(es[0]);
+			return new TPEG.Tree(es[1]);
 		case "fold":
-			return new TPEG.Fold(null, es[0]);
+			return new TPEG.Fold(null, es[1]);
 		case "add":
-			return new TPEG.Link(null, es[0]);
+			return new TPEG.Link(null, es[1]);
 		case "set":
-			return new TPEG.Link(es[0].toString(), es[1]);
+			return new TPEG.Link(es[1].toString(), es[2]);
 		default:
-			return new App(n(peg, ns, name), es);
+			Hack.TODO(name);
+			return new App(es[0], es);
 		}
-
 	}
 
 	static byte[] encode(String text) {
@@ -713,5 +751,4 @@ class Loader {
 		}
 		return -1;
 	}
-
 }

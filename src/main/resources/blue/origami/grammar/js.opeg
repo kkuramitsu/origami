@@ -560,105 +560,105 @@ REGEX_CLASS_CHAR = ![\x5d\\] REGEX_NON_TERMINATOR
 REGEX_FLAGS      = [gimsy]*
 
 /* Example */
-example FunctionDeclaration&SourceElement ~e7f3da '''
+example FunctionDeclaration&SourceElement '''
 function func(){}
 '''
-example FunctionDeclaration&SourceElement ~0eaae2 '''
+example FunctionDeclaration&SourceElement '''
 function func(n) { return n+1; }
 '''
-example FunctionExpression&Expression ~7fa25a '''
+example FunctionExpression&Expression '''
 function(){}
 '''
-example FunctionExpression&Expression ~94d025e '''
+example FunctionExpression&Expression '''
 function(n){ return n+1; }
 '''
-example Block ~783b5d5 '''
+example Block '''
 {}
 '''
-example Block ~60d8b41 '''
+example Block '''
 {;}
 '''
-example VariableStatement&Statement ~d29ede '''
+example VariableStatement&Statement '''
 var a = 0, b, c = 1 + 3;
 '''
-example ExpressionStatement&Statement ~15aff83 '''
+example ExpressionStatement&Statement '''
 !(function(){})();
 '''
-example IfStatement&Statement ~108bdef '''
+example IfStatement&Statement '''
 if(c){;}
 '''
-example DoWhileStatement&Statement ~d7c420b '''
+example DoWhileStatement&Statement '''
 do{;}while(c)
 '''
-example WhileStatement&Statement ~2d0b02c '''
+example WhileStatement&Statement '''
 while(c){;}
 '''
-example ForStatement&Statement ~fc818b95 '''
+example ForStatement&Statement '''
 for(;;);
 '''
-example ForStatement&Statement ~6b49b50 '''
+example ForStatement&Statement '''
 for(i=0;i<5;);
 '''
-example ForStatement&Statement ~9e95d5 '''
+example ForStatement&Statement '''
 for(;i<5;);
 '''
-example ForStatement&Statement ~fd5357e '''
+example ForStatement&Statement '''
 for(i=0;i<5;i++);
 '''
-example ForStatement&Statement ~1c1bf7bd '''
+example ForStatement&Statement '''
 for(var i=0;i<5;i++);
 '''
-example ForEachStatement&Statement ~7087a6 '''
+example ForEachStatement&Statement '''
 for(k in array);
 '''
-example ForEachStatement&Statement ~d94f75 '''
+example ForEachStatement&Statement '''
 for(var k in array){;}
 '''
-example WithStatement&Statement ~778d46 '''
+example WithStatement&Statement '''
 with(a) { a.f(); }
 '''
-example SwitchStatement&Statement ~029c8c7 '''
+example SwitchStatement&Statement '''
 switch(c) {
 	case 1:
 	case 2: break;
 	default: break;
 }
 '''
-example LabelledStatement&Statement ~d22dbd '''
+example LabelledStatement&Statement '''
 label:
 var a = 1;
 '''
-example TryStatement&Statement ~aef7e6 '''
+example TryStatement&Statement '''
 try{}finally{}
 '''
-example TryStatement&Statement ~22b0f3 '''
+example TryStatement&Statement '''
 try{}catch(e){}
 '''
-example TryStatement&Statement ~abcee6 '''
+example TryStatement&Statement '''
 try{}catch(e){}finally{}
 '''
-example CallExpression&Expression ~690c31 '''
+example CallExpression&Expression '''
 func()
 '''
-example CallExpression&Expression ~0bc7556 '''
+example CallExpression&Expression '''
 func(1,2,3).a.b.c(2)[1].s
 '''
-example Expression ~28c961 '''
+example Expression '''
 new Klass
 '''
-example Expression ~59754c '''
+example Expression '''
 new Klass()
 '''
-example Expression ~8eb37a '''
+example Expression '''
 new Klass(1)
 '''
-example ObjectLiteral&Expression ~b94042 '''
+example ObjectLiteral&Expression '''
 {}
 '''
-example ObjectLiteral&Expression ~676446 '''
+example ObjectLiteral&Expression '''
 {a: 1, b: 2}
 '''
-example ObjectLiteral&Expression ~33eced '''
+example ObjectLiteral&Expression '''
 {
 	a: 1,
 	count: function(){ return n; },
@@ -666,17 +666,17 @@ example ObjectLiteral&Expression ~33eced '''
 	set a(val){ _a = val; }
 }
 '''
-example NumericLiteral&Expression ~f37fec '''
+example NumericLiteral&Expression '''
 0.12
 '''
-example NumericLiteral&Expression ~076dfe'''
+example NumericLiteral&Expression '''
 0x1F
 '''
-example NumericLiteral&Expression ~49f8117 '''
+example NumericLiteral&Expression '''
 0123
 '''
 
-example RegularExpressionLiteral&Expression ~b135e0d9 '''
+example RegularExpressionLiteral&Expression '''
 /.*(?=#[^\s]*$)/
 '''
 

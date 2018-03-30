@@ -47,27 +47,6 @@ public class Otest extends Oexample {
 		public Coverage() {
 		}
 
-		// public void init(OOption options, Grammar g) {
-		// Production[] prods = g.getAllProductions();
-		// this.unameMap = new HashMap<>();
-		// this.names = new String[prods.length];
-		// this.enterCounts = new int[prods.length];
-		// this.exitCounts = new int[prods.length];
-		// options.add(ParserOption.TrapActions, new TrapAction[] {
-		// this.newEnterAction(), this.newExitAction() });
-		// int enterId = 0;
-		// int exitId = 1;
-		// int uid = 0;
-		// for (Production p : prods) {
-		// this.names[uid] = p.getUniqueName();
-		// Expression enterTrap = new Expression.PTrap(enterId, uid, null);
-		// Expression exitTrap = new Expression.PTrap(exitId, uid++, null);
-		// Expression e = Expression.append(p.getExpression(), exitTrap);
-		// g.setExpression(p.getLocalName(), Expression.newSequence(enterTrap,
-		// e, null));
-		// }
-		// }
-
 		public void init(OOption options, Grammar g) {
 			this.unameMap = new HashMap<>();
 			ArrayList<String> nameList = new ArrayList<>();
@@ -107,7 +86,6 @@ public class Otest extends Oexample {
 			@Override
 			public void performed(ParserContext px, int uid) {
 				Coverage.this.enterCounts[uid]++;
-
 			}
 		}
 
