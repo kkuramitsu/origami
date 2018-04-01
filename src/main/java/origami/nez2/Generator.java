@@ -17,6 +17,364 @@ public interface Generator<X> {
 	}
 }
 
+class BasicGenerator implements Generator<Parser> {
+
+	HashMap<String, ParseFunc> funcMap = new HashMap<>();
+	HashMap<String, Integer> recurMap = new HashMap<>();
+	ParseFunc[] base = null;
+
+	/* state */
+
+	HashMap<String, Integer> stateMap = new HashMap<>();
+
+	int stateId(String label) {
+		Integer n = this.stateMap.get(label);
+		if (n == null) {
+			n = this.stateMap.size() + 1;
+			this.stateMap.put(label, n);
+		}
+		return n;
+	}
+
+	@Override
+	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list) {
+		int mp = 1;
+		this.base = new ParseFunc[list.size()];
+		for (String n : list) {
+			Expr pe2 = nameMap.get(n);
+			this.log("generating ... " + n + " = " + pe2);
+			ParseFunc f = this.gen3(pe2);
+			// if (TPEG.isTree(pe2)) {
+			// this.funcMap.put(n, new MemoPoint(n, mp++, true, f));
+			// } else if (TPEG.isUnit(pe2)) {
+			// this.funcMap.put(n, new MemoPoint(n, mp++, false, f));
+			// } else {
+			this.funcMap.put(n, f);
+			// }
+		}
+		this.recurMap.forEach((n, x) -> {
+			this.base[x] = this.funcMap.get(n);
+			if (this.base[x] == null) {
+				System.err.println("no index " + n);
+			}
+			this.log("recur ... " + n + ", index=" + x + ", f=" + this.base[x]);
+		});
+		return new Parser(this.funcMap.get(start), this.funcMap, mp - 1);
+	}
+
+	ParseFunc gen3(Expr pe) {
+		switch (pe.ptag) {
+		case Empty:
+			return ParserFuncGenerator::succ;
+		case Char: {
+			BitChar bc = pe.bitChar();
+			if (bc.isSingle()) {
+				final byte b = bc.single();
+				return (px) -> {
+					return px.pos < px.length && px.inputs[px.pos++] == b;
+				};
+			}
+			if (bc.isAny()) {
+				return (px) -> {
+					if (px.pos < px.length) {
+						px.pos += 1;
+						return true;
+					}
+					return false;
+				};
+			} else {
+				final int[] bits = bc.bits();
+				return (px) -> {
+					return px.pos < px.length && bits32(bits, px.inputs[px.pos++]);
+				};
+			}
+		}
+		case NonTerm: {
+			String name = pe.label();
+			ParseFunc f = this.funcMap.get(name);
+			if (f != null) {
+				return f;
+			}
+			Integer rec = this.recurMap.get(name);
+			if (rec == null) {
+				rec = this.recurMap.size();
+				this.recurMap.put(name, rec);
+			} else {
+				final int index = rec;
+				return (px) -> {
+					return this.base[index].apply(px);
+				};
+			}
+		}
+		case Seq: {
+			final ParseFunc[] fs = Arrays.stream(pe.flatten(PTag.Seq)).map(e -> this.gen3(e)).toArray(ParseFunc[]::new);
+			final int tail = fs.length - 1;
+			return (px) -> {
+				for (int i = 0; i < tail; i++) {
+					if (!fs[i].apply(px)) {
+						return false;
+					}
+				}
+				return fs[tail].apply(px);
+			};
+		}
+		case Alt:
+		case Or: {
+			final ParseFunc[] fs = Arrays.stream(pe.flatten(pe.tag())).map(e -> this.gen3(e)).toArray(ParseFunc[]::new);
+			final int tail = fs.length - 1;
+			return (px) -> {
+				int pos = px.pos;
+				T tree = px.tree;
+				State state = px.state;
+				for (int i = 0; i < tail; i++) {
+					if (fs[i].apply(px)) {
+						return true;
+					}
+					px.pos = pos;
+					px.tree = tree;
+					px.state = state;
+				}
+				return fs[tail].apply(px);
+			};
+		}
+		case And: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				return f.apply(px) || mback1(px, pos);
+			};
+		}
+		case Not: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				T tree = px.tree;
+				State state = px.state;
+				return !(f.apply(px)) && mback7(px, pos, tree, state);
+			};
+		}
+		case Many: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				T tree = px.tree;
+				State state = px.state;
+				while (f.apply(px) && pos < px.pos) {
+					pos = px.pos;
+					tree = px.tree;
+					state = px.state;
+				}
+				return mback7(px, pos, tree, state);
+			};
+		}
+		case OneMore: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				T tree = px.tree;
+				State state = px.state;
+				int c = 0;
+				while (f.apply(px) && pos < px.pos) {
+					pos = px.pos;
+					tree = px.tree;
+					state = px.state;
+					c++;
+				}
+				return c > 0 && mback7(px, pos, tree, state);
+			};
+		}
+		/* */
+		case Tree: {
+			OptimizedTree t = (OptimizedTree) pe;
+			final String tag = t.tag == null ? ParseTree.EmptyTag : t.tag;
+			final int spos = t.spos;
+			final int epos = t.epos;
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				px.tree = null;
+				return f.apply(px) && mtree(px, tag, pos + spos, px.pos + epos);
+			};
+		}
+		case Link: {
+			final String label = pe.label();
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				T tree = px.tree;
+				return f.apply(px) && mlink(px, label, px.tree, tree);
+			};
+		}
+		case Fold: {
+			OptimizedTree t = (OptimizedTree) pe;
+			final String label = pe.label();
+			final String tag = t.tag == null ? ParseTree.EmptyTag : t.tag;
+			final int spos = t.spos;
+			final int epos = t.epos;
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				return mlink(px, label, px.tree, null) && f.apply(px) && mtree(px, tag, pos + spos, px.pos + epos);
+			};
+		}
+		case Tag: {
+			final String tag = pe.label();
+			return (px) -> {
+				return mlink(px, tag, null, px.tree);
+			};
+		}
+		case Val:
+			return ParserFuncGenerator::succ;
+		/* */
+		case Scope: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				State state = px.state;
+				return f.apply(px) && mback4(px, state);
+			};
+		}
+		case State: {
+			final ParseFunc f = this.gen3(pe.get(0));
+			return (px) -> {
+				State state = px.state;
+				px.state = null;
+				return f.apply(px) && mback4(px, state);
+			};
+		}
+		case Symbol: /* @symbol(A) */ {
+			final ParseFunc f = this.gen3(pe.get(0));
+			final int ns = this.stateId(pe.label());
+			return (px) -> {
+				int pos = px.pos;
+				return f.apply(px) && mstate(px, ns, pos);
+			};
+		}
+		case Exists: {
+			final int ns = this.stateId(pe.label());
+			return (px) -> getstate(px.state, ns) != null;
+		}
+		case Match: {
+			final int ns = this.stateId(pe.label());
+			return (px) -> {
+				final State state = getstate(px.state, ns);
+				return state != null && matchmany(px.inputs, px.pos, px.inputs, state.spos, state.slen)
+						&& mmov(px, state.slen);
+			};
+		}
+		case Contains:
+		case Equals:
+		case Eval:
+			return ParserFuncGenerator::succ;
+		/* */
+		case DFA: {
+			final ParseFunc[] fs = new ParseFunc[pe.size() + 1];
+			final byte[] charMap = pe.charMap();
+			fs[0] = ParserFuncGenerator::fail;
+			for (int i = 0; i < pe.size(); i++) {
+				fs[i + 1] = this.gen3(pe.get(i));
+			}
+			return (px) -> fs[charMap[px.inputs[px.pos] & 0xff] & 0xff].apply(px);
+		}
+		/* */
+		case If: /* @if(flag, e) */
+		case On: /* @on(flag, e) */
+		case Off: /* @off(flag, e) */
+		default:
+			Hack.TODO("gen", pe.getClass().getSimpleName(), pe);
+			return ParserFuncGenerator::succ;
+		}
+	}
+
+	// Obits32
+	private final static boolean bits32(int[] bits, byte b) {
+		int n = b & 0xff;
+		// System.err.printf("$$$ %s %x %s ", bits, n, (bits[n / 32] & (1 << (n % 32)))
+		// != 0);
+		return (bits[n / 32] & (1 << (n % 32))) != 0;
+	}
+
+	// match
+	final static boolean matchmany(byte[] inputs, int pos, byte[] inputs2, int pos2, int len) {
+		for (int i = 0; i < len; i++) {
+			if (inputs[pos + i] != inputs2[pos2 + i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// errpos
+	final static int mbackpos(ParserContext px, int pos) {
+		if (px.headpos < px.pos) {
+			px.headpos = px.pos;
+		}
+		return pos;
+	}
+
+	private final static boolean mmov(ParserContext px, int pos) {
+		px.pos = px.pos + pos;
+		return px.pos < px.length;
+	}
+
+	private final static boolean mback1(ParserContext px, int pos) {
+		px.pos = mbackpos(px, pos);
+		return true;
+	}
+
+	private final static boolean mback3(ParserContext px, int pos, T tree) {
+		px.pos = mbackpos(px, pos);
+		px.tree = tree;
+		return true;
+	}
+
+	private final static boolean mback4(ParserContext px, State state) {
+		px.state = state;
+		return true;
+	}
+
+	final static boolean mback7(ParserContext px, int pos, T tree, State state) {
+		px.pos = mbackpos(px, pos);
+		px.tree = tree;
+		px.state = state;
+		return true;
+	}
+
+	static boolean succ(ParserContext px) {
+		return true;
+	}
+
+	static boolean fail(ParserContext px) {
+		return false;
+	}
+
+	private final static boolean mtree(ParserContext px, String tag, int spos, int epos) {
+		px.tree = new ParseTree(tag, px.inputs, spos, epos, px.tree);
+		return true;
+	}
+
+	private final static boolean mlink(ParserContext px, String tag, T child, T prev) {
+		if (child != null && !(child instanceof ParseTree)) {
+			System.err.println("link " + tag + " not child " + child);
+			return false;
+		}
+		if (prev != null && !(prev instanceof TreeLink)) {
+			System.err.println("link " + tag + " not prev " + prev.getClass());
+			return false;
+		}
+		px.tree = new TreeLink(tag, (ParseTree) child, (TreeLink) prev);
+		return true;
+	}
+
+	private final static boolean mstate(ParserContext px, int ns, int pos) {
+		px.state = new State(ns, pos, px.pos, px.state);
+		return true;
+	}
+
+	final static State getstate(State state, int ns) {
+		return (state == null || state.ns == ns) ? state : getstate(state.sprev, ns);
+	}
+
+}
+
 class ParserFuncGenerator implements Generator<Parser> {
 
 	final static int POS = 1;
@@ -36,7 +394,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 	/* option */
 
-	boolean checkEOF = false;
+	boolean checkEOF = true;
 	boolean zeroTerm = true;
 	boolean case4 = false;
 
@@ -65,11 +423,15 @@ class ParserFuncGenerator implements Generator<Parser> {
 				this.funcMap.put(n, new MemoPoint(n, mp++, true, f));
 			} else if (TPEG.isUnit(pe2)) {
 				this.funcMap.put(n, new MemoPoint(n, mp++, false, f));
+			} else {
+				this.funcMap.put(n, f);
 			}
-			// this.funcMap.put(n, f);
 		}
 		this.recurMap.forEach((n, x) -> {
 			this.base[x] = this.funcMap.get(n);
+			if (this.base[x] == null) {
+				System.err.println("no index " + n);
+			}
 			this.log("recur ... " + n + ", index=" + x + ", f=" + this.base[x]);
 		});
 		return new Parser(this.funcMap.get(start), this.funcMap, mp - 1);
@@ -247,6 +609,15 @@ class ParserFuncGenerator implements Generator<Parser> {
 	private ParseFunc cChar(BitChar bs) {
 		if (bs.isSingle()) {
 			return this.cCharInc(bs.single());
+		}
+		if (bs.isAny()) {
+			return (px) -> {
+				if (px.pos < px.length) {
+					px.pos += 1;
+					return true;
+				}
+				return false;
+			};
 		}
 		int[] bits = this.zeroTerm(bs).bits();
 		// int n = 0xe3;
@@ -1006,7 +1377,15 @@ class ParserFuncGenerator implements Generator<Parser> {
 	}
 
 	private final static boolean mlink(ParserContext px, String tag, T child, T prev) {
-		px.tree = new TreeLink(tag, child, prev);
+		if (child != null && !(child instanceof ParseTree)) {
+			System.err.println("link " + tag + " not child " + child);
+			return false;
+		}
+		if (prev != null && !(prev instanceof TreeLink)) {
+			System.err.println("link " + tag + " not prev " + prev.getClass());
+			return false;
+		}
+		px.tree = new TreeLink(tag, (ParseTree) child, (TreeLink) prev);
 		return true;
 	}
 
@@ -1118,6 +1497,7 @@ class ParserFuncGenerator implements Generator<Parser> {
 
 		@Override
 		public boolean apply(ParserContext px) {
+			// System.err.println(this.name + " " + px.pos);
 			if (this.unused) {
 				return this.f.apply(px);
 			} else {
@@ -1155,6 +1535,10 @@ class ParserFuncGenerator implements Generator<Parser> {
 		return true;
 	}
 
+	final static State getstate(State state, int ns) {
+		return (state == null || state.ns == ns) ? state : getstate(state.sprev, ns);
+	}
+
 	static ParseFunc cScope(ParseFunc pe) {
 		return (px) -> {
 			State state = px.state;
@@ -1167,10 +1551,6 @@ class ParserFuncGenerator implements Generator<Parser> {
 			int pos = px.pos;
 			return pe.apply(px) && mstate(px, ns, pos);
 		};
-	}
-
-	final static State getstate(State state, int ns) {
-		return (state == null || state.ns == ns) ? state : getstate(state.sprev, ns);
 	}
 
 	static ParseFunc cMatch(int ns) {

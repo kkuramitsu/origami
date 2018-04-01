@@ -72,6 +72,14 @@ public class First {
 			return 0;
 		case Char:
 			return 1;
+		case NonTerm:
+			Integer n = (Integer) pe.lookup("flen$");
+			if (n == null) {
+				pe.memo("flen$", -1);
+				n = fixlen(pe.get(0));
+				pe.memo("flen$", n);
+			}
+			return n;
 		case Tree:
 		case Link:
 		case Fold:
@@ -84,14 +92,6 @@ public class First {
 		case Contains:
 		case Equals:
 			return fixlen(pe.get(0));
-		case NonTerm:
-			Integer n = (Integer) pe.lookup("flen$");
-			if (n == null) {
-				pe.memo("flen$", -1);
-				n = fixlen(pe.get(0));
-				pe.memo("flen$", n);
-			}
-			return n;
 		case Seq:
 			len = fixlen(pe.get(0));
 			if (len != -1) {

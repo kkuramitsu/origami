@@ -22,9 +22,13 @@ class Optimizer {
 
 	<X> X generate(String start, Expr pe, Generator<X> gx) {
 		HashMap<String, Expr> prodMap = new HashMap<>();
-		prodMap.put(start, pe);
 		TreeSet<String> flagSet = new TreeSet<>();
-		this.makeDict(start, pe, prodMap, flagSet);
+		int c = 0;
+		prodMap.put(start, pe);
+		while (c < prodMap.size()) {
+			c = prodMap.size();
+			this.makeNameList(start, pe, prodMap, flagSet);
+		}
 		gx.log("start: " + start + " prodMap: " + prodMap);
 		if (flagSet.size() > 0) {
 			gx.log("flagSet: " + flagSet);
@@ -34,9 +38,9 @@ class Optimizer {
 		nameMap.put(start, snt);
 		snt.inner = this.rename(pe, prodMap, nameMap, new Flags());
 		nameMap.forEach((name, nt) -> {
-			checkLeftRecur(name, nt.get(0));
-			// System.err.printf("ast %s = %s%n", name, nt.get(0));
-			nt.inner = trace("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
+			// System.out.println(nt + " = " + nt.get(0));
+			// checkLeftRecur(name, nt.get(0));
+			// nt.inner = log("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
 		});
 		// 1. optimizing ..
 		nameMap.forEach((name, nt) -> {
@@ -66,38 +70,45 @@ class Optimizer {
 		return gx.generate(start, nameMap2, list);
 	}
 
-	static Expr trace(String p, String name, Expr pe, Function<Expr, Expr> f) {
+	static Expr log(String p, String name, Expr pe, Function<Expr, Expr> f) {
 		Expr pe2 = f.apply(pe);
-		if (isVerbose && !pe.toString().equals(pe2.toString())) {
-			System.out.printf("optimized %s %s\n\t%s\n\t=> %s\n", p, name, pe, pe2);
+		if (!pe.toString().equals(pe2.toString())) {
+			System.out.println(String.format("%s %s\n\t   %s\n\t=> %s\n", p, name, pe, pe2));
 		}
 		return pe2;
 	}
 
-	void makeDict(String curName, Expr pe, HashMap<String, Expr> prodMap, TreeSet<String> flagSet) {
-		if (pe != null) {
-			switch (pe.ptag) {
-			case NonTerm:
-				Expr deref = pe.get(0);
-				if (deref != null) {
-					String key = this.uname((NonTerm) pe);
-					if (!prodMap.containsKey(key)) {
-						prodMap.put(key, deref);
-						this.makeDict(key, deref, prodMap, flagSet);
-					}
+	static Expr trace(String p, String name, Expr pe, Function<Expr, Expr> f) {
+		Expr pe2 = f.apply(pe);
+		if (isVerbose && !pe.toString().equals(pe2.toString())) {
+			System.out.printf("optimized %s %s\n\t   %s\n\t=> %s\n", p, name, pe, pe2);
+		}
+		return pe2;
+	}
+
+	void makeNameList(String curName, Expr pe, HashMap<String, Expr> prodMap, TreeSet<String> flagSet) {
+		switch (pe.ptag) {
+		case NonTerm:
+			Expr deref = pe.get(0);
+			if (deref != null) {
+				String key = this.uname((NonTerm) pe);
+				if (!prodMap.containsKey(key)) {
+					prodMap.put(key, deref);
+					// this.makeNameList(key, deref, prodMap, flagSet);
 				}
-				return;
-			case Char:
-				if (pe.bitChar().isBinary()) {
-					this.isBinary = true;
-				}
-				return;
-			case If:
-				flagSet.add(pe.label());
-				return;
-			default:
-				this.makeDict(curName, pe.get(0), prodMap, flagSet);
-				this.makeDict(curName, pe.get(1), prodMap, flagSet);
+			}
+			return;
+		case Char:
+			if (pe.bitChar().isBinary()) {
+				this.isBinary = true;
+			}
+			return;
+		case If:
+			flagSet.add(pe.label());
+			return;
+		default:
+			for (int i = 0; i < pe.size(); i++) {
+				this.makeNameList(curName, pe.get(i), prodMap, flagSet);
 			}
 		}
 	}
@@ -309,6 +320,7 @@ class Optimizer {
 			countMap.put(key, n);
 			return;
 		}
+		assert (pe.ptag != PTag.NonTerm);
 		for (int i = 0; i < pe.size(); i++) {
 			this.makeDict2(curName, pe.get(i), nameMap, countMap);
 		}

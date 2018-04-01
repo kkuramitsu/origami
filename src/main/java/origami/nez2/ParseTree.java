@@ -91,10 +91,10 @@ class TreeLink implements T {
 	ParseTree child;
 	TreeLink prev;
 
-	TreeLink(String tag, T child, T prev) {
+	TreeLink(String tag, ParseTree child, TreeLink prev) {
 		this.tag = tag;
-		this.child = (ParseTree) child;
-		this.prev = (TreeLink) prev;
+		this.child = child;
+		this.prev = prev;
 	}
 
 	void strOut(StringBuilder sb) {

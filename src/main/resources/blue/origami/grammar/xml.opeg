@@ -17,7 +17,7 @@ DTD
 	= '<!' (!'>' .)* '>' S*
 
 Xml
-	= { '<' $key(Name) S* $(Attribute)* ( '/>' / '>' S* ($value(Content) / COMMENT)* '</' NAME '>' ) #Element } S*
+	= { '<' $key(Name) S* $Attribute* ( '/>' / '>' S* ($value(Content) / COMMENT)* '</' NAME '>' ) #Element } S*
 
 Name
 	= { NAME #Name }

@@ -20,8 +20,7 @@ public final class Token implements OStrings {
 		this.inputs = inputs;
 		this.pos = pos;
 		this.epos = epos;
-		this.len = this.inputs.length == 0 ? 0
-				: (this.inputs[this.inputs.length - 1] == 0 ? this.inputs.length - 1 : this.inputs.length);
+		this.len = this.inputs.length == 0 ? 0 : epos;
 	}
 
 	void check() {
@@ -82,6 +81,9 @@ public final class Token implements OStrings {
 	}
 
 	public String line() {
+		if (this.linenum == -1) {
+			this.check();
+		}
 		try {
 			return new String(this.inputs, this.start, this.end - this.start, "UTF8");
 		} catch (UnsupportedEncodingException e) {
@@ -91,6 +93,9 @@ public final class Token implements OStrings {
 	}
 
 	public String mark(char mark) {
+		if (this.linenum == -1) {
+			this.check();
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = this.start; i < this.pos; i++) {
 			if (this.inputs[i] == '\t') {
@@ -121,7 +126,7 @@ public final class Token implements OStrings {
 		sb.append(":");
 		sb.append(this.linenum());
 		sb.append("] ");
-		sb.append(this.token);
+		sb.append(this.getSymbol());
 	}
 
 	public static String shortName(String path) {

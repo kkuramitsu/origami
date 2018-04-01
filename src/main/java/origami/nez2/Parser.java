@@ -50,7 +50,7 @@ public class Parser {
 			}
 			return (ParseTree) px.tree;
 		}
-		throw new ParseException(new Token("", path, px.inputs, px.headpos, px.headpos));
+		throw new ParseException(new Token("", path, px.inputs, px.headpos, px.length));
 	}
 
 	public ParseTree parse(String text) {
@@ -59,7 +59,11 @@ public class Parser {
 	}
 
 	public ParseTree parse(Token token) throws ParseException {
-		return this.parse(token.path, token.inputs, token.pos, token.epos);
+		byte b = token.inputs[token.epos];
+		token.inputs[token.epos] = 0; // ad hoc
+		ParseTree t = this.parse(token.path, token.inputs, token.pos, token.epos);
+		token.inputs[token.epos] = b;
+		return t;
 	}
 
 	public ParseTree parseFile(String path) throws IOException {
@@ -91,6 +95,13 @@ class ParseException extends IOException {
 	public ParseException(Token token) {
 		super(token.token);
 		this.token = token;
+	}
+
+	@Override
+	public void printStackTrace() {
+		System.out.println("Syntax Error (" + this.token.getPath() + ":" + this.token.linenum() + ")");
+		System.out.println(this.token.line());
+		System.out.println(this.token.mark('^'));
 	}
 
 }

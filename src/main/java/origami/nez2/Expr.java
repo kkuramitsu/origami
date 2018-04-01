@@ -138,14 +138,30 @@ public class Expr implements OStrings {
 	}
 
 	public Expr orElse(Expr pe) {
-		if (this.isEmpty() || this.isOption()) {
+		if (this.isEmpty() || this.isOption() || pe == null) {
 			return this;
 		}
+		// Expr c = this.car();
+		// Expr c2 = pe.car();
+		// if (c.eq(c2)) {
+		// c = c.andThen(this.cdr().orElse(pe.cdr()));
+		// System.err.println("CDR " + c);
+		// return c;
+		//
+		// }
 		return new Or(this, pe);
 	}
 
 	public Expr orAlso(Expr pe) {
 		return new Alt(this, pe);
+	}
+
+	public Expr car() {
+		return this;
+	}
+
+	public Expr cdr() {
+		return PEG.Empty_;
 	}
 
 	public boolean isNullable() {
@@ -221,22 +237,26 @@ class Expr2 extends Expr {
 	public Expr[] flatten(PTag target) {
 		if (this.ptag == target) {
 			ArrayList<Expr> l = new ArrayList<>();
-			this.listup(l);
+			listup(this, l);
 			return l.toArray(new Expr[l.size()]);
 		}
 		return super.flatten(target);
 	}
 
-	private void listup(ArrayList<Expr> l) {
-		if (this.left instanceof Expr2 && this.left.ptag == this.ptag) {
-			((Expr2) this.left).listup(l);
+	private static void listup(Expr2 tail, ArrayList<Expr> l) {
+		// while (true) {
+		if (tail.left instanceof Expr2 && tail.left.ptag == tail.ptag) {
+			listup(((Expr2) tail.left), l);
 		} else {
-			l.add(this.left);
+			l.add(tail.left);
 		}
-		if (this.right instanceof Expr2 && this.right.ptag == this.ptag) {
-			((Expr2) this.right).listup(l);
+		if (tail.right instanceof Expr2 && tail.right.ptag == tail.ptag) {
+			// tail = ((Expr2) tail.right);
+			listup(((Expr2) tail.right), l);
 		} else {
-			l.add(this.right);
+			l.add(tail.right);
+			return;
 		}
+		// }
 	}
 }

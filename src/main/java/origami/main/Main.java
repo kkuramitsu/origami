@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import blue.origami.Version;
+import blue.origami.PatchLevel;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
@@ -32,6 +32,18 @@ import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.SourceGrammar;
 
 public abstract class Main implements MainConsole {
+
+	public final static String ProgName = "ORIGAMI";
+	public final static String CodeName = "Celery";
+
+	public final static int MainVersion = 0;
+	public final static int MinorVersion = 3;
+	public final static String Version = "" + MainVersion + "." + MinorVersion + "." + PatchLevel.REV;
+	public final static String Copyright = "Copyright 2018, Kimio Kuramitsu and ORIGAMI project";
+	public final static String License = "the Apache License, Version 2.0";
+
+	public final static String ClassPath = "origami";
+	public final static String ResourcePath = "/blue/origami";
 
 	public static void main(String[] args) {
 		OOption options = new OOption();
@@ -54,7 +66,7 @@ public abstract class Main implements MainConsole {
 		try {
 			String className = args.length == 0 ? "hack" : args[0];
 			if (className.indexOf('.') == -1) {
-				className = Version.ClassPath + ".main.O" + className;
+				className = ClassPath + ".main.O" + className;
 			}
 			Main cmd = (Main) Class.forName(className).newInstance();
 			cmd.initOption(options);
@@ -69,7 +81,7 @@ public abstract class Main implements MainConsole {
 	public abstract void exec(OOption options) throws Throwable;
 
 	protected void initOption(OOption options) {
-		options.set(MainOption.GrammarPath, new String[] { Version.ResourcePath + "/grammar", "/blue/local" });
+		options.set(MainOption.GrammarPath, new String[] { ResourcePath + "/grammar", "/blue/local" });
 	}
 
 	static HashMap<String, OOptionKey> optMap = new HashMap<>();
@@ -141,19 +153,19 @@ public abstract class Main implements MainConsole {
 	void displayVersion() {
 		this.c(Bold, () -> {
 			p(this.progName() + "-" + this.version() + " (" + MainFmt.English + ") on Java JVM-"
-					+ System.getProperty("java.version") + "/" + Version.ProgName + "-" + Version.Version);
+					+ System.getProperty("java.version") + "/" + ProgName + "-" + Version);
 		});
 		this.c(Yellow, () -> {
-			p(Version.Copyright);
+			p(Copyright);
 		});
 	}
 
 	String progName() {
-		return "Nez";
+		return "Origami";
 	}
 
 	String version() {
-		return Version.Version;
+		return Version;
 	}
 
 	static void p(String msg, Object... args) {

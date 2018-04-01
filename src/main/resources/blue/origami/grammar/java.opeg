@@ -1057,9 +1057,9 @@ HEXFRACTION    = '0' [xX] '.' HEXDIGITS
 StringLiteral  = '"' { STRING_CONTENT* #StringExpr } '"' _
 CharacterLiteral = '\'' { CHAR_CONTENT #CharExpr } '\'' _
 STRING_CONTENT = ESCAPE
-               / ![\"\n\\] .
+               / ![\"\\\n] .
 CHAR_CONTENT   = ESCAPE
-               / !['\n\\] .
+               / ![\\'\n] .
 ESCAPE         = SIMPLE_ESCAPE
                / OCTAL_ESCAPE
                / HEX_ESCAPE
@@ -1152,19 +1152,19 @@ if(c) {
 
 /* Expression (standard) */
 
-example Expression ~7d9419 '''
+example Expression '''
 1+2*3
 '''
 
-example Expression ~bfe331 '''
+example Expression '''
 1*2+3
 '''
 
-example Expression ~162311 '''
+example Expression '''
 (1+2)*3
 '''
 
-example Expression ~cd4f5d '''
+example Expression '''
 1+2-3*4%5
 '''
 
@@ -1191,62 +1191,62 @@ example Expression '''
 
 /* Identifier (standard) */
 
-example Expression ~a47e9fd '''
+example Expression '''
 x
 '''
 
-example Expression  ~fdb051 '''
+example Expression '''
 Apple
 '''
 
 /* Literal (standard) */
 
-example Literal ~1e4f2d '''
+example Literal '''
 true
 '''
 
-example Literal ~4eab66 '''
+example Literal '''
 false
 '''
 
-example Literal ~ec2775 '''
+example Literal '''
 'C'
 '''
 
-example Literal ~1951c6 '''
+example Literal '''
 0
 '''
 
-example Literal ~aef181 '''
+example Literal '''
 26
 '''
 
-example Literal ~c3b9d6 '''
+example Literal '''
 0x1a
 '''
 
-example Literal ~146f59 '''
+example Literal '''
 0b11010
 '''
 
-example Literal ~f74a78 '''
+example Literal '''
 123.4
 '''
 
-example Literal ~94b99c '''
+example Literal '''
 1.234e2
 '''
 
-example Literal ~c83c217 '''
+example Literal '''
 123.4f
 '''
 
-example Literal ~02bf7f6 '''
+example Literal '''
 "hello,world\n"
 '''
 
 /* Literal (standard) */
 
-example Literal ~db9f5e3 '''
+example Literal '''
 "S\u00ED Se\u00F1or"
 '''

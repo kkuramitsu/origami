@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>blue.origami</groupId>
   <artifactId>origami</artifactId>
-  <version>0.2</version>
+  <version>0.3</version>
   <name>Origami</name>
   <description>ORIGAMI: A Language Engineering Framework</description>
   <dependencies>
@@ -102,7 +102,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>blue.origami.main.Main</mainClass>
+              <mainClass>origami.main.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -245,7 +245,7 @@
       		</descriptorRefs>
       		<archive>
       			<manifest>
-      				<mainClass>blue.origami.main.Main</mainClass>
+      				<mainClass>origami.main.Main</mainClass>
       			</manifest>
       		</archive>
           <finalName>origami-${project.version}-run</finalName>

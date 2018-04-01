@@ -53,7 +53,7 @@ class Loader {
 		ParseTree[] ts = emptyTreeNodes;
 		switch (key) {
 		case "Char":
-			return s(t.asString());
+			return s(u(t.asString()));
 		case "Class":
 			return c(t.asString(), 0);
 		case "Any":
@@ -114,8 +114,6 @@ class Loader {
 	void load(String source) throws IOException {
 		Parser p = nez().getParser();
 		ParseTree t = p.parse(source);
-		// System.err.println("*** " + source + "\n" + t + "\n" + t.spos + ", " +
-		// t.epos);
 		this.loadEach(t);
 		this.peg.setMemo("examples", this.exampleList);
 	}
@@ -130,6 +128,7 @@ class Loader {
 			break;
 		}
 		case "Production": {
+			// System.err.println("=====\n" + t.asString());
 			ParseTree[] ts = t.list();
 			if (ts.length == 2) {
 				String name = ts[0].asString();
@@ -197,7 +196,6 @@ class Loader {
 			"EOL = '\\n' / '\\r\\n' / EOF", //
 			"NEOL = !EOL", //
 
-			"EOS = _ (';' _ / EOL (S/COMMENT) _ / EOL )*", //
 			"EOF = !.", //
 			// "list x = { $x (',' _ $x)* }", //
 			// "text x = this.x EOL { (!(EOL x) .)* } EOL x", //
@@ -207,18 +205,19 @@ class Loader {
 
 			"Import = { 'import' S _ $Names 'from' S _ $(Char/Name) #Import } EOS", //
 			"Section = { 'section' S _ $Name #Section } EOS", //
-			"Example = { 'example' S _ $Names $Doc #Example } __", //
+			"Example = { 'example' S _ $Names $Doc #Example } EOS", //
 			"Macro = { $Public? $Name $Params __ '=' __ ([/|] __)? $Expression #Macro } EOS", //
 			"Production = { $Public? $Name __ ('=' / '<-') __ ([/|] __)? $Expression #Production } EOS", //
 			"Error = { . #Err } EOS", //
+			"EOS = _ (';' _ / EOL (S/COMMENT) _ / EOL )*", //
 
 			"Name = { NAME #Name }", //
-			"NAME = '\"' (![\"\\n] .)* '\"' / (![ \t\r\n(,){};<>[|/*+?='`] .)+", //
-			"Names = { $Name _ ([,&] _ Name _)* }", //
-			"Doc = DELIM S* { (!DELIM .)* } DELIM _ / { (![\r\n] .)* } EOL", //
-			"DELIM = ['] ['] [']", //
+			"NAME = '\"' ('\\\\\"' / ![\\\"\n] .)* '\"' / (![ \t\r\n(,){};<>[|/*+?='`] .)+", //
+			"Names = { $Name _ ([,&] _ $Name _)* }", //
+			"Doc = DELIM S* EOL { (!(DELIM EOL) .)* } DELIM  / { (![\r\n] .)* } ", //
+			"DELIM = '\\'\\'\\''", //
 			"Public = { 'public' / 'private' } S _", //
-			"Params = { S _ $Name (S _ Name)* }", //
+			"Params = { S _ $Name (S _ $Name)* }", //
 			//
 			"Expression = UChoice", //
 			"UChoice    = Choice {$ __ '|' _ $UChoice #Alt }?", //
@@ -228,16 +227,17 @@ class Loader {
 			"Predicate  = { ('!' #Not / '&' #And ) $Predicate } / Suffix", //
 			"Suffix     = Term {$ ('*' #Many / '+' #OneMore / '?' #Option) }?", //
 
-			"Term       = Char / Class / Val / Tag / Cons / '(' __ Expression __ ')' / Let / Func / NonTerminal", //
+			"Term       = Char / Class / Any / Val / Tag / Cons / '(' __ Expression __ ')' / Let / Func / NonTerminal", //
 
-			"Char  = ['] { (!['\n] .)* #Char } [']", //
-			"Class = '[' { (![\\]\n] .)* #Class } ']' / { '.' #Any }", //
-			"Val   = '`' { (![`\n] .)* #Val } '`'", //
+			"Any = { '.' #Any }", //
+			"Char = '\\'' { ('\\\\' . / ![\\'\n] .)* #Char } '\\''", //
+			"Class = '[' { ('\\\\' . / ![\\]] .)* #Class } ']'", //
+			"Val   = '`' { ('\\\\`' / ![`\n] .)* #Val } '`'", //
 			"Tag   = '#' { NAME #Tag }", //
-
+			"ESCAPE = '\\\\' ['\\\"\\\\\\]bfnrt]", //
 			"Cons = '{' { ('$' $(Name)? S #Fold / #Tree) __ $(Expression) } __ '}'", //
 
-			"Let = '$' { $Name '(' _ $Expression _ ')' #Let } / '$' { ('(' $Name '=)')? $Expression #Let } ", //
+			"Let = '$' { $Name '(' _ $Expression _ ')' #Let } / '$(' {  _ $Expression _ ')' #Let } / '$' { ('(' $Name '=)')? $Term #Let } ", //
 
 			// if(flag) on(flag, e) on(!flag, e)
 			// symbol(A) <symbol A>
@@ -255,6 +255,7 @@ class Loader {
 				quickDef(peg, s);
 			}
 			nez = peg;
+			// System.out.println(peg);
 		}
 		return nez;
 	}
@@ -507,7 +508,7 @@ class Loader {
 	}
 
 	static Expr s(byte[] b, int offset) {
-		Expr pe = new Char(b[offset]);
+		Expr pe = PEG.Char_[b[offset] & 0xff];
 		return (offset + 1 < b.length) ? pe.andThen(s(b, offset + 1)) : pe;
 	}
 
@@ -603,41 +604,76 @@ class Loader {
 	}
 
 	private static Expr range(char c1, char c2) {
+		if (c2 < c1) {
+			return range(c2, c1);
+		}
 		if (c1 < 256 && c2 < 256) {
 			return new Char((byte) c1, (byte) c2);
 		}
 		byte[] b1 = encode(String.valueOf(c1));
 		byte[] b2 = encode(String.valueOf(c2));
-		if (b1.length == b2.length && b1[0] == b2[0]) {
-			if (b1.length == 2) {
-				// System.err.println("@@1 " + c1 + " " + c2);
-				return (new Char(b1[0])).andThen(new Char(b1[1], b2[1]));
-			}
-			if (b1[1] != b2[1]) {
-				// System.err.println("@@2 " + c1 + " " + c2);
-				return new Char(b1[0]).andThen(range(1, c1, c2));
-			}
-			if (b1.length == 3) {
-				// System.err.println("@@3 " + c1 + " " + c2);
-				return new Char(b1[0]).andThen(new Char(b1[1]).andThen(new Char(b1[2], b2[2])));
-			}
-			if (b1[2] != b2[2]) {
-				// System.err.println("@@4 " + c1 + " " + c2);
-				return new Char(b1[0]).andThen(new Char(b1[1]).andThen(range(2, c1, c2)));
-			}
-			if (b1.length == 4) {
-				// System.err.println("@@5 " + c1 + " " + c2);
-				return new Char(b1[0])
-						.andThen(new Char(b1[1]).andThen(new Char(b1[2]).andThen(new Char(b1[3], b2[3]))));
-			}
+		if (b1.length == 2 && b2.length == 2) {
+			return range2(c1, c2);
 		}
-		return range(0, c1, c2);
+		if (b1.length == 3 && b2.length == 3) {
+			return range3(c1, c2);
+		}
+		Hack.TODO("range", b1.length, b2.length);
+		return rangeN(0, c1, c2);
 	}
 
-	private static Expr range(int offset, char c1, char c2) {
-		if (c2 < c1) {
-			return range(offset, c2, c1);
+	private static Expr range2(char c1, char c2) {
+		int b0 = 100;
+		Expr p0 = null;
+		BitChar bc = null;
+		for (int c = c2; c1 <= c; c--) {
+			byte[] b = encode(String.valueOf((char) c));
+			if (b0 != b[0]) {
+				if (bc != null) {
+					Expr p = PEG.Char_[b0 & 0xff].andThen(new Char(bc));
+					p0 = p.orElse(p0);
+				}
+				b0 = b[1];
+				bc = new BitChar();
+			}
+			bc.set2(b[1] & 0xff, true);
 		}
+		return PEG.Char_[b0 & 0xff].andThen(new Char(bc)).orElse(p0);
+	}
+
+	private static Expr range3(char c1, char c2) {
+		int b0 = 100;
+		int b1 = 100;
+		Expr p0 = null;
+		Expr p1 = null;
+		BitChar bc = null;
+		for (int c = c2; c1 <= c; c--) {
+			byte[] b = encode(String.valueOf((char) c));
+			if (b0 != b[0]) {
+				if (p1 != null) {
+					Expr p = PEG.Char_[b0 & 0xff].andThen(p1);
+					p0 = p.orElse(p0);
+				}
+				b0 = b[0];
+				b1 = b[1];
+				bc = new BitChar();
+				bc.set2(b[2] & 0xff, true);
+				continue;
+			}
+			if (b1 != b[1]) {
+				Expr p = PEG.Char_[b1 & 0xff].andThen(new Char(bc));
+				p1 = p.orElse(p1);
+				b1 = b[1];
+				bc = new BitChar();
+			}
+			bc.set2(b[2] & 0xff, true);
+		}
+		p1 = (PEG.Char_[b1 & 0xff].andThen(new Char(bc))).orElse(p1);
+		return (PEG.Char_[b0 & 0xff].andThen(p1)).orElse(p0);
+	}
+
+	private static Expr rangeN(int offset, char c1, char c2) {
+		// if (c2 + 1 - c1 < 80) {
 		Expr pe = s(encode(String.valueOf(c2)), offset);
 		for (int c = c2 - 1; c1 <= c; c--) {
 			byte[] b = encode(String.valueOf((char) c));
@@ -715,13 +751,15 @@ class Loader {
 	}
 
 	private static int skip(String expr, int start, char c) {
-		char prev = '\0';
 		for (int i = start; i < expr.length() - 1; i++) {
 			char c0 = expr.charAt(i);
-			if (c0 == c && prev != '\\') {
+			if (c0 == '\\') {
+				i++;
+				continue;
+			}
+			if (c0 == c) {
 				return i;
 			}
-			prev = c0;
 		}
 		return expr.length() - 1;
 	}
@@ -751,4 +789,5 @@ class Loader {
 		}
 		return -1;
 	}
+
 }

@@ -12,7 +12,7 @@
 
 /* This is a JSON object: */
 
-example Object&Value '''
+example Object, Value '''
 {
      "Image": {
          "Width":  800,
@@ -31,7 +31,7 @@ example Object&Value '''
 
 /* This is a JSON array containing two objects: */
 
-example Array&Value '''
+example Array, Value '''
 [
      {
         "precision": "zip",
@@ -58,8 +58,8 @@ example Array&Value '''
 
 /* Here are three small JSON texts containing only values: */
 
-example String&Value "Hello world!" 
-example Number&Value 42 
+example String, Value "Hello world!" 
+example Number, Value 42 
 example Value        true
  
 File
@@ -105,7 +105,8 @@ ID
         = [0-9a-z]+
 
 Array
-	= { "[" ($(Value) ("," $(Value) )* )? "]" #List }
+	= { "[" ( $Value ("," $Value )* )? "]" #List }
+
 
 String
 	= '"' { ('\\"' / '\\\\' / !'"' .)* #String } '"' S*
@@ -134,13 +135,3 @@ FRAC
 EXP
 	= [Ee] ('-' / '+')? DIGIT+
 	
-format #JSON[*]      `{$[0 `,` -1]}`
-format #keyvalue[2]  `$[0]:$[1]`
-format #List[*]     `[$[0 `,` -1]]`
-format #String[0]    `"${text}"`
-format #Integer[0]   `${text}`
-format #Float[0]     `${text}`
-format #True[0]      `true`
-format #False[0]     `false`
-format #Null[0]      `null`
-format #ObjectId[0]  `ObjectId("$[0]")`

@@ -5,7 +5,7 @@ import blue.origami.common.OWriter;
 import origami.nez2.PEG;
 import origami.nezcc2.NezCC2;
 
-public class Onezcc2 extends Oparse {
+public class Onezcc extends Oparse {
 
 	@Override
 	public void exec(OOption options) throws Throwable {

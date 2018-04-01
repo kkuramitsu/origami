@@ -1,14 +1,16 @@
 
 package origami;
 
+import origami.nez2.Hack;
 import origami.nez2.PEG;
 
 public class PEGTest {
 
-	public void testLoader() throws Throwable {
+	public void testNez() throws Throwable {
 		PEG peg = PEG.nez();
 		peg.testMatch("COMMENT", "/*hoge*/hoge", "[# '/*hoge*/']");
 		peg.testMatch("COMMENT", "//hoge\nhoge", "[# '//hoge']");
+		peg.testMatch("Doc", "'''\nfunction func(){}\n'''\n", "[# 'function func(){}\n']");
 
 		peg.testMatch("Production", "A = a", "?");
 		peg.testMatch("NonTerminal", "a", "[#Name 'a']");
@@ -60,6 +62,59 @@ public class PEGTest {
 				"1+2*3", "[#AddExpr $right=[#MulExpr $right=[#IntExpr '3'] $left=[#IntExpr '2']] $left=[#IntExpr '1']]", //
 				"1*2+3",
 				"[#AddExpr $right=[#IntExpr '3'] $left=[#MulExpr $right=[#IntExpr '2'] $left=[#IntExpr '1']]]");
+	}
+
+	public void testExpression() throws Throwable {
+		/* Empty */
+		Hack.expr("''").testMatch("A", "", "[# '']", "a", "[# '']");
+		/* Char */
+		Hack.expr("'a'").testMatch("A", "aa", "[# 'a']", "b", "[#err* '']");
+		Hack.expr("[']").testMatch("A", "''", "[# '\'']");
+		Hack.expr("'\\\\]'").testMatch("A", "\\]a", "[# '\\]']");
+		/* Class */
+		Hack.expr("'\\\\]'").testMatch("A", "\\]a", "[# '\\]']");
+		//
+		// /* Or */
+		Hack.expr("a/aa").testMatch("A", "aa", "[# 'a']", "a", "[# 'a']");
+		Hack.expr("ab/aa").testMatch("A", "aa", "[# 'aa']", "ab", "[# 'ab']");
+		// /* Option */
+		Hack.expr("a a?").testMatch("A", "aa", "[# 'aa']", "ab", "[# 'a']");
+		Hack.expr("ab ab?").testMatch("A", "abab", "[# 'abab']", "ab", "[# 'ab']");
+		/* Many */
+		Hack.expr("a*").testMatch("A", "aa", "[# 'aa']", "ab", "[# 'a']", "b", "[# '']");
+		Hack.expr("ab*").testMatch("A", "abab", "[# 'abab']", "aba", "[# 'ab']");
+
+		Hack.expr("{a #Hoge}").testMatch("A", "aa", "[#Hoge 'a']");
+		Hack.expr("[あ-を]").testMatch("A", "ああ", "[# 'あ']", "を", "[# 'を']");
+		//
+		Hack.expr(
+				"[\\x00-\\x7F] / [\\xC2-\\xDF] [\\x80-\\xBF] / [\\xE0-\\xEF] [\\x80-\\xBF] [\\x80-\\xBF] / [\\xF0-\\xF7] [\\x80-\\xBF] [\\x80-\\xBF] [\\x80-\\xBF]")
+				.testMatch("A", "aa", "[# 'a']", "ああ", "[# 'あ']");
+
+		Hack.expr("'\\\\]'").testMatch("A", "\\]a", "[# '\\]']");
+		Hack.expr("'\\\\]' / ![\\]] .").testMatch("A", "\\]a", "[# '\\]']");
+		Hack.expr("('\\\\]' / ![\\]] .)*").testMatch("A", "a]", "[# 'a']", "a\\]]", "[# 'a\\]']");
+		Hack.expr("('\\\\'' / ![\\'] .)*").testMatch("A", "a'b", "[# 'a']", "a\\''b", "[# 'a\\'']");
+		/* '...' */
+		Hack.expr("'\\'' ('\\\\'' / ![\\'] .)* '\\''").testMatch("A", "'a'b", "[# ''a'']", "'a\\''b", "[# ''a\\''']");
+		/* "..." */
+		Hack.expr("'\"' ('\\\\\"' / ![\\\"] .)* '\"'").testMatch("A", "\"a\"b", "[# '\"a\"']", "\"a\\\"\"b",
+				"[# '\"a\\\"\"']");
+		/* [...] */
+		Hack.expr("'[' ('\\\\]' / ![\\]] .)* ']'").testMatch("A", "[a]b", "[# '[a]']", "[a\\]]b", "[# '[a\\]]']");
+
+		Hack.expr("'\\\\' .").testMatch("A", "\\a", "[# '\\a']");
+		Hack.expr("'\\\\' 'a'").testMatch("A", "\\a", "[# '\\a']");
+		Hack.expr("'\\\\a'").testMatch("A", "\\a", "[# '\\a']");
+		Hack.expr("'a' .").testMatch("A", "ab", "[# 'ab']");
+		Hack.expr(".").testMatch("A", "a", "[# 'a']");
+		Hack.expr("!.").testMatch("A", "", "[# '']");
+
+		Hack.expr("'[' (('\\\\' .) / (![\\]\\n] .))* ']'").testMatch("A", "[a]", "[# '[a]']", "['\\\"\\\\bfnrt]",
+				"[# '['\\\"\\\\bfnrt]']", "[a\\]]b", "[# '[a\\]]']");
+		Hack.expr("'[' { ('\\\\]'  / ![\\]\n] .)* #Class } ']'").testMatch("A", "['\\\"\\\\bfnrt]",
+				"[#Class ''\\\"\\\\bfnrt']");
+
 	}
 
 	// public void test_scan() throws Throwable {

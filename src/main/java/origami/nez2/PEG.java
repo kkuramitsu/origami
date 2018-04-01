@@ -13,7 +13,9 @@ import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
+import origami.main.Main;
 import origami.nez2.Expr.PTag;
 import origami.nez2.TPEG.OptimizedTree;
 import origami.nez2.TPEG.Val;
@@ -84,6 +86,7 @@ public class PEG implements OStrings {
 	final static Expr Fail_ = new Not(Empty_);
 	final static Expr Any_ = new Char(null);
 	final static Expr EOF_ = new Not(Any_);
+	final static Expr[] Char_ = IntStream.range(0, 256).mapToObj(x -> new Char((byte) x, 1)).toArray(Expr[]::new);
 
 	public static class Empty extends Expr {
 		Empty() {
@@ -94,13 +97,13 @@ public class PEG implements OStrings {
 	public static class Char extends Expr {
 		BitChar bc;
 
+		Char(byte b, int a) {
+			this(BitChar.byteChar(b));
+		}
+
 		public Char(BitChar ch) {
 			this.ptag = PTag.Char;
 			this.bc = ch == null ? BitChar.AnySet : ch;
-		}
-
-		public Char(byte b) {
-			this(BitChar.byteChar(b));
 		}
 
 		public Char(byte b1, byte b2) {
@@ -145,6 +148,17 @@ public class PEG implements OStrings {
 			byte[] b = PEG.getstr2(es);
 			return es.length == b.length;
 		}
+
+		@Override
+		public Expr car() {
+			return this.left;
+		}
+
+		@Override
+		public Expr cdr() {
+			return this.right;
+		}
+
 	}
 
 	public static class Or extends Expr2 {
@@ -611,6 +625,19 @@ public class PEG implements OStrings {
 		return es[offset].andThen(seq(offset + 1, endindex, es));
 	}
 
+	static Expr compose(int offset, int endindex, BiFunction<Expr, Expr, Expr> f, Expr... es) {
+		assert (offset < endindex);
+		Expr tail = es[endindex - 1];
+		for (int i = endindex - 2; i >= offset; i--) {
+			tail = f.apply(es[i], tail);
+		}
+		return tail;
+		// if (offset + 1 == endindex) {
+		// return es[offset];
+		// }
+		// return f.apply(es[offset], compose(offset + 1, endindex, f, es));
+	}
+
 	static Expr dup(Expr pe, Function<Expr, Expr> f) {
 		switch (pe.ptag) {
 		case Empty:
@@ -623,8 +650,13 @@ public class PEG implements OStrings {
 			return pe;
 		case Seq:
 			return dup2(pe, f, (e0, e1) -> e0.andThen(e1));
-		case Or:
-			return dup2(pe, f, (e0, e1) -> e0.orElse(e1));
+		case Or: {
+			Expr[] es = pe.flatten(pe.tag());
+			for (int i = 0; i < es.length; i++) {
+				es[i] = f.apply(es[i]);
+			}
+			return PEG.compose(0, es.length, (e0, e1) -> e0.orElse(e1), es);
+		}
 		case Alt:
 			return dup2(pe, f, (e0, e1) -> e0.orAlso(e1));
 		case And:
@@ -729,7 +761,7 @@ public class PEG implements OStrings {
 		String key = start + "@";
 		Parser p = (Parser) this.memoed.get(key);
 		if (p == null) {
-			p = this.generate(start, new ParserFuncGenerator());
+			p = this.generate(start, new BasicGenerator());
 			this.memoed.put(key, p);
 		}
 		return p;
@@ -754,12 +786,19 @@ public class PEG implements OStrings {
 
 	public void testMatch(String start, String... args) throws Throwable {
 		Parser p = this.getParser(start);
+		if (start.equals("A")) {
+			start = this.get("A").toString();
+		}
 		for (int i = 0; i < args.length; i += 2) {
 			String r = p.parse(args[i]).toString();
-			if (r.equals(args[i + 1])) {
-				System.out.printf("[succ] %s %s => %s\n", start, args[i], r);
+			if (i + 1 < args.length) {
+				if (r.equals(args[i + 1])) {
+					System.out.printf("[succ] %s:: %s => %s\n", start, args[i], r);
+				} else {
+					System.err.printf("[fail] %s:: %s => %s != %s\n", start, args[i], r, args[i + 1]);
+				}
 			} else {
-				System.err.printf("[fail] %s %s => %s != %s\n", start, args[i], r, args[i + 1]);
+				System.out.printf("[TODO] %s:: %s => %s\n", start, args[i], r);
 			}
 		}
 	}
@@ -772,33 +811,6 @@ public class PEG implements OStrings {
 		// testExpr("{ ({a})* }", (e) -> Trees.checkAST(e).toString(), "{$({a})*}");
 		// testExpr("{a} {a}", (e) -> Trees.checkAST(e).toString(), "{a} {$ a}");
 
-		// /* Empty */
-		// testMatch("A=''", "", "[# '']", "a", "[# '']");
-		// /* Char */
-		// testMatch("A='a'", "aa", "[# 'a']", "b", "[#err* '']");
-		//
-		// /* Or */
-		// testMatch("A=a/aa", "aa", "[# 'a']", "a", "[# 'a']");
-		// testMatch("A=ab/aa", "aa", "[# 'aa']", "ab", "[# 'ab']");
-		// /* Option */
-		// testMatch("A=a a?", "aa", "[# 'aa']", "ab", "[# 'a']");
-		// testMatch("A=ab ab?", "abab", "[# 'abab']", "ab", "[# 'ab']");
-		/* Many */
-		// testMatch("A=a*", "aa", "[# 'aa']", "ab", "[# 'a']", "b", "[# '']");
-		// testMatch("A=ab*", "abab", "[# 'abab']", "aba", "[# 'ab']");
-
-		// testMatch("A={a #Hoge}", "aa", "[#Hoge 'a']");
-		// testMatch("HIRA = [あ-を]", "ああ", "[# 'あ']", "を", "[# 'を']");
-		//
-		// testMatch(
-		// "UTF8 = [\\x00-\\x7F] / [\\xC2-\\xDF] [\\x80-\\xBF] / [\\xE0-\\xEF]
-		// [\\x80-\\xBF] [\\x80-\\xBF] / [\\xF0-\\xF7] [\\x80-\\xBF] [\\x80-\\xBF]
-		// [\\x80-\\xBF]",
-		// "aa", "[# 'a']", "ああ", "[# 'あ']");
-		//
-		// testMatch("/blue/origami/grammar/xml.opeg", //
-		// "<a/>", "[#Element $key=[#Name 'a']]", "<a></a>", "[#Element $key=[#Name
-		// 'a']]");
 		PEG peg = Loader.nez();
 		System.out.println(peg);
 		peg.testMatch("Production", "A = a", "?");
@@ -806,14 +818,21 @@ public class PEG implements OStrings {
 	}
 
 	public static void main(String[] a) throws Throwable {
-		PEG peg = Loader.nez();
-		System.out.println(peg);
-		peg.testMatch("COMMENT", "/*hoge*/hoge", "[# '/*hoge*/']");
-		peg.testMatch("COMMENT", "//hoge\nhoge", "[# '//hoge']");
+		// PEG nez = PEG.nez();
+		// nez.testMatch("Statement", "example FunctionDeclaration, SourceElement
+		// '''\nfunction func(){}\n'''\n");
 
-		PEG peg2 = new PEG();
-		peg2.load("/blue/origami/grammar/js.opeg");
-		System.err.println(peg2);
+		// Hack.testLoad("/blue/origami/grammar/xml.opeg");
+		// Hack.testLoad("/blue/origami/grammar/js.opeg");
+		// Hack.testLoad("/blue/origami/grammar/java.opeg");
+
+		// Hack.testLoad2("/blue/origami/grammar/xml.opeg");
+		// Hack.testLoad2("/blue/origami/grammar/js.opeg");
+		// Hack.testLoad2("/blue/origami/grammar/java.opeg");
+
+		// Main.testMain("example", "-g", "java.opeg");
+		Main.testMain("example", "-g", "js.opeg");
+		Class<?> c = Main.class;
 	}
 
 	@Override

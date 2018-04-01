@@ -121,184 +121,130 @@ public class TPEG extends PEG {
 			return this;
 		}
 
-		@Override
-		public Expr andThen(Expr next) {
-			int len = First.fixlen(next);
-			if (len != -1) {
-				this.epos = -len;
-				this.inner = this.inner.andThen(next);
-				return this;
-			}
-			return super.andThen(next);
-		}
+		// @Override
+		// public Expr andThen(Expr next) {
+		// int len = First.fixlen(next);
+		// if (len != -1) {
+		// System.err.println("fixlen = " + len + " " + next);
+		// this.epos = -len;
+		// this.inner = this.inner.andThen(next);
+		// return this;
+		// }
+		// return super.andThen(next);
+		// }
 
 	}
 
-	// libs
-	static boolean isTreeMut(Expr pe) {
+	public static enum TreeState {
+		Unit, Tree, Mut, Fold, Unknown;
+	}
+
+	public static TreeState ts(Expr pe) {
 		switch (pe.ptag) {
 		case Tree:
+			return TreeState.Tree;
 		case Fold:
+			return TreeState.Fold;
 		case Link:
 		case Tag:
 		case Val:
-			return true;
+			return TreeState.Mut;
 		case Untree:
 		case Char:
 		case Not:
 		case Empty:
 		case If:
 		case Exists:
+		case Match:
 		case Eval:
-			return false;
+			return TreeState.Unit;
 		case And:
 		case OneMore:
-		case Many:
+		case Many: {
+			TreeState ts = ts(pe.get(0));
+			if (ts == TreeState.Tree) {
+				return TreeState.Mut;
+			}
+			return ts;
+		}
 		case On:
 		case Off:
+		case State:
 		case Scope:
 		case Symbol:
-		case Match:
 		case Contains:
 		case Equals:
-			return isTreeMut(pe.get(0));
-		case Seq:
-			return isTreeMut(pe.get(0)) || isTreeMut(pe.get(1));
-		case Alt:
-		case Or:
-			return isTreeMut(pe.get(0)) || isTreeMut(pe.get(1));
-		case DFA:
-			for (int i = 0; i < pe.size(); i++) {
-				if (isTreeMut(pe.get(0))) {
-					return true;
-				}
+			return ts(pe.get(0));
+		case Seq: {
+			TreeState ts1 = ts(pe.get(0));
+			if (ts1 == TreeState.Unit) {
+				return ts(pe.get(1));
 			}
-			return false;
+			return ts1;
+		}
+		case Alt:
+		case Or: {
+			TreeState ts1 = ts(pe.get(0));
+			if (ts1 == TreeState.Unit) {
+				return ts(pe.get(1)) == TreeState.Mut ? TreeState.Mut : TreeState.Unit;
+			}
+			if (ts1 == TreeState.Tree) { /* Tree / '' */
+				return ts(pe.get(1)) == TreeState.Unit ? TreeState.Mut : ts1;
+			}
+			return ts1;
+		}
 		case NonTerm:
-			Boolean r = (Boolean) pe.lookup("tm$");
+			TreeState r = (TreeState) pe.lookup("ts$");
 			if (r == null) {
-				pe.memo("tm$", false);
-				r = isTree(pe.get(0));
-				pe.memo("tm$", r);
+				pe.memo("ts$", TreeState.Unknown);
+				r = ts(pe.get(0));
+				r = r == TreeState.Unknown ? TreeState.Unit : r;
+				pe.memo("ts$", r);
+				return r;
 			}
 			return r;
 		default:
 			Hack.TODO(pe);
+			if (pe.size() == 1) {
+				return ts(pe.get(0));
+			}
 			break;
 		}
-		return false;
+		return TreeState.Unit;
 	}
 
 	public static boolean isUnit(Expr pe) {
-		return !isTreeMut(pe);
-	}
-
-	static boolean isUnit2(Expr pe) {
-		switch (pe.ptag) {
-		case Tree:
-		case Fold:
-		case Link:
-		case Tag:
-		case Val:
-			return false;
-		case Untree:
-		case Char:
-		case Not:
-		case Empty:
-		case If:
-		case Exists:
-		case Eval:
-			return true;
-		case And:
-		case OneMore:
-		case Many:
-		case On:
-		case Off:
-		case Scope:
-		case Symbol:
-		case Match:
-		case Contains:
-		case Equals:
-			return isUnit2(pe.get(0));
-		case Seq:
-			return isUnit2(pe.get(0)) && isUnit2(pe.get(1));
-		case Alt:
-		case Or:
-			return isUnit2(pe.get(0)) && isUnit2(pe.get(1));
-		case NonTerm:
-			Boolean r = (Boolean) pe.lookup("u$");
-			if (r == null) {
-				pe.memo("u$", true);
-				r = isTree(pe.get(0));
-				pe.memo("u$", r);
-			}
-			return r;
-		default:
-			Hack.TODO(pe);
-			break;
-		}
-		return true;
+		return ts(pe) == TreeState.Unit;
 	}
 
 	static boolean isTree(Expr pe) {
-		switch (pe.ptag) {
-		case Tree:
-		case Fold:
-			return true;
-		case Link:
-		case Untree:
-		case Char:
-		case Not:
-		case Empty:
-		case Tag:
-		case Val:
-		case If:
-		case Exists:
-		case Eval:
-			return false;
-		case And:
-		case OneMore:
-		case Many:
-		case On:
-		case Off:
-		case Scope:
-		case Symbol:
-		case Match:
-		case Contains:
-		case Equals:
-			return isTree(pe.get(0));
-		case Seq:
-			return isTree(pe.get(0)) || isTree(pe.get(1));
-		case Alt:
-		case Or:
-			return isTree(pe.get(0)) || isTree(pe.get(1));
-		case DFA:
-			for (int i = 0; i < pe.size(); i++) {
-				if (isTree(pe.get(0))) {
-					return true;
-				}
-			}
-			return false;
-		case NonTerm:
-			Boolean r = (Boolean) pe.lookup("t$");
-			if (r == null) {
-				pe.memo("t$", false);
-				r = isTree(pe.get(0));
-				pe.memo("t$", r);
-			}
-			return r;
-		default:
-			Hack.TODO(pe);
-			break;
-		}
-		return false;
+		return ts(pe) == TreeState.Tree;
+	}
+
+	static boolean isMut(Expr pe) {
+		return ts(pe) == TreeState.Mut;
+	}
+
+	static boolean isFold(Expr pe) {
+		return ts(pe) == TreeState.Fold;
 	}
 
 	static Expr checkAST(Expr pe) {
+		// d("checkAST", pe);
 		if (isTree(pe)) {
 			return enforceTree(pe);
 		}
+		if (isMut(pe)) {
+			return enforceMut(pe);
+		}
+		if (isFold(pe)) {
+			return enforceFold(pe);
+		}
 		return enforceUnit(pe);
+	}
+
+	static void d(String ac, Expr pe) {
+		System.err.printf("%s {utm=%s %s %s %s} %s \n", ac, isUnit(pe), isTree(pe), isMut(pe), isFold(pe), pe);
 	}
 
 	static Expr enforceUnit(Expr pe) {
@@ -307,16 +253,18 @@ public class TPEG extends PEG {
 			if (isUnit(pe)) {
 				return pe;
 			}
-			System.err.printf("enforceUnit %s isUnit=%s isTree=%s\n", pe, isUnit(pe), isTree(pe));
-			throw new RuntimeException();
+			d("!enforceUnit", pe);
+			return pe;
 		case Tree:
 		case Link:
 		case Fold:
-		case Untree:
+			d("removeTree", pe);
 			return enforceUnit(pe.get(0));
 		case Tag:
 		case Val:
 			return PEG.Empty_;
+		case Not:
+			return new Not(checkAST(pe.get(0)));
 		default:
 			return PEG.dup(pe, TPEG::enforceUnit);
 		}
@@ -327,62 +275,85 @@ public class TPEG extends PEG {
 		case Tree:
 			return pe.dup(enforceMut(pe.get(0)));
 		case NonTerm:
-			if (isTree(pe)) {
+			if (isTree(pe) || isUnit(pe)) {
 				return pe;
 			}
+			d("enforceTree", pe);
 			return new TPEG.Tree(pe);
 		case Fold:
+			d("enforceTree", pe);
 			return new TPEG.Tree(PEG.Empty_).andThen(pe.dup(enforceMut(pe.get(0))));
 		case Link:
-			return enforceUnit(pe.get(0));
+			d("enforceTree", pe);
+			return enforceTree(pe.get(0));
 		case Seq:
-			if (isTree(pe.get(0))) {
-				return enforceTree(pe.get(0)).andThen(enforceFold(pe.get(1)));
+			if (isUnit(pe.get(0))) {
+				return enforceUnit(pe.get(0)).andThen(enforceTree(pe.get(1)));
 			}
-			return enforceUnit(pe.get(0)).andThen(enforceTree(pe.get(1)));
+			// System.out.println("enforceFold => " + pe.get(0) + " ++ " + pe.get(1));
+			return enforceTree(pe.get(0)).andThen(enforceFold(pe.get(1)));
+		case Alt:
 		case Or:
 			return enforceTree(pe.get(0)).orElse(enforceTree(pe.get(1)));
-		case Alt:
-			return enforceTree(pe.get(0)).orAlso(enforceTree(pe.get(1)));
 		default:
-			return enforceUnit(pe);
-		}
-	}
-
-	static Expr enforceFold(Expr pe) {
-		switch (pe.ptag) {
-		case Fold:
-			return pe.dup(enforceMut(pe.get(0)));
-		case Tree:
-			return new TPEG.Fold("", enforceMut(pe.get(0)));
-		case NonTerm:
-		case Link:
-		case Tag:
-		case Val:
-			return enforceUnit(pe);
-		default:
-			return PEG.dup(pe, TPEG::enforceFold);
+			Hack.TODO(pe);
+			return PEG.dup(pe, TPEG::enforceUnit);
 		}
 	}
 
 	static Expr enforceMut(Expr pe) {
 		switch (pe.ptag) {
-		case Tree:
-			return new Link("", enforceTree(pe.get(0)));
+		case NonTerm:
+			if (isUnit(pe) || isMut(pe)) {
+				return pe;
+			}
+			if (isTree(pe)) {
+				return new Link("", pe);
+			}
+			return pe;
 		case Link:
 			return new Link(pe.label(), enforceTree(pe.get(0)));
+		case Tree:
+			return new Link("", enforceTree(pe.get(0)));
 		case Fold:
 			return new Link(pe.label(), new TPEG.Tree(enforceMut(pe.get(0))));
 		case Tag:
 		case Val:
 			return pe;
-		case NonTerm:
-			if (isTree(pe)) {
-				return new Link("", pe);
-			}
-			return pe;
 		default:
+			if (isUnit(pe)) {
+				return pe;
+			}
+			// System.out.println("@@ " + pe);
 			return PEG.dup(pe, TPEG::enforceMut);
+		}
+	}
+
+	static Expr enforceFold(Expr pe) {
+		switch (pe.ptag) {
+		case NonTerm:
+			if (isUnit(pe) || isFold(pe)) {
+				return pe;
+			}
+			if (isTree(pe)) {
+				d("enforceFold", pe);
+				return new TPEG.Fold("", new TPEG.Link("", pe));
+			}
+			d("!enforceFold", pe);
+			return pe;
+		case Fold:
+			return pe.dup(enforceMut(pe.get(0)));
+		case Tree:
+			d("enforceFold", pe);
+			return new TPEG.Fold("", enforceMut(pe.get(0)));
+		case Link:
+			d("enforceFold", pe);
+			return new TPEG.Fold("", enforceMut(pe));
+		case Tag:
+		case Val:
+			return PEG.Empty_;
+		default:
+			return PEG.dup(pe, TPEG::enforceFold);
 		}
 	}
 

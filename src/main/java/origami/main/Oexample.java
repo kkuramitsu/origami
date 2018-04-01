@@ -26,7 +26,6 @@ import origami.nez2.PEG;
 import origami.nez2.ParseTree;
 import origami.nez2.Parser;
 import origami.nez2.Token;
-import origami.nezcc2.NezCC2;
 
 public class Oexample extends Oparse {
 	HashMap<String, Parser> parserMap = new HashMap<>();
@@ -38,16 +37,7 @@ public class Oexample extends Oparse {
 	int succ = 0;
 
 	@Override
-	protected void initOption(OOption options) {
-		super.initOption(options);
-		options.set(MainOption.ThrowingParserError, true);
-
-		// options.set(ParserOption.PartialFailure, true);
-	}
-
-	@Override
 	public void exec(OOption options) throws Throwable {
-		NezCC2 pg = options.newInstance(NezCC2.class);
 		String file = pegFile(options);
 		PEG peg = new PEG();
 		peg.load(file);
@@ -87,13 +77,15 @@ public class Oexample extends Oparse {
 				Token doc = ts[1].asToken(file);
 				for (int i = 0; i < names.length; i++) {
 					Parser p = peg.getParser(names[i].getSymbol());
-					this.perform(p, names[i], i, doc);
+					if (!this.perform(p, names[i], i, doc)) {
+						break;
+					}
 				}
 			}
 		}
 	}
 
-	protected void perform(Parser p, Token name, int count, Token doc) {
+	protected boolean perform(Parser p, Token name, int count, Token doc) {
 		this.tested++;
 		try {
 			long t1 = System.nanoTime();
@@ -107,12 +99,16 @@ public class Oexample extends Oparse {
 				p("   " + t);
 			}
 			this.record(name.getSymbol(), t2 - t1);
+			return true;
 		} catch (IOException e) {
 			this.c(Red, () -> {
 				p("[FAIL] " + name);
-				System.err.println(e);
+				System.err.println(doc);
+				p("===");
+				e.printStackTrace();
 			});
 		}
+		return false;
 	}
 
 	private void record(String uname, long t) {
