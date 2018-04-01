@@ -282,10 +282,7 @@ ImportDeclaration = {
 	$path(PackageName) _
 } ";"
 
-PackageName = QualifiedName {$
-	"." '*' 
-	#WildCardName 
-}?
+PackageName = QualifiedName {$ "." '*' #WildCardName }?
 
 
 // type

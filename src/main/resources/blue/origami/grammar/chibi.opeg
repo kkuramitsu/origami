@@ -102,7 +102,7 @@ TopLevel =
 
 /* AssumeDecl */
 
-example AssumeDecl&TopLevel '''
+example AssumeDecl, TopLevel '''
 assume x,y,z : Float
 '''
 
@@ -137,31 +137,31 @@ ContextDecl = {
 
 /* FuncDecl */
 
-example FuncDecl&Statement '''
+example FuncDecl, StatementStatement '''
 def f(a) {
 	a
 	b
 }
 '''
 
-example FuncDecl&Statement '''
+example FuncDecl, Statement '''
 public def f(a) :
 	a
 	b
 '''
 
-example FuncDecl&Statement '''
+example FuncDecl, Statement '''
 Int f(Int a) {
 	a; b;
 	c
 }
 '''
 
-example FuncDecl&Statement '''
+example FuncDecl, Statement '''
 let f a = a + 1 /*hoge*/
 '''
 
-example FuncDecl&Statement '''
+example FuncDecl, Statement '''
 let fibo n =
     | 1, 2 => 1
     | otherwise => fibo(n-1) + fibo(n-2)
@@ -314,7 +314,7 @@ BlockExpr = {
 
 PyBlockExpr = {
 	(':' / '=') _
-	(EOL <block INDENT_BLOCK > / $(Statement) EOS)
+	(EOL <block INDENT_BLOCK> / $(Statement) EOS)
 	#MultiExpr
 }
 
@@ -325,15 +325,15 @@ INDENT_BLOCK =
 
 /* Statement */
 
-example LetDecl&Statement '''
+example LetDecl, Statement '''
 let a : Int = 1
 '''
 
-example LetDecl&Statement '''
+example LetDecl, Statement '''
 d = 1
 '''
 
-example IfStmt&Statement '''
+example IfStmt, Statement '''
 if (a < b) {
 	assert a < b
 	a
@@ -341,7 +341,7 @@ if (a < b) {
 }
 '''
 
-example IfStmt&Statement '''
+example IfStmt, Statement '''
 if a < b :
 	a
 else :
@@ -386,16 +386,16 @@ AssertStmt = {
 
 /* Expression */
 
-example FuncExpr&Expression \x x+1
-example FuncExpr&Expression \x \y x+y
-example JFuncExpr&Expression () -> x+y
-example JFuncExpr&Expression x -> x+1
-example JSFuncExpr&Expression [](x,y) { x+y }
+example FuncExpr, Expression \x x+1
+example FuncExpr, Expression \x \y x+y
+example JFuncExpr, Expression () -> x+y
+example JFuncExpr, Expression x -> x+1
+example JSFuncExpr, Expression [](x,y) { x+y }
 
-example IfExpr&Expression if(a > b) a + b else a - b
-example IfExpr&Expression if(a < b) then a * b else a / b
-//example ConditionalExpr&Expression a <= b ? a != b : a >= b
-//example ConditionalExpr&Expression a >= b ? a << b : a >> b
+example IfExpr, Expression if(a > b) a + b else a - b
+example IfExpr, Expression if(a < b) then a * b else a / b
+//example ConditionalExpr, Expression a <= b ? a != b : a >= b
+//example ConditionalExpr, Expression a >= b ? a << b : a >> b
 example Expression true && false || !true
 example Expression a == (b%2)^(c|1)
 example Expression f(1,2)
@@ -455,13 +455,13 @@ IfExpr = {
 
 /* MatchExpr */
 
-example MatchExpr&Expression '''
+example MatchExpr, Expression '''
 match x
   case 0 => false
   case _ => true
 '''
 
-example MatchExpr&Expression '''
+example MatchExpr, Expression '''
 match x
   case 1 | 2 => "small"
   case (4 to 5) => "big"
@@ -744,7 +744,7 @@ PROD =
 	/ "*" #MulExpr
 	/ ("%" / [Mm] 'od' EOT) #ModExpr
 
-example CastExpr&Expression '''
+example CastExpr, Expression '''
 (String)1
 '''
 
@@ -792,14 +792,14 @@ FlatArguments = {
 
 /* Primary */
 
-example PrimaryExpression&Expression (1,2) //
-example PrimaryExpression&Expression (1)
-example PrimaryExpression&Expression () //
-example PrimaryExpression&Expression [1,2,3]
-example PrimaryExpression&Expression { name: 'naruto', age: 17 }
-example PrimaryExpression&Expression {"name": 'naruto', "age": '17'}
-example PrimaryExpression&Expression {1;2}
-example PrimaryExpression&Expression {}
+example PrimaryExpression, Expression (1,2) //
+example PrimaryExpression, Expression (1)
+example PrimaryExpression, Expression () //
+example PrimaryExpression, Expression [1,2,3]
+example PrimaryExpression, Expression { name: 'naruto', age: 17 }
+example PrimaryExpression, Expression {"name": 'naruto', "age": '17'}
+example PrimaryExpression, Expression {1;2}
+example PrimaryExpression, Expression {}
 
 
 PrimaryExpression =
@@ -865,21 +865,19 @@ RangeExpr = {
 
 /* Literal */
 
-example TripleExpr&Expression  ```
-'''Apple ${Computer} Inc.'''
-```
+//example TripleExpr, Expression '''
+//'''Apple ${Computer} Inc.'''
+//'''
 
-example StringExpr&Expression "\n\u1234a\0"
-example CharExpr&Expression '\''
-example RationalExpr&Expression 4/5
-example IntExpr&Expression 0177
-example IntExpr&Expression 0b1010_1010
-example IntExpr&Expression 0xdeadbeaf
-example IntExpr&Expression 0L
-example FloatExpr&Expression 1.1e-9
-example TrueExpr&Expression ```
-true
-```
+example StringExpr, Expression "\n\u1234a\0"
+example CharExpr, Expression '\''
+example RationalExpr, Expression 4/5
+example IntExpr, Expression 0177
+example IntExpr, Expression 0b1010_1010
+example IntExpr, Expression 0xdeadbeaf
+example IntExpr, Expression 0L
+example FloatExpr, Expression 1.1e-9
+example TrueExpr, Expression true
 
 public TripleExpr =
 	'\'\'\'' { $(TemplateContent)* #TemplateExpr } '\'\'\''
@@ -1124,13 +1122,15 @@ TupleType =  {
 
 DataType =  { "{"
 	($(Identifier) ("," $(Identifier))*)?
-	#DataType
-"}" }
+	#DataType 
+	"}" 
+}
 
 RecordType =  { "["
 	($(Identifier) ("," $(Identifier))*)?
 	#RecordType
-"]" }
+	"]" 
+}
 
 TypeVariable = Identifier
 TypeParameters = {

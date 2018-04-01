@@ -480,7 +480,7 @@ public class PEG implements OStrings {
 			sb.append("}");
 			break;
 		case Link:
-			showingAsFunc("$" + pe.label(), null, pe.get(0), sb);
+			showingAsFunc("$" + pe.label(), sb, pe.get(0));
 			break;
 		case Tag:
 			sb.append("#" + pe.label());
@@ -496,27 +496,30 @@ public class PEG implements OStrings {
 			sb.append(pe.label());
 			break;
 		case App:
-			showingAsFunc(pe.get(0).toString(), null, pe.get(1), sb);
+			showingAsFunc(pe.get(0).toString(), sb, pe.get(1));
 			break;
 
 		/* */
 		case Scope: /* @symbol(A) */
-			showingAsFunc("scope", null, pe.get(0), sb);
+			showingAsFunc("block", sb, pe.get(0));
+			break;
+		case State: /* @symbol(A) */
+			showingAsFunc("state", sb, pe.get(0));
 			break;
 		case Symbol: /* @symbol(A) */
-			showingAsFunc("symbol", null, pe.get(0), sb);
+			showingAsFunc("symbol", sb, pe.get(0));
 			break;
 		case Contains:
-			showingAsFunc("contains", null, pe.get(0), sb);
+			showingAsFunc("contains", sb, pe.get(0));
 			break;
 		case Equals:
-			showingAsFunc("equals", null, pe.get(0), sb);
+			showingAsFunc("equals", sb, pe.get(0));
 			break;
 		case Exists:
-			showingAsFunc("exists", null, pe.get(0), sb);
+			showingAsFunc("exists", sb, pe.get(0));
 			break;
 		case Match:
-			showingAsFunc("match", null, pe.get(0), sb);
+			showingAsFunc("match", sb, pe.get(0));
 			break;
 		case Eval:
 			sb.append(pe.label() + "()");
@@ -526,10 +529,10 @@ public class PEG implements OStrings {
 			sb.append("if(" + pe.label() + ")");
 			break;
 		case On: /* @on(f, ) */
-			showingAsFunc("on", pe.label(), pe.get(0), sb);
+			showingAsFunc("on", sb, pe.label(), pe.get(0));
 			break;
 		case Off: /* @on(!f, e) */
-			showingAsFunc("on", "!" + pe.label(), pe.get(0), sb);
+			showingAsFunc("on", sb, "!" + pe.label(), pe.get(0));
 			break;
 		case DFA:
 			pe.strOut(sb);
@@ -587,14 +590,17 @@ public class PEG implements OStrings {
 		}
 	}
 
-	private static void showingAsFunc(String func, Object param, Expr pe, StringBuilder sb) {
+	private static void showingAsFunc(String func, StringBuilder sb, Object... params) {
 		sb.append(func);
 		sb.append("(");
-		if (param != null) {
-			sb.append(param);
-			sb.append(", ");
+		int c = 0;
+		for (Object p : params) {
+			if (c > 0) {
+				sb.append(",");
+			}
+			OStrings.append(sb, p);
+			c++;
 		}
-		pe.strOut(sb);
 		sb.append(")");
 	}
 
@@ -831,15 +837,9 @@ public class PEG implements OStrings {
 
 		PEG nez = PEG.nez();
 		// TPEG.dump(nez);
-		PEG peg = new PEG();
-		peg.load("/blue/origami/grammar/math.opeg");
-		peg.testMatch("Expression", "1+2");
-
-		Hack.expr("('\\\\\\''   /  ![']  .)*").testMatch("A", "a'b", "[# 'a']", "a\\''b", "[# 'a\\'']");
-		/* '...' */
-		Hack.expr("'\\''     ('\\\\\\''    /    ![']  .)* '\\''").testMatch("A", "'a'b", "[# ''a'']", "'a\\''b",
-				"[# ''a\\''']");
-
+		// PEG peg = new PEG();
+		// peg.load("/blue/origami/grammar/math.opeg");
+		// peg.testMatch("Expression", "1+2");
 		// TPEG
 		// Hack.testFunc("isTree", "T; T = {.}", e -> TPEG.isTree(e), "true");
 
@@ -852,7 +852,7 @@ public class PEG implements OStrings {
 		// Hack.testLoad2("/blue/origami/grammar/java.opeg");
 
 		// Main.testMain("example", "-g", "chibi.opeg");
-		// Main.testMain("example", "-g", "java.opeg");
+		Main.testMain("example", "-g", "java.opeg");
 		// Main.testMain("example", "-g", "js.opeg");
 		Class<?> c = Main.class;
 	}

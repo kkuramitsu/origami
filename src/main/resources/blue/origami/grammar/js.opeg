@@ -212,7 +212,7 @@ Statement = Block
           / ExpressionStatement
 
 Block = FunctionBody
-EmptyStatement = ';' //{ #Empty }
+EmptyStatement = { ';' #Empty }
 VariableStatement = "var" __ VariableDeclaration EOS
 VariableDeclaration = { $list(VariableDeclarationList) #MultiVarDecl }
                     / InitDecl

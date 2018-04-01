@@ -451,7 +451,9 @@ class Loader {
 			return new On(flag, es[2]);
 		case "off":
 			return new Off(es[1].toString(), es[2]);
-		case "scope":
+		case "state":
+			return new PEG.State(es[1]);
+		case "block":
 			return new PEG.Scope(es[1]);
 		case "symbol":
 			return new Symbol(es[1]);
@@ -474,13 +476,16 @@ class Loader {
 		case "not":
 			return new Not(es[1]);
 		case "new":
+		case "tree":
 			return new TPEG.Tree(es[1]);
 		case "fold":
-			return new TPEG.Fold(null, es[1]);
+			return new TPEG.Fold(ParseTree.EmptyLabel, es[1]);
 		case "add":
-			return new TPEG.Link(null, es[1]);
+			return new TPEG.Link(ParseTree.EmptyLabel, es[1]);
 		case "set":
 			return new TPEG.Link(es[1].toString(), es[2]);
+		case "untree":
+			return new TPEG.Untree(es[1]);
 		default:
 			Hack.TODO(name);
 			return new App(es[0], es);

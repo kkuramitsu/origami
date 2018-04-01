@@ -42,6 +42,9 @@ public class PEGTest {
 		nez.testMatch("Expression", "$name(a)", "[#Let $=[#Name 'a'] $=[#Name 'name']]");
 		nez.testMatch("Expression", "$(name=)a", "[#Let $=[#Name 'a'] $=[#Name 'name']]");
 
+		nez.testMatch("Func", "<block INDENTBLOCK>");
+		nez.testMatch("Expression", "<block INDENT_BLOCK>");
+
 		nez.testMatch("Expression", "a a", "[#Seq $=[#Name 'a'] $=[#Name 'a']]");
 		nez.testMatch("Expression", "a b c", "[#Seq $=[#Seq $=[#Name 'c'] $=[#Name 'b']] $=[#Name 'a']]");
 		nez.testMatch("Expression", "a/b / c", "[#Or $=[#Or $=[#Name 'c'] $=[#Name 'b']] $=[#Name 'a']]");
