@@ -8,7 +8,7 @@ import origami.nez2.Expr.PTag;
 import origami.nez2.TPEG.OptimizedTree;
 
 public interface Generator<X> {
-	public X generate(String start, HashMap<String, Expr> nameMap, List<String> list);
+	public X generate(String start, HashMap<String, Expr> nameMap, List<String> list, HashMap<String, Integer> memoMap);
 
 	default void log(String msg) {
 		if (Optimizer.isVerbose) {
@@ -37,29 +37,29 @@ class BasicGenerator implements Generator<Parser> {
 	}
 
 	@Override
-	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list) {
-		int mp = 1;
+	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list,
+			HashMap<String, Integer> memoMap) {
 		this.base = new ParseFunc[list.size()];
+		assert (memoMap.size() < 1024);
 		for (String n : list) {
 			Expr pe2 = nameMap.get(n);
 			this.log("generating ... " + n + " = " + pe2);
 			ParseFunc f = this.gen3(pe2);
-			// if (TPEG.isTree(pe2)) {
-			// this.funcMap.put(n, new MemoPoint(n, mp++, true, f));
-			// } else if (TPEG.isUnit(pe2)) {
-			// this.funcMap.put(n, new MemoPoint(n, mp++, false, f));
-			// } else {
+			Integer mp = memoMap.get(n);
+			if (mp != null) {
+				f = new MemoPoint(n, mp++, TPEG.isTree(pe2), f);
+			}
 			this.funcMap.put(n, f);
-			// }
 		}
+
 		this.recurMap.forEach((n, x) -> {
 			this.base[x] = this.funcMap.get(n);
 			if (this.base[x] == null) {
 				System.err.println("no index " + n);
 			}
-			this.log("recur ... " + n + ", index=" + x + ", f=" + this.base[x]);
+			// this.log("recur ... " + n + ", index=" + x + ", f=" + this.base[x]);
 		});
-		return new Parser(this.funcMap.get(start), this.funcMap, mp - 1);
+		return new Parser(this.funcMap.get(start), this.funcMap, memoMap.size());
 	}
 
 	ParseFunc gen3(Expr pe) {
@@ -320,11 +320,11 @@ class BasicGenerator implements Generator<Parser> {
 		return true;
 	}
 
-	private final static boolean mback3(ParserContext px, int pos, T tree) {
-		px.pos = mbackpos(px, pos);
-		px.tree = tree;
-		return true;
-	}
+	// private final static boolean mback3(ParserContext px, int pos, T tree) {
+	// px.pos = mbackpos(px, pos);
+	// px.tree = tree;
+	// return true;
+	// }
 
 	private final static boolean mback4(ParserContext px, State state) {
 		px.state = state;
@@ -352,10 +352,10 @@ class BasicGenerator implements Generator<Parser> {
 	}
 
 	private final static boolean mlink(ParserContext px, String tag, T child, T prev) {
-		if (child != null && !(child instanceof ParseTree)) {
-			System.err.println("link " + tag + " not child " + child);
-			return false;
-		}
+		// if (child != null && !(child instanceof ParseTree)) {
+		// System.err.println("link " + tag + " not child " + child);
+		// return false;
+		// }
 		// if (prev != null && !(prev instanceof TreeLink)) {
 		// System.err.println("link " + tag + " not prev " + prev.getClass());
 		// return false;
@@ -371,6 +371,84 @@ class BasicGenerator implements Generator<Parser> {
 
 	final static State getstate(State state, int ns) {
 		return (state == null || state.ns == ns) ? state : getstate(state.sprev, ns);
+	}
+
+	/* MemoPoint */
+
+	private final static long memosize = 1024;
+
+	private final static long getkey(int pos, int mp) {
+		return pos * memosize + mp;
+	}
+
+	private final static MemoEntry getmemo(ParserContext px, long key) {
+		return px.memos[(int) (key % px.memos.length)];
+	}
+
+	private final static boolean mstore3(ParserContext px, MemoEntry memo, long key, boolean matched) {
+		memo.key = key;
+		memo.mpos = px.pos;
+		memo.mtree = px.tree;
+		memo.mstate = px.state;
+		memo.matched = matched;
+		return matched;
+	}
+
+	static class MemoPoint implements ParseFunc {
+		String name;
+		final int mp;
+		final ParseFunc f;
+		final boolean tree;
+		boolean unused;
+		int hit;
+		int memoed;
+
+		MemoPoint(String name, int mp, boolean tree, ParseFunc f) {
+			this.name = name;
+			this.mp = mp;
+			this.f = f;
+			this.tree = tree;
+		}
+
+		void reset() {
+			this.unused = false;
+			this.hit = 0;
+			this.memoed = 0;
+		}
+
+		@Override
+		public boolean apply(ParserContext px) {
+			// System.err.println(this.name + " " + px.pos);
+			if (this.unused) {
+				return this.f.apply(px);
+			} else {
+				int pos = px.pos;
+				long key = getkey(pos, this.mp);
+				MemoEntry memo = getmemo(px, key);
+				if (memo.key == key && memo.mstate == px.state) {
+					this.hit++;
+					px.pos = memo.mpos;
+					px.state = memo.mstate;
+					if (this.tree) {
+						px.tree = memo.mtree;
+					}
+					return memo.matched;
+				}
+				this.memoed++;
+				if (this.memoed == 101) {
+					if (this.hit < 10) {
+						this.unused = true;
+					}
+				}
+				return mstore3(px, memo, key, this.f.apply(px));
+			}
+		}
+
+		@Override
+		public String toString() {
+			return String.format("%s#%d %c %d/%d %f%%", this.name, this.mp, this.tree ? 'T' : 'U', this.hit,
+					this.memoed, this.hit * 100.0 / this.memoed);
+		}
 	}
 
 }
@@ -412,7 +490,8 @@ class ParserFuncGenerator implements Generator<Parser> {
 	}
 
 	@Override
-	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list) {
+	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list,
+			HashMap<String, Integer> memoMap) {
 		int mp = 1;
 		this.base = new ParseFunc[list.size()];
 		for (String n : list) {

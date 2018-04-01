@@ -53,7 +53,8 @@ class NezCC2Visitor2 implements Generator<Void> {
 	}
 
 	@Override
-	public Void generate(String start, HashMap<String, Expr> nameMap, List<String> list) {
+	public Void generate(String start, HashMap<String, Expr> nameMap, List<String> list,
+			HashMap<String, Integer> memoMap) {
 
 		this.pg.declConst(this.pg.T("pos"), "memosize", "0");
 		this.pg.declConst(this.pg.T("pos"), "memolen", "1");

@@ -18,9 +18,9 @@ public class Hack {
 				System.err.print(" " + a);
 			}
 			System.err.println();
-			if (!AssertMode) {
-				assert false;
-			}
+			// if (!AssertMode) {
+			// assert false;
+			// }
 		}
 	}
 

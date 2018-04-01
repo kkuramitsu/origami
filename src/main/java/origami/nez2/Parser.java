@@ -25,7 +25,7 @@ public class Parser {
 		px.pos = spos;
 		px.headpos = spos;
 		px.length = epos;
-		px.memos = Arrays.stream(new MemoEntry[this.memoSize]).map(m -> {
+		px.memos = Arrays.stream(new MemoEntry[this.memoSize * 64]).map(m -> {
 			return new MemoEntry();
 		}).toArray(MemoEntry[]::new);
 		return px;

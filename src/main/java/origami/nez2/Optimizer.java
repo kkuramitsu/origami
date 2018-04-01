@@ -29,11 +29,6 @@ class Optimizer {
 		// System.out.println("flagSet: " + flagSet);
 		if (flagSet.size() > 0) {
 			gx.log("flagSet: " + flagSet);
-			// for (String f : flagSet) {
-			// prodMap.forEach((n, e) -> {
-			// // System.out.printf("FLAG %s %s %s=%s\n", f, First.reachFlag(e, f), n, e);
-			// });
-			// }
 		}
 		HashMap<String, NonTerm2> nameMap = new HashMap<>();
 		NonTerm2 snt = new NonTerm2(start, null, PEG.Empty_);
@@ -46,9 +41,9 @@ class Optimizer {
 			nt.inner = log("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
 		});
 		// 1. optimizing ..
-		nameMap.forEach((name, nt) -> {
-			// nt.inner = trace("dfa", name, nt.get(0), (p) -> DFA.optimizeChoice(p));
-		});
+		// nameMap.forEach((name, nt) -> {
+		// nt.inner = trace("dfa", name, nt.get(0), (p) -> DFA.optimizeChoice(p));
+		// });
 		nameMap.forEach((name, nt) -> {
 			nt.inner = trace("inline", name, nt.get(0), (p) -> inline(p));
 		});
@@ -70,7 +65,15 @@ class Optimizer {
 		}
 		gx.log("list: " + list);
 		gx.log("crossrefs: " + crossRefs);
-		return gx.generate(start, nameMap2, list);
+		int mp = 1;
+		HashMap<String, Integer> memoMap = new HashMap<>();
+		for (String n : list) {
+			Expr pe2 = nameMap.get(n);
+			if (TPEG.isTree(pe2) || TPEG.isUnit(pe2)) {
+				memoMap.put(n, mp++);
+			}
+		}
+		return gx.generate(start, nameMap2, list, memoMap);
 	}
 
 	static Expr log(String p, String name, Expr pe, Function<Expr, Expr> f) {
