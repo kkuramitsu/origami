@@ -1,5 +1,7 @@
 package origami.nez2;
 
+import java.util.function.BiConsumer;
+
 public class ParseTree implements T, OStrings {
 	static final String EmptyTag = "";
 	static final String EmptyLabel = EmptyTag;
@@ -57,13 +59,18 @@ public class ParseTree implements T, OStrings {
 		return null;
 	}
 
-	public final ParseTree[] list() {
+	public final int size() {
 		int c = 0;
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
 			if (cur.child != null) {
 				c++;
 			}
 		}
+		return c;
+	}
+
+	public final ParseTree[] asArray() {
+		int c = this.size();
 		ParseTree[] ts = new ParseTree[c];
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
 			if (cur.child != null) {
@@ -71,6 +78,14 @@ public class ParseTree implements T, OStrings {
 			}
 		}
 		return ts;
+	}
+
+	public void forEach(BiConsumer<String, ParseTree> action) {
+		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {
+			if (cur.child != null) {
+				action.accept(cur.tag, cur.child);
+			}
+		}
 	}
 
 	public final String asString() {

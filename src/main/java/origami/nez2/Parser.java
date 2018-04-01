@@ -25,7 +25,7 @@ public class Parser {
 		px.pos = spos;
 		px.headpos = spos;
 		px.length = epos;
-		px.memos = Arrays.stream(new MemoEntry[this.memoSize * 64]).map(m -> {
+		px.memos = Arrays.stream(new MemoEntry[this.memoSize * 128 + 1]).map(m -> {
 			return new MemoEntry();
 		}).toArray(MemoEntry[]::new);
 		return px;
@@ -86,7 +86,7 @@ public class Parser {
 		});
 	}
 
-	public class ParseException extends IOException {
+	public static class ParseException extends IOException {
 
 		private static final long serialVersionUID = 1L;
 		Token token;

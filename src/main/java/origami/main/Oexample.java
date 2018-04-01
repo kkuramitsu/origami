@@ -72,41 +72,46 @@ public class Oexample extends Oparse {
 		List<ParseTree> list = peg.getMemo("examples");
 		if (list != null) {
 			for (ParseTree t : list) {
-				ParseTree[] ts = t.list();
-				Token[] names = Arrays.stream(ts[0].list()).map(x -> x.asToken(file)).toArray(Token[]::new);
+				ParseTree[] ts = t.asArray();
+				Token[] names = Arrays.stream(ts[0].asArray()).map(x -> x.asToken(file)).toArray(Token[]::new);
 				Token doc = ts[1].asToken(file);
-				for (int i = 0; i < names.length; i++) {
-					Parser p = peg.getParser(names[i].getSymbol());
-					if (!this.perform(p, names[i], i, doc)) {
-						break;
+				final Token target = names[0];
+				String s = target.toString();
+				try {
+					for (int i = 0; i < names.length; i++) {
+						// target = names[i];
+						Parser p = peg.getParser(names[i].getSymbol());
+						this.perform(p, names[i], i, doc);
+						if (i > 0) {
+							s += ", " + names[i].getSymbol();
+						}
+						final String msg = s;
+						this.c(Green, () -> {
+							p("[PASS] " + msg);
+						});
 					}
+				} catch (Parser.ParseException e) {
+					this.c(Red, () -> {
+						p("[FAIL] " + target);
+						e.printStackTrace();
+					});
 				}
 			}
 		}
 	}
 
-	protected boolean perform(Parser p, Token name, int count, Token doc) {
+	protected void perform(Parser p, Token name, int count, Token doc) throws Parser.ParseException {
 		this.tested++;
-		try {
-			long t1 = System.nanoTime();
-			ParseTree t = p.parse(doc);
-			this.succ++;
-			long t2 = System.nanoTime();
-			this.c(Green, () -> {
-				p("[PASS] " + name);
-			});
-			if (count == 0) {
-				p("   " + t);
-			}
-			this.record(name.getSymbol(), t2 - t1);
-			return true;
-		} catch (IOException e) {
-			this.c(Red, () -> {
-				p("[FAIL] " + name);
-				e.printStackTrace();
-			});
+		long t1 = System.nanoTime();
+		ParseTree t = p.parse(doc);
+		this.succ++;
+		long t2 = System.nanoTime();
+		if (count == 0) {
+			this.dump("", doc.getSymbol());
+			p("--->");
+			this.dump("   ", t);
 		}
-		return false;
+		this.record(name.getSymbol(), t2 - t1);
 	}
 
 	private void record(String uname, long t) {

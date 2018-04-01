@@ -40,14 +40,13 @@ class BasicGenerator implements Generator<Parser> {
 	public Parser generate(String start, HashMap<String, Expr> nameMap, List<String> list,
 			HashMap<String, Integer> memoMap) {
 		this.base = new ParseFunc[list.size()];
-		assert (memoMap.size() < 1024);
 		for (String n : list) {
 			Expr pe2 = nameMap.get(n);
 			this.log("generating ... " + n + " = " + pe2);
-			ParseFunc f = this.gen3(pe2);
+			ParseFunc f = this.gen(pe2);
 			Integer mp = memoMap.get(n);
 			if (mp != null) {
-				f = new MemoPoint(n, mp++, TPEG.isTree(pe2), f);
+				f = new MemoPoint(n, memoMap.size(), mp, TPEG.isTree(pe2), f);
 			}
 			this.funcMap.put(n, f);
 		}
@@ -62,7 +61,7 @@ class BasicGenerator implements Generator<Parser> {
 		return new Parser(this.funcMap.get(start), this.funcMap, memoMap.size());
 	}
 
-	ParseFunc gen3(Expr pe) {
+	ParseFunc gen(Expr pe) {
 		switch (pe.ptag) {
 		case Empty:
 			return ParserFuncGenerator::succ;
@@ -107,7 +106,7 @@ class BasicGenerator implements Generator<Parser> {
 			}
 		}
 		case Seq: {
-			final ParseFunc[] fs = Arrays.stream(pe.flatten(PTag.Seq)).map(e -> this.gen3(e)).toArray(ParseFunc[]::new);
+			final ParseFunc[] fs = Arrays.stream(pe.flatten(PTag.Seq)).map(e -> this.gen(e)).toArray(ParseFunc[]::new);
 			final int tail = fs.length - 1;
 			return (px) -> {
 				for (int i = 0; i < tail; i++) {
@@ -120,7 +119,7 @@ class BasicGenerator implements Generator<Parser> {
 		}
 		case Alt:
 		case Or: {
-			final ParseFunc[] fs = Arrays.stream(pe.flatten(pe.tag())).map(e -> this.gen3(e)).toArray(ParseFunc[]::new);
+			final ParseFunc[] fs = Arrays.stream(pe.flatten(pe.tag())).map(e -> this.gen(e)).toArray(ParseFunc[]::new);
 			final int tail = fs.length - 1;
 			return (px) -> {
 				int pos = px.pos;
@@ -138,14 +137,14 @@ class BasicGenerator implements Generator<Parser> {
 			};
 		}
 		case And: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				return f.apply(px) && mback1(px, pos);
 			};
 		}
 		case Not: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				T tree = px.tree;
@@ -154,7 +153,7 @@ class BasicGenerator implements Generator<Parser> {
 			};
 		}
 		case Many: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				T tree = px.tree;
@@ -168,7 +167,7 @@ class BasicGenerator implements Generator<Parser> {
 			};
 		}
 		case OneMore: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				T tree = px.tree;
@@ -189,7 +188,7 @@ class BasicGenerator implements Generator<Parser> {
 			final String tag = t.tag == null ? ParseTree.EmptyTag : t.tag;
 			final int spos = t.spos;
 			final int epos = t.epos;
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				px.tree = null;
@@ -198,7 +197,7 @@ class BasicGenerator implements Generator<Parser> {
 		}
 		case Link: {
 			final String label = pe.label();
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				T tree = px.tree;
 				return f.apply(px) && mlink(px, label, px.tree, tree);
@@ -210,7 +209,7 @@ class BasicGenerator implements Generator<Parser> {
 			final String tag = t.tag == null ? ParseTree.EmptyTag : t.tag;
 			final int spos = t.spos;
 			final int epos = t.epos;
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
 				return mlink(px, label, px.tree, null) && f.apply(px) && mtree(px, tag, pos + spos, px.pos + epos);
@@ -224,16 +223,27 @@ class BasicGenerator implements Generator<Parser> {
 		}
 		case Val:
 			return ParserFuncGenerator::succ;
+		case Untree: {
+			final ParseFunc f = this.gen(pe.get(0));
+			return (px) -> {
+				T tree = px.tree;
+				if (f.apply(px)) {
+					px.tree = tree;
+					return true;
+				}
+				return false;
+			};
+		}
 		/* */
 		case Scope: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				State state = px.state;
 				return f.apply(px) && mback4(px, state);
 			};
 		}
 		case State: {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			return (px) -> {
 				State state = px.state;
 				px.state = null;
@@ -241,7 +251,7 @@ class BasicGenerator implements Generator<Parser> {
 			};
 		}
 		case Symbol: /* @symbol(A) */ {
-			final ParseFunc f = this.gen3(pe.get(0));
+			final ParseFunc f = this.gen(pe.get(0));
 			final int ns = this.stateId(pe.label());
 			return (px) -> {
 				int pos = px.pos;
@@ -260,24 +270,77 @@ class BasicGenerator implements Generator<Parser> {
 						&& mmov(px, state.slen);
 			};
 		}
-		case Contains:
-		case Equals:
-		case Eval:
-			return ParserFuncGenerator::succ;
+		case Equals: {
+			final int ns = this.stateId(pe.label());
+			final ParseFunc f = this.gen(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				if (f.apply(px)) {
+					final State state = getstate(px.state, ns);
+					return state != null && state.slen == px.pos - pos
+							&& matchmany(px.inputs, pos, px.inputs, state.spos, state.slen);
+				}
+				return false;
+			};
+		}
+		case Contains: {
+			final int ns = this.stateId(pe.label());
+			final ParseFunc f = this.gen(pe.get(0));
+			return (px) -> {
+				int pos = px.pos;
+				if (f.apply(px)) {
+					for (State state = getstate(px.state, ns); state != null; state = getstate(state, ns)) {
+						if (state.slen == px.pos - pos
+								&& matchmany(px.inputs, pos, px.inputs, state.spos, state.slen)) {
+							return true;
+						}
+					}
+				}
+				return false;
+			};
+		}
+		case Eval: {
+			return ((PEG.Eval) pe).func;
+		}
+		case Unary: {
+			final ParseFunc f = this.gen(pe.get(0));
+			return ((PEG.Unary) pe).func.apply(f);
+		}
 		/* */
 		case DFA: {
 			final ParseFunc[] fs = new ParseFunc[pe.size() + 1];
 			final byte[] charMap = pe.charMap();
 			fs[0] = ParserFuncGenerator::fail;
 			for (int i = 0; i < pe.size(); i++) {
-				fs[i + 1] = this.gen3(pe.get(i));
+				fs[i + 1] = this.gen(pe.get(i));
 			}
 			return (px) -> fs[charMap[px.inputs[px.pos] & 0xff] & 0xff].apply(px);
 		}
 		/* */
-		case If: /* @if(flag, e) */
-		case On: /* @on(flag, e) */
+		case If: /* @if(flag, e) */ {
+			final int ns = this.stateId(pe.label());
+			return (px) -> {
+				final State state = getstate(px.state, ns);
+				return (state != null && state.spos == 1);
+			};
+		}
+		case On: /* @on(flag, e) */ {
+			final int ns = this.stateId(pe.label());
+			final ParseFunc f = this.gen(pe.get(0));
+			return (px) -> {
+				final State state = px.state;
+				px.state = new State(ns, 1, 1, px.state);
+				return f.apply(px) && mback4(px, state);
+			};
+		}
 		case Off: /* @off(flag, e) */
+			final int ns = this.stateId(pe.label());
+			final ParseFunc f = this.gen(pe.get(0));
+			return (px) -> {
+				final State state = px.state;
+				px.state = new State(ns, 0, 0, px.state);
+				return f.apply(px) && mback4(px, state);
+			};
 		default:
 			Hack.TODO("gen", pe.getClass().getSimpleName(), pe);
 			return ParserFuncGenerator::succ;
@@ -285,7 +348,7 @@ class BasicGenerator implements Generator<Parser> {
 	}
 
 	// Obits32
-	private final static boolean bits32(int[] bits, byte b) {
+	final static boolean bits32(int[] bits, byte b) {
 		int n = b & 0xff;
 		// System.err.printf("$$$ %s %x %s ", bits, n, (bits[n / 32] & (1 << (n % 32)))
 		// != 0);
@@ -310,12 +373,12 @@ class BasicGenerator implements Generator<Parser> {
 		return pos;
 	}
 
-	private final static boolean mmov(ParserContext px, int pos) {
+	final static boolean mmov(ParserContext px, int pos) {
 		px.pos = px.pos + pos;
 		return px.pos < px.length;
 	}
 
-	private final static boolean mback1(ParserContext px, int pos) {
+	final static boolean mback1(ParserContext px, int pos) {
 		px.pos = mbackpos(px, pos);
 		return true;
 	}
@@ -326,7 +389,7 @@ class BasicGenerator implements Generator<Parser> {
 	// return true;
 	// }
 
-	private final static boolean mback4(ParserContext px, State state) {
+	final static boolean mback4(ParserContext px, State state) {
 		px.state = state;
 		return true;
 	}
@@ -338,20 +401,20 @@ class BasicGenerator implements Generator<Parser> {
 		return true;
 	}
 
-	static boolean succ(ParserContext px) {
+	final static boolean succ(ParserContext px) {
 		return true;
 	}
 
-	static boolean fail(ParserContext px) {
+	final static boolean fail(ParserContext px) {
 		return false;
 	}
 
-	private final static boolean mtree(ParserContext px, String tag, int spos, int epos) {
+	final static boolean mtree(ParserContext px, String tag, int spos, int epos) {
 		px.tree = new ParseTree(tag, px.inputs, spos, epos, px.tree);
 		return true;
 	}
 
-	private final static boolean mlink(ParserContext px, String tag, T child, T prev) {
+	final static boolean mlink(ParserContext px, String tag, T child, T prev) {
 		// if (child != null && !(child instanceof ParseTree)) {
 		// System.err.println("link " + tag + " not child " + child);
 		// return false;
@@ -364,8 +427,10 @@ class BasicGenerator implements Generator<Parser> {
 		return true;
 	}
 
-	private final static boolean mstate(ParserContext px, int ns, int pos) {
-		px.state = new State(ns, pos, px.pos, px.state);
+	final static boolean mstate(ParserContext px, int ns, int pos) {
+		// System.err.printf("Symbol: '%s'\n", new String(px.inputs, pos, px.pos -
+		// pos));
+		px.state = new State(ns, pos, px.pos - pos, px.state);
 		return true;
 	}
 
@@ -374,16 +439,6 @@ class BasicGenerator implements Generator<Parser> {
 	}
 
 	/* MemoPoint */
-
-	private final static long memosize = 1024;
-
-	private final static long getkey(int pos, int mp) {
-		return pos * memosize + mp;
-	}
-
-	private final static MemoEntry getmemo(ParserContext px, long key) {
-		return px.memos[(int) (key % px.memos.length)];
-	}
 
 	private final static boolean mstore3(ParserContext px, MemoEntry memo, long key, boolean matched) {
 		memo.key = key;
@@ -396,6 +451,7 @@ class BasicGenerator implements Generator<Parser> {
 
 	static class MemoPoint implements ParseFunc {
 		String name;
+		final long msize;
 		final int mp;
 		final ParseFunc f;
 		final boolean tree;
@@ -403,8 +459,9 @@ class BasicGenerator implements Generator<Parser> {
 		int hit;
 		int memoed;
 
-		MemoPoint(String name, int mp, boolean tree, ParseFunc f) {
+		MemoPoint(String name, int msize, int mp, boolean tree, ParseFunc f) {
 			this.name = name;
+			this.msize = msize;
 			this.mp = mp;
 			this.f = f;
 			this.tree = tree;
@@ -423,8 +480,8 @@ class BasicGenerator implements Generator<Parser> {
 				return this.f.apply(px);
 			} else {
 				int pos = px.pos;
-				long key = getkey(pos, this.mp);
-				MemoEntry memo = getmemo(px, key);
+				long key = this.msize * pos + this.mp;
+				MemoEntry memo = px.memos[(int) (key % px.memos.length)];
 				if (memo.key == key && memo.mstate == px.state) {
 					this.hit++;
 					px.pos = memo.mpos;

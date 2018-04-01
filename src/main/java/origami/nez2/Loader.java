@@ -73,24 +73,24 @@ class Loader {
 		case "Not":
 			return new Not(this.conv(ns, t.get(ParseTree.EmptyLabel)));
 		case "Seq":
-			ts = t.list();
+			ts = t.asArray();
 			return this.conv(ns, ts[0]).andThen(this.conv(ns, ts[1]));
 		case "Or":
-			ts = t.list();
+			ts = t.asArray();
 			return this.conv(ns, ts[0]).orElse(this.conv(ns, ts[1]));
 		case "Alt":
-			ts = t.list();
+			ts = t.asArray();
 			return this.conv(ns, ts[0]).orAlso(this.conv(ns, ts[1]));
 		case "Tree":
 			return new TPEG.Tree(this.conv(ns, t.get(ParseTree.EmptyLabel)));
 		case "Fold":
-			ts = t.list();
+			ts = t.asArray();
 			if (ts.length == 2) {
 				return new TPEG.Fold(ts[0].asString(), this.conv(ns, ts[1]));
 			}
 			return new TPEG.Fold(ParseTree.EmptyLabel, this.conv(ns, ts[0]));
 		case "Let":
-			ts = t.list();
+			ts = t.asArray();
 			if (ts.length == 2) {
 				return new TPEG.Link(ts[0].asString(), this.conv(ns, ts[1]));
 			}
@@ -100,7 +100,7 @@ class Loader {
 		case "Val":
 			return new TPEG.Val(u(t.asString()).getBytes());
 		case "Func": {
-			ts = t.list();
+			ts = t.asArray();
 			Expr[] es = Arrays.stream(ts).map(x -> this.conv(ns, x)).toArray(Expr[]::new);
 			return app(es);
 		}
@@ -126,14 +126,14 @@ class Loader {
 		String key = t.tag();
 		switch (key) {
 		case "Source": {
-			for (ParseTree sub : t.list()) {
+			for (ParseTree sub : t.asArray()) {
 				this.loadEach(sub);
 			}
 			break;
 		}
 		case "Production": {
 			// System.err.println("=====\n" + t.asString());
-			ParseTree[] ts = t.list();
+			ParseTree[] ts = t.asArray();
 			if (ts.length == 2) {
 				String name = ts[0].asString();
 				this.peg.add(PEG.isPublicName(name), Override, name, this.conv(emptyStrings, ts[1]));
@@ -145,24 +145,24 @@ class Loader {
 			break;
 		}
 		case "Macro": { // list x = x 1
-			ParseTree[] ts = t.list();
+			ParseTree[] ts = t.asArray();
 			if (ts.length == 3) {
 				String name = ts[0].asString();
-				String[] ns = Arrays.stream(ts[1].list()).map(x -> t.asString()).toArray(String[]::new);
+				String[] ns = Arrays.stream(ts[1].asArray()).map(x -> t.asString()).toArray(String[]::new);
 				this.peg.add(PEG.isPublicName(name), Override, name, this.conv(ns, ts[2]));
 			} else {
 				assert (ts.length == 4);
 				boolean export = ts[0].asString().equals("public");
-				String[] ns = Arrays.stream(ts[2].list()).map(x -> t.asString()).toArray(String[]::new);
+				String[] ns = Arrays.stream(ts[2].asArray()).map(x -> t.asString()).toArray(String[]::new);
 				this.peg.add(export, Override, ts[1].asString(), this.conv(ns, ts[3]));
 			}
 			break;
 		}
 		case "Import": { // import name, name, name from 'hoge.oxml'
-			ParseTree[] ts = t.list();
+			ParseTree[] ts = t.asArray();
 			PEG lpeg = new PEG();
 			lpeg.load(this.basePath + ts[1].asString());
-			String[] ns = Arrays.stream(ts[0].list()).map(x -> t.asString()).toArray(String[]::new);
+			String[] ns = Arrays.stream(ts[0].asArray()).map(x -> t.asString()).toArray(String[]::new);
 			boolean override = true;
 			if (ns.length == 1 && ns[0].equals("*")) {
 				ns = lpeg.pubList.stream().toArray(String[]::new);

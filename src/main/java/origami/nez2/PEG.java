@@ -378,29 +378,27 @@ public class PEG implements OStrings {
 		}
 	}
 
-	@FunctionalInterface
-	public interface UnaryFunc {
-		boolean apply(ParserContext px, ParseFunc f);
-	}
-
 	public static class Unary extends ExprP1 {
-		UnaryFunc func;
+		Function<ParseFunc, ParseFunc> func;
 
-		public Unary(String label, Expr pe, UnaryFunc func) {
+		public Unary(String label, Expr pe, Function<ParseFunc, ParseFunc> func) {
 			this.ptag = PTag.Unary;
 			this.label = label;
 			this.inner = pe;
 			this.func = func;
 		}
 
-		public static UnaryFunc cov(final int[] enterCounts, final int[] exitCounts, final int index) {
-			return (px, f) -> {
-				enterCounts[index]++;
-				boolean b = f.apply(px);
-				if (b) {
-					exitCounts[index]++;
-				}
-				return b;
+		public static Function<ParseFunc, ParseFunc> cov(final int[] enterCounts, final int[] exitCounts,
+				final int index) {
+			return (f) -> {
+				return px -> {
+					enterCounts[index]++;
+					boolean b = f.apply(px);
+					if (b) {
+						exitCounts[index]++;
+					}
+					return b;
+				};
 			};
 		}
 	}
@@ -839,9 +837,9 @@ public class PEG implements OStrings {
 		// Hack.testLoad2("/blue/origami/grammar/js.opeg");
 		// Hack.testLoad2("/blue/origami/grammar/java.opeg");
 
-		// Main.testMain("example", "-g", "chibi.opeg");
+		Main.testMain("example", "-g", "chibi.opeg");
 		// Main.testMain("example", "-g", "java.opeg");
-		Main.testMain("example", "-g", "js.opeg");
+		// Main.testMain("example", "-g", "js.opeg");
 		Class<?> c = Main.class;
 	}
 
