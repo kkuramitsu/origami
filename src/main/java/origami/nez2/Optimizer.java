@@ -23,15 +23,17 @@ class Optimizer {
 	<X> X generate(String start, Expr pe, Generator<X> gx) {
 		HashMap<String, Expr> prodMap = new HashMap<>();
 		TreeSet<String> flagSet = new TreeSet<>();
-		int c = 0;
 		prodMap.put(start, pe);
-		while (c < prodMap.size()) {
-			c = prodMap.size();
-			this.makeNameList(start, pe, prodMap, flagSet);
-		}
+		this.makeNameList(start, pe, prodMap, flagSet);
 		gx.log("start: " + start + " prodMap: " + prodMap);
+		// System.out.println("flagSet: " + flagSet);
 		if (flagSet.size() > 0) {
 			gx.log("flagSet: " + flagSet);
+			// for (String f : flagSet) {
+			// prodMap.forEach((n, e) -> {
+			// // System.out.printf("FLAG %s %s %s=%s\n", f, First.reachFlag(e, f), n, e);
+			// });
+			// }
 		}
 		HashMap<String, NonTerm2> nameMap = new HashMap<>();
 		NonTerm2 snt = new NonTerm2(start, null, PEG.Empty_);
@@ -95,7 +97,7 @@ class Optimizer {
 				String key = this.uname((NonTerm) pe);
 				if (!prodMap.containsKey(key)) {
 					prodMap.put(key, deref);
-					// this.makeNameList(key, deref, prodMap, flagSet);
+					this.makeNameList(key, deref, prodMap, flagSet);
 				}
 			}
 			return;

@@ -97,6 +97,8 @@ class Loader {
 			return new TPEG.Link(null, this.conv(ns, ts[0]));
 		case "Tag":
 			return new TPEG.Tag(t.asString());
+		case "Val":
+			return new TPEG.Val(u(t.asString()).getBytes());
 		case "Func": {
 			ts = t.list();
 			Expr[] es = Arrays.stream(ts).map(x -> this.conv(ns, x)).toArray(Expr[]::new);
@@ -530,6 +532,8 @@ class Loader {
 		if (c1 == '\\') {
 			c1 = expr.charAt(offset + 1);
 			switch (c1) {
+			case 'b':
+				return '\b';
 			case '\\':
 				return '\\';
 			case 'n':
@@ -537,9 +541,21 @@ class Loader {
 			case 'r':
 				return '\r';
 			case 't':
-				return '\n';
+				return '\t';
+			case 'f':
+				return '\f';
+			case 'v':
+				return (char) 11;
 			case '0':
 				return '\0';
+			case '"':
+				return '"';
+			case '\'':
+				return '\'';
+			case ']':
+				return ']';
+			case '`':
+				return '`';
 			case 'x':
 			case 'X':
 				return hex2(expr.charAt(offset + 2), expr.charAt(offset + 3));
@@ -547,6 +563,8 @@ class Loader {
 			case 'U':
 				return hex4(expr.charAt(offset + 2), expr.charAt(offset + 3), expr.charAt(offset + 4),
 						expr.charAt(offset + 5));
+			default:
+				Hack.TODO("ESC", "\\", c1);
 			}
 		}
 		return c1;

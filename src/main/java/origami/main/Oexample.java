@@ -103,8 +103,6 @@ public class Oexample extends Oparse {
 		} catch (IOException e) {
 			this.c(Red, () -> {
 				p("[FAIL] " + name);
-				System.err.println(doc);
-				p("===");
 				e.printStackTrace();
 			});
 		}

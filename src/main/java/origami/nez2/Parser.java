@@ -85,23 +85,23 @@ public class Parser {
 			}
 		});
 	}
-}
 
-class ParseException extends IOException {
+	public class ParseException extends IOException {
 
-	private static final long serialVersionUID = 1L;
-	Token token;
+		private static final long serialVersionUID = 1L;
+		Token token;
 
-	public ParseException(Token token) {
-		super(token.token);
-		this.token = token;
-	}
+		public ParseException(Token token) {
+			super(token.token);
+			this.token = token;
+		}
 
-	@Override
-	public void printStackTrace() {
-		System.out.println("Syntax Error (" + this.token.getPath() + ":" + this.token.linenum() + ")");
-		System.out.println(this.token.line());
-		System.out.println(this.token.mark('^'));
+		@Override
+		public void printStackTrace() {
+			System.err.println("Syntax Error (" + this.token.getPath() + ":" + this.token.linenum() + ")");
+			System.err.println(this.token.line());
+			System.err.println(this.token.mark('^'));
+		}
 	}
 
 }

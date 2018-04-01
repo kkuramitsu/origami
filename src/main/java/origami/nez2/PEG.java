@@ -23,7 +23,7 @@ import origami.nez2.TPEG.Val;
 public class PEG implements OStrings {
 	static int serialId = 0;
 	PEG parent;
-	String ns = "peg" + serialId++;
+	String ns = "g" + serialId++;
 	ArrayList<String> pubList = new ArrayList<>();
 	HashMap<String, Expr> prodMap = new HashMap<>();
 	HashMap<String, Object> memoed = new HashMap<>();
@@ -818,28 +818,16 @@ public class PEG implements OStrings {
 		}
 	}
 
-	public static void main2(String[] a) throws Throwable {
-		// testExpr("!'a' .", (e) -> e.toString(), "[\\x00-`b-\\xff]");
-		// testExpr("{ {'a'} }", (e) -> Trees.checkAST(e).toString(), "{$({'a'})}");
-		// testExpr("{ $('a') }", (e) -> Trees.checkAST(e).toString(), "{$({'a'})}");
-		// testExpr("{ $a }", (e) -> Trees.checkAST(e).toString(), "{$({a})}");
-		// testExpr("{ ({a})* }", (e) -> Trees.checkAST(e).toString(), "{$({a})*}");
-		// testExpr("{a} {a}", (e) -> Trees.checkAST(e).toString(), "{a} {$ a}");
-
-		PEG peg = Loader.nez();
-		System.out.println(peg);
-		peg.testMatch("Production", "A = a", "?");
-		peg.testMatch("COMMENT", "//hoge\nhoge", "[# '//hoge']");
-	}
-
 	public static void main(String[] a) throws Throwable {
 		Hack.AssertMode = false;
 
-		PEG nez = PEG.nez();
+		// PEG nez = PEG.nez();
 		// TPEG.dump(nez);
 		// PEG peg = new PEG();
-		// peg.load("/blue/origami/grammar/math.opeg");
-		// peg.testMatch("Expression", "1+2");
+		// peg.load("/blue/origami/grammar/js.opeg");
+		// peg.testMatch("FunctionDeclaration", "function func(){}");
+		// peg.testMatch("Identifier", "func(){}");
+		// peg.testMatch("__", " func(){}");
 		// TPEG
 		// Hack.testFunc("isTree", "T; T = {.}", e -> TPEG.isTree(e), "true");
 
@@ -852,8 +840,8 @@ public class PEG implements OStrings {
 		// Hack.testLoad2("/blue/origami/grammar/java.opeg");
 
 		// Main.testMain("example", "-g", "chibi.opeg");
-		Main.testMain("example", "-g", "java.opeg");
-		// Main.testMain("example", "-g", "js.opeg");
+		// Main.testMain("example", "-g", "java.opeg");
+		Main.testMain("example", "-g", "js.opeg");
 		Class<?> c = Main.class;
 	}
 

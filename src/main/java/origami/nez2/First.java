@@ -232,27 +232,29 @@ public class First {
 	}
 
 	static Bool reach(Expr pe, String key, Reached f) {
-		if (pe != null) {
-			if (pe.isNonTerm()) {
-				Bool res = (Bool) pe.lookup(key);
-				if (res == null) {
-					Unknown u = pe.memo(key, new Unknown());
-					res = u.resolved(reach(pe.get(0), key, f));
-				}
-				return res;
+		if (pe.isNonTerm()) {
+			Bool res = (Bool) pe.lookup(key);
+			if (res == null) {
+				Unknown u = pe.memo(key, new Unknown());
+				res = u.resolved(reach(pe.get(0), key, f));
 			}
-			Bool r = f.check(pe);
-			if (r == True) {
-				return r;
-			}
-			assert (r == False);
+			return res;
+		}
+		Bool r = f.check(pe);
+		if (r == True) {
+			return r;
+		}
+		assert (r == False);
+		switch (pe.size()) {
+		case 0:
+			return r;
+		case 1:
+			return reach(pe.get(0), key, f);
+		case 2: {
 			final Bool r1 = reach(pe.get(0), key, f);
 			final Bool r2 = reach(pe.get(1), key, f);
-			if (r1 == True) {
-				return r1;
-			}
-			if (r2 == True) {
-				return r2;
+			if (r1 == True || r2 == True) {
+				return True;
 			}
 			if (r1 == False) {
 				return r2; /* Unknown or False */
@@ -261,6 +263,9 @@ public class First {
 				return r1; /* Unknown */
 			}
 			return () -> r1.get() || r2.get();
+		}
+		default:
+			Hack.TODO(pe);
 		}
 		return False;
 	}
