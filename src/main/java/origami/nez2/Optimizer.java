@@ -38,9 +38,10 @@ class Optimizer {
 		nameMap.put(start, snt);
 		snt.inner = this.rename(pe, prodMap, nameMap, new Flags());
 		nameMap.forEach((name, nt) -> {
-			// System.out.println(nt + " = " + nt.get(0));
+			// System.out.println("*" + nt + " = " + nt.get(0));
 			// checkLeftRecur(name, nt.get(0));
-			// nt.inner = log("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
+			// TPEG.d(name, nt.get(0));
+			nt.inner = log("ast", name, nt.get(0), (p) -> TPEG.checkAST(p));
 		});
 		// 1. optimizing ..
 		nameMap.forEach((name, nt) -> {

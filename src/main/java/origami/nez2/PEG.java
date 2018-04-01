@@ -489,7 +489,7 @@ public class PEG implements OStrings {
 			sb.append("`" + pe.label() + "`");
 			break;
 		case Untree:
-			sb.append("@untree(" + pe.get(0) + ")");
+			sb.append("untree(" + pe.get(0) + ")");
 			break;
 		/* */
 		case Var:
@@ -749,6 +749,11 @@ public class PEG implements OStrings {
 		gl.load(sb.toString());
 	}
 
+	public void define(String peg) throws IOException {
+		Loader gl = new Loader(this);
+		gl.load(peg);
+	}
+
 	public String getStart() {
 		return this.pubList.size() == 0 ? "EMPTY" : this.pubList.get(0);
 	}
@@ -762,6 +767,7 @@ public class PEG implements OStrings {
 		Parser p = (Parser) this.memoed.get(key);
 		if (p == null) {
 			p = this.generate(start, new BasicGenerator());
+			// p = this.generate(start, new ParserFuncGenerator());
 			this.memoed.put(key, p);
 		}
 		return p;
@@ -796,6 +802,9 @@ public class PEG implements OStrings {
 					System.out.printf("[succ] %s:: %s => %s\n", start, args[i], r);
 				} else {
 					System.err.printf("[fail] %s:: %s => %s != %s\n", start, args[i], r, args[i + 1]);
+					if (Hack.AssertMode) {
+						assert r.equals(args[i + 1]);
+					}
 				}
 			} else {
 				System.out.printf("[TODO] %s:: %s => %s\n", start, args[i], r);
@@ -818,9 +827,21 @@ public class PEG implements OStrings {
 	}
 
 	public static void main(String[] a) throws Throwable {
-		// PEG nez = PEG.nez();
-		// nez.testMatch("Statement", "example FunctionDeclaration, SourceElement
-		// '''\nfunction func(){}\n'''\n");
+		Hack.AssertMode = false;
+
+		PEG nez = PEG.nez();
+		// TPEG.dump(nez);
+		PEG peg = new PEG();
+		peg.load("/blue/origami/grammar/math.opeg");
+		peg.testMatch("Expression", "1+2");
+
+		Hack.expr("('\\\\\\''   /  ![']  .)*").testMatch("A", "a'b", "[# 'a']", "a\\''b", "[# 'a\\'']");
+		/* '...' */
+		Hack.expr("'\\''     ('\\\\\\''    /    ![']  .)* '\\''").testMatch("A", "'a'b", "[# ''a'']", "'a\\''b",
+				"[# ''a\\''']");
+
+		// TPEG
+		// Hack.testFunc("isTree", "T; T = {.}", e -> TPEG.isTree(e), "true");
 
 		// Hack.testLoad("/blue/origami/grammar/xml.opeg");
 		// Hack.testLoad("/blue/origami/grammar/js.opeg");
@@ -830,8 +851,9 @@ public class PEG implements OStrings {
 		// Hack.testLoad2("/blue/origami/grammar/js.opeg");
 		// Hack.testLoad2("/blue/origami/grammar/java.opeg");
 
+		// Main.testMain("example", "-g", "chibi.opeg");
 		// Main.testMain("example", "-g", "java.opeg");
-		Main.testMain("example", "-g", "js.opeg");
+		// Main.testMain("example", "-g", "js.opeg");
 		Class<?> c = Main.class;
 	}
 

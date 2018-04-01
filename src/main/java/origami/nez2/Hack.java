@@ -1,6 +1,7 @@
 package origami.nez2;
 
 import java.io.IOException;
+import java.util.function.Function;
 
 import blue.origami.parser.peg.Grammar;
 import blue.origami.parser.peg.Production;
@@ -21,6 +22,8 @@ public class Hack {
 	}
 
 	// test interface
+
+	static boolean AssertMode = true;
 
 	public static PEG expr(String pe) {
 		PEG peg = new PEG();
@@ -57,17 +60,23 @@ public class Hack {
 		});
 	}
 
-	// public static <X> void testExpr(String expr, Function<Expr, X> f, X result) {
-	// PEG peg = new PEG();
-	// X r = f.apply(p(peg, new String[0], expr));
-	// if (result == null) {
-	// System.out.printf("%s <- %s\n", expr, r);
-	// } else if (!r.equals(result)) {
-	// System.err.printf("%s <- %s != %s\n", expr, r, result);
-	// }
-	// }
-	//
-	// //
+	public static <X> void testFunc(String ac, String expr, Function<Expr, Object> f, Object... a) throws IOException {
+		PEG peg = new PEG();
+		peg.define("A = " + expr);
+		Expr pe = peg.get("A");
+		String r = f.apply(pe).toString();
+		if (a.length == 0) {
+			System.out.printf("[TODO] %s:: %s -> %s\n", ac, expr, r);
+		} else if (r.equals(a[0].toString())) {
+			System.out.printf("[succ] %s:: %s -> %s\n", ac, expr, r);
+		} else {
+			System.err.printf("[fail] %s:: %s -> %s != %s\n", ac, expr, r, a[0]);
+			if (AssertMode) {
+				assert r.equals(a[0].toString());
+			}
+		}
+	}
+
 	// public static void testMatch(String expr, String... args) throws Throwable {
 	// PEG peg = new PEG();
 	// if (expr.startsWith("/") || expr.endsWith(".opeg")) {

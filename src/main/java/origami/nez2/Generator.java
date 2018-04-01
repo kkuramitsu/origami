@@ -141,7 +141,7 @@ class BasicGenerator implements Generator<Parser> {
 			final ParseFunc f = this.gen3(pe.get(0));
 			return (px) -> {
 				int pos = px.pos;
-				return f.apply(px) || mback1(px, pos);
+				return f.apply(px) && mback1(px, pos);
 			};
 		}
 		case Not: {
@@ -356,10 +356,10 @@ class BasicGenerator implements Generator<Parser> {
 			System.err.println("link " + tag + " not child " + child);
 			return false;
 		}
-		if (prev != null && !(prev instanceof TreeLink)) {
-			System.err.println("link " + tag + " not prev " + prev.getClass());
-			return false;
-		}
+		// if (prev != null && !(prev instanceof TreeLink)) {
+		// System.err.println("link " + tag + " not prev " + prev.getClass());
+		// return false;
+		// }
 		px.tree = new TreeLink(tag, (ParseTree) child, (TreeLink) prev);
 		return true;
 	}

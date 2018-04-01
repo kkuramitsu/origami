@@ -52,6 +52,8 @@ class Loader {
 		String key = t.tag();
 		ParseTree[] ts = emptyTreeNodes;
 		switch (key) {
+		case "Empty":
+			return PEG.Empty_;
 		case "Char":
 			return s(u(t.asString()));
 		case "Class":
@@ -86,7 +88,7 @@ class Loader {
 			if (ts.length == 2) {
 				return new TPEG.Fold(ts[0].asString(), this.conv(ns, ts[1]));
 			}
-			return new TPEG.Fold(null, this.conv(ns, ts[0]));
+			return new TPEG.Fold(ParseTree.EmptyLabel, this.conv(ns, ts[0]));
 		case "Let":
 			ts = t.list();
 			if (ts.length == 2) {
@@ -195,10 +197,7 @@ class Loader {
 			"COMMENT = '/*' (!'*/' .)* '*/' /  '//' (!EOL .)*", //
 			"EOL = '\\n' / '\\r\\n' / EOF", //
 			"NEOL = !EOL", //
-
 			"EOF = !.", //
-			// "list x = { $x (',' _ $x)* }", //
-			// "text x = this.x EOL { (!(EOL x) .)* } EOL x", //
 
 			"Source = { ($Statement)* #Source } ", //
 			"Statement = Import/Section/Example/Production/Macro", //
@@ -227,15 +226,16 @@ class Loader {
 			"Predicate  = { ('!' #Not / '&' #And ) $Predicate } / Suffix", //
 			"Suffix     = Term {$ ('*' #Many / '+' #OneMore / '?' #Option) }?", //
 
-			"Term       = Char / Class / Any / Val / Tag / Cons / '(' __ Expression __ ')' / Let / Func / NonTerminal", //
+			"Term       = Char / Class / Any / Val / Tag / Cons / '(' __ (Expression __ / Empty) ')' / Let / Func / NonTerminal", //
 
 			"Any = { '.' #Any }", //
+			"Empty = { '' #Empty }", //
 			"Char = '\\'' { ('\\\\' . / ![\\'\n] .)* #Char } '\\''", //
 			"Class = '[' { ('\\\\' . / ![\\]] .)* #Class } ']'", //
 			"Val   = '`' { ('\\\\`' / ![`\n] .)* #Val } '`'", //
 			"Tag   = '#' { NAME #Tag }", //
 			"ESCAPE = '\\\\' ['\\\"\\\\\\]bfnrt]", //
-			"Cons = '{' { ('$' $(Name)? S #Fold / #Tree) __ $(Expression) } __ '}'", //
+			"Cons = '{' { ('$' $(Name)? S #Fold / #Tree) __ $(Expression __ / Empty) } '}'", //
 
 			"Let = '$' { $Name '(' _ $Expression _ ')' #Let } / '$(' {  _ $Expression _ ')' #Let } / '$' { ('(' $Name '=)')? $Term #Let } ", //
 

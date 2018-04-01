@@ -186,10 +186,10 @@ public class TPEG extends PEG {
 		case Or: {
 			TreeState ts1 = ts(pe.get(0));
 			if (ts1 == TreeState.Unit) {
-				return ts(pe.get(1)) == TreeState.Mut ? TreeState.Mut : TreeState.Unit;
+				return ts(pe.get(1));
 			}
-			if (ts1 == TreeState.Tree) { /* Tree / '' */
-				return ts(pe.get(1)) == TreeState.Unit ? TreeState.Mut : ts1;
+			if (ts1 == TreeState.Unknown) {
+				return ts(pe.get(1)) == TreeState.Tree ? TreeState.Tree : ts1;
 			}
 			return ts1;
 		}
@@ -197,11 +197,12 @@ public class TPEG extends PEG {
 			TreeState r = (TreeState) pe.lookup("ts$");
 			if (r == null) {
 				pe.memo("ts$", TreeState.Unknown);
+				// System.out.println("*" + pe.label() + " = " + pe.get(0));
 				r = ts(pe.get(0));
-				r = r == TreeState.Unknown ? TreeState.Unit : r;
+				r = (r == TreeState.Unknown) ? TreeState.Unit : r;
 				pe.memo("ts$", r);
-				return r;
 			}
+			// System.out.println("memo " + pe.label() + " " + r + " ");
 			return r;
 		default:
 			Hack.TODO(pe);
@@ -217,35 +218,40 @@ public class TPEG extends PEG {
 		return ts(pe) == TreeState.Unit;
 	}
 
-	static boolean isTree(Expr pe) {
+	public static boolean isTree(Expr pe) {
 		return ts(pe) == TreeState.Tree;
 	}
 
-	static boolean isMut(Expr pe) {
+	public static boolean isMut(Expr pe) {
 		return ts(pe) == TreeState.Mut;
 	}
 
-	static boolean isFold(Expr pe) {
+	public static boolean isFold(Expr pe) {
 		return ts(pe) == TreeState.Fold;
 	}
 
-	static Expr checkAST(Expr pe) {
-		// d("checkAST", pe);
-		if (isTree(pe)) {
-			return enforceTree(pe);
+	public static Expr checkAST(Expr pe) {
+		switch (ts(pe)) {
+		case Tree:
+			return syncUnitTree(pe);
+		case Mut:
+			return syncUnitMut(pe);
+		case Fold:
+			return syncUnitFold(pe);
+		default:
+			return enforceUnit(pe);
 		}
-		if (isMut(pe)) {
-			return enforceMut(pe);
-		}
-		if (isFold(pe)) {
-			return enforceFold(pe);
-		}
-		return enforceUnit(pe);
 	}
 
 	static void d(String ac, Expr pe) {
-		System.err.printf("%s {utm=%s %s %s %s} %s \n", ac, isUnit(pe), isTree(pe), isMut(pe), isFold(pe), pe);
+		System.out.printf("%s %s %s \n", ac, ts(pe), pe);
 	}
+
+	// static void dump(PEG peg) {
+	// peg.forEach(n -> {
+	// d(n, peg.get(n));
+	// });
+	// }
 
 	static Expr enforceUnit(Expr pe) {
 		switch (pe.ptag) {
@@ -253,55 +259,63 @@ public class TPEG extends PEG {
 			if (isUnit(pe)) {
 				return pe;
 			}
-			d("!enforceUnit", pe);
-			return pe;
+			return new Untree(pe);
 		case Tree:
 		case Link:
 		case Fold:
-			d("removeTree", pe);
 			return enforceUnit(pe.get(0));
 		case Tag:
 		case Val:
 			return PEG.Empty_;
-		case Not:
-			return new Not(checkAST(pe.get(0)));
 		default:
 			return PEG.dup(pe, TPEG::enforceUnit);
 		}
 	}
 
-	static Expr enforceTree(Expr pe) {
+	static Expr syncUnitTree(Expr pe) {
 		switch (pe.ptag) {
 		case Tree:
-			return pe.dup(enforceMut(pe.get(0)));
+			return pe.dup(syncUnitMut(pe.get(0)));
 		case NonTerm:
 			if (isTree(pe) || isUnit(pe)) {
 				return pe;
 			}
-			d("enforceTree", pe);
+			if (isFold(pe)) {
+				return new TPEG.Tree(PEG.Empty_).andThen(pe);
+			}
 			return new TPEG.Tree(pe);
 		case Fold:
-			d("enforceTree", pe);
-			return new TPEG.Tree(PEG.Empty_).andThen(pe.dup(enforceMut(pe.get(0))));
+			return new TPEG.Tree(PEG.Empty_).andThen(pe.dup(syncUnitMut(pe.get(0))));
 		case Link:
-			d("enforceTree", pe);
-			return enforceTree(pe.get(0));
+			return syncUnitTree(pe.get(0));
 		case Seq:
 			if (isUnit(pe.get(0))) {
-				return enforceUnit(pe.get(0)).andThen(enforceTree(pe.get(1)));
+				return enforceUnit(pe.get(0)).andThen(syncUnitTree(pe.get(1)));
 			}
-			// System.out.println("enforceFold => " + pe.get(0) + " ++ " + pe.get(1));
-			return enforceTree(pe.get(0)).andThen(enforceFold(pe.get(1)));
+			return syncUnitTree(pe.get(0)).andThen(syncUnitFold(pe.get(1)));
 		case Alt:
+			return enforceTree(pe.get(0)).orAlso(enforceTree(pe.get(1)));
 		case Or:
 			return enforceTree(pe.get(0)).orElse(enforceTree(pe.get(1)));
-		default:
-			Hack.TODO(pe);
+		case Not:
+		case And:
+		case Many:
+		case OneMore:
 			return PEG.dup(pe, TPEG::enforceUnit);
+		default:
+			return PEG.dup(pe, TPEG::syncUnitTree);
 		}
 	}
 
-	static Expr enforceMut(Expr pe) {
+	static Expr enforceTree(Expr pe) {
+		pe = syncUnitTree(pe);
+		if (isUnit(pe)) {
+			return new TPEG.Tree(pe);
+		}
+		return pe;
+	}
+
+	static Expr syncUnitMut(Expr pe) {
 		switch (pe.ptag) {
 		case NonTerm:
 			if (isUnit(pe) || isMut(pe)) {
@@ -311,49 +325,45 @@ public class TPEG extends PEG {
 				return new Link("", pe);
 			}
 			return pe;
+		case Tree:
+			return new Link("", syncUnitTree(pe));
 		case Link:
 			return new Link(pe.label(), enforceTree(pe.get(0)));
-		case Tree:
-			return new Link("", enforceTree(pe.get(0)));
 		case Fold:
-			return new Link(pe.label(), new TPEG.Tree(enforceMut(pe.get(0))));
+			return new Link(pe.label(), new TPEG.Tree(syncUnitMut(pe.get(0))));
 		case Tag:
 		case Val:
 			return pe;
+		case Not:
+			return PEG.dup(pe, TPEG::enforceUnit);
 		default:
-			if (isUnit(pe)) {
-				return pe;
-			}
-			// System.out.println("@@ " + pe);
-			return PEG.dup(pe, TPEG::enforceMut);
+			return PEG.dup(pe, TPEG::syncUnitMut);
 		}
 	}
 
-	static Expr enforceFold(Expr pe) {
+	static Expr syncUnitFold(Expr pe) {
 		switch (pe.ptag) {
 		case NonTerm:
 			if (isUnit(pe) || isFold(pe)) {
 				return pe;
 			}
 			if (isTree(pe)) {
-				d("enforceFold", pe);
 				return new TPEG.Fold("", new TPEG.Link("", pe));
 			}
-			d("!enforceFold", pe);
 			return pe;
 		case Fold:
-			return pe.dup(enforceMut(pe.get(0)));
+			return pe.dup(syncUnitMut(pe.get(0)));
 		case Tree:
-			d("enforceFold", pe);
-			return new TPEG.Fold("", enforceMut(pe.get(0)));
+			return new TPEG.Fold("", new TPEG.Link("", syncUnitTree(pe)));
 		case Link:
-			d("enforceFold", pe);
-			return new TPEG.Fold("", enforceMut(pe));
+			return new TPEG.Fold("", syncUnitMut(pe));
 		case Tag:
 		case Val:
 			return PEG.Empty_;
+		case Not:
+			return PEG.dup(pe, TPEG::enforceUnit);
 		default:
-			return PEG.dup(pe, TPEG::enforceFold);
+			return PEG.dup(pe, TPEG::syncUnitFold);
 		}
 	}
 
