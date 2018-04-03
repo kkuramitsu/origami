@@ -9,11 +9,11 @@ import java.util.Set;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeBuilder;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.FuncEnv;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 import origami.nez2.OStrings;
@@ -253,7 +253,7 @@ public class MatchCode extends CodeN implements CodeBuilder {
 			}
 			if (this.name != null && this.target != null) {
 				if (names.contains(this.name)) {
-					vars.add(new LetCode(AST.getName(this.name), this.targetTy, this.target));
+					vars.add(new LetCode(NameHint.getName(this.name), this.targetTy, this.target));
 				}
 			}
 		}

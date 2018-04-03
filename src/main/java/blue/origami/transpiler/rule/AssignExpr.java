@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.FuncEnv;
 import blue.origami.transpiler.TFmt;
@@ -23,10 +22,11 @@ import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.rule.IndexExpr.GetIndexCode;
 import blue.origami.transpiler.type.TupleTy;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public class AssignExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
 		if (left instanceof GetCode) {
@@ -41,7 +41,7 @@ public class AssignExpr implements ParseRule, Symbols {
 		ODebug.log(() -> {
 			ODebug.p("No Assignment %s %s", left.getClass().getSimpleName(), left);
 		});
-		throw new ErrorCode(t.get(_right), TFmt.no_more_assignment);
+		throw new ErrorCode(env.s(t.get(_right)), TFmt.no_more_assignment);
 	}
 }
 

@@ -8,10 +8,10 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import blue.origami.chibi.Data$;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
@@ -566,7 +566,7 @@ public class AsmSection extends AsmBuilder implements CodeSection {
 		String[] fieldNames = code.getFieldNames();
 		Ty[] fieldTypes = code.getFieldTypes();
 		Class<?> c = this.ts.loadFuncExprClass(this.env(), fieldNames, fieldTypes, code.getStartIndex(),
-				AST.names(code.getParamNames()), code.getParamTypes(), code.getReturnType(), code.getInner());
+				NameHint.names(code.getParamNames()), code.getParamTypes(), code.getReturnType(), code.getInner());
 		Code[] inits = code.getFieldCode();
 		String cname = Type.getInternalName(c);
 		this.mBuilder.visitTypeInsn(NEW, cname);

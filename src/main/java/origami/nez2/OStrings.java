@@ -142,15 +142,15 @@ public interface OStrings {
 		}
 	}
 
-	public static <T> String joins(T[] objs, String delim) {
+	public static <X> String joins(X[] objs, String delim) {
 		StringBuilder sb = new StringBuilder();
 		joins(sb, objs, delim);
 		return sb.toString();
 	}
 
-	public static <T> void joins(StringBuilder sb, T[] objs, String delim) {
+	public static <X> void joins(StringBuilder sb, X[] objs, String delim) {
 		int c = 0;
-		for (T n : objs) {
+		for (X n : objs) {
 			if (c > 0) {
 				sb.append(delim);
 			}
@@ -159,15 +159,15 @@ public interface OStrings {
 		}
 	}
 
-	public static <T> String joins(T[] objs, String delim, Function<T, Object> map) {
+	public static <X> String joins(X[] objs, String delim, Function<X, Object> map) {
 		StringBuilder sb = new StringBuilder();
 		joins(sb, objs, delim, map);
 		return sb.toString();
 	}
 
-	public static <T> void joins(StringBuilder sb, T[] objs, String delim, Function<T, Object> map) {
+	public static <X> void joins(StringBuilder sb, X[] objs, String delim, Function<X, Object> map) {
 		int c = 0;
-		for (T n : objs) {
+		for (X n : objs) {
 			if (c > 0) {
 				sb.append(delim);
 			}
@@ -176,9 +176,9 @@ public interface OStrings {
 		}
 	}
 
-	public static <T> void joins(StringBuilder sb, List<T> l, String delim, Function<T, Object> map) {
+	public static <X> void joins(StringBuilder sb, List<X> l, String delim, Function<X, Object> map) {
 		int c = 0;
-		for (T n : l) {
+		for (X n : l) {
 			if (c > 0) {
 				sb.append(delim);
 			}

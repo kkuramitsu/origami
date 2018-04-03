@@ -11,6 +11,7 @@ import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
+import origami.nez2.Token;
 
 public class CodeMap implements NameInfo {
 	public final static CodeMap Null = null;
@@ -177,7 +178,7 @@ public class CodeMap implements NameInfo {
 	}
 
 	@Override
-	public Code newNameCode(Env env, AST s) {
+	public Code newNameCode(Env env, Token s) {
 		return new FuncRefCode(this.name, this).setSource(s);
 	}
 

@@ -4,10 +4,10 @@ import java.util.Arrays;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.OStringUtils;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.AssignCode;
@@ -246,7 +246,7 @@ public class SourceSection extends SourceBuilder implements CodeSection {
 
 	@Override
 	public void pushFuncExpr(FuncCode code) {
-		SourceParamCode p = new SourceParamCode(this.syntax, code.getStartIndex(), AST.names(code.getParamNames()),
+		SourceParamCode p = new SourceParamCode(this.syntax, code.getStartIndex(), NameHint.names(code.getParamNames()),
 				code.getParamTypes());
 		this.pushf(this.syntax.fmt("lambda", "(%1$s)->%2$s"), p, code.getInner(), code.getReturnType());
 	}

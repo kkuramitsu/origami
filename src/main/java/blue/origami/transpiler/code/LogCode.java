@@ -1,8 +1,8 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.TLog;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
+import origami.nez2.Token;
 
 public class LogCode extends Code1 {
 	protected TLog log;
@@ -17,9 +17,9 @@ public class LogCode extends Code1 {
 	}
 
 	@Override
-	public Code setSource(AST t) {
-		this.inner.setSource(t);
-		this.log.setSource(t);
+	public Code setSource(Token s) {
+		this.inner.setSource(s);
+		this.log.setSource(s);
 		return this;
 	}
 

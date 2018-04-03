@@ -3,7 +3,6 @@ package blue.origami.transpiler.code;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.FuncEnv;
@@ -14,17 +13,19 @@ import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarParamTy;
 import origami.nez2.OStrings;
+import origami.nez2.ParseTree;
+import origami.nez2.Token;
 
 public class FuncCode extends Code1 {
 
-	AST[] paramNames;
+	Token[] paramNames;
 	Ty[] paramTypes;
 	Ty returnType;
 
-	AST body = null;
+	ParseTree body = null;
 	FuncEnv funcEnv = null;
 
-	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, AST body) {
+	public FuncCode(Token[] paramNames, Ty[] paramTypes, Ty returnType, ParseTree body) {
 		super(new DoneCode());
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -33,7 +34,7 @@ public class FuncCode extends Code1 {
 		this.initVarTypes();
 	}
 
-	public FuncCode(AST[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
+	public FuncCode(Token[] paramNames, Ty[] paramTypes, Ty returnType, Code body) {
 		super(body);
 		this.paramNames = paramNames;
 		this.paramTypes = paramTypes;
@@ -63,7 +64,7 @@ public class FuncCode extends Code1 {
 	// }
 	//
 	// @Override
-	public AST[] getParamNames() {
+	public Token[] getParamNames() {
 		return this.paramNames;
 	}
 
@@ -181,7 +182,7 @@ public class FuncCode extends Code1 {
 			} else {
 				for (int i = 0; i < this.paramNames.length; i++) {
 					sb.Keyword("\\");
-					sb.Name(this.paramNames[i].getString());
+					sb.Name(this.paramNames[i].getSymbol());
 					sb.append(" ");
 				}
 			}

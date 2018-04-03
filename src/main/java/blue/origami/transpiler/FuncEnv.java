@@ -8,10 +8,11 @@ import blue.origami.common.ODebug;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TupleCode;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public class FuncEnv extends Env {
 	protected final String nameId;
-	protected AST[] paramNames;
+	protected Token[] paramNames;
 	protected Ty[] paramTypes;
 	protected Ty returnType;
 
@@ -20,7 +21,7 @@ public class FuncEnv extends Env {
 	FuncEnv parent;
 	HashMap<String, Code> closureMap = null;
 
-	FuncEnv(Env env, FuncEnv parent, String nameId, AST[] paramNames, Ty[] paramTypes, Ty returnType) {
+	FuncEnv(Env env, FuncEnv parent, String nameId, Token[] paramNames, Ty[] paramTypes, Ty returnType) {
 		super(env);
 		this.nameId = nameId;
 		this.paramNames = paramNames;
@@ -41,7 +42,7 @@ public class FuncEnv extends Env {
 		return false;
 	}
 
-	public Variable newVariable(AST name, Ty type) {
+	public Variable newVariable(Token name, Ty type) {
 		Variable v = new Variable(name, this.newIndex(), type);
 		this.varList.add(v);
 		return v;
@@ -51,13 +52,13 @@ public class FuncEnv extends Env {
 		return this.varList.size() + this.startIndex;
 	}
 
-	public Variable newVariable(AST name, int index, Ty type) {
+	public Variable newVariable(Token name, int index, Ty type) {
 		if (index == -1) {
 			Variable v = new Variable(name, this.newIndex(), type);
 			this.varList.add(v);
 			return v;
 		} else {
-			Variable v = this.get(name.getString(), index);
+			Variable v = this.get(name.getSymbol(), index);
 			ODebug.trace("%s %s", v, type);
 			return v;
 		}
@@ -103,7 +104,7 @@ public class FuncEnv extends Env {
 	public Code typeCheck(Code code0) {
 		this.enter();
 		for (int i = 0; i < this.paramNames.length; i++) {
-			String name = this.paramNames[i].getString();
+			String name = this.paramNames[i].getSymbol();
 			this.add(name, this.newVariable(this.paramNames[i], this.paramTypes[i]));
 		}
 		Code code = this.catchCode(() -> code0.asType(this, this.returnType));

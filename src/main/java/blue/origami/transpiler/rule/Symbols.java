@@ -16,44 +16,42 @@
 
 package blue.origami.transpiler.rule;
 
-import blue.origami.common.Symbol;
-
 public interface Symbols {
-	public final static Symbol _public = Symbol.unique("public");
-	public final static Symbol _name = Symbol.unique("name");
+	public final static String _public = ("public");
+	public final static String _name = ("name");
 
-	public final static Symbol _value = Symbol.unique("value");
+	public final static String _value = ("value");
 
-	public final static Symbol _body = Symbol.unique("body");
-	public final static Symbol _type = Symbol.unique("type");
-	public final static Symbol _expr = Symbol.unique("expr");
-	public final static Symbol _list = Symbol.unique("list");
-	public final static Symbol _param = Symbol.unique("param");
+	public final static String _body = ("body");
+	public final static String _type = ("type");
+	public final static String _expr = ("expr");
+	public final static String _list = ("list");
+	public final static String _param = ("param");
 
-	public final static Symbol _suffix = Symbol.unique("suffix");
+	public final static String _suffix = ("suffix");
 
-	public final static Symbol _base = Symbol.unique("base");
-	public final static Symbol _cond = Symbol.unique("cond");
-	public final static Symbol _where = Symbol.unique("where");
-	public final static Symbol _where2 = Symbol.unique("where2");
+	public final static String _base = ("base");
+	public final static String _cond = ("cond");
+	public final static String _where = ("where");
+	public final static String _where2 = ("where2");
 
-	public final static Symbol _msg = Symbol.unique("msg");
-	public final static Symbol _then = Symbol.unique("then");
-	public final static Symbol _else = Symbol.unique("else");
-	public final static Symbol _init = Symbol.unique("init");
-	public final static Symbol _iter = Symbol.unique("iter");
-	public final static Symbol _label = Symbol.unique("label");
-	public final static Symbol _try = Symbol.unique("try");
-	public final static Symbol _catch = Symbol.unique("catch");
-	public final static Symbol _finally = Symbol.unique("finally");
-	public final static Symbol _left = Symbol.unique("left");
-	public final static Symbol _right = Symbol.unique("right");
-	public final static Symbol _recv = Symbol.unique("recv");
-	public final static Symbol _size = Symbol.unique("size");
-	public final static Symbol _prefix = Symbol.unique("prefix");
-	public final static Symbol _start = Symbol.unique("start");
-	public final static Symbol _end = Symbol.unique("end");
-	public final static Symbol _from = Symbol.unique("from");
-	public final static Symbol _to = Symbol.unique("to");
+	public final static String _msg = ("msg");
+	public final static String _then = ("then");
+	public final static String _else = ("else");
+	public final static String _init = ("init");
+	public final static String _iter = ("iter");
+	public final static String _label = ("label");
+	public final static String _try = ("try");
+	public final static String _catch = ("catch");
+	public final static String _finally = ("finally");
+	public final static String _left = ("left");
+	public final static String _right = ("right");
+	public final static String _recv = ("recv");
+	public final static String _size = ("size");
+	public final static String _prefix = ("prefix");
+	public final static String _start = ("start");
+	public final static String _end = ("end");
+	public final static String _from = ("from");
+	public final static String _to = ("to");
 
 }

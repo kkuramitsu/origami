@@ -1,6 +1,5 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.ConstMap;
 import blue.origami.transpiler.Env;
@@ -8,17 +7,18 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.DoneCode;
 import blue.origami.transpiler.type.FuncTy;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public class CodeMapDecl implements ParseRule, Symbols {
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		return this.parseCodeMap(env, t.get(_list));
 	}
 
-	public Code parseCodeMap(Env env, AST t) {
-		for (AST map : t) {
-			String name = map.getStringAt(_name, "");
-			String value = map.getStringAt(_value, "");
+	public Code parseCodeMap(Env env, ParseTree t) {
+		for (ParseTree map : t.asArray()) {
+			String name = map.get(_name).asString();
+			String value = map.get(_value).asString();
 			if (map.has(_type)) {
 				Ty ty = env.parseType(env, map.get(_type), null);
 				if (ty.isFunc()) {

@@ -8,14 +8,8 @@ import origami.nez2.OStrings;
 
 public class Dict$ extends TreeMap<String, Object> implements OStrings {
 	private static final long serialVersionUID = -827646422601520488L;
-	private boolean isMutable;
 
 	public Dict$() {
-		this(false);
-	}
-
-	public Dict$(boolean isMutable) {
-		this.isMutable = true;
 	}
 
 	@Override

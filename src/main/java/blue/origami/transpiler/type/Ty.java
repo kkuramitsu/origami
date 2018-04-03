@@ -6,13 +6,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 // Base = Bool, Int, Float, String
 //        a,b,c
@@ -266,7 +266,7 @@ public abstract class Ty implements TypeApi, OStrings {
 	// return new VarTy("");
 	// }
 
-	public static final VarTy tVar(AST s) {
+	public static final VarTy tVar(Token s) {
 		return new VarTy(s);
 	}
 
@@ -426,7 +426,7 @@ interface TypeApi {
 		return !this.isVoid(); /* && !this.isUnion(); */
 	}
 
-	public default Ty resolveFieldType(Env env, AST s, String name) {
+	public default Ty resolveFieldType(Env env, Token s, String name) {
 		throw new ErrorCode(s, TFmt.undefined_name__YY1_in_YY2, name, this);
 	}
 

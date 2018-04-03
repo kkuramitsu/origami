@@ -20,7 +20,6 @@ import blue.origami.chibi.Func;
 import blue.origami.chibi.Tuple$;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
@@ -352,7 +351,7 @@ public class AsmType extends TypeMapper<Class<?>> implements Opcodes {
 			Code[] p = new Code[paramTypes.length];
 			String[] paramNames = new String[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) {
-				p[i] = new VarNameCode(AST.getName("a"), i, paramTypes[i], 0);
+				p[i] = new VarNameCode(NameHint.getName("a"), i, paramTypes[i], 0);
 				paramNames[i] = "a";
 			}
 			Code body = new ExprCode(tp, p);

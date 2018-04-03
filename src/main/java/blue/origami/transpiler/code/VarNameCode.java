@@ -2,11 +2,11 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public class VarNameCode extends CommonCode {
 
@@ -14,17 +14,17 @@ public class VarNameCode extends CommonCode {
 	private final int seq;
 	private final int refLevel;
 
-	public VarNameCode(AST name) {
+	public VarNameCode(Token name) {
 		this(name, -1, null, 0);
 	}
 
 	public VarNameCode(String name) {
-		this(AST.getName(name));
+		this(NameHint.getName(name));
 	}
 
-	public VarNameCode(AST name, int seq, Ty ty, int refLevel) {
+	public VarNameCode(Token name, int seq, Ty ty, int refLevel) {
 		super(ty);
-		this.name = name.getString();
+		this.name = name.getSymbol();
 		this.seq = seq;
 		this.refLevel = refLevel;
 		this.setSource(name);

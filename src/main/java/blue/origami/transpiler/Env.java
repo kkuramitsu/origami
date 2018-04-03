@@ -1,6 +1,7 @@
 package blue.origami.transpiler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -20,6 +21,8 @@ import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
 import origami.nez2.OStrings;
+import origami.nez2.ParseTree;
+import origami.nez2.Token;
 
 public class Env implements EnvAPIs, EnvApi {
 	private Env parent;
@@ -185,15 +188,15 @@ interface EnvAPIs {
 		this.reportLog(new TLog(code.getSource(), TLog.Error, format, args));
 	}
 
-	public default void reportError(SourcePosition s, OFormat format, Object... args) {
+	public default void reportError(Token s, OFormat format, Object... args) {
 		this.reportLog(new TLog(s, TLog.Error, format, args));
 	}
 
-	public default void reportWarning(SourcePosition s, OFormat format, Object... args) {
+	public default void reportWarning(Token s, OFormat format, Object... args) {
 		this.reportLog(new TLog(s, TLog.Warning, format, args));
 	}
 
-	public default void reportNotice(SourcePosition s, OFormat format, Object... args) {
+	public default void reportNotice(Token s, OFormat format, Object... args) {
 		this.reportLog(new TLog(s, TLog.Notice, format, args));
 	}
 
@@ -216,10 +219,10 @@ interface EnvAPIs {
 	}
 
 	public default FuncEnv newFuncEnv() { // TopLevel
-		return new FuncEnv((Env) this, null, "", OArrays.emptyASTs, OArrays.emptyTypes, Ty.tVarParam[0]);
+		return new FuncEnv((Env) this, null, "", OArrays.emptyTokens, OArrays.emptyTypes, Ty.tVarParam[0]);
 	}
 
-	public default FuncEnv newFuncEnv(String name, AST[] paramNames, Ty[] paramTypes, Ty returnType) {
+	public default FuncEnv newFuncEnv(String name, Token[] paramNames, Ty[] paramTypes, Ty returnType) {
 		return new FuncEnv((Env) this, null, name, paramNames, paramTypes, returnType);
 	}
 
@@ -237,9 +240,17 @@ interface EnvApi {
 	// return env().get(tsig, Ty.class);
 	// }
 
+	// public default String getPath() {
+	// return env().get("__FILE__", String.class);
+	// }
+
+	public default Token s(ParseTree t) {
+		return t.asToken(env().get("__FILE__", String.class));
+	}
+
 	public default void addNameHint(String names, Ty ty) {
 		for (String name : names.split(",")) {
-			NameHint.addNameHint(env().getTranspiler(), AST.getName(name), ty);
+			NameHint.addNameHint(env().getTranspiler(), NameHint.getName(name), ty);
 		}
 	}
 
@@ -266,14 +277,13 @@ interface EnvApi {
 		env().add(name, cmap);
 	}
 
-	public default Code parseCode(Env env, AST t) {
-		String name = t.getTag().getSymbol();
+	public default Code parseCode(Env env, ParseTree t) {
+		String name = t.tag();
 		Code node = null;
 		try {
 			node = env.get(name, ParseRule.class, (d, c) -> d.apply(env, t));
 		} catch (ErrorCode e) {
-			e.setSource(t);
-			// System.out.println(":::" + t);
+			e.setSource(env.s(t));
 			throw e;
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
@@ -285,7 +295,7 @@ interface EnvApi {
 			} catch (ClassNotFoundException e) {
 
 			} catch (ErrorCode e) {
-				e.setSource(t);
+				e.setSource(env.s(t));
 				// System.out.println(":::" + t);
 				throw e;
 			} catch (Exception e) {
@@ -293,21 +303,17 @@ interface EnvApi {
 			}
 		}
 		if (node == null) {
-			throw new ErrorCode(t, TFmt.undefined_syntax__YY1, name);
+			throw new ErrorCode(env.s(t), TFmt.undefined_syntax__YY1, name);
 		}
-		node.setSource(t);
+		node.setSource(env.s(t));
 		return node;
 	}
 
-	public default Code[] parseSubCode(Env env, AST p) {
-		Code[] params = new Code[p.size()];
-		for (int i = 0; i < p.size(); i++) {
-			params[i] = parseCode(env, p.get(i));
-		}
-		return params;
+	public default Code[] parseSubCode(Env env, ParseTree p) {
+		return Arrays.stream(p.asArray()).map(t -> parseCode(env, t)).toArray(Code[]::new);
 	}
 
-	public default Ty parseType(Env env, AST t, Supplier<Ty> def) {
+	public default Ty parseType(Env env, ParseTree t, Supplier<Ty> def) {
 		if (t != null) {
 			try {
 				Code node = parseCode(env, t);
@@ -320,6 +326,10 @@ interface EnvApi {
 			}
 		}
 		return def.get();
+	}
+
+	public default Ty[] parseTypes(Env env, ParseTree t, Supplier<Ty> def) {
+		return Arrays.stream(t.asArray()).map(x -> parseType(env, x, def)).toArray(Ty[]::new);
 	}
 
 	public default CodeMap getArrow(Env env, Ty fromTy, Ty toTy) {

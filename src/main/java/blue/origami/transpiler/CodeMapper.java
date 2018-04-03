@@ -8,6 +8,7 @@ import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.MultiCode;
 import blue.origami.transpiler.target.SyntaxMapper;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public abstract class CodeMapper implements CodeBuilder {
 
@@ -23,7 +24,7 @@ public abstract class CodeMapper implements CodeBuilder {
 		this.syntax.defineSyntax(key, value);
 	}
 
-	protected ArrayList<AST> exampleList = null;
+	protected ArrayList<ParseTree> exampleList = null;
 	protected ArrayList<FuncMap> funcList = null;
 
 	public abstract void init();
@@ -81,7 +82,7 @@ public abstract class CodeMapper implements CodeBuilder {
 		}
 	}
 
-	public void addExample(String name, AST t) {
+	public void addExample(String name, ParseTree t) {
 		if (this.exampleList == null) {
 			this.exampleList = new ArrayList<>(0);
 		}
@@ -100,7 +101,7 @@ public abstract class CodeMapper implements CodeBuilder {
 		}
 		if (!code.isGenerative() && this.exampleList != null) {
 			ArrayList<Code> asserts = new ArrayList<>();
-			for (AST t : this.exampleList) {
+			for (ParseTree t : this.exampleList) {
 				Code body = env.parseCode(env, t).asType(env, Ty.tBool);
 				asserts.add(new ExprCode("assert", body));
 			}

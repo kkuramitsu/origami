@@ -6,11 +6,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.ErrorCode;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public class DataTy extends Ty {
 
@@ -100,7 +100,7 @@ public class DataTy extends Ty {
 	}
 
 	@Override
-	public Ty resolveFieldType(Env env, AST s, String name) {
+	public Ty resolveFieldType(Env env, Token s, String name) {
 		if (this.hasField2(name)) {
 			Ty ty = env.findNameHint(name);
 			if (ty != null) {

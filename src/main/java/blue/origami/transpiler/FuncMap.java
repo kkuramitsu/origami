@@ -10,24 +10,26 @@ import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import blue.origami.transpiler.type.VarParamTy;
+import origami.nez2.ParseTree;
+import origami.nez2.Token;
 
 public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 	static int seq = 0;
 
-	static String newNameId(AST name) {
-		return name.getString() + (seq++);
+	static String newNameId(Token name) {
+		return name.getSymbol() + (seq++);
 	}
 
 	//
 	protected boolean isPublic = false;
-	protected AST name;
+	protected Token name;
 	protected String nameId;
-	protected AST[] paramNames;
-	protected AST body;
+	protected Token[] paramNames;
+	protected ParseTree body;
 	private CodeMap generated = null;
 
-	public FuncMap(boolean isPublic, AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
-		super(0, name.getString(), "(uncompiled)", returnType, paramTypes);
+	public FuncMap(boolean isPublic, Token name, Ty returnType, Token[] paramNames, Ty[] paramTypes, ParseTree body) {
+		super(0, name.getSymbol(), "(uncompiled)", returnType, paramTypes);
 		this.isPublic = isPublic;
 		this.name = name;
 		this.nameId = newNameId(name);
@@ -35,13 +37,13 @@ public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 		this.body = body;
 	}
 
-	public FuncMap(AST name, Ty returnType, AST[] paramNames, Ty[] paramTypes, AST body) {
+	public FuncMap(Token name, Ty returnType, Token[] paramNames, Ty[] paramTypes, ParseTree body) {
 		this(false, name, returnType, paramNames, paramTypes, body);
 	}
 
-	public FuncMap(Ty fromTy, Ty toTy, AST var, AST body) {
-		this(AST.getName("conv"), toTy, new AST[] { var }, new Ty[] { fromTy }, body);
-		this.name = body;
+	public FuncMap(Env env, Ty fromTy, Ty toTy, Token var, ParseTree body) {
+		this(NameHint.getName("conv"), toTy, new Token[] { var }, new Ty[] { fromTy }, body);
+		this.name = env.s(body);
 	}
 
 	public boolean isPublic() {
@@ -72,7 +74,7 @@ public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 	@Override
 	public String getName() {
 		// Don't change to nameId;
-		return this.name.getString();
+		return this.name.getSymbol();
 	}
 
 	@Override
@@ -221,8 +223,8 @@ public class FuncMap extends CodeMap implements NameInfo/* , FuncUnit */ {
 	}
 
 	@Override
-	public Code newNameCode(Env env, AST s) {
-		return new FuncRefCode(this.name.getString(), this).setSource(s);
+	public Code newNameCode(Env env, Token s) {
+		return new FuncRefCode(this.name.getSymbol(), this).setSource(s);
 	}
 
 }

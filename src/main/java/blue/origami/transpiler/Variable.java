@@ -6,17 +6,18 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.VarNameCode;
 import blue.origami.transpiler.rule.NameExpr.NameInfo;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public class Variable implements NameInfo {
-	AST at;
+	Token at;
 	String name;
 	int seq;
 	int closureLevel = 0;
 	Ty type;
 
-	Variable(AST name, int seq, Ty type) {
+	Variable(Token name, int seq, Ty type) {
 		this.at = name;
-		this.name = name.getString();
+		this.name = name.getSymbol();
 		this.seq = seq;
 		this.type = type;
 	}
@@ -57,7 +58,7 @@ public class Variable implements NameInfo {
 	}
 
 	@Override
-	public Code newNameCode(Env env, AST s) {
+	public Code newNameCode(Env env, Token s) {
 		s = s == null ? this.at : s;
 		if (this.closureLevel > 0) {
 

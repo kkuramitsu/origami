@@ -3,8 +3,8 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
+import origami.nez2.Token;
 
 class MutableTy extends Ty {
 	Ty base;
@@ -97,7 +97,7 @@ class MutableTy extends Ty {
 	}
 
 	@Override
-	public Ty resolveFieldType(Env env, AST s, String name) {
+	public Ty resolveFieldType(Env env, Token s, String name) {
 		return this.base.resolveFieldType(env, s, name);
 	}
 

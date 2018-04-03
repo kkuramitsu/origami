@@ -4,16 +4,18 @@ import java.lang.reflect.Array;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
+import origami.nez2.Token;
 
 public class OArrays {
 	// avoid duplicated empty array;
 	public static final Ty[] emptyTypes = new Ty[0];
 	public static final Code[] emptyCodes = new Code[0];
 	public static final String[] emptyNames = new String[0];
-	public static final AST[] emptyASTs = new AST[0];
+	public static final ParseTree[] emptyASTs = new ParseTree[0];
+	public static final Token[] emptyTokens = new Token[0];
 
 	public static <T> T[] join(IntFunction<T[]> gen, T a, @SuppressWarnings("unchecked") T... as) {
 		T[] p = gen.apply(as.length + 1);

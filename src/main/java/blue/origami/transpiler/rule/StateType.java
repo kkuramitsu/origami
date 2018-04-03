@@ -1,6 +1,6 @@
 // package blue.origami.transpiler.rule;
 //
-// import blue.origami.transpiler.AST;
+// import origami.nez2.ParseTree;
 // import blue.origami.transpiler.Env;
 // import blue.origami.transpiler.code.Code;
 // import blue.origami.transpiler.code.TypeCode;

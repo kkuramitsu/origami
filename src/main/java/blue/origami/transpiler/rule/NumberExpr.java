@@ -5,10 +5,10 @@ import java.math.BigInteger;
 
 import blue.origami.common.ODebug;
 import blue.origami.common.TLog;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
+import origami.nez2.ParseTree;
 
 public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	public final Class<?> baseType;
@@ -24,9 +24,9 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 	protected abstract Code newCode(Number value);
 
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		TLog log = null;
-		String text = t.getString().replace("_", "");
+		String text = t.asString().replace("_", "");
 		int radix = 10;
 		Class<?> base = this.baseType;
 		if (text.endsWith("L") || text.endsWith("l")) {
@@ -50,42 +50,42 @@ public abstract class NumberExpr extends LoggerRule implements ParseRule {
 				value = Integer.parseInt(text, radix);
 			} catch (NumberFormatException e) {
 				ODebug.trace("radix=%d", radix);
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0;
 			}
 		} else if (base == double.class) {
 			try {
 				value = Double.parseDouble(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0.0;
 			}
 		} else if (base == long.class) {
 			try {
 				value = Long.parseLong(text, radix);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0L;
 			}
 		} else if (base == float.class) {
 			try {
 				value = Float.parseFloat(text);
 			} catch (NumberFormatException e) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e);
 				value = 0.0f;
 			}
 		} else if (base == BigInteger.class) {
 			try {
 				value = new BigInteger(text, radix);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e2);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e2);
 				value = BigInteger.ZERO;
 			}
 		} else {
 			try {
 				value = new BigDecimal(text);
 			} catch (NumberFormatException e2) {
-				log = this.reportWarning(log, t, TFmt.wrong_number_format_YY1_by_YY2, text, e2);
+				log = this.reportWarning(log, env.s(t), TFmt.wrong_number_format_YY1_by_YY2, text, e2);
 				value = BigDecimal.ZERO;
 			}
 		}

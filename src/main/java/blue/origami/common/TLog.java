@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.Ty;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public class TLog implements OStrings {
 	public final static int Error = 0;
@@ -15,14 +16,14 @@ public class TLog implements OStrings {
 	// public final static int Syntax = 1 << 4;
 	// public final static int Type = 1 << 5;
 
-	public SourcePosition s;
+	public Token s;
 	public final int level;
 	public final OFormat format;
 	public final Object[] args;
 	public TLog next = null;
 
-	public TLog(SourcePosition s, int level, OFormat format, Object... args) {
-		this.s = s == null ? SourcePosition.UnknownPosition : s;
+	public TLog(Token s, int level, OFormat format, Object... args) {
+		this.s = s == null ? UnknownPosition : s;
 		this.level = level;
 		this.format = format;
 		this.args = filter(args);
@@ -98,8 +99,8 @@ public class TLog implements OStrings {
 		return null;
 	}
 
-	public void setSource(SourcePosition s) {
-		if (this.s == SourcePosition.UnknownPosition && s != null) {
+	public void setSource(Token s) {
+		if (this.s == UnknownPosition && s != null) {
 			this.s = s;
 		}
 		if (this.next != null) {
@@ -130,7 +131,22 @@ public class TLog implements OStrings {
 		default:
 			return;
 		}
-		SourcePosition.appendFormatMessage(sb, this.s, mtype, this.format, this.args);
+		sb.append("(");
+		sb.append(Token.shortName(this.s.getPath()));
+		sb.append(":");
+		sb.append(this.s.linenum());
+		sb.append("+");
+		sb.append(this.s.column());
+		sb.append(") [");
+		sb.append(mtype);
+		sb.append("] ");
+		OStrings.appendFormat(sb, this.format, this.args);
+		if (!this.s.isUnknownPosition()) {
+			sb.append(System.lineSeparator());
+			sb.append(this.s.line());
+			sb.append(System.lineSeparator());
+			sb.append(this.s.mark('^'));
+		}
 	}
 
 	@Override
@@ -160,5 +176,7 @@ public class TLog implements OStrings {
 		OConsole.println(msg);
 		OConsole.endColor();
 	}
+
+	final static Token UnknownPosition = new Token("");
 
 }

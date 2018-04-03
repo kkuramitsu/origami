@@ -8,7 +8,6 @@ import blue.origami.common.OArrays;
 import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -17,6 +16,7 @@ import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.Ty;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 	@Override
@@ -24,9 +24,9 @@ public interface Code extends CodeAPI, Iterable<Code>, OStrings {
 		return this;
 	}
 
-	public Code setSource(AST t);
+	public Code setSource(Token s);
 
-	public AST getSource();
+	public Token getSource();
 
 	public Code[] args();
 
@@ -139,12 +139,12 @@ interface CodeAPI {
 		return new CastCode(ret, tp, self);
 	}
 
-	public default Code bindAs(Env env, AST ns, Ty ret) {
+	public default Code bindAs(Env env, Token ns, Ty ret) {
 		Code right = ExprCode.option("=", self()).asType(env, ret);
 		// Code right = self().asType(env, ret);
 		Ty rightTy = right.getType();
-		if (!rightTy.isMutable() && NameHint.isMutable(ns.getString())) {
-			new ErrorCode(ns, TFmt.mutable_name__YY1, ns.getString());
+		if (!rightTy.isMutable() && NameHint.isMutable(ns.getSymbol())) {
+			throw new ErrorCode(ns, TFmt.mutable_name__YY1, ns.getSymbol());
 		}
 		return right;
 	}
@@ -209,11 +209,11 @@ interface CodeAPI {
 }
 
 abstract class CommonCode implements Code {
-	private AST at;
+	protected Token atname;
 	private Ty typed;
 
 	protected CommonCode(Ty t) {
-		this.at = null;
+		this.atname = null;
 		this.typed = t;
 	}
 
@@ -222,22 +222,22 @@ abstract class CommonCode implements Code {
 	}
 
 	@Override
-	public AST getSource() {
-		if (this.at == null) {
+	public Token getSource() {
+		if (this.atname == null) {
 			for (Code c : this.args()) {
-				AST at = c.getSource();
+				Token at = c.getSource();
 				if (at != null) {
 					return at;
 				}
 			}
 		}
-		return this.at;
+		return this.atname;
 	}
 
 	@Override
-	public Code setSource(AST s) {
-		if (this.at == null) {
-			this.at = s;
+	public Code setSource(Token s) {
+		if (this.atname == null) {
+			this.atname = s;
 		}
 		return this;
 	}

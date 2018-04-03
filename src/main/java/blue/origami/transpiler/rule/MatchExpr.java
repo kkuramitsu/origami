@@ -3,7 +3,6 @@ package blue.origami.transpiler.rule;
 import java.util.ArrayList;
 
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -20,19 +19,21 @@ import blue.origami.transpiler.code.MatchCode.RuleCode;
 import blue.origami.transpiler.code.MatchCode.TupleCase;
 import blue.origami.transpiler.code.MatchCode.ValuesCase;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public class MatchExpr implements ParseRule, Symbols {
 
 	@Override
-	public Code apply(Env env, AST match) {
+	public Code apply(Env env, ParseTree match) {
 		// ODebug.setDebug(true);
 		Code targetCode = (match.has(_expr)) ? //
 				env.parseCode(env, match.get(_expr)) : null; //
-		AST body = match.get(_body);
+		ParseTree body = match.get(_body);
 		RuleCode optionalCase = null;
 		ArrayList<RuleCode> l = new ArrayList<>(body.size());
-		for (int i = 0; i < body.size(); i++) {
-			AST sub = body.get(i);
+		ParseTree[] bodies = body.asArray();
+		for (int i = 0; i < bodies.length; i++) {
+			ParseTree sub = bodies[i];
 			Case cse = this.parseCase(env, 0, sub.get(_expr));
 			Code bodyCode = env.parseCode(env, sub.get(_body));
 			ODebug.trace("%s => %s", cse, bodyCode);
@@ -45,8 +46,8 @@ public class MatchExpr implements ParseRule, Symbols {
 		return new MatchCode(targetCode, optionalCase, l.toArray(new RuleCode[0]));
 	}
 
-	private Case parseCase(Env env, int a, AST t) {
-		String tag = t.getTag().getSymbol();
+	private Case parseCase(Env env, int a, ParseTree t) {
+		String tag = t.tag();
 		switch (tag) {
 		case "AnyCase": {
 			return new AnyCase();
@@ -58,7 +59,7 @@ public class MatchExpr implements ParseRule, Symbols {
 			if (t.has(_list)) {
 				Code[] v = new Code[t.get(_list).size()];
 				int i = 0;
-				for (AST e : t.get(_list)) {
+				for (ParseTree e : t.get(_list).asArray()) {
 					v[i] = env.parseCode(env, e);
 					i++;
 				}
@@ -77,7 +78,7 @@ public class MatchExpr implements ParseRule, Symbols {
 			Case[] l = new Case[t.size()];
 			assert (t.size() > 1) : "tuple " + t;
 			int i = 0;
-			for (AST e : t) {
+			for (ParseTree e : t.asArray()) {
 				l[i] = this.parseCase(env, 0, e);
 				i++;
 			}
@@ -86,7 +87,7 @@ public class MatchExpr implements ParseRule, Symbols {
 		case "ListCase": {
 			Case[] l = new Case[t.size()];
 			int i = 0;
-			for (AST e : t) {
+			for (ParseTree e : t.asArray()) {
 				l[i] = this.parseCase(env, 0, e);
 				i++;
 			}
@@ -95,12 +96,12 @@ public class MatchExpr implements ParseRule, Symbols {
 		case "DataCase": {
 			Case[] l = new Case[t.size()];
 			int i = 0;
-			for (AST e : t) {
+			for (ParseTree e : t.asArray()) {
 				l[i] = this.parseCase(env, 0, e);
 				String name = l[i].getName();
 				Ty hint = env.findNameHint(name);
 				if (hint == null) {
-					throw new ErrorCode(e, TFmt.no_type_hint__YY1, name);
+					throw new ErrorCode(env.s(e), TFmt.no_type_hint__YY1, name);
 				}
 				// l[i].setNameType(hint.getType());
 				i++;
@@ -109,21 +110,21 @@ public class MatchExpr implements ParseRule, Symbols {
 		}
 		case "NameCase": {
 			// ODebug.trace("NameCase %s", t);
-			String name = t.getStringAt(_name, "");
-			String suffix = t.getStringAt(_suffix, "");
+			String name = t.get(_name).asString();
+			String suffix = t.get(_suffix).asString();
 			if (t.has(_cond)) {
 				Case caseCode = this.parseCase(env, 0, t.get(_cond));
 				caseCode.setNameSuffix(name, suffix);
 				return caseCode;
 			}
 			if (t.has(_where)) {
-				AST where = t.get(_where);
-				return new NameCase(name, suffix, where.getTag().getSymbol(), env.parseCode(env, where.get(_right)));
+				ParseTree where = t.get(_where);
+				return new NameCase(name, suffix, where.tag(), env.parseCode(env, where.get(_right)));
 			}
 			return new NameCase(name, suffix, "", null);
 		}
 		default:
-			throw new ErrorCode(t, TFmt.undefined_syntax__YY1, t.getTag());
+			throw new ErrorCode(env.s(t), TFmt.undefined_syntax__YY1, t.tag());
 		}
 	}
 

@@ -1,6 +1,5 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.TFmt;
 import blue.origami.transpiler.code.Code;
@@ -8,14 +7,15 @@ import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.code.ExprCode;
 import blue.origami.transpiler.code.SugarCode;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public class IndexExpr implements ParseRule, Symbols {
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		Code recv = env.parseCode(env, t.get(_recv));
 		Code[] params = env.parseSubCode(env, t.get(_param));
 		if (params.length != 1) {
-			throw new ErrorCode(t.get(_param), TFmt.mismatched_parameter_size_S_S, params.length, 1);
+			throw new ErrorCode(env.s(t.get(_param)), TFmt.mismatched_parameter_size_S_S, params.length, 1);
 		}
 		return new GetIndexCode(recv, params[0]);
 	}

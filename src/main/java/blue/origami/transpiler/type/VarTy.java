@@ -3,16 +3,16 @@ package blue.origami.transpiler.type;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public class VarTy extends Ty {
 	private static int seq = 27;
 	Ty varref;
 	final int varId;
 
-	VarTy(AST name) {
+	VarTy(Token name) {
 		this.varref = null;
 		this.varId = seq++;
 		assert (seq > 0);
@@ -166,7 +166,7 @@ public class VarTy extends Ty {
 	}
 
 	@Override
-	public Ty resolveFieldType(Env env, AST s, String name) {
+	public Ty resolveFieldType(Env env, Token s, String name) {
 		if (this.varref == null) {
 			this.varref = new DataVarTy();
 		}

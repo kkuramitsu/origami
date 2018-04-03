@@ -1,17 +1,17 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public class GetCode extends Code1 {
 	final String name;
 
-	public GetCode(Code recv, AST nameTree) {
+	public GetCode(Code recv, Token nameTree) {
 		super(recv);
-		this.name = nameTree.getString();
+		this.name = nameTree.getSymbol();
 		this.setSource(nameTree);
 	}
 

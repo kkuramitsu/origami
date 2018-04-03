@@ -3,7 +3,6 @@ package blue.origami.transpiler.code;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.NameHint;
@@ -12,22 +11,23 @@ import blue.origami.transpiler.type.DataTy;
 import blue.origami.transpiler.type.DataVarTy;
 import blue.origami.transpiler.type.Ty;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public class DataCode extends CodeN {
-	protected AST[] names;
+	protected Token[] names;
 
-	public DataCode(AST[] names, Code[] values) {
+	public DataCode(Token[] names, Code[] values) {
 		super(values);
 		this.names = names;
 	}
 
 	public DataCode(Ty dt) { // DefaultValue
 		super(dt, OArrays.emptyCodes);
-		this.names = OArrays.emptyASTs;
+		this.names = OArrays.emptyTokens;
 	}
 
 	public String[] getNames() {
-		return AST.names(this.names);
+		return NameHint.names(this.names);
 	}
 
 	@Override
@@ -36,11 +36,11 @@ public class DataCode extends CodeN {
 			if (this.args.length == 0) {
 				this.setType(new DataVarTy().toMutable());
 			} else {
-				DataTy dt = Ty.tData(AST.names(this.names));
+				DataTy dt = Ty.tData(NameHint.names(this.names));
 				for (int i = 0; i < this.args.length; i++) {
-					AST key = this.names[i];
+					Token key = this.names[i];
 					Code value = this.args[i];
-					String name = key.getString();
+					String name = key.getSymbol();
 					Ty ty = env.findNameHint(name);
 					if (ty != null) {
 						value = value.asType(env, ty);
@@ -82,7 +82,7 @@ public class DataCode extends CodeN {
 			if (i > 0) {
 				sh.Token(",");
 			}
-			sh.Name(this.names[i].getString());
+			sh.Name(this.names[i].getSymbol());
 			sh.Token(":");
 			sh.Expr(this.args[i]);
 		}

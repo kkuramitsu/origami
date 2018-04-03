@@ -1,5 +1,12 @@
 package origami.nez2;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 public final class Token implements OStrings {
@@ -21,6 +28,19 @@ public final class Token implements OStrings {
 		this.pos = pos;
 		this.epos = epos;
 		this.len = this.inputs.length == 0 ? 0 : epos;
+	}
+
+	public Token(String token) {
+		this.token = token;
+		this.path = "(unknown)";
+		this.inputs = null;
+		this.pos = 0;
+		this.epos = 0;
+		this.len = 0;
+	}
+
+	public boolean isUnknownPosition() {
+		return this.inputs == null;
 	}
 
 	void check() {
@@ -131,6 +151,36 @@ public final class Token implements OStrings {
 
 	public static String shortName(String path) {
 		return path.substring(path.lastIndexOf('/') + 1);
+	}
+
+	public static Token newSource(String urn, String text) {
+		byte[] b = Loader.encode(text + "\0");
+		return new Token(urn, text, b, 0, b.length - 1);
+	}
+
+	public static Token newFile(String path) throws IOException {
+		File f = new File(path);
+		if (f.isFile()) {
+			InputStream sin = new FileInputStream(path);
+			byte[] buf = new byte[(int) f.length() + 1];
+			sin.read(buf, 0, (int) f.length());
+			sin.close();
+			return new Token("", path, buf, 0, (int) f.length());
+		} else {
+			InputStream sin = Token.class.getResourceAsStream(path);
+			if (sin == null) {
+				throw new FileNotFoundException(path);
+			}
+			BufferedReader in = new BufferedReader(new InputStreamReader(sin, "UTF8"));
+			StringBuilder sb = new StringBuilder();
+			String s = null;
+			while ((s = in.readLine()) != null) {
+				sb.append(s);
+				sb.append("\n");
+			}
+			in.close();
+			return newSource(path, sb.toString());
+		}
 	}
 
 }

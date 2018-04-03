@@ -1,18 +1,18 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.TypeCode;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.ParseTree;
 
 public class DataType implements ParseRule {
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		String[] names = new String[t.size()];
 		int c = 0;
-		for (AST sub : t) {
-			String name = sub.getString();
+		for (ParseTree sub : t.asArray()) {
+			String name = sub.asString();
 			// No check
 			// Ty ty = env.findNameHint(name);
 			// if (ty == null) {

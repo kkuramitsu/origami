@@ -1,7 +1,6 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
@@ -9,6 +8,7 @@ import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarTy;
+import origami.nez2.Token;
 
 public class LetCode extends Code1 {
 	public boolean isImplicit = false;
@@ -16,10 +16,10 @@ public class LetCode extends Code1 {
 	public String name;
 	public int index = -1;
 
-	public LetCode(AST ns, Ty type, Code expr) {
+	public LetCode(Token ns, Ty type, Code expr) {
 		super(expr);
 		this.setSource(ns);
-		this.name = ns.getString();
+		this.name = ns.getSymbol();
 		if (type != null) {
 			this.declType = NameHint.isMutable(this.name) ? type.toMutable() : type;
 		} else {
@@ -29,7 +29,7 @@ public class LetCode extends Code1 {
 	}
 
 	public LetCode(String name, Code expr) {
-		this(AST.getName(name), null, expr);
+		this(NameHint.getName(name), null, expr);
 	}
 
 	public boolean isMutable() {

@@ -59,6 +59,10 @@ public class ParseTree implements T, OStrings {
 		return null;
 	}
 
+	public final boolean has(String label) {
+		return this.get(label) != null;
+	}
+
 	public final int size() {
 		int c = 0;
 		for (TreeLink cur = this.child; cur != null; cur = cur.prev) {

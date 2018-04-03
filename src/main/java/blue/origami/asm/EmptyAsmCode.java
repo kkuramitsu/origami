@@ -1,7 +1,7 @@
 package blue.origami.asm;
 
 import blue.origami.common.OArrays;
-import blue.origami.transpiler.AST;
+import origami.nez2.Token;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.type.Ty;
@@ -29,12 +29,12 @@ public class EmptyAsmCode implements Code {
 	}
 
 	@Override
-	public Code setSource(AST t) {
+	public Code setSource(Token s) {
 		return this;
 	}
 
 	@Override
-	public AST getSource() {
+	public Token getSource() {
 		return null;
 	}
 

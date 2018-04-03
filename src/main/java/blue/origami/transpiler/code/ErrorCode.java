@@ -2,13 +2,12 @@ package blue.origami.transpiler.code;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.OFormat;
-import blue.origami.common.SourcePosition;
 import blue.origami.common.SyntaxBuilder;
 import blue.origami.common.TLog;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 @SuppressWarnings("serial")
 public class ErrorCode extends RuntimeException implements Code {
@@ -16,13 +15,13 @@ public class ErrorCode extends RuntimeException implements Code {
 	private final TLog log;
 	private final CommonCode dummy = new DoneCode();
 
-	public ErrorCode(SourcePosition s, OFormat fmt, Object... args) {
+	public ErrorCode(Token s, OFormat fmt, Object... args) {
 		super();
 		this.log = new TLog(s, TLog.Error, fmt, args);
 	}
 
 	public ErrorCode(OFormat fmt, Object... args) {
-		this(SourcePosition.UnknownPosition, fmt, args);
+		this((Token) null, fmt, args);
 	}
 
 	public ErrorCode(Code at, OFormat fmt, Object... args) {
@@ -62,14 +61,14 @@ public class ErrorCode extends RuntimeException implements Code {
 	}
 
 	@Override
-	public AST getSource() {
+	public Token getSource() {
 		return this.dummy.getSource();
 	}
 
 	@Override
-	public Code setSource(AST t) {
-		this.dummy.setSource(t);
-		this.log.setSource(t);
+	public Code setSource(Token s) {
+		this.dummy.setSource(s);
+		this.log.setSource(s);
 		return this;
 	}
 

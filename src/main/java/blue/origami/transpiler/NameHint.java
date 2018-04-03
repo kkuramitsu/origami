@@ -1,6 +1,10 @@
 package blue.origami.transpiler;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public interface NameHint {
 
@@ -28,8 +32,8 @@ public interface NameHint {
 		return flatName(name).equals(name);
 	}
 
-	public static NameHint addNameHint(Env env, AST ns, Ty ty) {
-		String name = keyName(ns.getString());
+	public static NameHint addNameHint(Env env, Token ns, Ty ty) {
+		String name = keyName(ns.getSymbol());
 		NameHint hint = env.get(name, NameHint.class);
 		if (hint == null) {
 			hint = new NameDecl(name, ty);
@@ -110,6 +114,27 @@ public interface NameHint {
 
 	public static boolean isMutable(String name) {
 		return name.endsWith("@") || name.endsWith("$");
+	}
+
+	static HashMap<String, Token> nameMap = new HashMap<>();
+
+	public static Token getName(String name) {
+		Token t = nameMap.get(name);
+		if (t == null) {
+			t = new Token(name);
+			nameMap.put(name, t);
+		}
+		return t;
+	}
+
+	public final static Token TreeFunc = getName("");
+
+	public static Token[] getNames(String... names) {
+		return Arrays.stream(names).map(n -> getName(n)).toArray(Token[]::new);
+	}
+
+	public static String[] names(Token[] names) {
+		return Arrays.stream(names).map(n -> n.getSymbol()).toArray(String[]::new);
 	}
 
 }

@@ -1,23 +1,24 @@
 package blue.origami.transpiler.code;
 
 import blue.origami.common.SyntaxBuilder;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeSection;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.type.Ty;
+import origami.nez2.Token;
 
 public class AssignCode extends Code1 {
 	public String name;
 	public int index = -1;
 
-	public AssignCode(AST ns, Code expr) {
+	public AssignCode(Token ns, Code expr) {
 		super(expr);
-		this.setSource(ns);
-		this.name = ns.getString();
+		this.atname = ns;
+		this.name = ns.getSymbol();
 	}
 
 	public AssignCode(String name, Code expr) {
-		this(AST.getName(name), expr);
+		this(NameHint.getName(name), expr);
 	}
 
 	public String getName() {

@@ -78,7 +78,7 @@ public class Oparse2 extends Main {
 				Object t = p.parseFile(file);
 				long et = System.nanoTime();
 				System.err.printf("%s %f[ms]: ", file, (et - st) / 1000000.0);
-				// System.out.print(t);
+				System.out.print(t);
 				System.out.flush();
 				System.err.printf("\n");
 			}

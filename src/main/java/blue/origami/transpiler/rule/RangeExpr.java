@@ -1,11 +1,11 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.BinaryCode;
 import blue.origami.transpiler.code.Code;
-import blue.origami.transpiler.code.RangeCode;
 import blue.origami.transpiler.code.IntCode;
+import blue.origami.transpiler.code.RangeCode;
+import origami.nez2.ParseTree;
 
 public class RangeExpr implements ParseRule, Symbols {
 	boolean inclusive;
@@ -19,7 +19,7 @@ public class RangeExpr implements ParseRule, Symbols {
 	}
 
 	@Override
-	public Code apply(Env env, AST t) {
+	public Code apply(Env env, ParseTree t) {
 		Code left = env.parseCode(env, t.get(_left));
 		Code right = env.parseCode(env, t.get(_right));
 		if (!this.inclusive) {

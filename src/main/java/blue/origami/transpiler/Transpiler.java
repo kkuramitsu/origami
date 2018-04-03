@@ -9,13 +9,8 @@ import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
-import blue.origami.common.OSource;
 import blue.origami.main.MainOption;
-import blue.origami.parser.Parser;
 import blue.origami.parser.ParserCode.ParserErrorException;
-import blue.origami.parser.ParserSource;
-import blue.origami.parser.peg.Grammar;
-import blue.origami.parser.peg.SourceGrammar;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
 import blue.origami.transpiler.rule.CodeMapDecl;
@@ -24,6 +19,10 @@ import blue.origami.transpiler.target.SourceTypeMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
 import origami.nez2.OStrings;
+import origami.nez2.PEG;
+import origami.nez2.ParseTree;
+import origami.nez2.Parser;
+import origami.nez2.Token;
 
 public class Transpiler extends Env implements OFactory<Transpiler> {
 	private CodeMapper codeMapper;
@@ -48,9 +47,10 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		try {
 			Language lang = options.newInstance(Language.class);
 			String file = options.stringValue(MainOption.GrammarFile, lang.getLangName() + ".opeg");
-			Grammar g = SourceGrammar.loadFile(file, options.stringList(MainOption.GrammarPath));
-			Parser p = g.newParser(options);
-			this.initMe(g, p, lang);
+			PEG peg = new PEG();
+			peg.load(file);
+			Parser p = peg.getParser();
+			this.initMe(peg, p, lang);
 		} catch (IOException e) {
 			OConsole.exit(1, e);
 		}
@@ -61,9 +61,9 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		return (c == Transpiler.class) ? "jvm" : c.getSimpleName();
 	}
 
-	public Transpiler initMe(Grammar g, Parser p, Language lang) {
+	public Transpiler initMe(PEG g, Parser p, Language lang) {
 		this.lang = lang;
-		this.add(Grammar.class, g);
+		this.add(PEG.class, g);
 		this.add(Parser.class, p);
 		this.lang.initMe(this);
 		this.codeMapper = this.getCodeMapper();
@@ -84,8 +84,9 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		final String defaul = base.replace(target, "default");
 		final CodeMapDecl decl = new CodeMapDecl();
 		try {
-			Grammar g = SourceGrammar.loadFile(Version.ResourcePath + "/grammar/chibi.opeg");
-			final Parser parser = g.newParser("CodeFile");
+			PEG g = new PEG();
+			g.load(Version.ResourcePath + "/grammar/chibi.opeg");
+			final Parser parser = g.getParser("CodeFile");
 			try {
 				this.load(parser, decl, common + file, false);
 			} catch (Throwable e) {
@@ -105,8 +106,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	private void load(Parser parser, CodeMapDecl decl, String path, boolean isDefault) throws Throwable {
-		OSource s = ParserSource.newFileSource(path, null);
-		AST t = (AST) parser.parse(s, 0, AST.TreeFunc, AST.TreeFunc);
+		ParseTree t = parser.parseFile(path);
 		decl.parseCodeMap(this, t);
 	}
 
@@ -116,7 +116,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public boolean loadScriptFile(String path) throws IOException {
-		return this.loadScriptFile(ParserSource.newFileSource(path, null));
+		return this.loadScriptFile(Token.newFile(path));
 	}
 
 	public void eval(String script) {
@@ -124,12 +124,12 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public void eval(String source, int line, String script) {
-		this.loadScriptFile(ParserSource.newStringSource(source, line, script));
+		this.loadScriptFile(Token.newSource(source, script));
 	}
 
-	public boolean loadScriptFile(OSource sc) {
+	public boolean loadScriptFile(Token s) {
 		try {
-			this.emitCode(this, sc);
+			this.emitCode(this, s);
 			return true;
 		} catch (Throwable e) {
 			this.showThrowable(e);
@@ -137,8 +137,8 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 	}
 
-	public void testScriptFile(OSource sc) throws Throwable {
-		this.emitCode(this, sc);
+	public void testScriptFile(Token s) throws Throwable {
+		this.emitCode(this, s);
 	}
 
 	public void verboseError(String msg, Runnable p) {
@@ -174,9 +174,9 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 	}
 
-	void emitCode(Env env0, OSource sc) throws Throwable {
+	void emitCode(Env env0, Token sc) throws Throwable {
 		Parser p = env0.get(Parser.class);
-		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
+		ParseTree t = p.parse(sc);
 		ODebug.showBlue(TFmt.Syntax_Tree, () -> {
 			OConsole.println(t);
 		});
@@ -204,9 +204,9 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	}
 
 	public Code testCode(String text) throws Throwable {
-		OSource sc = ParserSource.newStringSource("<test>", 1, text);
+		Token s = Token.newSource("<test>", text);
 		Parser p = this.get(Parser.class);
-		AST t = (AST) p.parse(sc, 0, AST.TreeFunc, AST.TreeFunc);
+		ParseTree t = p.parse(s);
 		this.codeMapper.setup();
 		FuncEnv env = this.newFuncEnv(); //
 		return this.parseCode(env, t).asType(env, Ty.tVar(null));
@@ -231,9 +231,9 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		}
 	}
 
-	public void addExample(String name, AST tree) {
+	public void addExample(String name, ParseTree tree) {
 		if (tree.is("MultiExpr")) {
-			for (AST t : tree) {
+			for (ParseTree t : tree.asArray()) {
 				this.codeMapper.addExample(name, t);
 			}
 		} else {
@@ -266,7 +266,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		return this.codeMapper.newCodeMap(this, name, lname, returnType, paramTypes);
 	}
 
-	public CodeMap defineFunction2(boolean isPublic, String name, String nameId, AST[] paramNames, Ty[] paramTypes,
+	public CodeMap defineFunction2(boolean isPublic, String name, String nameId, Token[] paramNames, Ty[] paramTypes,
 			Ty returnType, Code body) {
 		final CodeMap cmap = this.codeMapper.newCodeMap(this, name, nameId, returnType, paramTypes);
 		this.addCodeMap(name, cmap);
@@ -275,7 +275,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 		if (code.showError(this)) {
 			return cmap; // FIXME
 		}
-		this.codeMapper.defineFunction(this, isPublic, nameId, AST.names(paramNames), cmap.getParamTypes(),
+		this.codeMapper.defineFunction(this, isPublic, nameId, NameHint.names(paramNames), cmap.getParamTypes(),
 				cmap.getReturnType(), code);
 		return cmap;
 	}

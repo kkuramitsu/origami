@@ -9,9 +9,9 @@ import java.util.function.Predicate;
 
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.CodeMap;
 import blue.origami.transpiler.Env;
+import blue.origami.transpiler.NameHint;
 import blue.origami.transpiler.Transpiler;
 import blue.origami.transpiler.code.ApplyCode;
 import blue.origami.transpiler.code.CastCode;
@@ -19,6 +19,7 @@ import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.FuncCode;
 import blue.origami.transpiler.code.VarNameCode;
 import origami.nez2.OStrings;
+import origami.nez2.Token;
 
 public class FuncTy extends Ty {
 	protected final Ty[] paramTypes;
@@ -217,12 +218,12 @@ public class FuncTy extends Ty {
 		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
 		// System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
 		Transpiler tr = env.getTranspiler();
-		AST[] names = AST.getNames("f");
+		Token[] names = NameHint.getNames("f");
 		Ty[] params = { fromTy };
 
 		Ty[] fromTypes = fromTy.getParamTypes();
 		Ty[] toTypes = toTy.getParamTypes();
-		AST[] fnames = AST.getNames(OArrays.names(toTypes.length));
+		Token[] fnames = NameHint.getNames(OArrays.names(toTypes.length));
 		List<Code> l = new ArrayList<>();
 		l.add(new VarNameCode("f"));
 		for (int c = 0; c < toTy.getParamSize(); c++) {
@@ -240,12 +241,12 @@ public class FuncTy extends Ty {
 		ODebug.trace("generating funcmap %s => %s", fromTy, toTy);
 		// System.out.println("::::::: genFuncConv " + fromTy + " => " + toTy);
 		Transpiler tr = env.getTranspiler();
-		AST[] names = AST.getNames("f");
+		Token[] names = NameHint.getNames("f");
 		Ty[] params = { fromTy };
 
 		Ty[] fromTypes = fromTy.getParamTypes();
 		Ty[] toTypes = toTy.getParamTypes();
-		AST[] fnames = AST.getNames(OArrays.names(toTypes.length));
+		Token[] fnames = NameHint.getNames(OArrays.names(toTypes.length));
 		List<Code> l = new ArrayList<>();
 		l.add(new VarNameCode(names[0], 0, fromTy, 1));
 		for (int c = 0; c < toTy.getParamSize(); c++) {

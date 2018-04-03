@@ -1,19 +1,14 @@
 package blue.origami.transpiler.rule;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.MultiCode;
+import origami.nez2.ParseTree;
 
 public class MultiExpr implements ParseRule {
 
 	@Override
-	public Code apply(Env env, AST t) {
-		Code[] nodes = new Code[t.size()];
-		int last = t.size();
-		for (int i = 0; i < last; i++) {
-			nodes[i] = env.parseCode(env, t.get(i));
-		}
-		return new MultiCode(nodes);
+	public Code apply(Env env, ParseTree t) {
+		return new MultiCode(env.parseSubCode(env, t));
 	}
 }

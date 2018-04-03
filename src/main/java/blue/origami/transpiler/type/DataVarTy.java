@@ -1,7 +1,7 @@
 package blue.origami.transpiler.type;
 
-import blue.origami.transpiler.AST;
 import blue.origami.transpiler.Env;
+import origami.nez2.Token;
 
 public class DataVarTy extends DataTy {
 
@@ -15,7 +15,7 @@ public class DataVarTy extends DataTy {
 	}
 
 	@Override
-	public Ty resolveFieldType(Env env, AST s, String name) {
+	public Ty resolveFieldType(Env env, Token s, String name) {
 		if (!this.hasField2(name)) {
 			this.fields.add(name);
 		}
