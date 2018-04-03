@@ -9,7 +9,6 @@ import blue.origami.common.OConsole;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFactory;
 import blue.origami.common.OOption;
-import blue.origami.main.MainOption;
 import blue.origami.parser.ParserCode.ParserErrorException;
 import blue.origami.transpiler.code.Code;
 import blue.origami.transpiler.code.ErrorCode;
@@ -18,6 +17,7 @@ import blue.origami.transpiler.target.SourceMapper;
 import blue.origami.transpiler.target.SourceTypeMapper;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.VarDomain;
+import origami.main.Oparse;
 import origami.nez2.OStrings;
 import origami.nez2.PEG;
 import origami.nez2.ParseTree;
@@ -46,7 +46,7 @@ public class Transpiler extends Env implements OFactory<Transpiler> {
 	public void init(OOption options) {
 		try {
 			Language lang = options.newInstance(Language.class);
-			String file = options.stringValue(MainOption.GrammarFile, lang.getLangName() + ".opeg");
+			String file = Oparse.pegFile(options, lang.getLangName() + ".opeg");
 			PEG peg = new PEG();
 			peg.load(file);
 			Parser p = peg.getParser();

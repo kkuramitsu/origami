@@ -43,7 +43,7 @@ public class Oparse extends Main {
 	@Override
 	public void exec(OOption options) throws Throwable {
 		PEG peg = new PEG();
-		peg.load(pegFile(options));
+		peg.load(pegFile(options, null));
 		String[] files = options.stringList(MainOption.InputFiles);
 		if (files.length > 0) {
 			Parser p = peg.getParser();
@@ -71,7 +71,7 @@ public class Oparse extends Main {
 			p(" Entering two empty lines diplays the current grammar.");
 		});
 		OConsole.println("");
-		Parser nezParser = PEG.nez().getParser();
+		// Parser nezParser = PEG.nez().getParser();
 		Parser p = peg.getParser(pegStart(peg, options));
 		String prompt = this.getPrompt(p);
 		String input = null;
@@ -127,8 +127,8 @@ public class Oparse extends Main {
 		return null;
 	}
 
-	static String pegFile(OOption options) {
-		String pegfile = find(options.stringValue(MainOption.GrammarFile, null),
+	public static String pegFile(OOption options, String file) {
+		String pegfile = find(options.stringValue(MainOption.GrammarFile, file),
 				options.stringList(MainOption.GrammarPath));
 		if (pegfile == null) {
 			exit(1, MainFmt.no_specified_grammar);

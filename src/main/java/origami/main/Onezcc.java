@@ -11,7 +11,7 @@ public class Onezcc extends Oparse {
 	public void exec(OOption options) throws Throwable {
 		NezCC2 pg = options.newInstance(NezCC2.class);
 		PEG peg = new PEG();
-		peg.load(pegFile(options));
+		peg.load(pegFile(options, null));
 		pg.emit(peg, pegStart(peg, options), new OWriter());
 	}
 

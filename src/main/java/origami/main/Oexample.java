@@ -38,7 +38,7 @@ public class Oexample extends Oparse {
 
 	@Override
 	public void exec(OOption options) throws Throwable {
-		String file = pegFile(options);
+		String file = pegFile(options, null);
 		PEG peg = new PEG();
 		peg.load(file);
 		// g.dump();
