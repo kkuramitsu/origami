@@ -1,0 +1,319 @@
+/**
+ * Konoha6 (Macaron) Grammar
+ *
+ * Authors:
+ *   Kimio Kuramitsu (https://github.com/kkuramitsu/)
+ */
+
+/* Starting Point */
+
+public File =  __ { $(TopLevel __ )* #Source } __ EOF
+
+/* Code Layout (Whitespace) */
+
+_            = ( S / BLOCKCOMMENT / LINECOMMENT )*
+S            = [ \t]
+__           = ( SS / BLOCKCOMMENT / LINECOMMENT )*
+SS           = [ \t\r\n]
+INDENT       = S+
+BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
+             / '(*' ( !'*)' . )* '*)'
+LINECOMMENT  = '//' ( !EOL . )* EOL
+EOL          = ('\r'? '\n') / EOF
+EOF          = !.
+EOT          = (!W _)
+
+","          = ',' __
+"("          = '(' _
+")"          = ')' _
+"["          = '[' _
+"]"          = ']' _
+"{"          = '{' _
+"}"          = '}' _
+"="          = '=' _
+
+W            = [a-zA-Z0-9_\x80-\xF7]
+NAME         = [a-zA-Z_\x80-\xF7] W*
+
+/* TopLevel */
+
+example File '''
+X = 1
+Y = 1
+
+foreach a, b  a > b
+------
+  n = a - b
+  => n + 1
+
+'''
+
+example File '''
+/* factorial */
+f(0)
+------
+  => 0
+
+f(n) n > 0
+------
+  => n * f(n-1)
+'''
+
+
+TopLevel = RuleDecl / (LetStmt EOL) 
+
+RuleDecl = {
+  $context(Context)?
+  $cond(Premise) EOL
+  '---' '-'* ( !EOL . )* EOL
+  $body(Body)
+  #Rule
+}
+
+Context = {
+	$(Identifier) ("," $(Identifier))* '|>' _
+	#Context
+}
+
+Premise = {
+  $(Timing / Expression) (_ (",")? $Expression)*
+}
+
+Timing = {
+	'foreach' EOT $(Identifier) 'some' $(Identifier)
+	#PeriodicSome
+} / {
+	'foreach' EOT $(Identifier) ("," $(Identifier))*
+	#Periodic
+} / {
+	'when' EOT $(Expression)
+	#Event
+}
+
+Body = {
+   $(INDENT Statement EOL)+
+}
+
+Statement = 
+	ReturnStmt / AssignStmt / LetStmt
+
+LetStmt = {
+	$left(Identifier) "=" $right(Expression)
+	#Let
+}
+
+AssignStmt = {
+	'$' $left(UnaryExpr) "=" $right(Expression)
+	#Assign
+}
+
+ReturnStmt = {
+	'=>' _ $expr(Expression)
+	#Return
+}
+
+/* Expression */
+
+example Expression a < b
+example Expression a>b
+example Expression a in b
+example Expression a * b + c
+example Expression 2 * a ^ 2 + c
+
+Expression = OrExpr
+OrExpr = AndExpr {$left $op(Or) $right(AndExpr) #Infix }*
+Or =  { ('or' !W / '||' !'|')  #Name } _　
+
+AndExpr = EqExpr {$left $op(And) $right(EqExpr) #Infix }*
+And = { ('and' !W / '&&' !'&') #Name } _
+
+EqExpr = SumExpr {$left $op(Eq) $right(SumExpr) }*
+Eq = { ('===' / '==' / '!=' / '<=' / '>=' / '<' / '>' / 'in' !W)  #Name } _
+
+SumExpr = ProdExpr {$left $op(Sum) $right(ProdExpr) #Infix }*
+Sum = { ('++' / '+' / '-' / '|' !'|') #Name} _
+
+ProdExpr = CastExpr {$left $op(Prod) $right(CastExpr) #Infix }*
+Prod = { ('^' / '**' !'*' / '<<' / '>>' / '&' !'&' / '/' / '*' / '%' / 'mod' !W) #Name } _
+
+
+example UnaryExpr, Expression -1
+example UnaryExpr, Expression !!a
+example UnaryExpr, Expression f.a
+example UnaryExpr, Expression s.length()
+example UnaryExpr, Expression LeftRight?(x)
+example UnaryExpr, Expression a[1,2]
+
+CastExpr =
+	{ "(" $type(Type) ")" $recv(CastExpr)  #Cast }
+	/ UnaryExpr
+
+UnaryExpr
+	= PostExpr
+    / { $op(Unary)  $expr(CastExpr) #Unary }
+    / { '|' _  $expr(Expression) '|' #Norm } _
+
+Unary = { '-' / '!' / 'not' S / '~' / '+' } _
+
+PostExpr = Primary {$recv POSTOP }*
+
+POSTOP = 
+   '.' _ $name(Identifier) ( "(" $param(Arguments) ")" #Method / #Get )
+	/ "(" $param(Arguments) ")"   #Apply
+	/ "[" $param(Arguments) "]" #Index
+	/ TO $type(Type) #CastExpr
+	
+TO = 'to' EOT / 'as' EOT / '=>' _
+
+Arguments = { $(Expression)? ( "," $(Expression) )* }
+
+/* Primary */
+
+example Primary, Expression (1,2) //
+example Primary, Expression (1)
+example Primary, Expression () //
+example Primary, Expression [1,2,3]
+example Primary, Expression { name: 'naruto', age: 17 }
+example Primary, Expression {"name": 'naruto', "age": '17'}
+
+Primary =
+	GroupExpr
+  / EmptyExpr
+  / ListExpr
+  / DataExpr
+  / DictExpr
+  / Constant
+  / Identifier
+
+GroupExpr = "(" Expression {$ ("," $(Expression))+ #Tuple }? ")"
+EmptyExpr = { "(" ")" #Empty } _
+
+ListExpr =  { "[" $(Expression)? (","+ $(Expression))* ","* "]" #List } 
+RangeExpr = {
+	"["
+	$left(Expression)
+	( 'to' !W / '..')
+	(('<' #RangeUntilExpr) / #RangeExpr)
+	$right(Expression)
+	"]"
+}
+
+DictExpr = { "{" $(DEntry) ("," $(DEntry))* #Dict "}" }
+DataExpr = { "{" $(TagKeyValue ","?)* $(KeyValue) ("," $(KeyValue))* #Data "}" }
+
+DEntry = {
+	$name(StringExpr/CharExpr)
+	(':' / '=' / '=>') _
+	$value(Expression)
+}
+
+TagKeyValue = {
+	'#' $name(Identifier)
+}
+
+KeyValue = {
+	$name(Identifier)
+	(':' / '=' / '=>') _
+	$value(Expression)
+}
+
+Constant =
+    / TripleExpr
+	/ StringExpr
+	/ CharExpr
+	/ FloatExpr
+	/ RationalExpr  // from Racket
+	/ IntExpr
+	/ TrueExpr
+	/ FalseExpr
+	/ NullExpr
+
+/* Literal */
+
+//example TripleExpr, Expression '''
+//'''Apple ${Computer} Inc.'''
+//'''
+
+example StringExpr, Expression "\n\u1234a\0"
+example CharExpr, Expression '\''
+example RationalExpr, Expression 4/5
+example IntExpr, Expression 0b1010_1010
+example IntExpr, Expression 0xdeadbeaf
+example IntExpr, Expression 0px
+example FloatExpr, Expression 1.1e-9
+example TrueExpr, Expression true
+
+public TripleExpr =
+	'\'\'\'' { $(TemplateContent)* #Template } '\'\'\''
+
+TemplateContent =
+	'${' Expression '}'
+	/ { (!'\'\'\'' !'${' .)* #String }
+
+
+public StringExpr = '"' { STRING_CONTENT* #String } '"' _
+public CharExpr = '\'' { CHAR_CONTENT* #Char } '\'' _
+STRING_CONTENT = ESCAPE / ![\"\n\\] .
+CHAR_CONTENT   = ESCAPE / !['\n\\] .
+ESCAPE =
+	'\\' ['\"\\bfnrt]
+	/ '\\' [0-3] [0-7] [0-7]
+    / '\\' [0-7] [0-7]
+    / '\\' [0-7]
+	/ '\\' 'u'+ HEX HEX HEX HEX
+
+public RationalExpr = {
+	DECIMAL '/' DECIMAL
+	#Rational
+} _ {$ $(Identifier) #Unit }?
+
+public IntExpr = {
+	(DECIMAL / HEXADECIMAL / BINARY )
+	#Int
+} _ {$ $(Identifier) #Unit }?
+
+DECIMAL = '0' ![bBxX0-9_] / [1-9] ( '_'* DIGIT )*
+HEXADECIMAL = '0' [xX] HEX ( '_'* HEX )*
+BINARY = '0' [bB] [01] ( '_'* [01] )*
+DIGIT = [0-9]
+HEX = [a-fA-F0-9]
+
+public FloatExpr = {
+	FLOAT #Double
+} _ {$ $(Identifier) #Unit }?
+
+FLOAT =
+	FRACTION EXPONENT?
+    / DIGIT+ EXPONENT
+
+FRACTION =
+	!'_' ( '_'* DIGIT )* '.' DIGIT ( '_'* DIGIT )*
+    / DIGIT ( '_'* DIGIT )* '.' !'.'
+
+EXPONENT =
+	[eE] [+\-]? DIGIT ( '_'* DIGIT )*
+
+TrueExpr  = { [Tt] 'rue' (&W !W)?  #True } _
+FalseExpr = { [Ff] 'alse' (&W !W)? #False } _
+NullExpr  = { [Nn] ('ull' / 'one' / 'il' / 'ULL' / 'othing' )  (&W !W)? #Null } _
+
+/* Identifier */
+
+Identifier = { NAME [']* '?'? #Name } _
+
+Type = Identifier
+
+
+example RuleDecl, File '''
+a > b
+------
+  $a.x = a.x + 10
+
+'''
+
+example AssignStmt $a.x = a.x + 10
+
+
+
+
+
