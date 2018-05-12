@@ -99,19 +99,18 @@ public class Oparse extends Main {
 	}
 
 	static String find(String file, String... paths) {
-		if (file == null) {
-			return null;
-		}
+		// if (file == null) {
+		// return null;
+		// }
 		File f = new File(file);
 		if (f.isFile()) {
 			return file;
 		}
-		InputStream stream = f.getClass().getResourceAsStream(file);
+		InputStream stream = Main.class.getResourceAsStream(file);
 		if (stream != null) {
 			try {
 				stream.close();
 			} catch (Exception e) {
-
 			}
 			return file;
 		}
@@ -128,8 +127,10 @@ public class Oparse extends Main {
 	}
 
 	public static String pegFile(OOption options, String file) {
-		String pegfile = find(options.stringValue(MainOption.GrammarFile, file),
-				options.stringList(MainOption.GrammarPath));
+		String pegfile = options.stringValue(MainOption.GrammarFile, file);
+		if (pegfile != null) {
+			pegfile = find(pegfile, options.stringList(MainOption.GrammarPath));
+		}
 		if (pegfile == null) {
 			exit(1, MainFmt.no_specified_grammar);
 		}

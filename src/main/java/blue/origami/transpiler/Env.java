@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
-import blue.origami.Version;
 import blue.origami.common.OArrays;
 import blue.origami.common.ODebug;
 import blue.origami.common.OFormat;
@@ -20,6 +19,7 @@ import blue.origami.transpiler.rule.ParseRule;
 import blue.origami.transpiler.type.Ty;
 import blue.origami.transpiler.type.TypeMatchContext;
 import blue.origami.transpiler.type.VarDomain;
+import origami.main.Main;
 import origami.nez2.OStrings;
 import origami.nez2.ParseTree;
 import origami.nez2.Token;
@@ -288,7 +288,7 @@ interface EnvApi {
 		}
 		if (node == null && env.get(name, ParseRule.class) == null) {
 			try {
-				Class<?> c = Class.forName(Version.ClassPath + ".transpiler.rule." + name);
+				Class<?> c = Class.forName(Main.ClassPath + ".transpiler.rule." + name);
 				ParseRule rule = (ParseRule) c.newInstance();
 				env.getTranspiler().add(name, rule);
 				return parseCode(env, t);

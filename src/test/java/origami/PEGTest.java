@@ -66,7 +66,7 @@ public class PEGTest {
 
 	public void testMath() throws Throwable {
 		PEG peg = new PEG();
-		peg.load("/blue/origami/grammar/math.opeg");
+		peg.load("/origami/grammar/math.opeg");
 		peg.testMatch("Expression", "1", "[#IntExpr '1']");
 		peg.testMatch("Expression", "1+2", "[#AddExpr $right=[#IntExpr '2'] $left=[#IntExpr '1']]"); //
 		peg.testMatch("Expression", "1+2*3",

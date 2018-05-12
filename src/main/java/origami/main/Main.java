@@ -43,7 +43,7 @@ public abstract class Main implements MainConsole {
 	public final static String License = "the Apache License, Version 2.0";
 
 	public final static String ClassPath = "origami";
-	public final static String ResourcePath = "/blue/origami";
+	public final static String ResourcePath = "/origami";
 
 	public static void main(String[] args) {
 		OOption options = new OOption();
@@ -64,7 +64,7 @@ public abstract class Main implements MainConsole {
 
 	private static Main loadCommand(String[] args, OOption options) {
 		try {
-			String className = args.length == 0 ? "hack" : args[0];
+			String className = args.length == 0 ? "parse" : args[0];
 			if (className.indexOf('.') == -1) {
 				className = ClassPath + ".main.O" + className;
 			}
