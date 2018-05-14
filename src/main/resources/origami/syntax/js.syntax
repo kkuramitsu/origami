@@ -1,0 +1,41 @@
+
+'true      = true
+'false     = false
+'int       = %d
+'double    = %f
+'char      = '%c'
+'string    = "%s"
+
+'name      = %s
+
+'block*    = {\f\n*\t%s\n*\t%s\n*\b\t}*
+'let       = let %s = %s
+'var       = var %s = %s
+'if        = if(%s) %s
+'ifelse    = if(%s) %s else %s
+'while     = while(%s) %s
+'return    = return %s
+
+'getter    = %s.%s
+'setter    = %s.%s = %s
+'getidx    = %s[%s]
+'setidx    = %s[%s] = %s
+
+'apply*    = (*%s*,%s*)*
+
+'defun     = function %s %s %s
+'param*    = (*%s*,%s*)*
+'param     = %s
+
+'group     = (%s)
++          = %s + %s
+-          = %s - %s
+*          = %s * %s
+/          = %s / %s
+%          = %s %% %s
+<          = %s < %s
+<=         = %s <= %s
+>          = %s > %s
+>=         = %s >= %s
+==         = %s == %s
+!=         = %s != %s

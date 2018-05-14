@@ -34,13 +34,6 @@ import origami.nez2.Parser;
 public class Oparse extends Main {
 
 	@Override
-	protected void initOption(OOption options) {
-		super.initOption(options);
-		options.set(MainOption.ThrowingParserError, false);
-		options.set(MainOption.PartialFailure, true);
-	}
-
-	@Override
 	public void exec(OOption options) throws Throwable {
 		PEG peg = new PEG();
 		peg.load(pegFile(options, null));

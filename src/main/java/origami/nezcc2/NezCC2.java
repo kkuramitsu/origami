@@ -354,7 +354,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 		public ENode add(ENode next) {
 			return new Block(this, next);
 		}
-
 	}
 
 	class Symbol extends ENode {
@@ -570,7 +569,6 @@ public class NezCC2 implements OFactory<NezCC2> {
 				w.format(this.formatOf("ifexpr", "%s ? %s : %s"), this.cnd, this.thn, this.els);
 			}
 		}
-
 	}
 
 	class WhileStmt extends ENode {
