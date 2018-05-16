@@ -66,7 +66,7 @@ public class NezCC2 implements OFactory<NezCC2> {
 			this.defineSymbol("localoptions", s);
 		}
 		if (!new File(file).isFile()) {
-			file = Version.ResourcePath + "/nezcc2/" + file;
+			file = Version.ResourcePath + "/syntax/" + file;
 		}
 		this.importNezccFile(file);
 	}

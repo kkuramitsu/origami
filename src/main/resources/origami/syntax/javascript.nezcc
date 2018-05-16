@@ -1,0 +1,206 @@
+# NezCC2 for JavaScript
+
+Omutable   = 1
+Omemo      = 1
+Obase64    = 1
+Obits32    = 1
+Ojumptable = 1
+
+# error position
+errpos           = mbackpos(px, %s)
+
+# inline incremental operator
+posinc           = %s.pos++
+
+Tmatched   = boolean
+Tpx        = ParserContext
+Tinputs    = byte[]
+Tch        = byte
+Tpos       = int
+Ttree      = T
+Ttag       = String
+Tstate     = State
+Tmemo      = MemoEntry
+Tkey       = long
+Tpe        = ParseFunc
+Talt       = byte[]
+Tbs        = int[]
+Tjumptbl   = ParseFunc[]
+
+#comment            = /*%s*/
+begin              = {
+end                = $|\t|}$|\n|
+
+delim              = ,
+
+const            = const %2$s = %3$s
+array            = [
+end array        = ]
+
+function         = function %2$s(%3$s){
+param            = %2$s
+let              = %2$s = %3$s;$|\n|$|\t|%4$s
+
+stmt             = %s
+ifexpr           = (%1$s) ? %2$s : %3$s
+getter           = %s.%s
+!                = !(%s)
+
+funcref          = %s
+lambda           = (%s) => %s
+
+#unsigned         = (%s & 0xff)
+keyindex          = Number(%s)
+#char             = ((byte)%s)
+
+#peapply          = %s.apply(%s)
+#jumptblapply     = %s.apply(%s)
+ctreeapply       = new ctree(%2$s)
+clinkapply       = new clink(%2$s)
+cstateapply       = new cstate(%2$s)
+
+switch     = switch(%s) {$|\n|
+case       = $|\t|case %s : %s
+default    = $|\t|default : %s
+
+while            = while(%s) {$|\n|
+=          = %s = %s;$|\n|
+return     = return %s;$|\n|
+
+true             = true
+false            = false
+
+if     = if(%s) {$|\n|
+else   = $|\t|}$|\n|$|\t|else {$|\n|
+
+Dhead = '''
+const EmptyTag = "";
+const EmptyTree = null;
+const EmptyState = null;
+
+class clink {
+  constructor(tag,child,prev) {
+    this.tag = tag;
+    this.child = child;
+    this.prev = prev;
+  }
+  toString() {
+    if(this.child != null && this.tag != null){
+      return '$' + this.tag + '=' + this.child.toString();
+    }
+    return '';
+  }
+  getTag() {
+     for (var cur = this; cur != null; cur = cur.prev) {
+        if (cur.child == null) {
+           return cur.tag;
+        }
+     }
+     return EmptyTag;
+  }
+}
+
+class ctree {
+  constructor(tag,inputs,spos,epos,child) {
+    this.tag = (tag == EmptyTag && child != null) ? child.getTag() : tag;
+    this.inputs = inputs;
+    this.spos = spos;
+    this.epos = epos;
+    this.child = child;
+  }
+  toString() {
+    var s = "[#" + this.tag;
+    var cur = this.child;
+    while(cur != null){
+      s = s + " " + cur.toString();
+      cur = cur.prev;
+    }
+    if(this.child.child == null){
+      s = s + " '" + this.inputs.slice(this.spos, this.epos).toString() + "'";
+    }
+    return s + "]";
+  }
+}
+
+class cmemo {
+  constructor() {
+    this.key = 0;
+    this.matched = false;
+    this.mpos = 0;
+    this.mtree = null;
+    this.mstate = null;
+  }
+}
+
+class cstate {
+  constructor(ns, spos, epos, sprev) {
+    this.ns = ns;
+    this.spos = spos;
+    this.slen = epos - spos;
+    this.sprev = sprev;
+  }
+}
+
+class ParserContext {
+  constructor(inputs, length, memolen) {
+    this.inputs = inputs;
+    this.length = length;
+    this.pos = 0;
+    this.headpos = 0;
+    this.tree = null;
+    this.state = null;
+    this.memos = [...Array(memolen).keys()].map(function(){return new cmemo()});
+  }
+}
+
+function bits32(bits, b){
+  var n = b & 0xff;
+  return (bits[n / 32 | 0] & (1 << (n % 32))) != 0;
+}
+
+function mbackpos(px, pos){
+  if(px.headpos < px.pos){
+    px.headpos = px.pos;
+  }
+  return pos;
+}
+
+'''
+
+Dmain = '''
+function parse(inputs,length){
+  var px = new ParserContext(inputs,length,memolen);
+  if(e0(px)){
+    if(px.tree == null){
+      return new ctree(EmptyTag, inputs, 0, px.pos, null);
+    }
+    return px.tree;
+  }
+  return new ctree("[error]", inputs, 0, px.headpos, null);
+}
+
+var fs = require('fs');
+
+(function main(){
+    for(var i = 2;i < process.argv.length;i++){
+      var inputs = fs.readFileSync('./' + process.argv[i]);
+      console.time('timer1');
+      var result = parse(inputs,inputs.length-1);
+      console.timeEnd('timer1');
+      console.log(result.toString());
+      //以下の関数を使うとObjectの中身まで見れますがxmark10.xmlみたいな大きなファイルの場合にコンソールが凍ります。
+      //console.dir(JSON.stringify(result));
+    }
+})();
+    
+'''
+
+Dman = '''
+Just call $|base|.parse() with an input text. You will get
+a key-value tree representation.
+Please edit generated sourcefile in function main
+'var inputs = fs.readFileSync('FILE_NAME');"
+ 
+ node $|base|.js
+
+'''
