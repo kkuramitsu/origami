@@ -83,11 +83,18 @@ class clink :
     if self.child != None and self.tag != None:
       return '$' + self.tag + '=' + str(self.child)
     return ''
+  def getTag(self):
+     cur = self
+     while(self != None):
+       if cur.child == None:
+         return cur.tag;
+       cur = cur.prev
+     return EmptyTag
 
 class ctree :
   __slots__ = ['tag', 'inputs', 'spos', 'epos', 'child']
   def __init__(self,tag,inputs,spos,epos,child):
-    self.tag = tag
+    self.tag = child.getTag() if tag == EmptyTag and child != None else tag
     self.inputs = inputs
     self.spos = spos
     self.epos = epos
@@ -98,7 +105,7 @@ class ctree :
     while cur != None :
       s = s + " " + str(cur)
       cur = cur.prev
-    if self.child == None:
+    if self.child == None or self.child.child == None:
       s = s + " '" + str(self.inputs[self.spos : self.epos]) + "'"
     return s + "]"
 
