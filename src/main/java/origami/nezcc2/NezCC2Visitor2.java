@@ -301,7 +301,8 @@ class NezCC2Visitor2 implements Generator<Void> {
 				for (int i = 0; i < e.size(); i++) {
 					Expr indexed = DFA.cdr(e.get(i));
 					exprs.add(hasJumpTable ? this.eLambda(indexed) : this.eMatch(indexed));
-					// exprs.add(hasJumpTable ? this.pg.p("^succ") : this.eSucc());
+					// exprs.add(hasJumpTable ? this.pg.p("^succ") :
+					// this.eSucc());
 				}
 				index = this.eJumpIndex(dfa.charMap(), true);
 			} else {
@@ -340,7 +341,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 				this.pg.used("mtree");
 				this.pg.used("mlink");
 				OptimizedTree t = (OptimizedTree) e;
-				return this.pg.apply("foldtree", "px", t.spos, e.label(), inner, t.tag, t.epos);
+				return this.pg.apply("foldtree", "px", t.spos, "\"" + e.label() + "\"", inner, t.tag, t.epos);
 			}
 			return this.eMatch(e.get(0));
 		}
@@ -348,7 +349,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 			if (this.isTreeConstruction()) {
 				ENode lambda = this.eLambda(e.get(0));
 				this.pg.used("mlink");
-				return this.pg.apply("linktree", "px", e.label(), lambda);
+				return this.pg.apply("linktree", "px", "\"" + e.label() + "\"", lambda);
 			}
 			return this.eMatch(e.get(0));
 		}
@@ -363,7 +364,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 		case Tag: {
 			if (this.isTreeConstruction()) {
 				this.pg.used("mlink");
-				return this.pg.apply("tagtree", "px", e.label());
+				return this.pg.apply("tagtree", "px", "\"" + e.label() + "\"");
 			}
 			return this.eSucc();
 		}

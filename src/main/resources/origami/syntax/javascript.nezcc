@@ -39,7 +39,7 @@ end array        = ]
 
 function         = function %2$s(%3$s){
 param            = %2$s
-let              = %2$s = %3$s;$|\n|$|\t|%4$s
+let              = var %2$s = %3$s;$|\n|$|\t|%4$s
 
 stmt             = %s
 ifexpr           = (%1$s) ? %2$s : %3$s
@@ -115,7 +115,7 @@ class ctree {
       s = s + " " + cur.toString();
       cur = cur.prev;
     }
-    if(this.child.child == null){
+    if(this.child == null || this.child.child == null){
       s = s + " '" + this.inputs.slice(this.spos, this.epos).toString() + "'";
     }
     return s + "]";
