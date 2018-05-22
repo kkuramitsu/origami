@@ -111,11 +111,13 @@ class ctree {
   toString() {
     var s = "[#" + this.tag;
     var cur = this.child;
+    var cnt = 0;
     while(cur != null){
       s = s + " " + cur.toString();
       cur = cur.prev;
+      cnt++;
     }
-    if(this.child == null || this.child.child == null){
+    if(cnt == 1){
       s = s + " '" + this.inputs.slice(this.spos, this.epos).toString() + "'";
     }
     return s + "]";

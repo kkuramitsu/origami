@@ -151,7 +151,7 @@ public class $|base| {
             cur.strOut(sb);
             cnt++;
          }
-         if (cnt == 0) {
+         if (cnt == 1) {
             sb.append(" '");
             sb.append(new String(this.inputs, this.spos, this.epos - this.spos));
             sb.append("'");
