@@ -61,7 +61,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 		this.log("memosize: 0");
 		this.log("mask: " + this.mask);
 		Expr p = nameMap.get(start);
-		this.waitingList.add(p.get(0));
+		this.waitingList.add(p);
 		int c = 0;
 		for (int i = 0; i < this.waitingList.size(); i++) {
 			Expr e0 = this.waitingList.get(i);
@@ -341,6 +341,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 				this.pg.used("mtree");
 				this.pg.used("mlink");
 				OptimizedTree t = (OptimizedTree) e;
+				this.pg.defineSymbol("\"" + e.label() + "\"", "\"" + e.label() + "\"");
 				return this.pg.apply("foldtree", "px", t.spos, "\"" + e.label() + "\"", inner, t.tag, t.epos);
 			}
 			return this.eMatch(e.get(0));
@@ -349,6 +350,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 			if (this.isTreeConstruction()) {
 				ENode lambda = this.eLambda(e.get(0));
 				this.pg.used("mlink");
+				this.pg.defineSymbol("\"" + e.label() + "\"", "\"" + e.label() + "\"");
 				return this.pg.apply("linktree", "px", "\"" + e.label() + "\"", lambda);
 			}
 			return this.eMatch(e.get(0));
@@ -364,6 +366,7 @@ class NezCC2Visitor2 implements Generator<Void> {
 		case Tag: {
 			if (this.isTreeConstruction()) {
 				this.pg.used("mlink");
+				this.pg.defineSymbol("\"" + e.label() + "\"", "\"" + e.label() + "\"");
 				return this.pg.apply("tagtree", "px", "\"" + e.label() + "\"");
 			}
 			return this.eSucc();

@@ -1,0 +1,257 @@
+# NezCC2 for PHP
+
+Omutable   = 1
+Omemo      = 1
+Obase64    = 1
+Obits32    = 1
+Ojumptable = 1
+
+# error position
+errpos           = mbackpos($px, %s)
+
+# inline incremental operator
+posinc           = %s->pos++
+
+Tmatched   = boolean
+Tpx        = ParserContext
+Tinputs    = byte[]
+Tch        = byte
+Tpos       = int
+Ttree      = T
+Ttag       = String
+Tstate     = State
+Tmemo      = MemoEntry
+Tkey       = long
+Tpe        = ParseFunc
+Talt       = byte[]
+Tbs        = int[]
+Tjumptbl   = ParseFunc[]
+
+#comment            = /*%s*/
+begin              = {
+end                = $|\t|}$|\n|
+
+delim              = ,
+
+const            = const %2$s = %3$s;
+array             = array(
+end array         = )
+
+function         = function %2$s(%3$s){
+param            = %2$s
+let              = %2$s = %3$s;$|\n|$|\t|%4$s
+
+stmt             = %s
+ifexpr           = (%1$s) ? %2$s : %3$s
+getter           = %s->%s
+!                = !(%s)
+
+varname          = $%s
+
+funcref          = %s
+lambda           = function($%s){return %s;}
+
+#unsigned         = (%s & 0xff)
+keyindex          = (int)%s
+#char             = ((byte)%s)
+
+ctreeapply       = new ctree(%2$s)
+clinkapply       = new clink(%2$s)
+cstateapply       = new cstate(%2$s)
+
+switch     = switch(%s) {$|\n|
+case       = $|\t|case %s : %s
+default    = $|\t|default : %s
+
+while            = while(%s) {$|\n|
+=          = %s = %s;$|\n|
+return     = return %s;$|\n|
+
+true             = True
+false            = False
+
+if     = if(%s) {$|\n|
+else   = $|\t|}$|\n|$|\t|else {$|\n|
+
+# const or var ?
+EmptyTag = EmptyTag
+EmptyTree = EmptyTree
+EmptyState = EmptyState
+
+Dhead = '''
+<?php
+const EmptyTag = "";
+const EmptyTree = NULL;
+const EmptyState = NULL;
+
+class clink {
+  public $tag;
+  public $child;
+  public $prev;
+  function __construct($tag,$child,$prev) {
+    $this->tag = $tag;
+    $this->child = $child;
+    $this->prev = $prev;
+  }
+  function toString() {
+    if($this->child != NULL && $this->tag != NULL){
+      return '$' . $this->tag . '=' . $this->child->toString();
+    }
+    return '';
+  }
+  function getTag() {
+     for ($cur = $this; $cur != NULL; $cur = $cur->prev) {
+        if ($cur->child == NULL) {
+           return $cur->tag;
+        }
+     }
+     return EmptyTag;
+  }
+}
+
+class ctree {
+  public $tag;
+  public $inputs;
+  public $spos;
+  public $epos;
+  public $child;
+  function __construct($tag,$inputs,$spos,$epos,$child) {
+    $this->tag = ($tag == EmptyTag && $child != NULL) ? $child->getTag() : $tag;
+    $this->inputs = $inputs;
+    $this->spos = $spos;
+    $this->epos = $epos;
+    $this->child = $child;
+  }
+  function toString() {
+    $s = "[#" . $this->tag;
+    $cur = $this->child;
+    $cnt = 0;
+    while($cur != NULL){
+      $s = $s . " " . $cur->toString();
+      $cur = $cur->prev;
+      $cnt++;
+    }
+    if($cnt == 1){
+      $s = $s . " '" . $s = $s . " '" . join(array_map(chr, array_slice($this->inputs,$this->spos,$this->epos))) . "'"; . "'";
+    }
+    return $s . "]";
+  }
+}
+
+class cmemo {
+  public $key;
+  public $matched;
+  public $mpos;
+  public $mtree;
+  public $mstate;
+  function __construct() {
+    $this->key = 0;
+    $this->matched = False;
+    $this->mpos = 0;
+    $this->mtree = NULL;
+    $this->mstate = NULL;
+  }
+}
+
+class cstate {
+  public $ns;
+  public $spos;
+  public $slen;
+  public $sprev;
+  function __construct($ns, $spos, $epos, $sprev) {
+    $this->ns = $ns;
+    $this->spos = $spos;
+    $this->slen = $epos - $spos;
+    $this->sprev = $sprev;
+  }
+}
+
+class ParserContext {
+  public $inputs;
+  public $length;
+  public $pos;
+  public $headpos;
+  public $tree;
+  public $state;
+  public $memos;
+  function __construct($inputs, $length, $memolen) {
+    $this->inputs = $inputs;
+    $this->length = $length;
+    $this->pos = 0;
+    $this->headpos = 0;
+    $this->tree = NULL;
+    $this->state = NULL;
+    $this->memos = array_map(function(){return new cmemo();}, array_pad(array(),memolen,NULL));
+  }
+}
+
+function bits32($bits, $b){
+  $n = $b & 0xff;
+  return ($bits[floor($n / 32)] & (1 << ($n % 32))) != 0;
+}
+
+function mbackpos($px, $pos){
+  if($px->headpos < $px->pos){
+    $px->headpos = $px->pos;
+  }
+  return $pos;
+}
+
+'''
+
+Dmain = '''
+function parse($inputs,$length){
+  $px = new ParserContext($inputs,$length,$memolen);
+  if(e0($px)){
+    if($px->tree == NULL){
+      return new ctree($EmptyTag, $inputs, 0, $px->pos, NULL);
+    }
+    return $px->tree;
+  }
+  return new ctree("[error]", $inputs, 0, $px->headpos, NULL);
+}
+
+function readInputs($a) {
+  if(file_exists($a)){
+  /*
+    $fp = fopen($a, 'rb');
+    $bytes = array();
+    while(!feof($fp)){
+      $data = fread($fp, 1);
+      array_push($bytes, ord($data));
+    }
+    return $bytes;
+ */
+    return array_values(unpack('C*', file_get_contents($a)));
+  }else{
+    return array_values(unpack('C*', $a));
+  }
+}
+
+foreach($argv as $key => $val) {
+  if( $key == 0 ) continue;
+
+  $buf = readInputs($val);
+  $buf[] = 0;
+  $st = microtime(True);
+  $t  = parse($buf, count($buf)-1);
+  $et = microtime(True);
+  printf("%s %f[ms]:", $val, ($et-$st)*1000);
+  echo $t->toString();
+  //printf($t->toString());
+  printf(PHP_EOL);
+}
+
+?>    
+'''
+
+Dman = '''
+=============
+ QUICK START
+=============
+
+ php $|base|.php <file> or <input-text>
+
+Read the main function. You will know how to
+integrate the parser into your programs.
+'''

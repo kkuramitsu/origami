@@ -386,7 +386,13 @@ public class NezCC2 implements OFactory<NezCC2> {
 		String name;
 
 		Var(String name) {
-			this.name = name;
+			if (this.isDefined(name)) {
+				this.name = NezCC2.this.s(name);
+			} else if (this.isDefined("varname")) {
+				this.name = String.format(NezCC2.this.s("varname"), name);
+			} else {
+				this.name = name;
+			}
 		}
 
 		@Override

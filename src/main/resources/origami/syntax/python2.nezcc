@@ -102,10 +102,12 @@ class ctree :
   def __str__(self) :
     s = "[#" + self.tag
     cur = self.child
+    cnt = 0
     while cur != None :
       s = s + " " + str(cur)
       cur = cur.prev
-    if self.child == None or self.child.child == None:
+      cnt++;
+    if cnt == 1:
       s = s + " '" + str(self.inputs[self.spos : self.epos]) + "'"
     return s + "]"
 
